@@ -92,7 +92,20 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
   useEffect_sim(() => {
     if (isDemo || !baseUrl) { setDays([]); return; }
     _simFetchJson(baseUrl + "/sim/days?src=" + src, 5000)
-      .then(j => setDays(Array.isArray(j && j.days) ? j.days : []))
+      .then(j => {
+        const list = Array.isArray(j && j.days) ? j.days : [];
+        setDays(list);
+        // 프리필 날짜가 이 리플레이 DB 에 없으면 그 사실을 그대로 말한다.
+        const wanted = pendingPrefillDateRef.current;
+        if (wanted) {
+          pendingPrefillDateRef.current = "";
+          const has = list.some(d => String(d) === wanted || String(d).replace(/-/g, "") === wanted);
+          if (!has) {
+            prefillRef.current = null;
+            setPrefillNote(`리플레이 ${src === "tick" ? "틱" : "분"} DB 에 ${wanted} 일자가 없습니다. 아래에서 보유한 거래일을 고르세요.`);
+          }
+        }
+      })
       .catch(() => setDays([]));
     // src 변경 시 선택/리플레이 리셋(프리셋/데모 자동재생 대기 중이면 보존).
     if (!pendingAutoplayRef.current) {
@@ -100,6 +113,27 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
       setDate(""); setStocks([]); setSelected([]);
     }
   }, [baseUrl, isDemo, src]);
+
+  // v5.11.3 — 결과 분석에서 "이 거래를 리플레이로" 로 넘어온 프리필을 1회 소비한다.
+  //   {date, code, reason} 을 localStorage 로 받아 날짜를 먼저 세팅하고, 종목 목록이
+  //   로드되면 해당 종목을 골라 준다. 없는 종목이면 이유를 알려주고 날짜만 유지한다.
+  const prefillRef = useRef_sim(null);
+  const pendingPrefillDateRef = useRef_sim("");
+  const [prefillNote, setPrefillNote] = useState_sim("");
+  const [sessionReady, setSessionReady] = useState_sim(false);
+  useEffect_sim(() => {
+    try {
+      const raw = window.localStorage && window.localStorage.getItem("stom_replay_prefill");
+      if (!raw) return;
+      window.localStorage.removeItem("stom_replay_prefill");
+      const detail = JSON.parse(raw);
+      if (!detail || !detail.date) return;
+      prefillRef.current = detail;
+      setDate(String(detail.date));
+      setPrefillNote(detail.reason ? `결과 분석에서 이동 — ${detail.reason}` : "결과 분석에서 이동");
+      pendingPrefillDateRef.current = String(detail.date);
+    } catch (e) {}
+  }, []);
 
   // 조건식 목록(buy/sell).
   useEffect_sim(() => {
@@ -123,7 +157,21 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
     if (isDemo || !baseUrl || !date) { setStocks([]); return; }
     setLoadingStocks(true);
     _simFetchJson(baseUrl + "/sim/stocks?date=" + encodeURIComponent(date) + "&src=" + src, 8000)
-      .then(j => setStocks(Array.isArray(j && j.stocks) ? j.stocks : []))
+      .then(j => {
+        const items = Array.isArray(j && j.stocks) ? j.stocks : [];
+        setStocks(items);
+        const wanted = prefillRef.current;
+        if (wanted && wanted.code && String(wanted.date) === String(date)) {
+          prefillRef.current = null;
+          const hit = items.find(it => it && (it.code === wanted.code || it.name === wanted.code));
+          if (hit) {
+            setSelected([hit.code]);
+            setPrefillNote(`결과 분석에서 이동 — ${wanted.reason || ""} · ${hit.name || hit.code} 선택됨`.trim());
+          } else {
+            setPrefillNote(`이 날짜의 종목 목록에 '${wanted.code}' 가 없습니다. 날짜만 적용했습니다.`);
+          }
+        }
+      })
       .catch(() => setStocks([]))
       .finally(() => setLoadingStocks(false));
     // 프리셋/데모가 미리 고른 종목·재생은 보존(autoplay 대기 중이면 리셋하지 않음).
@@ -231,7 +279,9 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
 
     try {
       await _simRefreshReplaySession(baseUrl);
+      setSessionReady(true);
     } catch (e) {
+      setSessionReady(false);
       replayErrorReportedRef.current = true;
       setWsErr("서버 세션을 새로 준비하지 못했습니다. 대시보드 연결을 확인한 뒤 재시도하세요.");
       setStatus("error");
@@ -549,6 +599,19 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
       <div className="grid-main" style={{ gridTemplateColumns: "minmax(0, 380px) minmax(0, 1fr)" }}>
         {/* 좌: 컨트롤 + 지표 라이브 테이블 + 학습 모드 + 체결 로그 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
+          {/* v5.11.3 — 세션은 실패해야만 알 수 있었다. 항상 보이게 한다. */}
+          <div className="sim-session-strip mono" role="status">
+            <span className={"sim-session-dot " + (sessionReady ? "ok" : "wait")} aria-hidden="true"></span>
+            <span>{sessionReady
+              ? "서버 세션 준비됨 — 재생 시 즉시 연결됩니다."
+              : "서버 세션 미확인 — 재생을 누르면 먼저 세션을 새로 준비합니다."}</span>
+          </div>
+          {prefillNote && (
+            <div className="sim-prefill-note mono" role="status">
+              {prefillNote}
+              <button className="btn ghost sm" onClick={() => setPrefillNote("")}>닫기</button>
+            </div>
+          )}
           <SimPresetBar isDemo={isDemo} busy={presetBusy} onPreset={onPreset} />
           <SimControlBar
             baseUrl={baseUrl} isDemo={isDemo} src={src} onSrc={setSrc}

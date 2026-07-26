@@ -26751,7 +26751,40 @@ ${sellCode}` : code);
         const buy = spec.buy || result.buy || "\u2014";
         const sell = spec.sell || result.sell || "\u2014";
         const period = spec.start && spec.end ? `${spec.start}~${spec.end}` : result.period || "\u2014";
-        return /* @__PURE__ */ React.createElement("div", { className: "bt-condition-band", "aria-label": "\uD14C\uC2A4\uD2B8 \uC870\uAC74\uC2DD\uACFC \uAE30\uAC04" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, buy)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, sell)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uAE30\uAC04\xB7\uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, period, jobId ? " \xB7 " + jobId : "")), /* @__PURE__ */ React.createElement("a", { className: "btn ghost sm", href: "/?tab=replay", title: "\uC774 \uC870\uAC74\uC2DD \uC2E0\uD638 \uB9E5\uB77D\uC744 \uCE94\uB4E4 \uB9AC\uD50C\uB808\uC774\uC5D0\uC11C \uD655\uC778" }, "\u25B6 \uB9AC\uD50C\uB808\uC774\uC5D0\uC11C \uD655\uC778"));
+        return /* @__PURE__ */ React.createElement("div", { className: "bt-condition-band", "aria-label": "\uD14C\uC2A4\uD2B8 \uC870\uAC74\uC2DD\uACFC \uAE30\uAC04" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, buy)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, sell)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uAE30\uAC04\xB7\uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, period, jobId ? " \xB7 " + jobId : "")), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            className: "btn ghost sm",
+            title: "\uC774 \uACB0\uACFC\uC5D0\uC11C \uC190\uC2E4\uC774 \uAC00\uC7A5 \uCEF8\uB358 \uAC70\uB798\uC77C\xB7\uC885\uBAA9\uC73C\uB85C \uB9AC\uD50C\uB808\uC774\uB97C \uC5F0\uB2E4",
+            onClick: () => {
+              try {
+                const daily = (analysis.equity || {}).daily || [];
+                let worstDay = null;
+                for (const d of daily) {
+                  const pnl = Number(d && d.pnl);
+                  if (!Number.isFinite(pnl)) continue;
+                  if (!worstDay || pnl < worstDay.pnl) worstDay = { date: d.date, pnl };
+                }
+                let worstTrade = null;
+                for (const t of analysis.mae_mfe || []) {
+                  const v = Number(t && t.pnl_pct);
+                  if (!Number.isFinite(v)) continue;
+                  if (!worstTrade || v < worstTrade.pnl_pct) worstTrade = { code: t.code, pnl_pct: v };
+                }
+                if (worstDay && worstDay.date) {
+                  window.localStorage.setItem("stom_replay_prefill", JSON.stringify({
+                    date: String(worstDay.date).replace(/-/g, ""),
+                    code: worstTrade ? worstTrade.code : "",
+                    reason: `\uC190\uC2E4\uC774 \uAC00\uC7A5 \uCEF8\uB358 \uAC70\uB798\uC77C(${worstDay.date})`
+                  }));
+                }
+              } catch (e) {
+              }
+              window.location.href = "/?tab=replay";
+            }
+          },
+          "\u25B6 \uCD5C\uC545 \uAC70\uB798\uC77C \uB9AC\uD50C\uB808\uC774"
+        ));
       })(), range && /* @__PURE__ */ React.createElement("div", { className: "bt-range-bar" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911 \u2014 ", _btDateLabel(Math.floor(range.t_start / 1e6)), "~", _btDateLabel(Math.floor(range.t_end / 1e6)), result.ranged && analysis.trade_count != null ? ` \xB7 ${analysis.trade_count}\uAC70\uB798` : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear, style: { marginLeft: "auto" } }, "\uC804\uCCB4\uB85C \uBCF5\uADC0")), /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: isEvo ? "var(--violet)" : "var(--teal)" } }), isEvo ? "\uD575\uC2EC \uBA54\uD2B8\uB9AD \xB7 \uC9C4\uD654 \uC138\uB300" : "\uD575\uC2EC \uBA54\uD2B8\uB9AD", isEvo && /* @__PURE__ */ React.createElement(
         "span",
         {
@@ -31636,7 +31669,19 @@ ${sellCode}` : code);
         setDays([]);
         return;
       }
-      _simFetchJson(baseUrl + "/sim/days?src=" + src, 5e3).then((j) => setDays(Array.isArray(j && j.days) ? j.days : [])).catch(() => setDays([]));
+      _simFetchJson(baseUrl + "/sim/days?src=" + src, 5e3).then((j) => {
+        const list = Array.isArray(j && j.days) ? j.days : [];
+        setDays(list);
+        const wanted = pendingPrefillDateRef.current;
+        if (wanted) {
+          pendingPrefillDateRef.current = "";
+          const has = list.some((d) => String(d) === wanted || String(d).replace(/-/g, "") === wanted);
+          if (!has) {
+            prefillRef.current = null;
+            setPrefillNote(`\uB9AC\uD50C\uB808\uC774 ${src === "tick" ? "\uD2F1" : "\uBD84"} DB \uC5D0 ${wanted} \uC77C\uC790\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. \uC544\uB798\uC5D0\uC11C \uBCF4\uC720\uD55C \uAC70\uB798\uC77C\uC744 \uACE0\uB974\uC138\uC694.`);
+          }
+        }
+      }).catch(() => setDays([]));
       if (!pendingAutoplayRef.current) {
         _stopReplay();
         setDate("");
@@ -31644,6 +31689,24 @@ ${sellCode}` : code);
         setSelected([]);
       }
     }, [baseUrl, isDemo, src]);
+    const prefillRef = useRef_sim(null);
+    const pendingPrefillDateRef = useRef_sim("");
+    const [prefillNote, setPrefillNote] = useState_sim("");
+    const [sessionReady, setSessionReady] = useState_sim(false);
+    useEffect_sim(() => {
+      try {
+        const raw = window.localStorage && window.localStorage.getItem("stom_replay_prefill");
+        if (!raw) return;
+        window.localStorage.removeItem("stom_replay_prefill");
+        const detail = JSON.parse(raw);
+        if (!detail || !detail.date) return;
+        prefillRef.current = detail;
+        setDate(String(detail.date));
+        setPrefillNote(detail.reason ? `\uACB0\uACFC \uBD84\uC11D\uC5D0\uC11C \uC774\uB3D9 \u2014 ${detail.reason}` : "\uACB0\uACFC \uBD84\uC11D\uC5D0\uC11C \uC774\uB3D9");
+        pendingPrefillDateRef.current = String(detail.date);
+      } catch (e) {
+      }
+    }, []);
     useEffect_sim(() => {
       if (isDemo || !baseUrl) {
         setStrategies({ buy: [], sell: [] });
@@ -31670,7 +31733,21 @@ ${sellCode}` : code);
         return;
       }
       setLoadingStocks(true);
-      _simFetchJson(baseUrl + "/sim/stocks?date=" + encodeURIComponent(date) + "&src=" + src, 8e3).then((j) => setStocks(Array.isArray(j && j.stocks) ? j.stocks : [])).catch(() => setStocks([])).finally(() => setLoadingStocks(false));
+      _simFetchJson(baseUrl + "/sim/stocks?date=" + encodeURIComponent(date) + "&src=" + src, 8e3).then((j) => {
+        const items = Array.isArray(j && j.stocks) ? j.stocks : [];
+        setStocks(items);
+        const wanted = prefillRef.current;
+        if (wanted && wanted.code && String(wanted.date) === String(date)) {
+          prefillRef.current = null;
+          const hit = items.find((it) => it && (it.code === wanted.code || it.name === wanted.code));
+          if (hit) {
+            setSelected([hit.code]);
+            setPrefillNote(`\uACB0\uACFC \uBD84\uC11D\uC5D0\uC11C \uC774\uB3D9 \u2014 ${wanted.reason || ""} \xB7 ${hit.name || hit.code} \uC120\uD0DD\uB428`.trim());
+          } else {
+            setPrefillNote(`\uC774 \uB0A0\uC9DC\uC758 \uC885\uBAA9 \uBAA9\uB85D\uC5D0 '${wanted.code}' \uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. \uB0A0\uC9DC\uB9CC \uC801\uC6A9\uD588\uC2B5\uB2C8\uB2E4.`);
+          }
+        }
+      }).catch(() => setStocks([])).finally(() => setLoadingStocks(false));
       if (!pendingAutoplayRef.current) {
         setSelected([]);
         _stopReplay();
@@ -31789,7 +31866,9 @@ ${sellCode}` : code);
       setStatus("loading");
       try {
         await _simRefreshReplaySession(baseUrl);
+        setSessionReady(true);
       } catch (e) {
+        setSessionReady(false);
         replayErrorReportedRef.current = true;
         setWsErr("\uC11C\uBC84 \uC138\uC158\uC744 \uC0C8\uB85C \uC900\uBE44\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. \uB300\uC2DC\uBCF4\uB4DC \uC5F0\uACB0\uC744 \uD655\uC778\uD55C \uB4A4 \uC7AC\uC2DC\uB3C4\uD558\uC138\uC694.");
         setStatus("error");
@@ -32083,7 +32162,7 @@ ${sellCode}` : code);
       background: "var(--bg-1)",
       border: "1px solid var(--line-1)",
       borderRadius: 8
-    } }, /* @__PURE__ */ React.createElement("span", { className: "panel-hd-title", style: { border: 0 } }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uCC28\uD2B8 \uC2DC\uBBAC\uB808\uC774\uC158"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginLeft: 12 } }, "\uC77C\uC77C ", src === "tick" ? "tick" : "min", " DB \uB9AC\uD50C\uB808\uC774 \xB7 \uC5D4\uC9C4 \uC815\uD569 \uC2E0\uD638 \uC624\uBC84\uB808\uC774"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: badge.color, letterSpacing: ".06em", marginLeft: "auto" } }, "\u25CF ", badge.label)), /* @__PURE__ */ React.createElement("div", { className: "grid-main", style: { gridTemplateColumns: "minmax(0, 380px) minmax(0, 1fr)" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, minWidth: 0 } }, /* @__PURE__ */ React.createElement(SimPresetBar, { isDemo, busy: presetBusy, onPreset }), /* @__PURE__ */ React.createElement(
+    } }, /* @__PURE__ */ React.createElement("span", { className: "panel-hd-title", style: { border: 0 } }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uCC28\uD2B8 \uC2DC\uBBAC\uB808\uC774\uC158"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginLeft: 12 } }, "\uC77C\uC77C ", src === "tick" ? "tick" : "min", " DB \uB9AC\uD50C\uB808\uC774 \xB7 \uC5D4\uC9C4 \uC815\uD569 \uC2E0\uD638 \uC624\uBC84\uB808\uC774"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: badge.color, letterSpacing: ".06em", marginLeft: "auto" } }, "\u25CF ", badge.label)), /* @__PURE__ */ React.createElement("div", { className: "grid-main", style: { gridTemplateColumns: "minmax(0, 380px) minmax(0, 1fr)" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { className: "sim-session-strip mono", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "sim-session-dot " + (sessionReady ? "ok" : "wait"), "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, sessionReady ? "\uC11C\uBC84 \uC138\uC158 \uC900\uBE44\uB428 \u2014 \uC7AC\uC0DD \uC2DC \uC989\uC2DC \uC5F0\uACB0\uB429\uB2C8\uB2E4." : "\uC11C\uBC84 \uC138\uC158 \uBBF8\uD655\uC778 \u2014 \uC7AC\uC0DD\uC744 \uB204\uB974\uBA74 \uBA3C\uC800 \uC138\uC158\uC744 \uC0C8\uB85C \uC900\uBE44\uD569\uB2C8\uB2E4.")), prefillNote && /* @__PURE__ */ React.createElement("div", { className: "sim-prefill-note mono", role: "status" }, prefillNote, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setPrefillNote("") }, "\uB2EB\uAE30")), /* @__PURE__ */ React.createElement(SimPresetBar, { isDemo, busy: presetBusy, onPreset }), /* @__PURE__ */ React.createElement(
       SimControlBar,
       {
         baseUrl,

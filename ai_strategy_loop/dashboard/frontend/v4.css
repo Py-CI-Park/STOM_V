@@ -1769,6 +1769,14 @@
 /* v5.11.3 — 우리말 제목 옆의 원어 보조 표기(설정·용어 공통). */
 .panel-hd-title .v4s-en, .v4s-en { margin-left: 6px; color: var(--ink-3); font: 9.5px var(--mono); font-weight: 400; letter-spacing: 0; text-transform: none; }
 
+/* v5.11.3 — 리플레이 세션 상태와 결과→리플레이 이동 맥락을 상시 표시한다. */
+.sim-session-strip { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid var(--line-1); border-radius: 8px; background: var(--bg-0); color: var(--ink-2); font-size: 11px; }
+.sim-session-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.sim-session-dot.ok { background: var(--chart-profit); }
+.sim-session-dot.wait { background: var(--amber); }
+.sim-prefill-note { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid var(--line-1); border-left: 3px solid var(--chart-accent); border-radius: 8px; background: var(--bg-0); color: var(--ink-1); font-size: 11px; }
+.sim-prefill-note .btn { margin-left: auto; flex-shrink: 0; }
+
 /* 연구 개선 추이 KPI — 숫자 4개로 "전진 중인가"를 먼저 답한다. */
 .ri-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-bottom: 10px; }
 .ri-kpis > div { min-width: 0; padding: 10px 12px; border: 1px solid var(--line-1); border-radius: 9px; background: var(--bg-0); }

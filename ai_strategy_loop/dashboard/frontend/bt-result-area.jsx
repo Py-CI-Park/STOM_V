@@ -405,7 +405,36 @@ return (
           <div><span className="k">매도 조건식</span><b className="mono">{sell}</b></div>
           <div><span className="k">기간·출처</span><b className="mono">{period}{jobId ? " · " + jobId : ""}</b></div>
           {/* v5.3.5(U6): 결과→리플레이 직행 동선(딥링크). 파라미터 prefill 은 운영검사 후. */}
-          <a className="btn ghost sm" href="/?tab=replay" title="이 조건식 신호 맥락을 캔들 리플레이에서 확인">▶ 리플레이에서 확인</a>
+          {/* v5.11.3 — 탭만 열던 링크를 "가장 크게 잃은 날·종목" 프리필로 바꿨다.
+              리플레이의 존재 이유는 "왜 여기서 샀나"를 보는 것이므로 맥락 없이 열면 쓸모가 없다. */}
+          <button className="btn ghost sm" title="이 결과에서 손실이 가장 컸던 거래일·종목으로 리플레이를 연다"
+                  onClick={() => {
+                    try {
+                      const daily = ((analysis.equity || {}).daily) || [];
+                      let worstDay = null;
+                      for (const d of daily) {
+                        const pnl = Number(d && d.pnl);
+                        if (!Number.isFinite(pnl)) continue;
+                        if (!worstDay || pnl < worstDay.pnl) worstDay = { date: d.date, pnl };
+                      }
+                      let worstTrade = null;
+                      for (const t of (analysis.mae_mfe || [])) {
+                        const v = Number(t && t.pnl_pct);
+                        if (!Number.isFinite(v)) continue;
+                        if (!worstTrade || v < worstTrade.pnl_pct) worstTrade = { code: t.code, pnl_pct: v };
+                      }
+                      if (worstDay && worstDay.date) {
+                        window.localStorage.setItem("stom_replay_prefill", JSON.stringify({
+                          date: String(worstDay.date).replace(/-/g, ""),
+                          code: worstTrade ? worstTrade.code : "",
+                          reason: `손실이 가장 컸던 거래일(${worstDay.date})`,
+                        }));
+                      }
+                    } catch (e) {}
+                    window.location.href = "/?tab=replay";
+                  }}>
+            ▶ 최악 거래일 리플레이
+          </button>
         </div>
       );
     })()}

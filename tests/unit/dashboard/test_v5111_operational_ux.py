@@ -221,3 +221,28 @@ def test_ab_compare_accepts_evolution_generations() -> None:
     # 세대 소스도 A/B 비교 지원으로 표기한다.
     evolution_block = result_area.split("evolution: {", 1)[1].split("},", 1)[0]
     assert "compare: true" in evolution_block
+
+
+def test_replay_receives_result_context_and_shows_session_state() -> None:
+    """리플레이는 '왜 여기서 샀나'를 보는 화면이므로 맥락 없이 탭만 열면 쓸모가 없다."""
+    result_area = _read("bt-result-area.jsx")
+    replay = _read("sim-tab-root.jsx")
+    css = _read("v4.css")
+
+    # 결과에서 최악 거래일·종목을 프리필로 넘긴다.
+    assert "stom_replay_prefill" in result_area
+    assert "최악 거래일 리플레이" in result_area
+    assert "worstDay" in result_area and "worstTrade" in result_area
+
+    # 리플레이는 프리필을 1회 소비하고, 못 맞추면 이유를 밝힌다.
+    assert "stom_replay_prefill" in replay
+    assert "prefillRef" in replay
+    assert "pendingPrefillDateRef" in replay
+    assert "일자가 없습니다" in replay
+    assert "종목 목록에" in replay
+
+    # 세션 상태는 실패 전에도 보인다.
+    assert "sessionReady" in replay
+    assert "sim-session-strip" in replay
+    assert ".sim-session-strip" in css
+    assert ".sim-prefill-note" in css
