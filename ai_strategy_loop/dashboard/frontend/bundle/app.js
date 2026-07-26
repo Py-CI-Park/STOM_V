@@ -27410,6 +27410,7 @@ ${sellCode}` : code);
     const [end, setEnd] = useState_bt("");
     const [timeframe, setTimeframe] = useState_bt("min");
     const [engines, setEngines] = useState_bt(_btDefaultEngineCount);
+    const [tradingDays, setTradingDays] = useState_bt(null);
     const [dividMode, setDividMode] = useState_bt("\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958");
     const [oneCode, setOneCode] = useState_bt("");
     const [mode, setMode] = useState_bt("backtest");
@@ -27633,12 +27634,25 @@ ${sellCode}` : code);
         if (j && j.status === "ok" && j.job_id) {
           setActiveJob({ job_id: j.job_id, status: "pending", progress: 0, spec: payload, log_tail: [] });
           setSelectedJobId(j.job_id);
+          setRunErr(j.engine_note ? "\uC548\uB0B4 \xB7 " + j.engine_note : "");
           loadJobs();
         } else {
           setRunErr(j && j.message || "\uC2E4\uD589 \uC2E4\uD328");
         }
       }).catch((e) => setRunErr("\uC2E4\uD589 \uC2E4\uD328: " + e));
     };
+    useEffect_bt(() => {
+      setTradingDays(null);
+      if (isDemo || !baseUrl || !start2 || !end) return void 0;
+      let cancelled = false;
+      _btFetchJson(baseUrl + "/bt/trading_days?timeframe=" + encodeURIComponent(timeframe) + "&start=" + encodeURIComponent(start2) + "&end=" + encodeURIComponent(end), 5e3).then((j) => {
+        if (!cancelled && j) setTradingDays(j);
+      }).catch(() => {
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [baseUrl, isDemo, timeframe, start2, end]);
     const cancelJob = (jobId) => {
       if (isDemo || !jobId) return;
       _btPostJson(baseUrl + "/bt/job/cancel", { job_id: jobId }, 5e3).then(() => {
@@ -27681,6 +27695,7 @@ ${sellCode}` : code);
         }
       }).catch((e) => setRunErr("self.vars \uD574\uC11D \uC2E4\uD328: " + e)).finally(() => setLegacyVarsBusy(false));
     };
+    const engineOverLimit = !!(tradingDays && tradingDays.max_engines && (parseInt(engines, 10) || 0) > tradingDays.max_engines);
     const pct = activeJob ? Math.round((activeJob.progress || 0) * 100) : 0;
     const tracking = activeJob && (activeJob.status === "running" || activeJob.status === "pending");
     const activeActions = Array.isArray(activeJob && activeJob.open_actions) ? activeJob.open_actions : [];
@@ -27730,19 +27745,20 @@ ${sellCode}` : code);
         spellCheck: false,
         disabled: isDemo
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 100 } }, /* @__PURE__ */ React.createElement("label", null, "\uC2DC\uAC04\uB2E8\uC704"), /* @__PURE__ */ React.createElement("select", { className: "select", value: timeframe, onChange: (e) => setTimeframe(e.target.value), disabled: isDemo, "aria-label": "\uC2DC\uAC04\uB2E8\uC704 \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("option", { value: "min" }, "\uBD84\uBD09 (min)"), /* @__PURE__ */ React.createElement("option", { value: "tick" }, "\uD2F1 (tick)"))), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 76 } }, /* @__PURE__ */ React.createElement("label", null, "\uC5D4\uC9C4 \uC218 (CPU 25%)"), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 100 } }, /* @__PURE__ */ React.createElement("label", null, "\uC2DC\uAC04\uB2E8\uC704"), /* @__PURE__ */ React.createElement("select", { className: "select", value: timeframe, onChange: (e) => setTimeframe(e.target.value), disabled: isDemo, "aria-label": "\uC2DC\uAC04\uB2E8\uC704 \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("option", { value: "min" }, "\uBD84\uBD09 (min)"), /* @__PURE__ */ React.createElement("option", { value: "tick" }, "\uD2F1 (tick)"))), /* @__PURE__ */ React.createElement("div", { className: "field bt-engine-field", style: { minWidth: 118 } }, /* @__PURE__ */ React.createElement("label", null, "\uC5D4\uC9C4 \uC218 (CPU 25%)"), /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "input",
         type: "number",
         min: "1",
-        max: "16",
+        max: tradingDays && tradingDays.max_engines ? Math.min(16, tradingDays.max_engines) : 16,
         value: engines,
         "aria-label": "\uBC31\uD14C\uC2A4\uD2B8 \uC5D4\uC9C4 \uC218",
+        "aria-describedby": "bt-engine-hint",
         onChange: (e) => setEngines(e.target.value),
         disabled: isDemo
       }
-    )), mode === "backtest" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 130 } }, /* @__PURE__ */ React.createElement("label", null, "\uB370\uC774\uD130 \uBD84\uB958"), /* @__PURE__ */ React.createElement("select", { className: "select", value: dividMode, onChange: (e) => setDividMode(e.target.value), disabled: isDemo, "aria-label": "\uB370\uC774\uD130 \uBD84\uB958 \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("option", { value: "\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958" }, "\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958"), /* @__PURE__ */ React.createElement("option", { value: "\uC77C\uC790\uBCC4 \uBD84\uB958" }, "\uC77C\uC790\uBCC4 \uBD84\uB958"), /* @__PURE__ */ React.createElement("option", { value: "\uD55C\uC885\uBAA9 \uB85C\uB529" }, "\uD55C\uC885\uBAA9 \uB85C\uB529"))), mode === "backtest" && dividMode === "\uD55C\uC885\uBAA9 \uB85C\uB529" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 110 } }, /* @__PURE__ */ React.createElement("label", null, "\uC885\uBAA9\uCF54\uB4DC"), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("small", { id: "bt-engine-hint", className: "bt-engine-hint" + (engineOverLimit ? " warn" : "") }, tradingDays == null || tradingDays.days == null ? "\uAC70\uB798\uC77C \uC218 \uD655\uC778 \uC804" : engineOverLimit ? `\uAC70\uB798\uC77C ${tradingDays.days}\uC77C \u2014 \uC2E4\uD589 \uC2DC \uC5D4\uC9C4 ${tradingDays.max_engines}\uB85C \uB0AE\uCDB0\uC9D1\uB2C8\uB2E4` : `\uAE30\uAC04 \uB0B4 \uAC70\uB798\uC77C ${tradingDays.days}\uC77C`)), mode === "backtest" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 130 } }, /* @__PURE__ */ React.createElement("label", null, "\uB370\uC774\uD130 \uBD84\uB958"), /* @__PURE__ */ React.createElement("select", { className: "select", value: dividMode, onChange: (e) => setDividMode(e.target.value), disabled: isDemo, "aria-label": "\uB370\uC774\uD130 \uBD84\uB958 \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("option", { value: "\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958" }, "\uC885\uBAA9\uCF54\uB4DC\uBCC4 \uBD84\uB958"), /* @__PURE__ */ React.createElement("option", { value: "\uC77C\uC790\uBCC4 \uBD84\uB958" }, "\uC77C\uC790\uBCC4 \uBD84\uB958"), /* @__PURE__ */ React.createElement("option", { value: "\uD55C\uC885\uBAA9 \uB85C\uB529" }, "\uD55C\uC885\uBAA9 \uB85C\uB529"))), mode === "backtest" && dividMode === "\uD55C\uC885\uBAA9 \uB85C\uB529" && /* @__PURE__ */ React.createElement("div", { className: "field", style: { minWidth: 110 } }, /* @__PURE__ */ React.createElement("label", null, "\uC885\uBAA9\uCF54\uB4DC"), /* @__PURE__ */ React.createElement(
       "input",
       {
         className: "input mono",

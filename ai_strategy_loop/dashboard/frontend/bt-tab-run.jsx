@@ -93,6 +93,10 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
   const [end, setEnd] = useState_bt("");
   const [timeframe, setTimeframe] = useState_bt("min");
   const [engines, setEngines] = useState_bt(_btDefaultEngineCount);
+  // v5.11.4 — 백테스트 엔진은 거래일 수보다 많은 엔진을 쓸 수 없다. 실행하고 20초 뒤
+  //   실패로 알게 되던 것을 기간을 고르는 순간 화면에서 알려준다. days=null 은
+  //   일일 DB 인벤토리를 알 수 없다는 뜻이라 상한을 강제하지 않는다.
+  const [tradingDays, setTradingDays] = useState_bt(null);
   // GUI 패리티(F3): 데이터 분류 모드(단일 백테 전용 — optimize/wfo/sweep CLI 는 --divid-mode 미수용).
   //   백엔드 /bt/run 이 이미 divid_mode·one_code 를 파싱(backtest_api.py). 옵션은 cli/subcommands.py 정본.
   const [dividMode, setDividMode] = useState_bt("종목코드별 분류");
@@ -285,6 +289,8 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
         if (j && j.status === "ok" && j.job_id) {
           setActiveJob({ job_id: j.job_id, status: "pending", progress: 0, spec: payload, log_tail: [] });
           setSelectedJobId(j.job_id);
+          // 서버가 엔진 수를 보정했으면 무엇을 왜 바꿨는지 그대로 보여준다.
+          setRunErr(j.engine_note ? "안내 · " + j.engine_note : "");
           loadJobs();
         } else {
           setRunErr((j && j.message) || "실행 실패");
@@ -292,6 +298,17 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
       })
       .catch(e => setRunErr("실행 실패: " + e));
   };
+
+  useEffect_bt(() => {
+    setTradingDays(null);
+    if (isDemo || !baseUrl || !start || !end) return undefined;
+    let cancelled = false;
+    _btFetchJson(baseUrl + "/bt/trading_days?timeframe=" + encodeURIComponent(timeframe)
+                 + "&start=" + encodeURIComponent(start) + "&end=" + encodeURIComponent(end), 5000)
+      .then(j => { if (!cancelled && j) setTradingDays(j); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [baseUrl, isDemo, timeframe, start, end]);
 
   const cancelJob = (jobId) => {
     if (isDemo || !jobId) return;
@@ -340,6 +357,8 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
       .finally(() => setLegacyVarsBusy(false));
   };
 
+  const engineOverLimit = !!(tradingDays && tradingDays.max_engines
+    && (parseInt(engines, 10) || 0) > tradingDays.max_engines);
   const pct = activeJob ? Math.round((activeJob.progress || 0) * 100) : 0;
   const tracking = activeJob && (activeJob.status === "running" || activeJob.status === "pending");
   const activeActions = Array.isArray(activeJob && activeJob.open_actions) ? activeJob.open_actions : [];
@@ -408,10 +427,20 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
               <option value="tick">틱 (tick)</option>
             </select>
           </div>
-          <div className="field" style={{ minWidth: 76 }}>
+          <div className="field bt-engine-field" style={{ minWidth: 118 }}>
             <label>엔진 수 (CPU 25%)</label>
-            <input className="input" type="number" min="1" max="16" value={engines} aria-label="백테스트 엔진 수"
+            <input className="input" type="number" min="1"
+                   max={tradingDays && tradingDays.max_engines ? Math.min(16, tradingDays.max_engines) : 16}
+                   value={engines} aria-label="백테스트 엔진 수"
+                   aria-describedby="bt-engine-hint"
                    onChange={e => setEngines(e.target.value)} disabled={isDemo} />
+            <small id="bt-engine-hint" className={"bt-engine-hint" + (engineOverLimit ? " warn" : "")}>
+              {tradingDays == null || tradingDays.days == null
+                ? "거래일 수 확인 전"
+                : (engineOverLimit
+                    ? `거래일 ${tradingDays.days}일 — 실행 시 엔진 ${tradingDays.max_engines}로 낮춰집니다`
+                    : `기간 내 거래일 ${tradingDays.days}일`)}
+            </small>
           </div>
           {mode === "backtest" && (
             <div className="field" style={{ minWidth: 130 }}>

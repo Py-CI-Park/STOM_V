@@ -1210,6 +1210,19 @@ def run_backtest(payload: BacktestRunPayload) -> Dict[str, Any]:
             ),
         }
 
+    # 백테스트 엔진은 거래일 수보다 많은 엔진을 쓸 수 없다(엔진이 "일자 수가 엔진 수보다
+    #   적습니다"로 즉시 실패한다). 사용자의 의도는 "이 백테스트를 돌린다"이지 엔진 수가
+    #   아니므로 막지 않고 조용히 낮춘 뒤, 무엇을 왜 바꿨는지 응답으로 알린다.
+    engines = payload.engines
+    engine_note = ""
+    day_count = _trading_days_in_range(payload.timeframe, payload.start, payload.end)
+    if day_count is not None and 0 < day_count < engines:
+        engine_note = (
+            f"엔진 수를 {engines} → {day_count}로 낮췄습니다. "
+            f"이 기간의 거래일이 {day_count}일이라 엔진을 그보다 많이 쓸 수 없습니다."
+        )
+        engines = day_count
+
     spec = BacktestJobSpec(
         buy=payload.buy,
         sell=payload.sell,
@@ -1218,7 +1231,7 @@ def run_backtest(payload: BacktestRunPayload) -> Dict[str, Any]:
         buy_code=buy_code,
         sell_code=sell_code,
         timeframe=payload.timeframe,
-        engines=payload.engines,
+        engines=engines,
         timeout=payload.timeout,
         divid_mode=divid_mode,
         one_code=one_code,
@@ -1234,8 +1247,43 @@ def run_backtest(payload: BacktestRunPayload) -> Dict[str, Any]:
         sweep_params=sweep_params,
         window_days=payload.window_days,
     )
-    return get_job_manager().submit(spec)
+    result = get_job_manager().submit(spec)
+    if engine_note and isinstance(result, dict) and result.get("status") == "ok":
+        result["engine_note"] = engine_note
+    return result
 
+
+
+def _trading_days_in_range(timeframe: str, start: int, end: int) -> Optional[int]:
+    """기간 내 보유 일일 DB 거래일 수. 인벤토리 자체가 비면 None(판단 불가 — 건드리지 않음).
+
+    일일 DB 가 하나도 없는 환경(테스트·신규 설치)에서 잘못 막지 않도록, 인벤토리가
+    비었을 때는 아무 판단도 하지 않는다.
+    """
+    try:
+        from ai_strategy_loop.dashboard.simulation_api import _daily_db_dates  # noqa: PLC0415
+
+        prefix = "stock_tick" if str(timeframe) == "tick" else "stock_min"
+        days = _daily_db_dates(prefix)
+    except Exception:  # noqa: BLE001 - 인벤토리 조회 실패는 판단 불가로 흡수.
+        return None
+    if not days:
+        return None
+    return sum(1 for d in days if int(start) <= int(d) <= int(end))
+
+
+@backtest_router.get("/trading_days")
+def trading_days(timeframe: str = "min", start: int = 0, end: int = 0) -> Dict[str, Any]:
+    """기간 내 보유 거래일 수 — 실행 전에 엔진 수 상한을 화면이 알 수 있게 한다."""
+    count = _trading_days_in_range(timeframe, start, end)
+    return {
+        "timeframe": "tick" if str(timeframe) == "tick" else "min",
+        "start": start,
+        "end": end,
+        # None 이면 인벤토리를 알 수 없다는 뜻 — 화면은 상한을 강제하지 않는다.
+        "days": count,
+        "max_engines": None if count is None else max(1, count),
+    }
 
 @backtest_router.get("/jobs")
 def list_jobs() -> Dict[str, Any]:

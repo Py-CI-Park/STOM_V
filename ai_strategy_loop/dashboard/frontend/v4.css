@@ -1801,6 +1801,11 @@
   outline-offset: 2px;
 }
 
+/* v5.11.4 — 엔진 수 상한(거래일 수)을 실행 전에 알려준다. */
+.bt-engine-field { position: relative; }
+.bt-engine-hint { display: block; margin-top: 3px; color: var(--ink-3); font: 10px var(--mono); line-height: 1.35; }
+.bt-engine-hint.warn { color: var(--amber); }
+
 /* 연구 개선 추이 KPI — 숫자 4개로 "전진 중인가"를 먼저 답한다. */
 .ri-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-bottom: 10px; }
 .ri-kpis > div { min-width: 0; padding: 10px 12px; border: 1px solid var(--line-1); border-radius: 9px; background: var(--bg-0); }

@@ -487,3 +487,47 @@ class TestChildProcessEmitsUtf8:
         # 그러므로 자식도 utf-8 로 내보내야 한다(Windows 기본은 cp949).
         assert 'env["PYTHONIOENCODING"] = "utf-8"' in run_one
         assert run_one.index('env["PYTHONIOENCODING"]') < run_one.index("subprocess.Popen(")
+
+
+class TestEngineCountRespectsTradingDays:
+    """엔진 수가 거래일 수를 넘으면 엔진이 즉시 실패한다. 실행 전에 맞춰 준다."""
+
+    def test_trading_days_route_reports_limit(self, client) -> None:
+        body = client.get("/bt/trading_days", params={
+            "timeframe": "min", "start": 20250407, "end": 20250411}).json()
+
+        assert body["timeframe"] == "min"
+        # 일일 DB 인벤토리가 없는 환경에서는 판단하지 않는다(None).
+        assert body["days"] is None or isinstance(body["days"], int)
+        if body["days"]:
+            assert body["max_engines"] == max(1, body["days"])
+
+    def test_run_clamps_engines_instead_of_failing(self, monkeypatch, client) -> None:
+        from ai_strategy_loop.dashboard import backtest_api as api
+
+        # 거래일 2일인 기간에 엔진 8을 요청한다.
+        monkeypatch.setattr(api, "_trading_days_in_range", lambda tf, s, e: 2)
+        body = client.post("/bt/run", json={
+            "buy": "기존매수", "sell": "기존매도",
+            "start": 20250407, "end": 20250408, "engines": 8,
+        }).json()
+
+        # 막지 않고 실행하되, 무엇을 왜 바꿨는지 알린다.
+        assert body["status"] == "ok", body
+        assert "engine_note" in body
+        assert "8" in body["engine_note"] and "2" in body["engine_note"]
+        client.post("/bt/job/cancel", json={"job_id": body["job_id"]})
+
+    def test_run_leaves_engines_alone_when_inventory_unknown(self, monkeypatch, client) -> None:
+        from ai_strategy_loop.dashboard import backtest_api as api
+
+        # 인벤토리를 알 수 없으면(None) 아무것도 건드리지 않는다.
+        monkeypatch.setattr(api, "_trading_days_in_range", lambda tf, s, e: None)
+        body = client.post("/bt/run", json={
+            "buy": "기존매수", "sell": "기존매도",
+            "start": 20250407, "end": 20250408, "engines": 8,
+        }).json()
+
+        assert body["status"] == "ok", body
+        assert "engine_note" not in body
+        client.post("/bt/job/cancel", json={"job_id": body["job_id"]})
