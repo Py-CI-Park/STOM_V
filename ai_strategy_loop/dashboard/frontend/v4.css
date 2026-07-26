@@ -1806,6 +1806,11 @@
 .bt-engine-hint { display: block; margin-top: 3px; color: var(--ink-3); font: 10px var(--mono); line-height: 1.35; }
 .bt-engine-hint.warn { color: var(--amber); }
 
+/* v5.11.4 — "느린 실행"과 "멈춘 실행"을 화면이 구분해 준다. */
+.bt-stall-warn { padding: 8px 10px; border: 1px solid rgba(240,179,90,.45); border-left: 3px solid var(--amber); border-radius: 8px; background: rgba(240,179,90,.06); font-size: 11px; line-height: 1.6; }
+.bt-stall-warn b { display: block; margin-bottom: 3px; color: var(--amber); }
+.bt-stall-warn span { color: var(--ink-2); }
+
 /* 연구 개선 추이 KPI — 숫자 4개로 "전진 중인가"를 먼저 답한다. */
 .ri-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-bottom: 10px; }
 .ri-kpis > div { min-width: 0; padding: 10px 12px; border: 1px solid var(--line-1); border-radius: 9px; background: var(--bg-0); }

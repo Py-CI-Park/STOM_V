@@ -361,6 +361,10 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
     && (parseInt(engines, 10) || 0) > tradingDays.max_engines);
   const pct = activeJob ? Math.round((activeJob.progress || 0) * 100) : 0;
   const tracking = activeJob && (activeJob.status === "running" || activeJob.status === "pending");
+  // v5.11.4 — 진행 신호가 멈춘 시간. null 은 "알 수 없음"이라 아무 경고도 하지 않는다.
+  //   tracking 뒤에 둔다 — 앞에 두면 const TDZ 로 렌더가 통째로 터진다(2026-07-27 실측).
+  const idleSec = activeJob && typeof activeJob.idle_for_sec === "number" ? activeJob.idle_for_sec : null;
+  const idleWarn = !!tracking && idleSec != null && idleSec >= 300;
   const activeActions = Array.isArray(activeJob && activeJob.open_actions) ? activeJob.open_actions : [];
   const activeHasActionTaxonomy = activeJob && (activeActions.length > 0 || activeJob.openable != null
     || activeJob.status_kind || activeJob.artifact_state);
@@ -616,6 +620,15 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
             </div>
             {activeJob.message && (
               <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-2)", lineHeight: 1.5 }}>{activeJob.message}</div>
+            )}
+            {idleWarn && (
+              <div className="bt-stall-warn mono" role="alert">
+                <b>{Math.floor(idleSec / 60)}분째 진행 신호가 없습니다.</b>
+                <span>
+                  이 잡의 프로세스가 디스크도 읽지 않고 CPU 도 쓰지 않고 있습니다. 느린 것이 아니라
+                  멈췄을 수 있습니다. 조건식을 바꿔 다시 시도하거나 중지하세요.
+                </span>
+              </div>
             )}
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {tracking && (

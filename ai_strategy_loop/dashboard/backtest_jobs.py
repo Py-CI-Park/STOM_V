@@ -89,6 +89,80 @@ class BacktestJobSpec:
     window_days: int = 0
 
 
+
+# ---------------------------------------------------------------- 진행 신호 감시
+# `--quiet` CLI 는 종료 시점까지 stdout 을 내지 않는다. 그래서 progress 는 0.05 에
+#   고정되고, 화면에서는 "느린 실행"과 "멈춘 실행"을 구분할 수 없다. 실제로 조건식에
+#   따라 엔진 트리가 데이터를 다 읽은 뒤 계산으로 넘어가지 못하고 교착하는 경우가
+#   있는데(2026-07-26 실측: CPU 0% · 디스크 읽기 0B/s 로 28분), 이때도 상태는 계속
+#   `running` 이었다. 프로세스 트리의 누적 디스크 읽기와 CPU 시간을 표본으로 삼아
+#   "마지막으로 무언가 한 시점"을 추적한다.
+_ACTIVITY_LOCK = threading.Lock()
+_ACTIVITY: Dict[str, Dict[str, float]] = {}
+# 표본 간격(초). /bt/job 폴링마다 트리를 훑으면 비싸므로 이 간격으로만 갱신한다.
+_ACTIVITY_SAMPLE_SEC = 15.0
+
+
+def _tree_work_units(pid: int) -> Optional[float]:
+    """프로세스 트리의 누적 작업량(디스크 읽기 바이트 + CPU 초). 조회 불가면 None."""
+    try:
+        import psutil  # noqa: PLC0415
+    except Exception:  # noqa: BLE001 - psutil 없으면 감시하지 않는다(기능 저하만).
+        return None
+    try:
+        parent = psutil.Process(int(pid))
+        procs = [parent] + parent.children(recursive=True)
+    except Exception:  # noqa: BLE001 - 이미 종료됐거나 권한 없음.
+        return None
+    total = 0.0
+    for proc in procs:
+        try:
+            total += float(proc.io_counters().read_bytes)
+        except Exception:  # noqa: BLE001 - 일부 프로세스는 io_counters 를 못 준다.
+            pass
+        try:
+            cpu = proc.cpu_times()
+            total += (cpu.user + cpu.system) * 1_000_000.0
+        except Exception:  # noqa: BLE001
+            pass
+    return total
+
+
+def probe_activity(job_id: str, pid: Optional[int]) -> Optional[float]:
+    """마지막 진행 신호 이후 경과 초. 판단할 수 없으면 None.
+
+    None 은 "멈추지 않았다"가 아니라 "알 수 없다"는 뜻이다. 화면은 None 일 때
+    아무 경고도 하지 않는다(근거 없는 경고 금지).
+    """
+    if not job_id or not pid:
+        return None
+    now = _now()
+    with _ACTIVITY_LOCK:
+        state = _ACTIVITY.get(job_id)
+        if state is not None and now - state["sampled_at"] < _ACTIVITY_SAMPLE_SEC:
+            return max(0.0, now - state["moved_at"])
+    units = _tree_work_units(pid)
+    if units is None:
+        return None
+    with _ACTIVITY_LOCK:
+        state = _ACTIVITY.get(job_id)
+        if state is None:
+            _ACTIVITY[job_id] = {"units": units, "moved_at": now, "sampled_at": now}
+            return 0.0
+        # 표본 잡음을 피하려고 5MB 상당 이상 늘었을 때만 "움직였다"로 본다.
+        if units > state["units"] + 5_000_000.0:
+            state["moved_at"] = now
+        state["units"] = units
+        state["sampled_at"] = now
+        return max(0.0, now - state["moved_at"])
+
+
+def forget_activity(job_id: str) -> None:
+    """잡이 끝나면 표본 상태를 버린다."""
+    with _ACTIVITY_LOCK:
+        _ACTIVITY.pop(job_id, None)
+
+
 @dataclass
 class BacktestJobRecord:
     """잡 1개의 상태/결과 레코드(JSON 영속 가능)."""
@@ -660,6 +734,7 @@ class BacktestJobManager:
                 checkpoint = payload.get("last_checkpoint") or ""
                 record.message = f"non-success: exit={returncode} status={status} {msg} {checkpoint}".strip()
             self._cancel_requested.discard(record.job_id)
+            forget_activity(record.job_id)
             self._persist(record)
             final_event = "backtest_done" if record.status in ("success", "no_trades") else "error"
             _telemetry(

@@ -215,6 +215,12 @@ def _augment_job_payload(record: Dict[str, Any]) -> Dict[str, Any]:
         sell_code=spec.get("sell_code"),
         artifact_note="job_strategy_code_snapshot" if (spec.get("buy_code") or spec.get("sell_code")) else "job_record_name_only_legacy",
     )
+    # 실행 중인 잡만 진행 신호를 본다. `--quiet` CLI 는 진행률을 올려주지 않으므로
+    #   프로세스 트리의 디스크/CPU 활동이 유일한 "살아 있는가" 신호다.
+    if record.get("status") == "running":
+        from ai_strategy_loop.dashboard.backtest_jobs import probe_activity  # noqa: PLC0415
+
+        out["idle_for_sec"] = probe_activity(str(record.get("job_id") or ""), record.get("pid"))
     return out
 
 def _augment_job_listing(payload: Dict[str, Any]) -> Dict[str, Any]:

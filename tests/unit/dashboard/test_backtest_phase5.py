@@ -21,6 +21,8 @@ import subprocess
 import time
 from pathlib import Path
 
+FRONTEND = Path(__file__).resolve().parents[3] / "ai_strategy_loop" / "dashboard" / "frontend"
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -531,3 +533,45 @@ class TestEngineCountRespectsTradingDays:
         assert body["status"] == "ok", body
         assert "engine_note" not in body
         client.post("/bt/job/cancel", json={"job_id": body["job_id"]})
+
+
+class TestStallDetection:
+    """`--quiet` CLI 는 진행률을 안 올린다. 그래서 '느림'과 '멈춤'이 화면에서 같아 보였다."""
+
+    def test_probe_activity_reports_unknown_without_pid(self) -> None:
+        from ai_strategy_loop.dashboard.backtest_jobs import probe_activity
+
+        # 판단 근거가 없으면 None — "멈추지 않았다"가 아니라 "알 수 없다".
+        assert probe_activity("", None) is None
+        assert probe_activity("job", None) is None
+
+    def test_probe_activity_tracks_movement(self, monkeypatch) -> None:
+        from ai_strategy_loop.dashboard import backtest_jobs as bj
+
+        bj.forget_activity("probe-job")
+        clock = {"t": 1000.0}
+        units = {"v": 1_000_000.0}
+        monkeypatch.setattr(bj, "_now", lambda: clock["t"])
+        monkeypatch.setattr(bj, "_tree_work_units", lambda pid: units["v"])
+        monkeypatch.setattr(bj, "_ACTIVITY_SAMPLE_SEC", 0.0)
+
+        assert bj.probe_activity("probe-job", 123) == 0.0
+
+        # 작업량이 그대로면 유휴 시간이 쌓인다.
+        clock["t"] = 1120.0
+        assert bj.probe_activity("probe-job", 123) == 120.0
+
+        # 의미 있게 늘면 유휴 시간이 0 으로 돌아간다.
+        clock["t"] = 1180.0
+        units["v"] = 1_000_000.0 + 10_000_000.0
+        assert bj.probe_activity("probe-job", 123) == 0.0
+        bj.forget_activity("probe-job")
+
+    def test_frontend_warns_only_with_evidence(self) -> None:
+        src = (FRONTEND / "bt-tab-run.jsx").read_text(encoding="utf-8")
+
+        assert "idle_for_sec" in src
+        assert "idleSec != null" in src           # 알 수 없으면 경고하지 않는다.
+        assert "idleSec >= 300" in src
+        assert "진행 신호가 없습니다" in src
+        assert "bt-stall-warn" in src
