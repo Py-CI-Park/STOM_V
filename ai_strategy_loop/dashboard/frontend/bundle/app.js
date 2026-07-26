@@ -36308,6 +36308,84 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { ResearchImprovementCard, riImprovementSeries, riAnnualizedPct });
 
+  // ai_strategy_loop/dashboard/frontend/research-next-steps.jsx
+  var { useMemo: useMemo_ns } = React;
+  function collectRejectedHypotheses(generations) {
+    const bucket = /* @__PURE__ */ new Map();
+    for (const g of Array.isArray(generations) ? generations : []) {
+      for (const h of g && Array.isArray(g.hypotheses) ? g.hypotheses : []) {
+        if (!h || h.verdict !== "rejected") continue;
+        const key = String(h.text || h.target_metric || "").trim();
+        if (!key) continue;
+        const prev = bucket.get(key) || { text: key, count: 0, gens: [], metric: h.target_metric, side: h.side };
+        prev.count += 1;
+        if (g.gen_no != null) prev.gens.push(g.gen_no);
+        bucket.set(key, prev);
+      }
+    }
+    return [...bucket.values()].sort((a, b) => b.count - a.count);
+  }
+  function worstAutopsySegments(autopsy, limit = 2) {
+    if (!autopsy || typeof autopsy !== "object" || autopsy.status === "missing" || autopsy.status === "pending") return [];
+    const pool = [].concat(Array.isArray(autopsy.cross_segments) ? autopsy.cross_segments : []).concat(Array.isArray(autopsy.time_segments) ? autopsy.time_segments : []).concat(Array.isArray(autopsy.market_cap_segments) ? autopsy.market_cap_segments : []).filter((r) => r && typeof r === "object" && Number.isFinite(Number(r.return_diff)) && Number(r.return_diff) < 0);
+    return pool.sort((a, b) => Number(a.return_diff) - Number(b.return_diff)).slice(0, limit);
+  }
+  function buildNextSteps({ generations, autopsy }) {
+    var _a;
+    const steps = [];
+    const series = riImprovementSeries(generations);
+    let sinceRecord = null;
+    for (let i = series.length - 1; i >= 0; i -= 1) {
+      if (series[i].isRecord) {
+        sinceRecord = series.length - 1 - i;
+        break;
+      }
+    }
+    if (sinceRecord != null && sinceRecord >= 5) {
+      steps.push({
+        tone: "warn",
+        title: `${sinceRecord}\uC138\uB300\uC9F8 \uCD5C\uACE0 \uAE30\uB85D\uC774 \uAC31\uC2E0\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4`,
+        detail: "\uC9C0\uAE08 \uBC29\uD5A5\uC73C\uB85C\uB294 \uB354 \uC88B\uC544\uC9C0\uC9C0 \uC54A\uACE0 \uC788\uC2B5\uB2C8\uB2E4. \uAC19\uC740 \uCD95\uC744 \uBBF8\uC138 \uC870\uC815\uD558\uAE30\uBCF4\uB2E4 \uC2DC\uAC04\uB300\xB7\uC885\uBAA9\uAD70 \uAC19\uC740 \uD0D0\uC0C9 \uCD95 \uC790\uCCB4\uB97C \uBC14\uAFB8\uB294 \uD3B8\uC774 \uB0AB\uC2B5\uB2C8\uB2E4.",
+        evidence: "\uC138\uB300\uBCC4 \uAC1C\uC120 \uCD94\uC774"
+      });
+    }
+    const gatePassed = series.filter((p) => p.gatePassed).length;
+    if (series.length >= 5 && gatePassed === 0) {
+      steps.push({
+        tone: "warn",
+        title: `${series.length}\uC138\uB300 \uC911 \uAC8C\uC774\uD2B8 \uD1B5\uACFC\uAC00 0\uAC74\uC785\uB2C8\uB2E4`,
+        detail: "\uD6C4\uBCF4 \uD488\uC9C8 \uBB38\uC81C\uC778\uC9C0 \uAC8C\uC774\uD2B8 \uAE30\uC900\uC774 \uD604\uC7AC \uB370\uC774\uD130\uC5D0\uC11C \uB3C4\uB2EC \uBD88\uAC00\uD55C \uAC12\uC778\uC9C0 \uAD6C\uBD84\uD574\uC57C \uD569\uB2C8\uB2E4. \uAC70\uBC84\uB10C\uC2A4\uC758 \uD558\uB4DC \uAC8C\uC774\uD2B8 \uAC12\uACFC \uC2E4\uC81C \uBD84\uD3EC\uB97C \uB098\uB780\uD788 \uBCF4\uC138\uC694.",
+        evidence: "\uC138\uB300 \uD45C \xB7 \uC870\uAC74\uC2DD \uBC1C\uAD74 \uAC70\uBC84\uB10C\uC2A4"
+      });
+    }
+    for (const seg of worstAutopsySegments(autopsy)) {
+      steps.push({
+        tone: "danger",
+        title: `\uC190\uC2E4\uC774 \uBAB0\uB9B0 \uAD6C\uAC04: ${seg.label}`,
+        detail: `\uC804\uCCB4 \uD3C9\uADE0\uBCF4\uB2E4 ${Number(seg.return_diff).toFixed(2)}%p \uB098\uBE74\uC2B5\uB2C8\uB2E4(${(_a = seg.count) != null ? _a : "?"}\uAC74). \uC774 \uAD6C\uAC04\uC744 \uC81C\uC678\uD558\uAC70\uB098 \uC9C4\uC785 \uC870\uAC74\uC744 \uC881\uD788\uB294 \uAC00\uC815\uC744 \uBA3C\uC800 \uC2DC\uD5D8\uD558\uC138\uC694.`,
+        evidence: "\uC138\uADF8\uBA3C\uD2B8 \uBD80\uAC80"
+      });
+    }
+    const rejected = collectRejectedHypotheses(generations).filter((r) => r.count >= 2);
+    for (const r of rejected.slice(0, 2)) {
+      steps.push({
+        tone: "info",
+        title: `\uC774\uBBF8 ${r.count}\uBC88 \uBE57\uB098\uAC04 \uAC00\uC815\uC785\uB2C8\uB2E4`,
+        detail: `"${r.text}" \u2014 \uC138\uB300 ${r.gens.map((g) => "g" + g).join(", ")} \uC5D0\uC11C \uAE30\uB300\uC640 \uBC18\uB300\uB85C \uC6C0\uC9C1\uC600\uC2B5\uB2C8\uB2E4. \uAC19\uC740 \uBC29\uD5A5\uC744 \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uAE30 \uC804\uC5D0 \uC804\uC81C\uB97C \uBC14\uAFB8\uC138\uC694.`,
+        evidence: "\uAC00\uC815 \uB8E8\uD504"
+      });
+    }
+    return steps;
+  }
+  function ResearchNextStepsCard({ state }) {
+    const generations = state && state.generations;
+    const autopsy = state && state.page_data && state.page_data.autopsy;
+    const steps = useMemo_ns(() => buildNextSteps({ generations, autopsy }), [generations, autopsy]);
+    const autopsyMissing = !autopsy || autopsy.status === "missing" || autopsy.status === "pending";
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uB2E4\uC74C\uC5D0 \uBB34\uC5C7\uC744 \uBC14\uAFC0\uAE4C \xB7 \uADFC\uAC70 \uAE30\uBC18 \uC81C\uC548"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uC81C\uC548 ", steps.length, "\uAC74")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v59-section-intro", style: { marginTop: 0 } }, "\uC774\uBBF8 \uBC1C\uD589\uB41C \uADFC\uAC70(\uAC1C\uC120 \uCD94\uC774 \xB7 \uAC8C\uC774\uD2B8 \xB7 \uBD80\uAC80 \xB7 \uAC00\uC815 \uD310\uC815)\uB9CC \uC5EE\uC5B4 \uB9CC\uB4E0 \uC81C\uC548\uC785\uB2C8\uB2E4.", /* @__PURE__ */ React.createElement("b", null, " \uC0C8\uB85C \uACC4\uC0B0\uD558\uAC70\uB098 \uCD94\uC815\uD55C \uAC12\uC740 \uC5C6\uC2B5\uB2C8\uB2E4.")), steps.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC544\uC9C1 \uC81C\uC548\uD560 \uADFC\uAC70\uAC00 \uBAA8\uC774\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4. \uC138\uB300\uAC00 \uB354 \uC313\uC774\uAC70\uB098 \uBD80\uAC80\uC774 \uBC1C\uD589\uB418\uBA74 \uC5EC\uAE30\uC5D0 \uD45C\uC2DC\uB429\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement("ol", { className: "ns-list" }, steps.map((s, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "ns-item " + s.tone }, /* @__PURE__ */ React.createElement("b", null, s.title), /* @__PURE__ */ React.createElement("span", null, s.detail), /* @__PURE__ */ React.createElement("small", null, "\uADFC\uAC70 \xB7 ", s.evidence)))), autopsyMissing && /* @__PURE__ */ React.createElement("p", { className: "ns-gap mono", role: "status" }, "\uC774\uBC88 run \uC740 \uC138\uADF8\uBA3C\uD2B8 \uBD80\uAC80\uC774 \uBC1C\uD589\uB418\uC9C0 \uC54A\uC544 \uAD6C\uAC04 \uAE30\uBC18 \uC81C\uC548\uC740 \uB9CC\uB4E4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.")));
+  }
+  Object.assign(window, { ResearchNextStepsCard, buildNextSteps, collectRejectedHypotheses });
+
   // ai_strategy_loop/dashboard/frontend/v4-charts.jsx
   var { useEffect: useEffect_v4c, useRef: useRef_v4c } = React;
   function _v4Tok(name) {
@@ -36861,7 +36939,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           onApprove: requestApproval,
           onViewCode: viewCode
         }
-      ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement("div", { className: "v54-span-all" }, /* @__PURE__ */ React.createElement(ResearchImprovementCard, { state: s, baseUrl, runId })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC138\uB300 \uC9C4\uD654 \uBD84\uC11D(\uC804\uD3ED)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC138\uB300 \uC9C4\uD654 \uBD84\uC11D \xB7 \uAC1C\uBCC4 \uADF8\uB798\uD504"), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })))
+      ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement("div", { className: "v54-span-all" }, /* @__PURE__ */ React.createElement(ResearchImprovementCard, { state: s, baseUrl, runId })), /* @__PURE__ */ React.createElement("div", { className: "v54-span-all" }, /* @__PURE__ */ React.createElement(ResearchNextStepsCard, { state: s })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC138\uB300 \uC9C4\uD654 \uBD84\uC11D(\uC804\uD3ED)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC138\uB300 \uC9C4\uD654 \uBD84\uC11D \xB7 \uAC1C\uBCC4 \uADF8\uB798\uD504"), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })))
     ), /* @__PURE__ */ React.createElement(
       ApprovalDialog,
       {

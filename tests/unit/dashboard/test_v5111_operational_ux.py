@@ -246,3 +246,24 @@ def test_replay_receives_result_context_and_shows_session_state() -> None:
     assert "sim-session-strip" in replay
     assert ".sim-session-strip" in css
     assert ".sim-prefill-note" in css
+
+
+def test_live_closes_the_loop_with_evidence_backed_next_steps() -> None:
+    """관찰만 하고 끝나면 연구가 진행되지 않는다. 근거 → 다음 수까지 이어야 한다."""
+    steps = _read("research-next-steps.jsx")
+    research = _read("v4-research.jsx")
+    css = _read("v4.css")
+
+    assert "function buildNextSteps" in steps
+    assert "function collectRejectedHypotheses" in steps
+    assert "worstAutopsySegments" in steps
+    # 근거 4갈래: 정체 · 게이트 · 부검 구간 · 반복 실패 가정
+    assert "최고 기록이 갱신되지 않았습니다" in steps
+    assert "게이트 통과가 0건입니다" in steps
+    assert "손실이 몰린 구간" in steps
+    assert "빗나간 가정입니다" in steps
+    # 근거 없는 제안은 만들지 않는다.
+    assert "새로 계산하거나 추정한 값은 없습니다" in steps
+    assert "아직 제안할 근거가 모이지 않았습니다" in steps
+    assert "<ResearchNextStepsCard state={s} />" in research
+    assert ".ns-item" in css

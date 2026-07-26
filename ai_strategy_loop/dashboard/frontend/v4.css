@@ -1777,6 +1777,17 @@
 .sim-prefill-note { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid var(--line-1); border-left: 3px solid var(--chart-accent); border-radius: 8px; background: var(--bg-0); color: var(--ink-1); font-size: 11px; }
 .sim-prefill-note .btn { margin-left: auto; flex-shrink: 0; }
 
+/* v5.11.3 — 근거 기반 다음 수 제안. 근거 없는 항목은 만들지 않는다. */
+.ns-list { margin: 0; padding: 0 0 0 18px; display: flex; flex-direction: column; gap: 8px; }
+.ns-item { padding: 9px 11px; border: 1px solid var(--line-1); border-left: 3px solid var(--ink-3); border-radius: 8px; background: var(--bg-0); }
+.ns-item.warn { border-left-color: var(--amber); }
+.ns-item.danger { border-left-color: var(--chart-loss); }
+.ns-item.info { border-left-color: var(--chart-accent); }
+.ns-item b { display: block; margin-bottom: 3px; color: var(--ink-0); font-size: 13px; }
+.ns-item span { display: block; color: var(--ink-2); font-size: 12px; line-height: 1.6; }
+.ns-item small { display: block; margin-top: 4px; color: var(--ink-3); font: 10.5px var(--mono); }
+.ns-gap { margin: 10px 0 0; color: var(--ink-3); font-size: 10.5px; }
+
 /* 연구 개선 추이 KPI — 숫자 4개로 "전진 중인가"를 먼저 답한다. */
 .ri-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-bottom: 10px; }
 .ri-kpis > div { min-width: 0; padding: 10px 12px; border: 1px solid var(--line-1); border-radius: 9px; background: var(--bg-0); }
