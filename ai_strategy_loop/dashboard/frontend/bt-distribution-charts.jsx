@@ -84,8 +84,8 @@ function _BtDistributionChartContent({ distribution }) {
               </g>
             ))}
             {/* Frame */}
-            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {/* 막대 */}
             {bins.map((b, i) => {
               const c = b.count || 0;
@@ -221,6 +221,9 @@ function _BtHeatmapContent({ heatmap }) {
   const lblFont = big ? 13 : 11;
   // 수익률 합계(%) 라벨 — "+12.3%" / "-4.5%" 형식(부호 포함).
   const cellPctLabel = (v) => `${(v || 0) >= 0 ? "+" : ""}${(v || 0).toFixed(1)}%`;
+  // v5.11.3 — 슬롯이 몇 개 없으면 표를 100% 로 늘리지 않는다. 연구 시간대가 09:00~09:28
+  //   한 구간뿐인 run 에서는 셀 하나가 카드 전체를 덮어 "거대한 단색 블록"으로 보였다.
+  const stretch = colN >= 6;
 
   return (
     <div className="panel">
@@ -240,7 +243,8 @@ function _BtHeatmapContent({ heatmap }) {
             </div>
           ) : (
             <div style={{ overflowX: "auto" }}>
-              <table style={{ borderCollapse: "separate", borderSpacing: SP, fontFamily: "var(--mono)", width: "100%", tableLayout: "fixed" }}>
+              <table style={{ borderCollapse: "separate", borderSpacing: SP, fontFamily: "var(--mono)",
+                              width: stretch ? "100%" : "auto", maxWidth: "100%", tableLayout: "fixed" }}>
                 <thead>
                   <tr>
                     <th style={{ width: ROW_LBL }}></th>
@@ -299,6 +303,12 @@ function _BtHeatmapContent({ heatmap }) {
                   {big ? "셀 = 수익률 합계(%) · 거래 건수" : "셀 = 수익률 합계(%)"}
                 </span>
               </div>
+              {slots.length === 1 && (
+                <p className="mono" style={{ margin: "8px 0 0", fontSize: 10.5, color: "var(--ink-3)", lineHeight: 1.55 }}>
+                  이 연구는 시간대가 <b>{slotLabel(slots[0])}</b> 한 구간뿐이라 시간대 축이 만들어지지 않습니다.
+                  지금은 요일별 비교로 읽으세요.
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -383,17 +393,17 @@ function _BtMonteCarloChartContent({ mc, loading, onRun }) {
             {/* 0 기준선 */}
             <line x1={padL} x2={W - padR} y1={zeroY} y2={zeroY} stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="2 3" />
             <text className="chart-axis-text" x={padL - 8} y={zeroY + 3} textAnchor="end" fill="var(--ink-2)">0</text>
-            <text className="chart-axis-text" x={padL - 8} y={y(yMax) + 3} textAnchor="end" fill="var(--teal)">{_btMoneyTick(yMax)}</text>
-            <text className="chart-axis-text" x={padL - 8} y={y(yMin) + 3} textAnchor="end" fill="var(--red)">{_btMoneyTick(yMin)}</text>
+            <text className="chart-axis-text" x={padL - 8} y={y(yMax) + 3} textAnchor="end" fill="var(--chart-profit)">{_btMoneyTick(yMax)}</text>
+            <text className="chart-axis-text" x={padL - 8} y={y(yMin) + 3} textAnchor="end" fill="var(--chart-loss)">{_btMoneyTick(yMin)}</text>
             {/* Frame */}
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {/* 밴드 p5~p95(연한), p25~p75(진한) */}
             {n > 1 && (
               <>
                 <path d={band("p5", "p95")} fill="rgba(155,135,245,0.12)" />
                 <path d={band("p25", "p75")} fill="rgba(155,135,245,0.24)" />
-                <path d={median} fill="none" stroke="var(--violet)" strokeWidth="2" />
+                <path d={median} fill="none" stroke="var(--chart-accent)" strokeWidth="2" />
               </>
             )}
             {/* 관측 최종손익 마지막 점 가이드 */}

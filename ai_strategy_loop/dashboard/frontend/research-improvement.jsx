@@ -71,18 +71,18 @@ function _RiChart({ series }) {
         <line x1={padL} y1={padT + ih} x2={padL + iw} y2={padT + ih} stroke="var(--line)" />
         <line x1={padL} y1={padT} x2={padL} y2={padT + ih} stroke="var(--line)" />
         {zeroY != null && (
-          <line x1={padL} y1={zeroY} x2={padL + iw} y2={zeroY} stroke="var(--line-2)" strokeDasharray="4 4" />
+          <line x1={padL} y1={zeroY} x2={padL + iw} y2={zeroY} stroke="var(--chart-grid)" strokeDasharray="4 4" />
         )}
-        <path d={path("bestPct")} fill="none" stroke="var(--teal)" strokeWidth="3" />
-        <path d={path("pct")} fill="none" stroke="var(--violet)" strokeWidth="1.6" strokeDasharray="5 3" />
+        <path d={path("bestPct")} fill="none" stroke="var(--chart-profit)" strokeWidth="3" />
+        <path d={path("pct")} fill="none" stroke="var(--chart-accent)" strokeWidth="1.6" strokeDasharray="5 3" />
         {pts.map((p, i) => (
           <circle key={p.gen} cx={x(i)} cy={y(p.pct)} r={p.isRecord ? 4.2 : 2.6}
                   fill={p.isRecord ? "var(--teal)" : "var(--ink-3)"} />
         ))}
-        <text x={padL - 6} y={y(hi) + 4} textAnchor="end" fontSize="11" fill="var(--ink-3)">{hi.toFixed(1)}%</text>
-        <text x={padL - 6} y={y(lo) + 4} textAnchor="end" fontSize="11" fill="var(--ink-3)">{lo.toFixed(1)}%</text>
-        <text x={padL} y={H - 8} fontSize="11" fill="var(--ink-3)">g{pts[0].gen}</text>
-        <text x={padL + iw} y={H - 8} textAnchor="end" fontSize="11" fill="var(--ink-3)">g{pts[pts.length - 1].gen}</text>
+        <text x={padL - 6} y={y(hi) + 4} textAnchor="end" fontSize="11" fill="var(--chart-axis)">{hi.toFixed(1)}%</text>
+        <text x={padL - 6} y={y(lo) + 4} textAnchor="end" fontSize="11" fill="var(--chart-axis)">{lo.toFixed(1)}%</text>
+        <text x={padL} y={H - 8} fontSize="11" fill="var(--chart-axis)">g{pts[0].gen}</text>
+        <text x={padL + iw} y={H - 8} textAnchor="end" fontSize="11" fill="var(--chart-axis)">g{pts[pts.length - 1].gen}</text>
       </svg>
     </div>
   );

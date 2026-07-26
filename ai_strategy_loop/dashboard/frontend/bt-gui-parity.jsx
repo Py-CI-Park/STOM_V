@@ -74,10 +74,10 @@ function _BtMddRandomChartContent({ data }) {
             {/* 0 기준선 */}
             <line x1={padL} x2={W - padR} y1={y(0)} y2={y(0)} stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="2 3" />
             <text className="chart-axis-text" x={padL - 8} y={y(0) + 3} textAnchor="end" fill="var(--ink-2)">0</text>
-            <text className="chart-axis-text" x={padL - 8} y={y(hi) + 3} textAnchor="end" fill="var(--teal)">{_gpMoney(hi)}</text>
-            <text className="chart-axis-text" x={padL - 8} y={y(lo) + 3} textAnchor="end" fill="var(--red)">{_gpMoney(lo)}</text>
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <text className="chart-axis-text" x={padL - 8} y={y(hi) + 3} textAnchor="end" fill="var(--chart-profit)">{_gpMoney(hi)}</text>
+            <text className="chart-axis-text" x={padL - 8} y={y(lo) + 3} textAnchor="end" fill="var(--chart-loss)">{_gpMoney(lo)}</text>
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {curves.map((c, i) => (
               <path key={`mc${i}`} d={pathOf(c)} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="0.6" />
             ))}
@@ -156,12 +156,12 @@ function _BtDailyPnlChartContent({ data }) {
                onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
             <line x1={padL} x2={W - padR} y1={zeroY} y2={zeroY} stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="2 3" />
             <text className="chart-axis-text" x={padL - 8} y={zeroY + 3} textAnchor="end" fill="var(--ink-2)">0</text>
-            <text className="chart-axis-text" x={padL - 8} y={yP(pMax) + 3} textAnchor="end" fill="var(--teal)">{_gpMoney(pMax)}</text>
-            <text className="chart-axis-text" x={padL - 8} y={yP(pMin) + 3} textAnchor="end" fill="var(--red)">{_gpMoney(pMin)}</text>
+            <text className="chart-axis-text" x={padL - 8} y={yP(pMax) + 3} textAnchor="end" fill="var(--chart-profit)">{_gpMoney(pMax)}</text>
+            <text className="chart-axis-text" x={padL - 8} y={yP(pMin) + 3} textAnchor="end" fill="var(--chart-loss)">{_gpMoney(pMin)}</text>
             <text className="chart-axis-text" x={W - padR + 6} y={yC(cMax) + 3} textAnchor="start" fill="var(--amber)">{_gpMoney(cMax)}</text>
             <text className="chart-axis-text" x={W - padR + 6} y={yC(cMin) + 3} textAnchor="start" fill="var(--amber)">{_gpMoney(cMin)}</text>
-            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {series.map((s, i) => {
               const v = s.pnl || 0; const y0 = zeroY, y1 = yP(v);
               return <rect key={`d${i}`} x={xC(i) - barW / 2} y={Math.min(y0, y1)} width={barW} height={Math.max(1, Math.abs(y1 - y0))}
@@ -238,16 +238,16 @@ function _BtHourlyPnlChartContent({ data }) {
                onMouseLeave={() => setHover(null)}>
             <line x1={padL} x2={W - padR} y1={zeroY} y2={zeroY} stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="2 3" />
             <text className="chart-axis-text" x={padL - 8} y={zeroY + 3} textAnchor="end" fill="var(--ink-2)">0</text>
-            <text className="chart-axis-text" x={padL - 8} y={y(vMax) + 3} textAnchor="end" fill="var(--teal)">{_gpMoney(vMax)}</text>
-            <text className="chart-axis-text" x={padL - 8} y={y(vMin) + 3} textAnchor="end" fill="var(--red)">{_gpMoney(vMin)}</text>
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <text className="chart-axis-text" x={padL - 8} y={y(vMax) + 3} textAnchor="end" fill="var(--chart-profit)">{_gpMoney(vMax)}</text>
+            <text className="chart-axis-text" x={padL - 8} y={y(vMin) + 3} textAnchor="end" fill="var(--chart-loss)">{_gpMoney(vMin)}</text>
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {slots.map((s, i) => {
               const pTop = y(s.profit || 0), lBot = y(s.loss || 0);
               return (
                 <g key={`h${i}`} onMouseEnter={() => setHover(i)}>
-                  {(s.profit || 0) > 0 && <rect x={xC(i) - barW / 2} y={pTop} width={barW} height={Math.max(0.5, zeroY - pTop)} fill="var(--teal)" opacity={hover === i ? 1 : 0.7} />}
-                  {(s.loss || 0) < 0 && <rect x={xC(i) - barW / 2} y={zeroY} width={barW} height={Math.max(0.5, lBot - zeroY)} fill="var(--red)" opacity={hover === i ? 1 : 0.7} />}
+                  {(s.profit || 0) > 0 && <rect x={xC(i) - barW / 2} y={pTop} width={barW} height={Math.max(0.5, zeroY - pTop)} fill="var(--chart-profit)" opacity={hover === i ? 1 : 0.7} />}
+                  {(s.loss || 0) < 0 && <rect x={xC(i) - barW / 2} y={zeroY} width={barW} height={Math.max(0.5, lBot - zeroY)} fill="var(--chart-loss)" opacity={hover === i ? 1 : 0.7} />}
                   <rect x={xC(i) - slotW / 2} y={padT} width={slotW} height={innerH} fill="transparent" />
                 </g>
               );
@@ -315,17 +315,17 @@ function _BtWeekdayPnlChartContent({ data }) {
           <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
             <line x1={padL} x2={W - padR} y1={zeroY} y2={zeroY} stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="2 3" />
             <text className="chart-axis-text" x={padL - 8} y={zeroY + 3} textAnchor="end" fill="var(--ink-2)">0</text>
-            <text className="chart-axis-text" x={padL - 8} y={y(vMax) + 3} textAnchor="end" fill="var(--teal)">{_gpMoney(vMax)}</text>
-            <text className="chart-axis-text" x={padL - 8} y={y(vMin) + 3} textAnchor="end" fill="var(--red)">{_gpMoney(vMin)}</text>
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <text className="chart-axis-text" x={padL - 8} y={y(vMax) + 3} textAnchor="end" fill="var(--chart-profit)">{_gpMoney(vMax)}</text>
+            <text className="chart-axis-text" x={padL - 8} y={y(vMin) + 3} textAnchor="end" fill="var(--chart-loss)">{_gpMoney(vMin)}</text>
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {days.map((d, i) => {
               const pTop = y(d.profit || 0), lBot = y(d.loss || 0);
               const netY = (d.net || 0) >= 0 ? pTop - 4 : lBot + 12;
               return (
                 <g key={`w${i}`}>
-                  {(d.profit || 0) > 0 && <rect x={xC(i) - barW / 2} y={pTop} width={barW} height={Math.max(0.5, zeroY - pTop)} fill="var(--teal)" opacity="0.78" />}
-                  {(d.loss || 0) < 0 && <rect x={xC(i) - barW / 2} y={zeroY} width={barW} height={Math.max(0.5, lBot - zeroY)} fill="var(--red)" opacity="0.78" />}
+                  {(d.profit || 0) > 0 && <rect x={xC(i) - barW / 2} y={pTop} width={barW} height={Math.max(0.5, zeroY - pTop)} fill="var(--chart-profit)" opacity="0.78" />}
+                  {(d.loss || 0) < 0 && <rect x={xC(i) - barW / 2} y={zeroY} width={barW} height={Math.max(0.5, lBot - zeroY)} fill="var(--chart-loss)" opacity="0.78" />}
                   {d.trades > 0 && (
                     <text className="chart-axis-text" x={xC(i)} y={netY} textAnchor="middle"
                           fill={(d.net || 0) >= 0 ? "var(--teal)" : "var(--red)"} style={{ fontSize: 9.5 }}>
@@ -391,12 +391,12 @@ function _BtHoldingCurveChartContent({ data }) {
           {n === 0 && <_BtChartEmpty message="매수금액 정보가 있는 거래가 누적되면 보유금액 곡선이 표시됩니다" />}
           <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
                onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
-            <text className="chart-axis-text" x={padL - 8} y={y(hMax) + 3} textAnchor="end" fill="var(--teal)">{_gpMoney(hMax)}</text>
+            <text className="chart-axis-text" x={padL - 8} y={y(hMax) + 3} textAnchor="end" fill="var(--chart-profit)">{_gpMoney(hMax)}</text>
             <text className="chart-axis-text" x={padL - 8} y={y(0) + 3} textAnchor="end" fill="var(--ink-2)">0</text>
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {n > 1 && <path d={areaPath} fill="rgba(76,214,160,0.14)" stroke="none" />}
-            {n > 1 && <path d={path} fill="none" stroke="var(--teal)" strokeWidth="2" />}
+            {n > 1 && <path d={path} fill="none" stroke="var(--chart-profit)" strokeWidth="2" />}
             {[0, Math.floor(n / 2), n - 1].filter((v, idx, a) => n > 0 && a.indexOf(v) === idx).map((i) => (
               <text key={`hcx${i}`} className="chart-axis-text" x={x(i)} y={H - 9} textAnchor="middle">
                 {series[i] ? _tLabel(series[i].time) : ""}
@@ -500,10 +500,10 @@ function _BtTradeRollingChartContent({ data }) {
                onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
             <line x1={padL} x2={W - padR} y1={zeroY} y2={zeroY} stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="2 3" />
             <text className="chart-axis-text" x={padL - 8} y={zeroY + 3} textAnchor="end" fill="var(--ink-2)">0</text>
-            <text className="chart-axis-text" x={padL - 8} y={y(vMax) + 3} textAnchor="end" fill="var(--teal)">{_gpMoney(vMax)}</text>
-            <text className="chart-axis-text" x={padL - 8} y={y(vMin) + 3} textAnchor="end" fill="var(--red)">{_gpMoney(vMin)}</text>
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <text className="chart-axis-text" x={padL - 8} y={y(vMax) + 3} textAnchor="end" fill="var(--chart-profit)">{_gpMoney(vMax)}</text>
+            <text className="chart-axis-text" x={padL - 8} y={y(vMin) + 3} textAnchor="end" fill="var(--chart-loss)">{_gpMoney(vMin)}</text>
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {series.map((s, i) => {
               const v = s.pnl || 0; const y0 = zeroY, y1 = y(v);
               return <rect key={`tr${i}`} x={xC(i) - barW / 2} y={Math.min(y0, y1)} width={barW} height={Math.max(0.5, Math.abs(y1 - y0))}

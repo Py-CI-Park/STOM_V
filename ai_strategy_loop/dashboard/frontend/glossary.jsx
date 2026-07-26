@@ -55,7 +55,7 @@ function ResearchGlossaryPanel() {
   return (
     <div className="panel research-glossary-panel" data-testid="research-glossary-panel">
       <div className="panel-hd">
-        <div className="panel-hd-title"><span className="dot"></span>Metric Glossary</div>
+        <div className="panel-hd-title"><span className="dot"></span>지표 사전 <small className="v4s-en">Metric Glossary</small></div>
         <button className="btn tiny" onClick={() => setExpanded(!expanded)}>
           {expanded ? "less" : "all"}
         </button>

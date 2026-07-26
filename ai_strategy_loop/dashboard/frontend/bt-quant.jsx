@@ -92,17 +92,17 @@ function _BtqScatter({ pts, xLab, yLab, ols, colorFn }) {
          role="img" aria-label={`${xLab} 대 ${yLab} 산점도`}>
       <line x1={padL} y1={padT + ih} x2={padL + iw} y2={padT + ih} stroke="var(--line)" />
       <line x1={padL} y1={padT} x2={padL} y2={padT + ih} stroke="var(--line)" />
-      {yMin < 0 && yMax > 0 && <line x1={padL} y1={sy(0)} x2={padL + iw} y2={sy(0)} stroke="var(--line-2)" strokeDasharray="3 3" />}
+      {yMin < 0 && yMax > 0 && <line x1={padL} y1={sy(0)} x2={padL + iw} y2={sy(0)} stroke="var(--chart-grid)" strokeDasharray="3 3" />}
       {pts.map((p, i) => (
         <circle key={i} cx={sx(p.x)} cy={sy(p.y)} r={2.6}
                 fill={colorFn ? colorFn(p) : (p.y >= 0 ? "var(--teal)" : "var(--red)")} fillOpacity={0.65} />
       ))}
       {ols && (
         <line x1={sx(xMin)} y1={sy(ols.a + ols.b * xMin)} x2={sx(xMax)} y2={sy(ols.a + ols.b * xMax)}
-              stroke="var(--violet)" strokeWidth={2} strokeDasharray="6 3" />
+              stroke="var(--chart-accent)" strokeWidth={2} strokeDasharray="6 3" />
       )}
-      <text x={padL + iw / 2} y={H - 6} textAnchor="middle" fontSize="10.5" fill="var(--ink-3)">{xLab}</text>
-      <text x={12} y={padT + ih / 2} textAnchor="middle" fontSize="10.5" fill="var(--ink-3)"
+      <text x={padL + iw / 2} y={H - 6} textAnchor="middle" fontSize="10.5" fill="var(--chart-axis)">{xLab}</text>
+      <text x={12} y={padT + ih / 2} textAnchor="middle" fontSize="10.5" fill="var(--chart-axis)"
             transform={`rotate(-90 12 ${padT + ih / 2})`}>{yLab}</text>
     </svg>
   );

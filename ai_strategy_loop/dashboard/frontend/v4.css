@@ -1701,6 +1701,22 @@
   --bt-analysis-card-height: 520px;
   --bt-analysis-plot-height: 300px;
   --dashboard-utility-card-height: 460px;
+  /* v5.11.3 — 차트 색은 '무슨 색'이 아니라 '무슨 뜻'으로 고른다. 역할 토큰을 한 곳에 둬야
+     새 차트가 추가돼도 같은 규칙으로 읽힌다(수익=teal, 손실=red, 보조선=violet). */
+  --chart-profit: var(--teal);
+  --chart-loss: var(--red);
+  --chart-accent: var(--violet);
+  --chart-neutral: var(--blue);
+  --chart-axis: var(--ink-3);
+  --chart-grid: var(--line-2);
+  --chart-axis-font-size: 10.5px;
+}
+/* 축·눈금 글자는 카드마다 다른 크기로 들어와 있었다. 매트릭스 안에서는 한 값으로 고정한다.
+   (CSS 는 SVG presentation attribute 를 이긴다 — 컴포넌트 수정 없이 통일된다.) */
+.bt-analysis-matrix svg text,
+.ri-chart svg text {
+  font-size: var(--chart-axis-font-size);
+  font-family: var(--mono);
 }
 .bt-analysis-matrix {
   display: grid;
@@ -1749,6 +1765,9 @@
 .bt-monthly-calendar-scroll { min-height: 310px; padding: 8px 0; }
 .bt-monthly-calendar-table { width: 100%; min-width: 830px; }
 .bt-quant-card .panel-bd { overflow: auto; }
+
+/* v5.11.3 — 우리말 제목 옆의 원어 보조 표기(설정·용어 공통). */
+.panel-hd-title .v4s-en, .v4s-en { margin-left: 6px; color: var(--ink-3); font: 9.5px var(--mono); font-weight: 400; letter-spacing: 0; text-transform: none; }
 
 /* 연구 개선 추이 KPI — 숫자 4개로 "전진 중인가"를 먼저 답한다. */
 .ri-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-bottom: 10px; }

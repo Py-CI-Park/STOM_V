@@ -338,8 +338,8 @@ function BtCompareView({ cmp, onClose }) {
             {/* 수익곡선 오버레이 */}
             <div className="chart-wrap" style={{ marginBottom: 14 }}>
               <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
-                <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-                <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+                <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+                <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
                 <text className="chart-axis-text" x={padL - 8} y={y(yMax) + 3} textAnchor="end">{norm ? yMax.toFixed(0) : _btMoneyTick(yMax)}</text>
                 <text className="chart-axis-text" x={padL - 8} y={y(yMin) + 3} textAnchor="end">{norm ? yMin.toFixed(0) : _btMoneyTick(yMin)}</text>
                 {/* y 중간 눈금(가로 점선 + 라벨) — max·min 과 겹치면 생략. */}
@@ -347,12 +347,12 @@ function BtCompareView({ cmp, onClose }) {
                   (Math.abs(tv - yMax) < 1e-9 || Math.abs(tv - yMin) < 1e-9) ? null : (
                     <g key={`cmpy${i}`}>
                       <line x1={padL} x2={W - padR} y1={y(tv)} y2={y(tv)} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-                      <text className="chart-axis-text" x={padL - 8} y={y(tv) + 3} textAnchor="end" fill="var(--ink-3)">{norm ? tv.toFixed(0) : _btMoneyTick(tv)}</text>
+                      <text className="chart-axis-text" x={padL - 8} y={y(tv) + 3} textAnchor="end" fill="var(--chart-axis)">{norm ? tv.toFixed(0) : _btMoneyTick(tv)}</text>
                     </g>
                   )
                 ))}
-                {sA.length > 1 && <path d={pathOf(sA)} fill="none" stroke="var(--teal)" strokeWidth="2" />}
-                {sB.length > 1 && <path d={pathOf(sB)} fill="none" stroke="var(--violet)" strokeWidth="2" strokeDasharray="5 4" />}
+                {sA.length > 1 && <path d={pathOf(sA)} fill="none" stroke="var(--chart-profit)" strokeWidth="2" />}
+                {sB.length > 1 && <path d={pathOf(sB)} fill="none" stroke="var(--chart-accent)" strokeWidth="2" strokeDasharray="5 4" />}
                 {allV.length === 0 && null}
               </svg>
               {allV.length === 0 && <_BtChartEmpty message="비교할 수익곡선이 없습니다" />}

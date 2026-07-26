@@ -248,14 +248,14 @@ function _BtEquityChartContent({ equity, onBrush, brushActive, onBrushClear }) {
                   stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="2 3" />
             <text className="chart-axis-text" x={padL - 8} y={zeroY + 3} textAnchor="end" fill="var(--ink-2)">0</text>
             {/* 좌축(일별손익 max/min) */}
-            <text className="chart-axis-text" x={padL - 8} y={yPnl(pnlMax) + 3} textAnchor="end" fill="var(--teal)">{_btMoneyTick(pnlMax)}</text>
-            <text className="chart-axis-text" x={padL - 8} y={yPnl(pnlMin) + 3} textAnchor="end" fill="var(--red)">{_btMoneyTick(pnlMin)}</text>
+            <text className="chart-axis-text" x={padL - 8} y={yPnl(pnlMax) + 3} textAnchor="end" fill="var(--chart-profit)">{_btMoneyTick(pnlMax)}</text>
+            <text className="chart-axis-text" x={padL - 8} y={yPnl(pnlMin) + 3} textAnchor="end" fill="var(--chart-loss)">{_btMoneyTick(pnlMin)}</text>
             {/* 좌축 중간 눈금(가로 점선 + 라벨) — 스케일 가독성. 0·max·min 과 겹치면 생략. */}
             {_btAxisTicks(pnlMin, pnlMax, 5).map((tv, i) => (
               (Math.abs(tv) < 1e-9 || Math.abs(tv - pnlMax) < 1e-9 || Math.abs(tv - pnlMin) < 1e-9) ? null : (
                 <g key={`eyl${i}`}>
                   <line x1={padL} x2={W - padR} y1={yPnl(tv)} y2={yPnl(tv)} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-                  <text className="chart-axis-text" x={padL - 8} y={yPnl(tv) + 3} textAnchor="end" fill="var(--ink-3)">{_btMoneyTick(tv)}</text>
+                  <text className="chart-axis-text" x={padL - 8} y={yPnl(tv) + 3} textAnchor="end" fill="var(--chart-axis)">{_btMoneyTick(tv)}</text>
                 </g>
               )
             ))}
@@ -265,12 +265,12 @@ function _BtEquityChartContent({ equity, onBrush, brushActive, onBrushClear }) {
             {/* 우축 중간 눈금 라벨(누적) — max·min 과 겹치면 생략. */}
             {_btAxisTicks(cumMin, cumMax, 5).map((tv, i) => (
               (Math.abs(tv - cumMax) < 1e-9 || Math.abs(tv - cumMin) < 1e-9) ? null : (
-                <text key={`eyr${i}`} className="chart-axis-text" x={W - padR + 6} y={yCum(tv) + 3} textAnchor="start" fill="var(--ink-3)">{_btMoneyTick(tv)}</text>
+                <text key={`eyr${i}`} className="chart-axis-text" x={W - padR + 6} y={yCum(tv) + 3} textAnchor="start" fill="var(--chart-axis)">{_btMoneyTick(tv)}</text>
               )
             ))}
             {/* Frame */}
-            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {/* 브러시 선택 밴드 */}
             {brushBand && brushBand.w > 0 && (
               <rect className="bt-brush-band" x={brushBand.x} y={padT} width={brushBand.w} height={innerH} />
@@ -379,8 +379,8 @@ function _BtMaeMfeScatterContent({ points }) {
             <line x1={x0} x2={x0} y1={padT} y2={padT + innerH} stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="3 3" />
             <line x1={padL} x2={W - padR} y1={y0} y2={y0} stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="3 3" />
             {/* Frame */}
-            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {/* 축 라벨 */}
             <text className="chart-axis-text" x={padL} y={H - 10} textAnchor="start">{xMin.toFixed(1)}%</text>
             <text className="chart-axis-text" x={W - padR} y={H - 10} textAnchor="end">{xMax.toFixed(1)}%</text>
@@ -505,9 +505,9 @@ function _BtUnderwaterChartContent({ underwater }) {
               </linearGradient>
             </defs>
             {/* 0 기준선(상단) */}
-            <line x1={padL} x2={W - padR} y1={padT} y2={padT} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT} y2={padT} stroke="var(--chart-grid)" strokeWidth="1" />
             <text className="chart-axis-text" x={padL - 8} y={padT + 3} textAnchor="end" fill="var(--ink-2)">0</text>
-            <text className="chart-axis-text" x={padL - 8} y={padT + innerH + 3} textAnchor="end" fill="var(--red)">
+            <text className="chart-axis-text" x={padL - 8} y={padT + innerH + 3} textAnchor="end" fill="var(--chart-loss)">
               −{_btMoneyTick(ddMax)}
             </text>
             {/* y 중간 눈금(반납액) — 가로 점선 + 라벨. 0·ddMax 와 겹치면 생략. */}
@@ -515,17 +515,17 @@ function _BtUnderwaterChartContent({ underwater }) {
               (Math.abs(tv) < 1e-9 || Math.abs(tv - ddMax) < 1e-9) ? null : (
                 <g key={`uyl${i}`}>
                   <line x1={padL} x2={W - padR} y1={y(tv)} y2={y(tv)} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-                  <text className="chart-axis-text" x={padL - 8} y={y(tv) + 3} textAnchor="end" fill="var(--ink-3)">−{_btMoneyTick(tv)}</text>
+                  <text className="chart-axis-text" x={padL - 8} y={y(tv) + 3} textAnchor="end" fill="var(--chart-axis)">−{_btMoneyTick(tv)}</text>
                 </g>
               )
             ))}
             {/* Frame */}
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {/* 언더워터 영역 + 라인 */}
             {n > 1 && (
               <>
                 <path d={areaPath} fill="url(#bt-uw-grad)" />
-                <path d={linePath} fill="none" stroke="var(--red)" strokeWidth="1.4" opacity="0.85" />
+                <path d={linePath} fill="none" stroke="var(--chart-loss)" strokeWidth="1.4" opacity="0.85" />
               </>
             )}
             {/* X 라벨 — 연도 경계/첫 틱은 YYYY-MM-DD, 그 외 MM/DD. */}
@@ -634,18 +634,18 @@ function _BtRollingChartContent({ rolling }) {
             <line x1={padL} x2={W - padR} y1={yWin(50)} y2={yWin(50)} stroke="rgba(255,255,255,0.18)" strokeWidth="1" strokeDasharray="2 3" />
             <text className="chart-axis-text" x={padL - 8} y={yWin(50) + 3} textAnchor="end" fill="var(--ink-2)">50%</text>
             {/* 좌축 0/100 */}
-            <text className="chart-axis-text" x={padL - 8} y={yWin(100) + 3} textAnchor="end" fill="var(--teal)">100%</text>
+            <text className="chart-axis-text" x={padL - 8} y={yWin(100) + 3} textAnchor="end" fill="var(--chart-profit)">100%</text>
             <text className="chart-axis-text" x={padL - 8} y={yWin(0) + 3} textAnchor="end" fill="var(--ink-2)">0%</text>
             {/* 우축 payoff max */}
             <text className="chart-axis-text" x={W - padR + 6} y={yPay(payoffMax) + 3} textAnchor="start" fill="var(--amber)">{payoffMax.toFixed(1)}×</text>
-            <text className="chart-axis-text" x={W - padR + 6} y={yPay(1) + 3} textAnchor="start" fill="var(--ink-3)">1×</text>
+            <text className="chart-axis-text" x={W - padR + 6} y={yPay(1) + 3} textAnchor="start" fill="var(--chart-axis)">1×</text>
             {/* payoff=1 손익분기선 */}
             <line x1={padL} x2={W - padR} y1={yPay(1)} y2={yPay(1)} stroke="rgba(240,179,90,0.2)" strokeWidth="1" strokeDasharray="4 4" />
             {/* Frame */}
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {/* 라인 */}
-            {n > 1 && <path d={winPath} fill="none" stroke="var(--teal)" strokeWidth="2" />}
+            {n > 1 && <path d={winPath} fill="none" stroke="var(--chart-profit)" strokeWidth="2" />}
             {n > 1 && <path d={payPath} fill="none" stroke="var(--amber)" strokeWidth="1.6" strokeDasharray="5 3" opacity="0.9" />}
             {/* X 라벨(거래 인덱스) */}
             {xTickIdx.map((i) => (
@@ -778,12 +778,12 @@ function _BtCumulativeTradesChartContent({ data }) {
             {/* 우축 중간 눈금(누적 손익) — max·min·0 과 겹치면 생략. */}
             {_btAxisTicks(pMin, pMax, 5).map((tv, i) => (
               (Math.abs(tv - pMax) < 1e-9 || Math.abs(tv - pMin) < 1e-9 || Math.abs(tv) < 1e-9) ? null : (
-                <text key={`cyr${i}`} className="chart-axis-text" x={W - padR + 6} y={yProfit(tv) + 3} textAnchor="start" fill="var(--ink-3)">{_btMoneyTick(tv)}</text>
+                <text key={`cyr${i}`} className="chart-axis-text" x={W - padR + 6} y={yProfit(tv) + 3} textAnchor="start" fill="var(--chart-axis)">{_btMoneyTick(tv)}</text>
               )
             ))}
             {/* Frame */}
-            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
+            <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
+            <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             {/* 누적 거래수 면적 + 누적 손익 라인 */}
             {n > 1 && <path d={tradesArea} fill="url(#bt-ct-grad)" stroke="var(--blue)" strokeWidth="1.2" opacity="0.85" />}
             {n > 1 && <path d={profitPath} fill="none" stroke="var(--amber)" strokeWidth="2" />}
