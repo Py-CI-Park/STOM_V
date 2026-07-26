@@ -126,7 +126,8 @@ def _full_payload():
                  "generated_at": "2026-06-12 00:00:00", "source": "job:t", "trade_count": 2},
         "metrics": {"trade_count": 2, "win_rate": 50.0, "total_profit_pct": 5.0,
                     "total_profit_krw": 1000, "mdd_pct": 3.0, "cagr": 10.0,
-                    "payoff_ratio": 1.5, "profit_factor": 2.0},
+                    "annual_return_pct": 10.0, "daily_avg_trades": 1.25,
+                    "max_hold_count": 3, "payoff_ratio": 1.5, "profit_factor": 2.0},
         "analysis": {
             "summary": {"trade_count": 2},
             "equity": {"cumulative": [{"date": 20230101, "cum_profit": 500},
@@ -162,6 +163,16 @@ def test_render_report_has_all_sections():
     assert "거래수" in html and "payoff" in html
     # SVG 인라인.
     assert "<svg" in html
+
+
+def test_render_report_summary_includes_operating_frequency_and_capacity_metrics():
+    html = R.render_report(_full_payload())
+
+    assert "결과 Summary" in html
+    assert "연평균 수익률" in html
+    assert "일평균 거래" in html
+    assert "하루 최대 보유" in html
+    assert "1.25" in html
 
 
 def test_render_report_no_external_urls():

@@ -7,6 +7,11 @@
 // Track Z — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { useState_bt, useEffect_bt, useCallback_bt, useRef_bt, useMemo_bt, _btFetchJson, _btPostJson, _btWsUrl, _BT_JOB_BADGE, _BT_MODE_RUN_LABEL, _BT_MODE_TIP, _BT_START_EG, _BT_END_EG, _btElapsed, _btSweepRowCount, _btSweepValueCount } from "./bt-tab-utils.jsx";
 
+function _btDefaultEngineCount() {
+  const logicalCpus = Number(globalThis.navigator && globalThis.navigator.hardwareConcurrency) || 4;
+  return Math.max(1, Math.min(16, Math.floor(logicalCpus * 0.25)));
+}
+
 // ===========================================================================
 // 2b. 스윕 파라미터 빌더 — [변수명][min][max][step] 행 추가/삭제 → sweep 스펙으로 직렬화.
 //   백엔드 /bt/run 이 sweep_spec(행 배열)을 받아 게이트된 _database/ 임시 JSON 으로 쓰고
@@ -87,7 +92,7 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
   const [start, setStart] = useState_bt("");
   const [end, setEnd] = useState_bt("");
   const [timeframe, setTimeframe] = useState_bt("min");
-  const [engines, setEngines] = useState_bt(4);
+  const [engines, setEngines] = useState_bt(_btDefaultEngineCount);
   // GUI 패리티(F3): 데이터 분류 모드(단일 백테 전용 — optimize/wfo/sweep CLI 는 --divid-mode 미수용).
   //   백엔드 /bt/run 이 이미 divid_mode·one_code 를 파싱(backtest_api.py). 옵션은 cli/subcommands.py 정본.
   const [dividMode, setDividMode] = useState_bt("종목코드별 분류");
@@ -218,7 +223,7 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
     const payload = {
       buy: (buy || "").trim(), sell: (sell || "").trim(),
       start: parseInt(start, 10) || 0, end: parseInt(end, 10) || 0,
-      timeframe, engines: parseInt(engines, 10) || 4,
+      timeframe, engines: parseInt(engines, 10) || _btDefaultEngineCount(),
       mode,
     };
     if (!payload.buy || !payload.sell) { setRunErr("매수/매도 조건식을 선택하세요."); return; }
@@ -404,7 +409,7 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
             </select>
           </div>
           <div className="field" style={{ minWidth: 76 }}>
-            <label>엔진 수</label>
+            <label>엔진 수 (CPU 25%)</label>
             <input className="input" type="number" min="1" max="16" value={engines} aria-label="백테스트 엔진 수"
                    onChange={e => setEngines(e.target.value)} disabled={isDemo} />
           </div>
@@ -616,6 +621,15 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
 // 3b. 결과 라이브러리 — 잡 이력 + 태그·메모·즐겨찾기·검색·필터(결과 체계 관리).
 //   완료 잡을 클릭하면 결과를 로드(onResult). 메타는 POST /bt/job/meta 로 영속.
 // ===========================================================================
+function _btJobOpenable(job) {
+  if (!job) return false;
+  const actions = Array.isArray(job.open_actions) ? job.open_actions : [];
+  const hasActionTaxonomy = actions.length > 0 || job.openable != null
+    || job.status_kind || job.artifact_state;
+  return actions.includes("open_result") || job.openable === true
+    || (!hasActionTaxonomy && (job.status === "success" || job.status === "no_trades"));
+}
+
 function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onReload,
                            compareA, onSetCompareA, onCompareB }) {
   const [query, setQuery] = useState_bt("");
@@ -625,6 +639,7 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
   const [tagDraft, setTagDraft] = useState_bt("");
   const [memoDraft, setMemoDraft] = useState_bt("");
   const [visibleLimit, setVisibleLimit] = useState_bt(60);
+  const [showTerminalArchive, setShowTerminalArchive] = useState_bt(false);
   useEffect_bt(() => { setVisibleLimit(60); }, [query, favOnly, tagFilter]);
 
   const openReport = (jobId) => {
@@ -692,15 +707,18 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
     // 즐겨찾기 우선 정렬(이후 원래 최신순 유지).
     return out.slice().sort((a, b) => (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0));
   }, [jobs, query, favOnly, tagFilter]);
+  const analysisReadyCount = filtered.filter(_btJobOpenable).length;
+  const terminalArchiveCount = filtered.length - analysisReadyCount;
+  const displayJobs = showTerminalArchive ? filtered : filtered.filter(_btJobOpenable);
 
   return (
     <div className="panel">
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--amber)" }}></span>
-          결과 라이브러리
+          잡 결과 · 실행 기록
           <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginLeft: 6 }}>
-            {filtered.length}/{(jobs || []).length}
+            분석 가능 {analysisReadyCount} · 전체 {filtered.length}/{(jobs || []).length}
           </span>
         </div>
         <button className="btn ghost sm" onClick={onReload} disabled={isDemo}>↻</button>
@@ -731,19 +749,29 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
                   {allTags.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               )}
+              {terminalArchiveCount > 0 && (
+                <button className={"btn ghost sm" + (showTerminalArchive ? " active" : "")}
+                        onClick={() => setShowTerminalArchive(show => !show)}>
+                  {showTerminalArchive ? "종료 기록 숨기기" : `취소·실패 기록 ${terminalArchiveCount}건`}
+                </button>
+              )}
             </div>
             {/* 목록 */}
-            {filtered.length === 0 ? (
-              <div className="research-empty">{(jobs || []).length === 0 ? "실행 이력이 없습니다" : "조건에 맞는 결과 없음"}</div>
+            {displayJobs.length === 0 ? (
+              <div className="research-empty">
+                {(jobs || []).length === 0
+                  ? "실행 이력이 없습니다"
+                  : filtered.length === 0
+                    ? "조건에 맞는 실행 기록이 없습니다"
+                    : "분석 산출물이 남아 있는 잡 결과가 없습니다. 위의 진화 세대 결과를 선택하거나 종료 기록에서 같은 조건으로 재실행하세요."}
+              </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 360, overflowY: "auto" }}>
-                {filtered.slice(0, visibleLimit).map(j => {
+                {displayJobs.slice(0, visibleLimit).map(j => {
                   const statusKind = j.status_kind || j.status;
                   const b = _BT_JOB_BADGE[statusKind] || _BT_JOB_BADGE[j.status] || _BT_JOB_BADGE.pending;
                   const actions = Array.isArray(j.open_actions) ? j.open_actions : [];
-                  const hasActionTaxonomy = actions.length > 0 || j.openable != null || j.status_kind || j.artifact_state;
-                  const clickable = actions.includes("open_result") || j.openable === true
-                    || (!hasActionTaxonomy && (j.status === "success" || j.status === "no_trades"));
+                  const clickable = _btJobOpenable(j);
                   const active = j.job_id === selectedJobId;
                   const canCompare = clickable && compareA && onCompareB && j.job_id !== compareA;
                   const isEditing = editing === j.job_id;
@@ -829,9 +857,9 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
                     </div>
                   );
                 })}
-                {filtered.length > visibleLimit && (
-                  <button className="btn ghost sm" onClick={() => setVisibleLimit(limit => Math.min(limit + 60, filtered.length))}>
-                    더 보기 · {visibleLimit}/{filtered.length}
+                {displayJobs.length > visibleLimit && (
+                  <button className="btn ghost sm" onClick={() => setVisibleLimit(limit => Math.min(limit + 60, displayJobs.length))}>
+                    더 보기 · {visibleLimit}/{displayJobs.length}
                   </button>
                 )}
               </div>

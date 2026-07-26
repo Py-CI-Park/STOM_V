@@ -6,6 +6,7 @@
 // dual-safe ESM. KEEP hooks alias on ONE physical line.
 const { useState: useState_rp7, useEffect: useEffect_rp7, useRef: useRef_rp7 } = React;
 import { sortReportsNewest } from "./report-order.mjs";
+import { ReportSummaryBoard } from "./report-summary-board.jsx";
 
 function _fmtReportBytes(n) {
   if (!Number.isFinite(n)) return "";
@@ -84,6 +85,7 @@ function V4Reports({ baseUrl }) {
   const [reportLimit, setReportLimit] = useState_rp7(50);
   const [frameState, setFrameState] = useState_rp7("idle");
   const [tocOpen, setTocOpen] = useState_rp7(false);
+  const [reportView, setReportView] = useState_rp7("summary");
 
   useEffect_rp7(() => {
     if (!baseUrl) { setList([]); return; }
@@ -207,7 +209,7 @@ function V4Reports({ baseUrl }) {
     if (!q) return true;
     return ((d.title || "") + " " + (d.id || "") + " " + (d.category || "")).toLowerCase().includes(q);
   });
-  const selectReport = (path) => { setSel(path); setAnchor(""); };
+  const selectReport = (path) => { setSel(path); setAnchor(""); setReportView("summary"); };
   const selectWiki = (id) => {
     if (id !== wikiSelRef.current) {
       if (wikiDetailControllerRef.current) wikiDetailControllerRef.current.abort();
@@ -275,13 +277,10 @@ function V4Reports({ baseUrl }) {
           <div className="v4-reports-body">
             <aside className="v4-reports-list" aria-label="리포트 목록">
               <div className="v4-reports-filters" aria-label="리포트 필터">
-                <input className="toolbar-input" type="search" placeholder="제목 · 연구 · run 검색" value={reportQuery} onChange={e => setReportQuery(e.target.value)} aria-label="리포트 검색" />
-                <select value={reportType} onChange={e => setReportType(e.target.value)} aria-label="리포트 종류"><option value="all">모든 종류</option><option value="run">run</option><option value="step">step</option><option value="legacy">legacy</option><option value="unregistered">미등록</option></select>
-                <select value={reportStatus} onChange={e => setReportStatus(e.target.value)} aria-label="리포트 상태"><option value="all">모든 상태</option>{reportStatuses.map(value => <option key={value} value={value}>{value}</option>)}</select>
-                <select value={reportClassification} onChange={e => setReportClassification(e.target.value)} aria-label="리포트 분류"><option value="all">모든 분류</option>{reportClassifications.map(value => <option key={value} value={value}>{_reportClassificationLabel(value)}</option>)}</select>
-                <select value={reportIntegrity} onChange={e => setReportIntegrity(e.target.value)} aria-label="리포트 검증 상태"><option value="all">모든 검증 상태</option>{reportIntegrities.map(value => <option key={value} value={value}>{value}</option>)}</select>
-                <select value={reportTemplate} onChange={e => setReportTemplate(e.target.value)} aria-label="리포트 템플릿"><option value="all">모든 템플릿</option>{reportTemplates.map(value => <option key={value} value={value}>{value}</option>)}</select>
-                <select value={reportTheme} onChange={e => setReportTheme(e.target.value)} aria-label="리포트 테마"><option value="all">모든 테마</option>{reportThemes.map(value => <option key={value} value={value}>{value}</option>)}</select>
+                <div className="v4-report-filter-step wide"><b><i>1</i> 검색</b><input className="toolbar-input" type="search" placeholder="제목 · 연구 · run 검색" value={reportQuery} onChange={e => setReportQuery(e.target.value)} aria-label="리포트 검색" /></div>
+                <div className="v4-report-filter-step"><b><i>2</i> 문서 범위</b><select value={reportType} onChange={e => setReportType(e.target.value)} aria-label="리포트 종류"><option value="all">모든 종류</option><option value="run">run</option><option value="step">step</option><option value="legacy">legacy</option><option value="unregistered">미등록</option></select><select value={reportStatus} onChange={e => setReportStatus(e.target.value)} aria-label="리포트 상태"><option value="all">모든 상태</option>{reportStatuses.map(value => <option key={value} value={value}>{value}</option>)}</select></div>
+                <div className="v4-report-filter-step"><b><i>3</i> 정본·검증</b><select value={reportClassification} onChange={e => setReportClassification(e.target.value)} aria-label="리포트 분류"><option value="all">모든 분류</option>{reportClassifications.map(value => <option key={value} value={value}>{_reportClassificationLabel(value)}</option>)}</select><select value={reportIntegrity} onChange={e => setReportIntegrity(e.target.value)} aria-label="리포트 검증 상태"><option value="all">모든 검증 상태</option>{reportIntegrities.map(value => <option key={value} value={value}>{value}</option>)}</select></div>
+                <div className="v4-report-filter-step wide"><b><i>4</i> 표현 형식</b><select value={reportTemplate} onChange={e => setReportTemplate(e.target.value)} aria-label="리포트 템플릿"><option value="all">모든 템플릿</option>{reportTemplates.map(value => <option key={value} value={value}>{value}</option>)}</select><select value={reportTheme} onChange={e => setReportTheme(e.target.value)} aria-label="리포트 테마"><option value="all">모든 테마</option>{reportThemes.map(value => <option key={value} value={value}>{value}</option>)}</select></div>
               </div>
               {list === null && <div className="v4-reports-empty mono">불러오는 중…</div>}
               {list !== null && list.length === 0 && <div className="v4-reports-empty mono">리포트 없음{err ? " · " + err : ""}<div className="v4-reports-hint">docs/ 하위 *.html 생성 시 자동 표시</div></div>}
@@ -291,20 +290,37 @@ function V4Reports({ baseUrl }) {
               {catalogReports.length > visibleReports.length && <button className="btn ghost sm" onClick={() => setReportLimit(limit => Math.min(limit + 50, 250))}>더 보기 · {visibleReports.length}/{catalogReports.length}</button>}
             </aside>
             <div className="v4-reports-main">
-              {selectedReport && <section className="v4-report-provenance mono" aria-label="보고서 메타데이터와 출처">
-                <span className={"v4-report-badge " + _reportClassification(selectedReport)}>{_reportClassificationLabel(_reportClassification(selectedReport))}</span>
-                <span>분류 사유 {selectedReport.catalog_reason || "없음"}</span><span>검증 {selectedReport.integrity_status || "없음"}</span><span>오류 {selectedReport.integrity_error || "없음"}</span>
-                <span>type {_reportKind(selectedReport)}</span><span>status {selectedReport.status || "없음"}</span><span>trust {selectedReport.trust || "없음"}</span><span>research {selectedReport.research_id || "없음"}</span><span>run {selectedReport.run_id || "없음"}</span>
-                <span>generation {selectedReport.generation ?? "없음"}</span><span>cycle {selectedReport.cycle ?? "없음"}</span>
-                <span>publication {selectedReport.publication_status || "없음"}</span><span>generator {selectedReport.generator || "없음"}</span>
-                <span>template {selectedReport.template_id || "legacy/미제공"}</span><span>theme {selectedReport.theme || "문서 기본값"}</span><span>renderer {selectedReport.renderer_version || "legacy/미제공"}</span>
-                <span>generated {selectedReport.generated_at || "없음"}</span><span>bytes {_fmtReportBytes(selectedReport.bytes) || "없음"}</span>
-                <span>provenance {_fmtReportValue(selectedReport.provenance)}</span><span>profile {_fmtReportValue(selectedReport.profile)}</span><span>limitations {_fmtReportValue(selectedReport.limitations || selectedReport.limits)}</span>
-                <span>PDF {selectedReport.pdf_path ? "등록됨" : "없음"} {selectedReport.pdf_source_content_sha256 ? "· HTML 결속 검증" : ""}</span>
-                <span title={_reportHash(selectedReport)}>hash {_shortReportHash(_reportHash(selectedReport))}</span><span>source {_shortReportHash(selectedReport.source_sha256)}</span>
-                <span>재생성 {selectedReport.catalog_classification === "source_backed_regenerable" ? "원천 근거가 있어 재생성 가능" : selectedReport.catalog_classification === "legacy_static" ? "레거시 정적 파일은 자동 재생성·덮어쓰지 않음" : "정본 등록/검증 상태를 확인"}</span>
+              {selectedReport && <div className="v4-report-view-tabs" role="tablist" aria-label="선택 보고서 보기 방식">
+                <button role="tab" aria-selected={reportView === "summary"} className={"btn ghost sm" + (reportView === "summary" ? " active" : "")} onClick={() => setReportView("summary")}>결과 Summary</button>
+                <button role="tab" aria-selected={reportView === "html"} className={"btn ghost sm" + (reportView === "html" ? " active" : "")} onClick={() => setReportView("html")}>HTML 보고서</button>
+                <button role="tab" aria-selected={reportView === "provenance"} className={"btn ghost sm" + (reportView === "provenance" ? " active" : "")} onClick={() => setReportView("provenance")}>정본 · 출처</button>
+              </div>}
+              {reportView === "summary" && <ReportSummaryBoard report={selectedReport} />}
+              {reportView === "provenance" && selectedReport && <section className="v4-report-provenance mono" aria-label="보고서 메타데이터와 출처">
+                <header><span className={"v4-report-badge " + _reportClassification(selectedReport)}>{_reportClassificationLabel(_reportClassification(selectedReport))}</span><b>정본 등록 · 검증 · 생성 출처</b></header>
+                <div className="v4-report-details">
+                  <div><b>분류 사유</b><span>{selectedReport.catalog_reason || "없음"}</span></div>
+                  <div><b>검증</b><span>{selectedReport.integrity_status || "없음"}</span></div>
+                  <div><b>오류</b><span>{selectedReport.integrity_error || "없음"}</span></div>
+                  <div><b>종류 · 상태</b><span>{_reportKind(selectedReport)} · {selectedReport.status || "없음"}</span></div>
+                  <div><b>신뢰</b><span>{selectedReport.trust || "없음"}</span></div>
+                  <div><b>연구</b><span>{selectedReport.research_id || "없음"}</span></div>
+                  <div><b>run</b><span>{selectedReport.run_id || "없음"}</span></div>
+                  <div><b>세대 · cycle</b><span>{selectedReport.generation ?? "없음"} · {selectedReport.cycle ?? "없음"}</span></div>
+                  <div><b>발행</b><span>{selectedReport.publication_status || "없음"}</span></div>
+                  <div><b>생성기</b><span>{selectedReport.generator || "없음"}</span></div>
+                  <div><b>템플릿 · 테마</b><span>{selectedReport.template_id || "legacy/미제공"} · {selectedReport.theme || "문서 기본값"}</span></div>
+                  <div><b>렌더러</b><span>{selectedReport.renderer_version || "legacy/미제공"}</span></div>
+                  <div><b>생성 시각 · 크기</b><span>{selectedReport.generated_at || "없음"} · {_fmtReportBytes(selectedReport.bytes) || "없음"}</span></div>
+                  <div className="wide"><b>출처</b><span>{_fmtReportValue(selectedReport.provenance)}</span></div>
+                  <div className="wide"><b>프로필</b><span>{_fmtReportValue(selectedReport.profile)}</span></div>
+                  <div className="wide caution"><b>제약·주의</b><span>{_fmtReportValue(selectedReport.limitations || selectedReport.limits)}</span></div>
+                  <div><b>PDF</b><span>{selectedReport.pdf_path ? "등록됨" : "없음"} {selectedReport.pdf_source_content_sha256 ? "· HTML 결속 검증" : ""}</span></div>
+                  <div><b>hash · source</b><span title={_reportHash(selectedReport)}>{_shortReportHash(_reportHash(selectedReport))} · {_shortReportHash(selectedReport.source_sha256)}</span></div>
+                  <div className="wide"><b>재생성</b><span>{selectedReport.catalog_classification === "source_backed_regenerable" ? "원천 근거가 있어 재생성 가능" : selectedReport.catalog_classification === "legacy_static" ? "레거시 정적 파일은 자동 재생성·덮어쓰지 않음" : "정본 등록/검증 상태를 확인"}</span></div>
+                </div>
               </section>}
-              {selectedReport && selectedReport.registered === true && (selectedReport.decision || selectedReport.evidence) && (
+              {reportView === "provenance" && selectedReport && selectedReport.registered === true && (selectedReport.decision || selectedReport.evidence) && (
                 <section className="v4-report-insight" aria-label="보고서 결정과 근거 요약">
                   {selectedReport.decision && <div className="v4-report-decision"><b>결론·다음 행동</b><span>{_fmtReportValue(selectedReport.decision)}</span></div>}
                   {selectedReport.evidence && <div className="v4-report-evidence">
@@ -314,18 +330,18 @@ function V4Reports({ baseUrl }) {
                   </div>}
                 </section>
               )}
-              <div className="v4-reports-view">
+              {reportView === "html" && <div className="v4-reports-view">
                 {frameState === "loading" && <div className="v4-reports-empty mono" role="status">리포트 로드 중…</div>}
                 {frameState === "error" && <div className="v4-reports-empty mono" role="alert">리포트를 불러오지 못했습니다. 등록된 원본과 연결 상태를 확인하세요.</div>}
                 {viewUrl ? <iframe key={sel} className="v4-reports-frame" src={frameSrc} sandbox="" referrerPolicy="no-referrer" title={"리포트: " + sel} loading="lazy" onLoad={() => setFrameState("ready")} onError={() => setFrameState("error")} /> : <div className="v4-reports-empty mono">리포트를 선택하세요</div>}
-              </div>
+              </div>}
             </div>
-            <div className={"v4-reports-toc-slot" + (tocOpen ? " open" : "")}>
+            {reportView === "html" && <div className={"v4-reports-toc-slot" + (tocOpen ? " open" : "")}>
               <button className="btn ghost sm v4-reports-toc-toggle" onClick={() => setTocOpen(open => !open)} aria-expanded={tocOpen} aria-controls="v4-reports-toc">{tocOpen ? "목차 접기" : "목차 열기"}</button>
               {tocOpen && (toc && toc.length > 0 ? (
                 <nav id="v4-reports-toc" className="v4-reports-toc" aria-label="리포트 목차"><div className="v6-report-group mono">목차 · {toc.length}</div>{toc.map(t => <button key={t.id} className={"v4-toc-item lvl" + t.lvl + (anchor === t.id ? " active" : "")} onClick={() => setAnchor(t.id)} title={t.label}>{t.label}</button>)}</nav>
               ) : selectedReport && <aside id="v4-reports-toc" className="v4-reports-toc v4-reports-toc-empty" aria-label="리포트 목차 상태">{toc === null ? "목차 없음 · 레거시 리포트 메타데이터 미제공" : "목차 없음 · 리포트 메타데이터에 섹션 없음"}</aside>)}
-            </div>
+            </div>}
           </div>
         </div>
       ) : (

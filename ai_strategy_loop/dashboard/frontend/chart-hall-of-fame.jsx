@@ -6,6 +6,7 @@
 */
 import { LegendDot } from "./chart-primitives.jsx";
 import { HofInventoryGate } from "./hof-inventory.jsx";
+import { HofPerformanceOverview } from "./hof-performance-overview.jsx";
 
 // HallOfFamePanel · ReferenceGallery 가 쓰는 React hook 별칭(이동 시 각 모듈이 자체 선언).
 const { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq, useRef: useRef_eq } = React;
@@ -169,6 +170,7 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
           </div>
         ) : (
           <>
+            <HofPerformanceOverview humanRows={humanRows} catalogRows={catalogRows} />
             <div style={{ margin: "14px 0 8px", fontWeight: 700 }}>👤 인간 벤치마크 ({humanRows.length})</div>
             <div className="hof-scroll" tabIndex="0" aria-label="인간 벤치마크 표">
               <table className="data-table hof-table hof-human-table">

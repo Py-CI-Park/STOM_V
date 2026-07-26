@@ -21,6 +21,15 @@ function _simFetchJson(url, timeoutMs) {
     .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
 
+async function _simRefreshReplaySession(baseUrl) {
+  const response = await fetch(baseUrl + "/ui/chart-replay", {
+    cache: "no-store",
+    credentials: "same-origin",
+    signal: AbortSignal.timeout(6000),
+  });
+  if (!response.ok) throw new Error("HTTP " + response.status);
+}
+
 const _SIM_SPEEDS = [1, 5, 20, 60, 240, 600];
 // WS frame item → store bar 필드 매핑(증분 "bars" 와 seek "history" 스냅샷이 공유).
 const _simWsBar = (it, t) => ({
@@ -231,4 +240,4 @@ function _evalWatch(value, th) {
 }
 
 // Track Z — dual-safe ESM export. KEEP on ONE physical line.
-export { useState_sim, useEffect_sim, useCallback_sim, useRef_sim, useMemo_sim, _simFetchJson, _SIM_SPEEDS, _simWsBar, _SIM_MAX_CODES, _SIM_DEMO_SPEED, _SIM_ENGINE_MODES, _SIM_ENGINE_LS_KEY, _SIM_CHART_MODES, _SIM_SPLIT_LS_KEY, _SIM_ROWS_LS_KEY, _SIM_MAX_SPLIT_COLS, _SIM_IND_LS_KEY, _SIM_DEMO_LS_KEY, _simDemoSeen, _simMarkDemoSeen, _loadIndicators, _saveIndicators, _loadSplitCols, _saveSplitCols, _loadSplitRows, _saveSplitRows, _loadEngineMode, _saveEngineMode, _responsiveCols, _simRenderBudget, _simRenderBars, _wsUrl, _simFmtDate, _simTileColor, _SIM_VIEWBAR_LABEL, _SIM_ENGINE_ROWS, _flattenSignals, _simFmtNum, _SIM_WATCH_VARS, _SIM_WATCH_LS_KEY, _loadWatchThresholds, _saveWatchThresholds, _evalWatch };
+export { useState_sim, useEffect_sim, useCallback_sim, useRef_sim, useMemo_sim, _simFetchJson, _simRefreshReplaySession, _SIM_SPEEDS, _simWsBar, _SIM_MAX_CODES, _SIM_DEMO_SPEED, _SIM_ENGINE_MODES, _SIM_ENGINE_LS_KEY, _SIM_CHART_MODES, _SIM_SPLIT_LS_KEY, _SIM_ROWS_LS_KEY, _SIM_MAX_SPLIT_COLS, _SIM_IND_LS_KEY, _SIM_DEMO_LS_KEY, _simDemoSeen, _simMarkDemoSeen, _loadIndicators, _saveIndicators, _loadSplitCols, _saveSplitCols, _loadSplitRows, _saveSplitRows, _loadEngineMode, _saveEngineMode, _responsiveCols, _simRenderBudget, _simRenderBars, _wsUrl, _simFmtDate, _simTileColor, _SIM_VIEWBAR_LABEL, _SIM_ENGINE_ROWS, _flattenSignals, _simFmtNum, _SIM_WATCH_VARS, _SIM_WATCH_LS_KEY, _loadWatchThresholds, _saveWatchThresholds, _evalWatch };

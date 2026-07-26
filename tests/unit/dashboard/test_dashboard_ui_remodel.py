@@ -318,7 +318,7 @@ def test_g004_editor_legacy_tools_and_variable_influence_contracts() -> None:
     assert "editorFocus" in library
     assert "매수만 크게" in library
     assert "매도만 크게" in library
-    assert "editorMinHeight = large ? 560 : 320" in library
+    assert "editorMinHeight = large ? 720 : 500" in library
     assert "large={editorFocus === \"buy\"}" in library and "large={editorFocus === \"sell\"}" in library
     assert "display: showBuy ? \"flex\" : \"none\"" in library
     assert "조건식 목록 조회 실패" in library

@@ -481,8 +481,8 @@ function _BtMonthlyCalendarContent({ monthly }) {
             <_BtChartEmpty message="거래가 누적되면 월별 수익 캘린더가 표시됩니다" />
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ borderCollapse: "separate", borderSpacing: 3, fontFamily: "var(--mono)" }}>
+          <div className="bt-monthly-calendar-scroll" style={{ overflowX: "auto" }}>
+            <table className="bt-monthly-calendar-table" style={{ borderCollapse: "separate", borderSpacing: 5, fontFamily: "var(--mono)" }}>
               <thead>
                 <tr>
                   <th style={{ width: 44 }}></th>
@@ -505,16 +505,16 @@ function _BtMonthlyCalendarContent({ monthly }) {
                             onMouseLeave={() => setHover(null)}
                             title={c ? `${yr}년 ${month}월 · ${fmtMoney(c.profit_krw)} · ${c.trades}건 · ${fmtPct(c.win_rate)}` : ""}
                             style={{
-                              width: 48, height: 30, borderRadius: 4,
+                              width: 64, height: 44, borderRadius: 6,
                               background: cellColor(c),
                               border: hover === key ? "1px solid var(--ink-0)" : "1px solid var(--line-1)",
-                              textAlign: "center", fontSize: 9, lineHeight: 1.25,
+                              textAlign: "center", fontSize: 10.5, lineHeight: 1.3,
                               color: c ? "var(--ink-0)" : "var(--ink-3)",
                             }}>
                           {c ? (
                             <div>
-                              <div style={{ fontSize: 9.5 }}>{_btMoneyTick(c.profit_krw)}</div>
-                              <div style={{ fontSize: 8, color: "var(--ink-2)" }}>{c.trades}건</div>
+                              <div style={{ fontSize: 11 }}>{_btMoneyTick(c.profit_krw)}</div>
+                              <div style={{ fontSize: 9.5, color: "var(--ink-2)" }}>{c.trades}건</div>
                             </div>
                           ) : ""}
                         </td>

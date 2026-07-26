@@ -33,6 +33,7 @@ from ai_strategy_loop.fitness.measurement_frame import (
     frame_label,
     resolve_frame,
 )
+from ai_strategy_loop.dashboard.backtest_report_summary import render_metric_summary
 
 # SVG 캔버스 기본 치수(뷰박스 좌표계 — 반응형 width:100%).
 _SVG_W = 720
@@ -353,38 +354,7 @@ def _slot_label(slot: int) -> str:
 
 # --------------------------------------------------------------- table blocks
 def _metric_cards(metrics: Optional[Dict[str, Any]], summary: Optional[Dict[str, Any]]) -> str:
-    """핵심 메트릭 카드 그리드. CLI metrics 우선, 없으면 summary 로 폴백.
-
-    CLI metrics 키(trade_count/win_rate/total_profit_pct/total_profit_krw/mdd_pct/cagr/...)와
-    summary 키(payoff_ratio/profit_factor/...)를 합쳐 카드를 만든다(없으면 '—').
-    """
-    m = metrics or {}
-    s = summary or {}
-
-    def pick(*keys: str) -> Any:
-        for k in keys:
-            if k in m and m[k] is not None:
-                return m[k]
-            if k in s and s[k] is not None:
-                return s[k]
-        return None
-
-    cards = [
-        ("거래수", _num(pick("trade_count"))),
-        ("승률", _pct_plain(pick("win_rate"))),
-        ("총수익률", _pct(pick("total_profit_pct"))),
-        ("총수익금", _num(pick("total_profit_krw")) + "원"),
-        ("MDD", _pct_plain(pick("mdd_pct", "max_drawdown_pct"))),
-        ("CAGR", _pct(pick("cagr")) if pick("cagr") is not None else "—"),
-        ("payoff", _num(pick("payoff_ratio"), 2)),
-        ("profit factor", _num(pick("profit_factor"), 2)),
-    ]
-    items = "".join(
-        f'<div class="card"><div class="card-label">{_esc(lbl)}</div>'
-        f'<div class="card-value">{_esc(val)}</div></div>'
-        for lbl, val in cards
-    )
-    return f'<div class="cards">{items}</div>'
+    return render_metric_summary(metrics, summary)
 
 
 def _pct_plain(value: Any, digits: int = 2) -> str:

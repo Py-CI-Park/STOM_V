@@ -307,8 +307,54 @@ function EaScatterChart({ gens }) {
   );
 }
 
+// 3) 게이트 통과 누적률 — 세대별 통과 여부와 누적 비율을 함께 본다.
+function EaGateTrendChart({ gens }) {
+  const rows = gens.filter(g => g.gen_no >= 0);
+  if (!rows.length) return <div className="research-empty">게이트 이력이 없습니다.</div>;
+  let passed = 0;
+  const points = rows.map((row, index) => {
+    if (row.gate_passed) passed += 1;
+    return { ...row, ratio: passed / (index + 1) };
+  });
+  return (
+    <div className="ea-gate-trend" role="img" aria-label="세대별 게이트 통과와 누적 통과율">
+      {points.map(point => (
+        <div key={point.gen_no} className={"ea-gate-column" + (point.gate_passed ? " passed" : " failed")}
+             title={`g${point.gen_no} · ${point.gate_passed ? "통과" : "탈락"} · 누적 ${(point.ratio * 100).toFixed(1)}%`}>
+          <span style={{ height: Math.max(4, point.ratio * 100) + "%" }}></span>
+          <b>g{point.gen_no}</b>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// 4) 점수·위험 효율 — score / (1 + MDD/100), 연구 비교용 advisory 지표.
+function EaEfficiencyChart({ gens }) {
+  const points = gens.filter(g => g.gen_no >= 0 && typeof g.score === "number").map(g => ({
+    gen: g.gen_no,
+    value: g.score / (1 + Math.max(0, Number(g.mdd) || 0) / 100),
+  }));
+  if (!points.length) return <div className="research-empty">효율 지표가 없습니다.</div>;
+  const W = 720, H = 190, pad = 24;
+  const max = Math.max(0.001, ...points.map(p => p.value));
+  const x = index => pad + (points.length <= 1 ? 0 : index * (W - pad * 2) / (points.length - 1));
+  const y = value => H - pad - (value / max) * (H - pad * 2);
+  const path = points.map((point, index) => `${index ? "L" : "M"} ${x(index).toFixed(1)} ${y(point.value).toFixed(1)}`).join(" ");
+  return (
+    <div className="ea-efficiency-chart">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="세대별 점수 대비 MDD 효율 추이">
+        <line x1={pad} x2={W - pad} y1={H - pad} y2={H - pad} stroke="var(--line-2)" />
+        <path d={path} fill="none" stroke="var(--blue)" strokeWidth="2" />
+        {points.map((point, index) => <circle key={point.gen} cx={x(index)} cy={y(point.value)} r="4" fill="var(--blue)"><title>{`g${point.gen} · ${point.value.toFixed(4)}`}</title></circle>)}
+      </svg>
+      <p className="mono">연구 비교용 · score ÷ (1 + MDD/100) · 성능 증명 아님</p>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
-// 3) 세대 비교 미니 테이블 — 상위 N(score 내림차순) + [워크벤치 분석] 버튼.
+// 5) 세대 비교 미니 테이블 — 상위 N(score 내림차순) + [워크벤치 분석] 버튼.
 //    버튼: backtest.jsx 직접 import 없이 window 이벤트 발행 + 탭 전환(onOpenWorkbench).
 // ---------------------------------------------------------------------------
 function EaTopTable({ runId, gens, topN, onOpenWorkbench }) {
@@ -527,6 +573,14 @@ function EvolutionAnalysisPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
                   <LegendDot color="var(--ink-3)" label="게이트 탈락(흐린 점)" />
                 </div>
                 <EaScatterChart gens={gens} />
+              </section>
+              <section className="v54-ea-cell compact">
+                <div className="ea-cell-heading">게이트 통과 흐름 · 누적 통과율</div>
+                <EaGateTrendChart gens={gens} />
+              </section>
+              <section className="v54-ea-cell compact">
+                <div className="ea-cell-heading">점수·위험 효율 · 반복 개선 방향</div>
+                <EaEfficiencyChart gens={gens} />
               </section>
               <section className="v54-ea-cell wide">
                 <div style={{ margin: "0 0 8px" }}>

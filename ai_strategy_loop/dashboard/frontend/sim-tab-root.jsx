@@ -9,7 +9,7 @@
 */
 // Track Z — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { SimOverlayChart, SimSignalLog } from "./simulation-charts.jsx";
-import { useState_sim, useEffect_sim, useCallback_sim, useRef_sim, useMemo_sim, _simFetchJson, _SIM_SPEEDS, _simWsBar, _SIM_MAX_CODES, _SIM_DEMO_SPEED, _SIM_MAX_SPLIT_COLS, _loadIndicators, _saveIndicators, _loadSplitCols, _saveSplitCols, _loadSplitRows, _saveSplitRows, _loadEngineMode, _saveEngineMode, _wsUrl, _simDemoSeen, _simMarkDemoSeen, _flattenSignals, _simRenderBudget, _simRenderBars } from "./sim-tab-utils.jsx";
+import { useState_sim, useEffect_sim, useCallback_sim, useRef_sim, useMemo_sim, _simFetchJson, _simRefreshReplaySession, _SIM_SPEEDS, _simWsBar, _SIM_MAX_CODES, _SIM_DEMO_SPEED, _SIM_MAX_SPLIT_COLS, _loadIndicators, _saveIndicators, _loadSplitCols, _saveSplitCols, _loadSplitRows, _saveSplitRows, _loadEngineMode, _saveEngineMode, _wsUrl, _simDemoSeen, _simMarkDemoSeen, _flattenSignals, _simRenderBudget, _simRenderBars } from "./sim-tab-utils.jsx";
 import { SimControlBar, SimPresetBar, SimMarketMinimap, SimPlaybackBar, SimViewBar } from "./sim-tab-controls.jsx";
 import { SimChartByEngine, SimIndicatorTable, SimLearningPanel, SimVariableWatch } from "./sim-tab-panels.jsx";
 import { _bindReplayKeydown, _isReplayEditableTarget, _exactReplayTimestamp } from "./replay-lifecycle.jsx";
@@ -71,6 +71,7 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
   // A replay is loading until metadata arrives; a bounded timer prevents silent 0/0 playback.
   const zeroFrameTimerRef = useRef_sim(null);
   const receivedBarCountRef = useRef_sim(0);
+  const replayErrorReportedRef = useRef_sim(false);
   const clearZeroFrameTimer = () => {
     if (zeroFrameTimerRef.current) {
       clearTimeout(zeroFrameTimerRef.current);
@@ -212,7 +213,7 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
   // 컴포넌트 언마운트 시 WS 정리.
   useEffect_sim(() => () => { _stopReplay(); }, [_stopReplay]);
 
-  const startReplay = useCallback_sim(() => {
+  const startReplay = useCallback_sim(async () => {
     const selectedCodes = Array.from(new Set(selected)).slice(0, _SIM_MAX_CODES);
     const knownCodes = new Set(stocks.map(s => String(s.code)));
     if (isDemo || !baseUrl || !date || loadingStocks || selectedCodes.length === 0 ||
@@ -224,9 +225,18 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
     _stopReplay();
     const url = _wsUrl(baseUrl, "/sim/ws");
     if (!url) { setWsErr("WS URL 생성 실패"); setStatus("error"); return; }
-    setWsErr(""); receivedBarCountRef.current = 0;
+    setWsErr(""); receivedBarCountRef.current = 0; replayErrorReportedRef.current = false;
     barsRef.current = {}; setBarsVersion(v => v + 1);
     setStatus("loading");
+
+    try {
+      await _simRefreshReplaySession(baseUrl);
+    } catch (e) {
+      replayErrorReportedRef.current = true;
+      setWsErr("서버 세션을 새로 준비하지 못했습니다. 대시보드 연결을 확인한 뒤 재시도하세요.");
+      setStatus("error");
+      return;
+    }
 
     let ws;
     try { ws = new WebSocket(url); } catch (e) { setWsErr(String(e)); setStatus("error"); return; }
@@ -243,6 +253,7 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
         if (receivedBarCountRef.current === 0 && wsRef.current === ws) {
           try { ws.close(); } catch (e) {}
           wsRef.current = null;
+          replayErrorReportedRef.current = true;
           setWsErr("리플레이 데이터를 받지 못했습니다. 날짜·종목을 다시 선택한 뒤 재시도하세요.");
           setStatus("error");
         }
@@ -252,12 +263,14 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
       let m;
       try { m = JSON.parse(ev.data); } catch (e) {
         clearZeroFrameTimer();
+        replayErrorReportedRef.current = true;
         setWsErr("리플레이 프레임 해석 실패: " + String(e && e.message ? e.message : e));
         setStatus("error");
         return;
       }
       if (!m || !m.type) {
         clearZeroFrameTimer();
+        replayErrorReportedRef.current = true;
         setWsErr("리플레이 프로토콜 오류: type 누락");
         setStatus("error");
         return;
@@ -296,6 +309,7 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
       } else if (m.type === "done") {
         clearZeroFrameTimer();
         if (receivedBarCountRef.current === 0) {
+          replayErrorReportedRef.current = true;
           setWsErr("리플레이 데이터가 비어 있습니다. 날짜·종목을 다시 선택한 뒤 재시도하세요.");
           setStatus("error");
         } else {
@@ -303,21 +317,24 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
         }
       } else if (m.type === "error") {
         clearZeroFrameTimer();
+        replayErrorReportedRef.current = true;
         setWsErr(m.message || "리플레이 오류"); setStatus("error");
       } else {
         clearZeroFrameTimer();
+        replayErrorReportedRef.current = true;
         setWsErr("리플레이 프로토콜 오류: 알 수 없는 frame type " + String(m.type));
         setStatus("error");
       }
     };
-    ws.onerror = () => { clearZeroFrameTimer(); setWsErr("WebSocket 연결 오류"); setStatus("error"); };
-    ws.onclose = () => {
+    ws.onerror = () => { clearZeroFrameTimer(); replayErrorReportedRef.current = true; setWsErr("WebSocket 연결 오류"); setStatus("error"); };
+    ws.onclose = (event) => {
       const isActive = wsRef.current === ws;
       const noFrames = receivedBarCountRef.current === 0;
       if (isActive) wsRef.current = null;
       clearZeroFrameTimer();
-      if (isActive && noFrames) {
-        setWsErr("리플레이 연결이 데이터를 보내기 전에 종료됐습니다. 날짜·종목을 다시 선택한 뒤 재시도하세요.");
+      if (isActive && noFrames && !replayErrorReportedRef.current) {
+        const closeInfo = event && event.code ? ` · 종료 코드 ${event.code}${event.reason ? " · " + event.reason : ""}` : "";
+        setWsErr("리플레이 연결이 데이터를 보내기 전에 종료됐습니다" + closeInfo + ". 날짜·종목 선택과 서버 세션을 확인한 뒤 재시도하세요.");
         setStatus("error");
       }
     };

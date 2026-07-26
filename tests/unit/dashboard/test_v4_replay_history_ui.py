@@ -47,9 +47,9 @@ def test_history_names_archive_summary_compare_and_stale_states() -> None:
     assert 'aria-labelledby="v4-history-index-title"' in source
     assert 'data-region="scroll"' in source
     assert 'aria-live="polite"' in source
-    assert "아카이브 선택" in source
-    assert "요약 확인" in source
-    assert "Compare" in source
+    for stage in ("연구 선택", "결과 비교", "결과 상세", "근거 · 문서"):
+        assert stage in source
+    assert "결정 추적" not in source
     assert "마지막 응답일 수 있습니다" in source
     assert "<ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} onSelectCampaign={onSelectCampaign} />" in source
     assert "<ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate}" in source
@@ -70,7 +70,8 @@ def test_history_compare_and_condition_tree_are_immediately_usable() -> None:
     assert history.count('className="rp-code-block"') == 2
     assert "stom_history_evo_pending" in history
     assert "stom:history-evo-select" in history
-    assert "분석 닫기" in history
+    assert "다시 비교" in history
+    assert 'onNavigate("reports")' in history
     assert "호환되지" in history
 
     assert "onSelectAnalysis" in compare
@@ -107,7 +108,7 @@ def test_history_iteration_analysis_uses_loaded_fields_and_accessible_alternativ
     css = _read("v4.css")
 
     assert 'const HISTORY_RESULT_LAYOUT_KEY = "stom_v511_result_layout"' in history
-    assert '["auto", "wide", "balanced", "dense"]' in history
+    assert '["2", "3", "4"]' in history
     assert 'role="radiogroup" aria-label="History 결과 레이아웃"' in history
     assert "window.localStorage.setItem(HISTORY_RESULT_LAYOUT_KEY, mode)" in history
     assert "generation_rows: _historyGenerationRows(selection)" in history
@@ -120,4 +121,4 @@ def test_history_iteration_analysis_uses_loaded_fields_and_accessible_alternativ
     assert 'role="img" aria-label="로드된 세대 점수 추세"' in history
     assert 'role="img" aria-label="로드된 점수와 MDD 산점도"' in history
     assert ".v4-history-iteration-table" in css
-    assert ".v4-history-layout-wide" in css
+    assert ".v4-history-layout-3" in css

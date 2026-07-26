@@ -48,6 +48,7 @@ _LEGACY_ONLY_WHITELIST = {
     "ProcessFlowPanel": "v5.3.2 벨트·스테이지 탭과 3중 중복 — docs/process_flow.html 로 대체(N7)",
     "BacktestDetailChart": "V4는 공통 BtResultArea가 백테스트 상세 결과를 상위호환하며 중복 fetch를 제거",
     "EvolutionGuiParityPanel": "V4는 공통 BtResultArea의 GUI parity 진단이 상위호환하며 중복 렌더를 제거",
+    "VerdictPanel": "History의 결정 추적 원장을 제거하고 연구 선택·비교·상세·근거 흐름으로 대체",
 }
 
 

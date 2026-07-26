@@ -226,6 +226,9 @@ function BacktestTab({ baseUrl, wsStatus }) {
       {/* 결과 분석 탭 — 결과 라이브러리 + 전폭 결과/분석 영역 + 접이식 분석 섹션 */}
       {subTab === "result" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <BtCollapsible title="진화 세대 결과 라이브러리" accent="var(--violet)" defaultOpen={true}>
+            <BtEvoSelector baseUrl={baseUrl} isDemo={isDemo} onPickGen={onPickGen} activeEvo={evoSource} />
+          </BtCollapsible>
           <BtResultLibrary baseUrl={baseUrl} isDemo={isDemo} jobs={jobsList} onResult={onPickJobResult}
                            selectedJobId={resultJobId} onReload={reloadJobs}
                            compareA={compareA} onSetCompareA={onSetCompareA} onCompareB={runCompare} />
@@ -239,9 +242,6 @@ function BacktestTab({ baseUrl, wsStatus }) {
           </div>
 
           {/* 접이식 분석 섹션 — 진화 세대 분석 · 오버레이 · 포트폴리오 결합 */}
-          <BtCollapsible title="진화 세대 분석" accent="var(--violet)" defaultOpen={false}>
-            <BtEvoSelector baseUrl={baseUrl} isDemo={isDemo} onPickGen={onPickGen} activeEvo={evoSource} />
-          </BtCollapsible>
           <BtCollapsible title="다중 잡 오버레이(수익곡선 겹쳐보기)" accent="var(--teal)" defaultOpen={false}>
             <BtOverlayPanel baseUrl={baseUrl} isDemo={isDemo} jobs={jobsList} />
           </BtCollapsible>

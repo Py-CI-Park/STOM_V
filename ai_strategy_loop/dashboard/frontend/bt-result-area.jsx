@@ -49,8 +49,7 @@ const _BT_RESULT_CAPABILITIES = {
     notes: { range: "결과를 선택한 뒤 사용할 수 있습니다.", monteCarlo: "결과를 선택한 뒤 사용할 수 있습니다.", compare: "결과를 선택한 뒤 사용할 수 있습니다." } },
 };
 const _BT_RESULT_LAYOUT_KEY = "stom_v511_result_layout";
-const _BT_RESULT_DIAGNOSTICS_KEY = "stom_v511_result_diagnostics_open";
-const _BT_RESULT_LAYOUTS = ["auto", "wide", "balanced", "dense"];
+const _BT_RESULT_LAYOUTS = ["2", "3", "4"];
 function _btStoredPreference(key, fallback) {
   try {
     const value = window.localStorage.getItem(key);
@@ -62,13 +61,8 @@ function _btStoredPreference(key, fallback) {
 function _btResultColumns(layout, width) {
   const available = Number(width) || 0;
   if (available < 864) return 1;
-  if (layout === "wide") return 1;
-  if (layout === "dense") {
-    const maxColumns = Math.max(1, Math.min(4, Math.floor((available + 12) / 432)));
-    return Math.min(available >= 3000 ? 4 : 3, maxColumns);
-  }
-  if (layout === "auto") return Math.max(1, Math.min(4, available >= 2520 ? 4 : available >= 1680 ? 3 : 2));
-  return 2;
+  const maxColumns = Math.max(1, Math.min(4, Math.floor((available + 12) / 360)));
+  return Math.min(Number(layout), maxColumns);
 }
 
 function _BtResultCapabilities({ capabilities }) {
@@ -279,12 +273,9 @@ function ResultDetailBody({
 }) {
   const { isEvo, evoSource, jobId, baseUrl, capabilities } = sourceContext || {};
   const [layout, setLayout] = useState_btc(() => {
-    const stored = _btStoredPreference(_BT_RESULT_LAYOUT_KEY, "balanced");
-    return _BT_RESULT_LAYOUTS.includes(stored) ? stored : "balanced";
+    const stored = _btStoredPreference(_BT_RESULT_LAYOUT_KEY, "3");
+    return _BT_RESULT_LAYOUTS.includes(stored) ? stored : "3";
   });
-  const [diagnosticsOpen, setDiagnosticsOpen] = useState_btc(
-    () => _btStoredPreference(_BT_RESULT_DIAGNOSTICS_KEY, "1") !== "0",
-  );
   const layoutRef = useRef_btc(null);
   const [layoutWidth, setLayoutWidth] = useState_btc(() => typeof window === "undefined" ? 0 : window.innerWidth);
   const columns = _btResultColumns(layout, layoutWidth);
@@ -304,9 +295,6 @@ function ResultDetailBody({
   useEffect_btc(() => {
     try { window.localStorage.setItem(_BT_RESULT_LAYOUT_KEY, layout); } catch (e) {}
   }, [layout]);
-  useEffect_btc(() => {
-    try { window.localStorage.setItem(_BT_RESULT_DIAGNOSTICS_KEY, diagnosticsOpen ? "1" : "0"); } catch (e) {}
-  }, [diagnosticsOpen]);
 // no_trades → 안내 카드(에러 아님).
 if (result.status === "no_trades") {
   return (
@@ -370,9 +358,7 @@ return (
        style={{ "--bt-result-columns": columns }}>
     <nav className="bt-result-nav" aria-label="결과 분석 섹션">
       <a href="#bt-result-summary-title">요약</a>
-      <a href="#bt-result-primary-title">핵심 결과</a>
-      <a href="#bt-result-risk-title">MDD · 위험</a>
-      <a href="#bt-result-diagnostics-title" onClick={() => setDiagnosticsOpen(true)}>진단</a>
+      <a href="#bt-analysis-matrix-title">전체 차트</a>
       <span className="bt-result-layout-status" role="status">
         레이아웃: {layout} · 실제 {columns}열
       </span>
@@ -380,14 +366,10 @@ return (
         {_BT_RESULT_LAYOUTS.map(mode => (
           <button key={mode} type="button" className={"btn ghost sm" + (layout === mode ? " active" : "")}
                   role="radio" aria-checked={layout === mode} onClick={() => setLayout(mode)}>
-            {mode === "auto" ? "자동" : mode === "wide" ? "넓게 1열" : mode === "balanced" ? "균형 2열" : "밀집 3/4열"}
+            {mode}열
           </button>
         ))}
       </span>
-      <button type="button" className="btn ghost sm" onClick={() => setDiagnosticsOpen(true)}
-              aria-expanded={diagnosticsOpen} aria-controls="bt-result-diagnostics">
-        모든 진단 펼치기
-      </button>
     </nav>
     <_BtResultCapabilities capabilities={capabilities} />
     <section className="bt-result-section bt-result-summary" aria-labelledby="bt-result-summary-title">
@@ -471,52 +453,27 @@ return (
     </div>
     </section>
 
-    <section className="bt-result-section bt-result-primary" aria-labelledby="bt-result-primary-title">
+    <section className="bt-result-section bt-result-analysis" aria-labelledby="bt-analysis-matrix-title">
       <div className="bt-section-heading">
         <div>
-          <div id="bt-result-primary-title" className="stom-section-label">핵심 결과</div>
-          <p className="bt-section-purpose">누적 수익 경로와 손익 분포를 먼저 검토합니다.{capabilities.range ? " 드래그하면 구간 분석을 적용합니다." : ""}</p>
+          <div id="bt-analysis-matrix-title" className="stom-section-label">전체 분석 차트 · 독립 매트릭스</div>
+          <p className="bt-section-purpose">차트 하나를 하나의 근거 단위로 표시합니다. 언더워터·회귀·타이밍·GUI 패리티를 같은 크기로 직접 비교하세요.</p>
         </div>
       </div>
       {compareView && <BtCompareView cmp={compareView} onClose={onCloseCompare} />}
-      <div className="bt-primary-chart-grid bt-equal-card-grid">
+      <div className="bt-analysis-matrix">
         <BtEquityChart equity={analysis.equity} onBrush={capabilities.range ? onBrush : undefined}
                        brushActive={capabilities.range && !!range} onBrushClear={onBrushClear} />
         <BtDistributionChart distribution={distribution} />
-      </div>
-    </section>
-
-    <section className="bt-result-section bt-result-evidence" aria-labelledby="bt-result-risk-title">
-      <div className="bt-section-heading">
-        <div>
-          <div id="bt-result-risk-title" className="stom-section-label">MDD · 위험 증거</div>
-          <p className="bt-section-purpose">관측된 최대 낙폭 경로와, 지원되는 경우 거래 표본의 몬테카를로 결과를 확인합니다.</p>
-        </div>
-      </div>
-      <div className="bt-primary-chart-grid bt-equal-card-grid">
         <BtUnderwaterChart underwater={analysis.underwater} />
         {capabilities.monteCarlo ? (
           <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
         ) : (
-          <div className="research-empty" role="status">몬테카를로 미지원 — {capabilities.notes.monteCarlo}</div>
+          <div className="panel bt-equal-card bt-analysis-unavailable" role="status">
+            <div className="panel-hd"><div className="panel-hd-title"><span className="dot"></span>몬테카를로</div></div>
+            <div className="panel-bd"><div className="research-empty">미지원 · {capabilities.notes.monteCarlo}</div></div>
+          </div>
         )}
-      </div>
-    </section>
-
-    <section id="bt-result-diagnostics" className="bt-result-section bt-result-diagnostics" aria-labelledby="bt-result-diagnostics-title">
-      <div className="bt-section-heading">
-        <div>
-          <div id="bt-result-diagnostics-title" className="stom-section-label">진단</div>
-          <p className="bt-section-purpose">손실 구간, 거래 품질, 실행 흐름과 cadence를 교차 확인합니다.</p>
-        </div>
-        <button type="button" className="btn ghost sm" onClick={() => setDiagnosticsOpen(open => !open)}
-                aria-expanded={diagnosticsOpen} aria-controls="bt-result-diagnostics-body">
-          {diagnosticsOpen ? "진단 접기" : "진단 펼치기"}
-        </button>
-      </div>
-      <div id="bt-result-diagnostics-body"
-           className={"bt-diagnostic-grid bt-equal-card-grid" + (diagnosticsOpen ? "" : " is-collapsed")}
-           aria-hidden={!diagnosticsOpen}>
         <BtHeatmap heatmap={analysis.heatmap} />
         <BtMaeMfeScatter points={analysis.mae_mfe} />
         <BtQuantPanel analysis={analysis} />
@@ -525,10 +482,8 @@ return (
         <BtStatTestPanel stats={stats} />
         <BtRollingChart rolling={analysis.rolling} />
         <BtMonthlyCalendar monthly={analysis.monthly} />
-        <BtGuiParitySection guiParity={analysis.gui_parity} columns={2} />
-        <div className="bt-cadence-diagnostic">
-          <BtCumulativeTradesChart data={analysis.cumulative_trades} />
-        </div>
+        <BtGuiParitySection guiParity={analysis.gui_parity} />
+        <BtCumulativeTradesChart data={analysis.cumulative_trades} />
       </div>
     </section>
 
@@ -607,31 +562,22 @@ function _BtFullscreenAnalysis({
         <BtInsightsPanel insights={insights} />
       </div>
 
-      {/* 추가 분석 그래프 우선 배치(트랙 D) — 2컬럼 */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(440px, 1fr))", gap: 14, marginBottom: 14 }}>
-        <BtRollingChart rolling={analysis.rolling} />
-        <BtCumulativeTradesChart data={analysis.cumulative_trades} />
-        <BtMonthlyCalendar monthly={analysis.monthly} />
+      <div className="bt-analysis-matrix bt-analysis-matrix-fullscreen">
         <BtEquityChart equity={analysis.equity} onBrush={onBrush}
                        brushActive={!!range} onBrushClear={onBrushClear} />
-      </div>
-
-      {/* B3 — GUI 패리티 차트 6종(전체화면에서 2컬럼 확대 배치) */}
-      <div style={{ marginBottom: 14 }}>
-        <BtGuiParitySection guiParity={analysis.gui_parity} columns={2} />
-      </div>
-
-      {/* 나머지 분석 — 3컬럼(넓은 화면) */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 14 }}>
         <BtDistributionChart distribution={distribution} />
         <BtUnderwaterChart underwater={analysis.underwater} />
+        <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
         <BtHeatmap heatmap={analysis.heatmap} />
         <BtMaeMfeScatter points={analysis.mae_mfe} />
         <BtQuantPanel analysis={analysis} />
-        <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
         <BtExitReasonPanel rows={analysis.exit_reasons} />
         <BtOrderflowPanel orderflow={orderflow} />
         <BtStatTestPanel stats={stats} />
+        <BtRollingChart rolling={analysis.rolling} />
+        <BtMonthlyCalendar monthly={analysis.monthly} />
+        <BtGuiParitySection guiParity={analysis.gui_parity} />
+        <BtCumulativeTradesChart data={analysis.cumulative_trades} />
       </div>
     </div>
   );

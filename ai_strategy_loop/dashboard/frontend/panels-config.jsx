@@ -8,6 +8,7 @@
    destructure 한다(단일 번들 dup-globals 가드).
 */
 const { useState: useState_pcf, useEffect: useEffect_pcf, useMemo: useMemo_pcf } = React;
+const CONDITION_FETCH_TIMEOUT_MS = 10000;
 
 // ---- Current generation panel ----
 function CurrentGenPanel({ state }) {
@@ -144,7 +145,8 @@ function ActiveStrategyPanel({ state, baseUrl, onViewCode }) {
   const [wrapCode, setWrapCode] = useState_pcf(false);
   const [codePayload, setCodePayload] = useState_pcf(null);
   const [diffPayload, setDiffPayload] = useState_pcf(null);
-  const [fetchError, setFetchError] = useState_pcf("");
+  const [codeFetchError, setCodeFetchError] = useState_pcf("");
+  const [diffFetchError, setDiffFetchError] = useState_pcf("");
   const [copyStatus, setCopyStatus] = useState_pcf("");
   const active = useMemo_pcf(() => _activeStrategyFromState(state || {}), [state]);
   const generation = active.generation || {};
@@ -155,19 +157,20 @@ function ActiveStrategyPanel({ state, baseUrl, onViewCode }) {
   useEffect_pcf(() => {
     setCodePayload(null);
     setDiffPayload(null);
-    setFetchError("");
+    setCodeFetchError("");
+    setDiffFetchError("");
     if (!canFetch) return;
     let cancelled = false;
     const codeUrl = `${baseUrl}/strategy_code?run=${encodeURIComponent(runId)}&gen=${genNo}`;
     const diffUrl = `${baseUrl}/strategy_diff?run_id=${encodeURIComponent(runId)}&gen_no=${genNo}&base_gen=previous`;
-    fetch(codeUrl, { signal: AbortSignal.timeout(2500) })
+    fetch(codeUrl, { signal: AbortSignal.timeout(CONDITION_FETCH_TIMEOUT_MS) })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("strategy_code HTTP " + r.status)))
       .then(j => { if (!cancelled) setCodePayload(j); })
-      .catch(e => { if (!cancelled) setFetchError(String(e)); });
-    fetch(diffUrl, { signal: AbortSignal.timeout(2500) })
+      .catch(e => { if (!cancelled) setCodeFetchError(String(e)); });
+    fetch(diffUrl, { signal: AbortSignal.timeout(CONDITION_FETCH_TIMEOUT_MS) })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("strategy_diff HTTP " + r.status)))
       .then(j => { if (!cancelled) setDiffPayload(j); })
-      .catch(e => { if (!cancelled) setFetchError(String(e)); });
+      .catch(e => { if (!cancelled) setDiffFetchError(String(e)); });
     return () => { cancelled = true; };
   }, [baseUrl, runId, genNo, canFetch]);
 
@@ -213,7 +216,8 @@ function ActiveStrategyPanel({ state, baseUrl, onViewCode }) {
           </div>
           <span className="active-strategy-provenance mono">run {runId || "—"} · gen {genNo ?? "—"} · source {active.source} · diff {diffStatus}</span>
         </div>
-        {fetchError && <div className="active-strategy-fetch-error mono">조건식 코드 조회 실패: {fetchError}</div>}
+        {codeFetchError && <div className="active-strategy-fetch-error mono">조건식 코드 조회 실패: {codeFetchError} · 10초 후 중단됨</div>}
+        {!codeFetchError && diffFetchError && <div className="active-strategy-diff-warning mono">조건식 코드는 표시됨 · 조건식 변경 비교 지연: {diffFetchError}</div>}
         <div className={"active-strategy-code-columns" + (wrapCode ? " is-wrapped" : "")}>
           <div className="active-strategy-code-viewport buy">
             <div className="cap">매수 로직 · 전체 코드</div>
@@ -535,7 +539,7 @@ function MetaPanel({ state, wsStatus }) {
   );
 }
 
-Object.assign(window, { CurrentGenPanel, ActiveStrategyPanel, ActiveConfigPanel, PopulationPanel, MetaPanel });
+Object.assign(window, { CurrentGenPanel, ActiveStrategyPanel, ActiveConfigPanel, PopulationPanel, MetaPanel, CONDITION_FETCH_TIMEOUT_MS });
 
 // Track Z — dual-safe ESM export (stripped by build-app.mjs in the concat path; kept by the bundle for real module scope). KEEP on ONE physical line.
 export { CurrentGenPanel, ActiveStrategyPanel, ActiveConfigPanel, PopulationPanel, MetaPanel };

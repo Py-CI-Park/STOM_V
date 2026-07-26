@@ -78,6 +78,11 @@ function V4Catalog({ baseUrl, wsStatus }) {
                   onClick={() => setView(v.key)} title={v.desc}>{v.label}</button>
         ))}
       </div>
+      <div className="v4-cat-viewdesc" role="status">
+        <b>{(_CAT_VIEWS.find(item => item.key === view) || _CAT_VIEWS[0]).label}</b>
+        <span>{(_CAT_VIEWS.find(item => item.key === view) || _CAT_VIEWS[0]).desc}</span>
+        <i>표본 내 연구 자산 · 읽기 전용 · 성능 증명 아님</i>
+      </div>
 
       {view === "chronicle" && (
         <section aria-label="연혁실">

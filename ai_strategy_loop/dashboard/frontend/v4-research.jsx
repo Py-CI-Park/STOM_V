@@ -127,6 +127,9 @@ function _V4Stats({ state, hideCurrent }) {
   const bestGen = best ? (state.generations || []).find(g => g.gen_no === best.gen) : null;
   const bestScore = best && best.graded_score != null ? Number(best.graded_score) : null;
   const mdd = bestGen && bestGen.mdd != null ? Number(bestGen.mdd) : null;
+  const bestProfit = bestGen && bestGen.profit != null ? Number(bestGen.profit) : null;
+  const bestTrades = bestGen && bestGen.trade_count != null ? Number(bestGen.trade_count) : null;
+  const generationCount = Array.isArray(state.generations) ? state.generations.length : 0;
   const tokens = (state.cumulative && Number(state.cumulative.tokens)) || 0;
   const cost = (state.cumulative && state.cumulative.cost_or_count) ?? "—";
   return (
@@ -146,8 +149,28 @@ function _V4Stats({ state, hideCurrent }) {
         <span className="s">best MDD</span>
       </div>
       <div className="v4-stat">
+        <span className={"v" + (bestProfit != null && bestProfit > 0 ? " pos" : bestProfit != null && bestProfit < 0 ? " neg" : "")}>{bestProfit != null ? (bestProfit / 10000).toFixed(0) + "만" : "—"}</span>
+        <span className="s">best 손익</span>
+      </div>
+      <div className="v4-stat">
+        <span className="v">{bestTrades != null ? bestTrades.toLocaleString("ko-KR") : "—"}</span>
+        <span className="s">best 거래</span>
+      </div>
+      <div className="v4-stat">
         <span className="v">{tokens ? (tokens >= 1000 ? (tokens / 1000).toFixed(1) + "k" : tokens) : "—"}</span>
-        <span className="s">tokens · cost {String(cost)}</span>
+        <span className="s">token 사용량</span>
+      </div>
+      <div className="v4-stat">
+        <span className="v">{String(cost)}</span>
+        <span className="s">누적 cost</span>
+      </div>
+      <div className="v4-stat">
+        <span className={"v" + (best && best.gate_passed ? " pos" : "")}>{best ? (best.gate_passed ? "PASS" : "검토") : "—"}</span>
+        <span className="s">best gate</span>
+      </div>
+      <div className="v4-stat">
+        <span className="v">{generationCount}<span className="dim"> / {max || "—"}</span></span>
+        <span className="s">완료 세대</span>
       </div>
     </div>
   );
@@ -247,7 +270,6 @@ function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore
   const rawBlockers = Array.isArray(blockerSource) ? blockerSource : (blockerSource.blockers || []);
   const blockers = Array.isArray(rawBlockers) ? rawBlockers : [];
   const logs = Array.isArray(latest.recent_logs) ? latest.recent_logs : [];
-  const lastLog = logs.length ? logs[logs.length - 1] : "로그 대기";
   const errorText = s.error || latest.error || "";
   return (
     <section className="v6-board" aria-labelledby="v6-board-heading">
@@ -284,10 +306,20 @@ function _V6StatusBoard({ state, liveStage, activeStage, onStagePin, targetScore
             ? blockers.map(b => <span key={String(b)} className="v4-chip warn" title="promotion blocker">{String(b)}</span>)
             : <span className="v4-chip ok">발행된 차단 사유 없음</span>}
         </div>
-        <details className="v6-log">
-          <summary className="mono" title="최신 로그 · 클릭하면 최근 로그 펼침">{String(lastLog)}</summary>
-          <div className="v6-log-list mono">{logs.slice(-8).map((l, i) => <div key={i}>{String(l)}</div>)}</div>
-        </details>
+        <section className="v6-log-console" aria-label="현재 단계 상세 로그">
+          <div className="v6-log-console-head">
+            <b>현재 단계 상세 로그</b>
+            <span className="mono">{latest.phase || latest.current_step || "대기"} · 최근 {Math.min(logs.length, 14)}건</span>
+          </div>
+          <div className="v6-log-list mono" role="log" aria-live="polite">
+            {logs.length ? logs.slice(-14).map((line, index) => (
+              <div key={index} className="v6-log-line">
+                <span>{String(logs.length - Math.min(logs.length, 14) + index + 1).padStart(2, "0")}</span>
+                <b>{String(line)}</b>
+              </div>
+            )) : <div className="v6-log-line"><span>—</span><b>다음 단계 로그를 기다리는 중입니다.</b></div>}
+          </div>
+        </section>
       </div>
       {hasData && <_V6GraphBand state={s} baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} targetScore={targetScore} />}
       {errorText && <p className="v4-research-error" role="alert">연구 요청 실패 · {String(errorText)}</p>}
@@ -451,14 +483,14 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
       <div id="v6-stage-panel" className="v6-stage-panel v59-stage-layout" role="tabpanel"
            aria-labelledby={"v6-stage-tab-" + V6_STAGES[activeStage].key} aria-live="polite">
         {activeStage === 0 && (
-          <div className="v6-stage-grid">
+          <div className="v6-stage-grid v59-matrix v59-stage-generate">
             <HypothesisPanel state={s} />
             <ActiveStrategyPanel state={s} baseUrl={baseUrl} onViewCode={viewCode} />
             <ConditionDiscoveryPanel state={s} wsStatus={wsStatus} />
           </div>
         )}
         {activeStage === 1 && (
-          <div className="v6-stage-grid">
+          <div className="v6-stage-grid v59-matrix v59-stage-backtest">
             {/* v5.5.1 F3' — 매트릭스: 1행[페이즈 상세|엔진] → 2행[BT 상세(2칸)|패리티 fold(2칸)].
                 전폭 독점 금지(다른 결과 가림) + 백테스트 탭 상세 분석 딥링크. */}
             <div className="v56-cell">
@@ -506,7 +538,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
           </div>
         )}
         {activeStage === 2 && (
-          <div className="v6-stage-grid">
+          <div className="v6-stage-grid v59-matrix v59-stage-score">
             {/* 게이트·부검·계보·메타·홀드아웃·피드백과 세대 이력은 보존한다. */}
             <div className="v54-span-all">
               <_V4Fold storageKey="stom_v6_gate" label="게이트·채점 기준 · 현재 run 유효값 (클릭 상세)">
@@ -531,7 +563,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
           </div>
         )}
         {activeStage === 3 && (
-          <div className="v6-stage-grid">
+          <div className="v6-stage-grid v59-matrix v59-stage-iterate">
             {merged ? (
               <MergedBestWinnerCard best={s.best} winner={s.winner}
                                     onApprove={requestApproval} onViewCode={viewCode} />

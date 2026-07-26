@@ -11,6 +11,7 @@ from ai_strategy_loop.controller import state as state_module
 from ai_strategy_loop.dashboard import backtest_api
 from ai_strategy_loop.dashboard.app import create_app
 from ai_strategy_loop.dashboard.security import HTTP_CAPABILITIES
+from ai_strategy_loop.dashboard.security_capabilities import Capability
 
 
 ORIGIN = "http://127.0.0.1:8770"
@@ -73,6 +74,22 @@ def test_every_http_mutation_has_an_explicit_capability(monkeypatch, tmp_path: P
         key for key in HTTP_CAPABILITIES if key[0] not in {"GET", "HEAD", "OPTIONS"}
     }
     assert ("GET", "/sim/signals") in HTTP_CAPABILITIES
+
+
+def test_read_only_strategy_validation_uses_safe_backtest_capability(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    client = _client(monkeypatch, tmp_path)
+
+    response = client.post(
+        "/bt/strategy/validate",
+        json={"code": "x = 1\nif x:\n    buy = True"},
+    )
+
+    assert HTTP_CAPABILITIES[("POST", "/bt/strategy/validate")] is Capability.SAFE_BACKTEST
+    assert response.status_code == 200
+    assert response.json()["ok"] is True
 
 
 def test_default_off_capabilities_never_reach_side_effects(

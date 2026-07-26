@@ -8,7 +8,7 @@
    팔레트(_BT_OVERLAY_COLORS)·숫자포맷(_btNum)·금액포맷(_pfFmtMoney)은 bt-tab-utils 에서 공유.
 */
 // Track Z — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
-import { useState_bt, useEffect_bt, useCallback_bt, _btFetchJson, _btPostJson, _BT_OVERLAY_COLORS, _btNum, _pfFmtMoney } from "./bt-tab-utils.jsx";
+import { useState_bt, useEffect_bt, useCallback_bt, useRef_bt, _btFetchJson, _btPostJson, _BT_OVERLAY_COLORS, _btNum, _pfFmtMoney } from "./bt-tab-utils.jsx";
 import { fetchRunsShared } from "./runs-shared.jsx";
 
 // ===========================================================================
@@ -261,16 +261,21 @@ function BtEvoSelector({ baseUrl, isDemo, onPickGen, activeEvo }) {
   const [gens, setGens] = useState_bt([]);
   const [loadingRuns, setLoadingRuns] = useState_bt(false);
   const [loadingGens, setLoadingGens] = useState_bt(false);
+  const autoPickedRunRef = useRef_bt("");
 
   // run 목록 로드(최신 우선 — 서버 정렬 그대로).
   const loadRuns = useCallback_bt(() => {
     if (isDemo || !baseUrl) { setRuns([]); return; }
     setLoadingRuns(true);
     fetchRunsShared(baseUrl, { timeoutMs: 6000 })
-      .then(j => setRuns(Array.isArray(j && j.runs) ? j.runs : []))
+      .then(j => {
+        const items = Array.isArray(j && j.runs) ? j.runs : [];
+        setRuns(items);
+        setRunId(current => current || (activeEvo && activeEvo.run_id) || (items[0] && items[0].run_id) || "");
+      })
       .catch(() => setRuns([]))
       .finally(() => setLoadingRuns(false));
-  }, [baseUrl, isDemo]);
+  }, [baseUrl, isDemo, activeEvo]);
   useEffect_bt(() => { loadRuns(); }, [loadRuns]);
 
   // run 선택 시 세대 목록 로드.
@@ -278,17 +283,28 @@ function BtEvoSelector({ baseUrl, isDemo, onPickGen, activeEvo }) {
     if (isDemo || !baseUrl || !runId) { setGens([]); return; }
     setLoadingGens(true);
     _btFetchJson(baseUrl + "/bt/evo_gens?run_id=" + encodeURIComponent(runId), 6000)
-      .then(j => setGens(Array.isArray(j && j.items) ? j.items : []))
+      .then(j => {
+        const items = Array.isArray(j && j.items) ? j.items : [];
+        setGens(items);
+        if (!activeEvo && autoPickedRunRef.current !== runId) {
+          const candidate = items.findLast(g => g && g.status === "ok" && g.has_csv)
+            || items.findLast(g => g && g.status === "ok");
+          if (candidate) {
+            autoPickedRunRef.current = runId;
+            onPickGen(runId, candidate.gen_no); // 최신 유효 세대 자동 선택.
+          }
+        }
+      })
       .catch(() => setGens([]))
       .finally(() => setLoadingGens(false));
-  }, [baseUrl, isDemo, runId]);
+  }, [baseUrl, isDemo, runId, activeEvo, onPickGen]);
 
   return (
     <div className="panel">
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--violet)" }}></span>
-          진화 세대 분석
+          진화 세대 결과 라이브러리
         </div>
         <button className="btn ghost sm" onClick={loadRuns} disabled={isDemo || loadingRuns}>
           {loadingRuns ? "로딩…" : "↻ run"}

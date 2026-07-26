@@ -215,7 +215,7 @@ function BtCodeEditor({ baseUrl, isDemo, kind, label, accent, name, onSaved, onD
   }, [baseUrl, isDemo, kind, name]);
 
   const lineCount = useMemo_bt(() => code.split("\n").length, [code]);
-  const editorMinHeight = large ? 560 : 320;
+  const editorMinHeight = large ? 720 : 500;
 
   const runValidate = () => {
     if (isDemo) return;

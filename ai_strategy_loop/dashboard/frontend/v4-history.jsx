@@ -8,19 +8,18 @@
 import { ResearchRecordsPanel } from "./research-records-panel.jsx";
 import { HistoryConditionTreePanel } from "./history-condition-tree.jsx";
 import { AbPairCompareView, CellHeatmap, HoldoutFunnel } from "./history-viz.jsx";
-import { AuditDecisionTrace } from "./v4-audit.jsx";
-import { ResearchIndexPage, VerdictPanel } from "./dashboard-pages.jsx";
+import { ResearchIndexPage } from "./dashboard-pages.jsx";
 import { RunComparePanel } from "./run-compare.jsx";
 import { BtResultArea } from "./backtest-charts.jsx";
 const { useState: useState_v4h, useEffect: useEffect_v4h } = React;
 const HISTORY_RESULT_LAYOUT_KEY = "stom_v511_result_layout";
-const HISTORY_RESULT_LAYOUTS = ["auto", "wide", "balanced", "dense"];
+const HISTORY_RESULT_LAYOUTS = ["2", "3", "4"];
 function _historyLayoutPreference() {
   try {
     const value = window.localStorage.getItem(HISTORY_RESULT_LAYOUT_KEY);
-    return HISTORY_RESULT_LAYOUTS.includes(value) ? value : "balanced";
+    return HISTORY_RESULT_LAYOUTS.includes(value) ? value : "3";
   } catch (error) {
-    return "balanced";
+    return "3";
   }
 }
 function _historyMetric(row, keys) {
@@ -173,6 +172,7 @@ function _HistoryStrategyCode({ baseUrl, selection }) {
 
 function V4History({ baseUrl, wsStatus, onNavigate }) {
   const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
+  const [historyStage, setHistoryStage] = useState_v4h("research");
   // V6.3(S4): 선택 연구 마스터-디테일 — records 패널이 lift 한 선택을 컨텍스트 바가 소유.
   const [selResearch, setSelResearch] = useState_v4h(null); // { name, researchId, meta|null }
   const onSelectCampaign = (name, meta) => {
@@ -190,6 +190,7 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
     }
     // Keep the archive identity as an indivisible run/gen pair; carry only fields already loaded with it.
     setSelectedAnalysis({ run_id: selection.run_id, gen_no: selection.gen_no, generation_rows: _historyGenerationRows(selection) });
+    setHistoryStage("detail");
   };
   const setHistoryLayout = mode => {
     if (!HISTORY_RESULT_LAYOUTS.includes(mode)) return;
@@ -214,12 +215,6 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
     return () => window.removeEventListener("stom:history-evo-select", onSelect);
   }, []);
   // L10: 재연결 문구 깜빡임 디바운스 — reconnecting 이 2초 지속될 때만 경고 문구 표시.
-  // 대용량 색인·거버넌스·시각화 근거는 접힌 동안 마운트하지 않는다.
-  const [indexOpen, setIndexOpen] = useState_v4h(false);
-  const [govOpen, setGovOpen] = useState_v4h(false);
-  const [cmpOpen, setCmpOpen] = useState_v4h(true);
-  const [treeOpen, setTreeOpen] = useState_v4h(true);
-  const [vizOpen, setVizOpen] = useState_v4h(false);
   const [stableWs, setStableWs] = useState_v4h(wsStatus);
   useEffect_v4h(() => {
     if (wsStatus !== "reconnecting") { setStableWs(wsStatus); return undefined; }
@@ -244,19 +239,21 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
           </div>
         </header>
         <div className="panel-bd">
-          <div className="v4-wf" aria-label="History 기본 작업 순서">
-            <div className="v4-wf-step">
-              <span className="v4-wf-num">1</span>
-              <span className="v4-wf-txt"><b>아카이브 선택</b><span>run과 세대를 고정</span></span>
-            </div>
-            <div className="v4-wf-step">
-              <span className="v4-wf-num">2</span>
-              <span className="v4-wf-txt"><b>요약 확인</b><span>기간·성과·근거를 검토</span></span>
-            </div>
-            <div className="v4-wf-step">
-              <span className="v4-wf-num">3</span>
-              <span className="v4-wf-txt"><b>Compare</b><span>동일 기준으로 후보 비교</span></span>
-            </div>
+          <div className="v4-history-stage-nav" role="tablist" aria-label="History 연구 조회 단계">
+            {[
+              ["research", "1", "연구 선택", "캠페인과 연구 ID 고정"],
+              ["results", "2", "결과 비교", "run·winner를 같은 기준으로 비교"],
+              ["detail", "3", "결과 상세", "조건식·차트·반복 성과 검토"],
+              ["evidence", "4", "근거 · 문서", "계보·A/B·색인으로 깊게 조회"],
+            ].map(([stage, number, title, detail]) => (
+              <button key={stage} type="button" role="tab" data-history-stage={stage}
+                      aria-selected={historyStage === stage}
+                      className={"v4-history-stage" + (historyStage === stage ? " active" : "")}
+                      onClick={() => setHistoryStage(stage)}>
+                <span className="v4-wf-num">{number}</span>
+                <span className="v4-wf-txt"><b>{title}</b><span>{detail}</span></span>
+              </button>
+            ))}
           </div>
           <p className="mono" aria-live="polite">{freshnessLabel}</p>
         </div>
@@ -278,89 +275,81 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
           <span className="v6-selres-note">호환 섹션만 이 연구 ID를 사용합니다. 다른 유형의 분석은 독립 선택 상태로 유지됩니다.</span>
         </div>
       )}
-      <section aria-labelledby="v4-history-archive-title" aria-busy={historyLoading}>
+      {historyStage === "research" && (
+      <section className="panel v4-history-stage-panel" aria-labelledby="v4-history-archive-title" aria-busy={historyLoading}>
         <h2 className="stom-section-label" id="v4-history-archive-title">아카이브 선택 · 요약</h2>
         <p className="v4-history-feature-copy">목적: 기록의 출처와 후보를 고정합니다. 방법: 캠페인을 선택해 상세를 확인하세요. 필요성: 이후 비교는 선택된 읽기 전용 근거를 기준으로 합니다.</p>
         <div className="v4-history-archive-scroll" data-region="scroll" tabIndex={0} aria-label="과거 run과 세대 비교 데이터 영역">
           <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} onSelectCampaign={onSelectCampaign} />
         </div>
       </section>
+      )}
 
       {/* Compare와 조건식 트리는 즉시 열고, 대용량 시각화 근거는 필요할 때만 마운트한다. */}
-      <details className="evo-group" open onToggle={(e) => setCmpOpen(e.currentTarget.open)}>
-        <summary className="evo-group-summary">
-          <h2 className="stom-section-label">Run Compare · A/B 비교</h2>
-        </summary>
-        <div className="evo-group-body" data-region="scroll" tabIndex={0}>
+      {historyStage === "results" && (
+      <section className="panel v4-history-stage-panel" aria-labelledby="v4-history-compare-title">
+        <header className="panel-hd"><h2 id="v4-history-compare-title" className="stom-section-label">Run Compare · A/B 비교</h2></header>
+        <div className="panel-bd" data-region="scroll" tabIndex={0}>
           <p className="v4-history-feature-copy">목적: run의 성과와 winner 세대를 같은 기준으로 비교합니다. 방법: 최대 6개 run을 선택하고 ‘분석 보기’를 누르세요. 필요성: <b>campaign 연구 ID는 호환되지 않으며</b> Run Compare는 loop_run만 사용합니다.</p>
-          {cmpOpen && <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} onSelectAnalysis={onSelectAnalysis} />}
-          {selectedAnalysis && (
-            <section className="v4-history-analysis" aria-label="선택한 run winner 분석">
-              <div className="v4-history-analysis-head">
-                <span className="mono">{selectedAnalysis.run_id} / gen {selectedAnalysis.gen_no}</span>
-                <button className="btn ghost sm" onClick={() => setSelectedAnalysis(null)}>분석 닫기</button>
-              </div>
-              <_HistoryStrategyCode baseUrl={baseUrl} selection={selectedAnalysis} />
-              <_HistoryIterationAnalysis selection={selectedAnalysis} layout={resultLayout} onLayoutChange={setHistoryLayout} />
-              <BtResultArea key={`${selectedAnalysis.run_id}:${selectedAnalysis.gen_no}`} baseUrl={baseUrl} isDemo={wsStatus === "demo"} jobId={null} evoSource={selectedAnalysis} />
-            </section>
-          )}
+          <RunComparePanel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} onSelectAnalysis={onSelectAnalysis} />
         </div>
-      </details>
-      <details className="evo-group" open onToggle={(e) => setTreeOpen(e.currentTarget.open)}>
+      </section>
+      )}
+
+      {historyStage === "detail" && (
+        selectedAnalysis ? (
+          <section className="v4-history-analysis v4-history-stage-panel" aria-label="선택한 run winner 분석">
+            <div className="v4-history-analysis-head">
+              <span className="mono">{selectedAnalysis.run_id} / gen {selectedAnalysis.gen_no}</span>
+              <div className="v4-history-detail-actions">
+                <button className="btn ghost sm" onClick={() => onNavigate("reports")}>연결 리포트 보기</button>
+                <button className="btn ghost sm" onClick={() => setHistoryStage("results")}>다시 비교</button>
+              </div>
+            </div>
+            <_HistoryStrategyCode baseUrl={baseUrl} selection={selectedAnalysis} />
+            <_HistoryIterationAnalysis selection={selectedAnalysis} layout={resultLayout} onLayoutChange={setHistoryLayout} />
+            <BtResultArea key={`${selectedAnalysis.run_id}:${selectedAnalysis.gen_no}`} baseUrl={baseUrl} isDemo={wsStatus === "demo"} jobId={null} evoSource={selectedAnalysis} />
+          </section>
+        ) : (
+          <section className="panel v4-history-stage-panel"><div className="panel-bd"><div className="research-empty">결과 비교 단계에서 run과 winner 세대를 선택하면 조건식·차트·반복 성과가 여기에 표시됩니다.<div><button className="btn primary sm" onClick={() => setHistoryStage("results")}>결과 비교로 이동</button></div></div></div></section>
+        )
+      )}
+      {historyStage === "evidence" && (
+      <div className="v4-history-evidence-stack">
+      <details className="evo-group" open>
         <summary className="evo-group-summary">
           <h2 className="stom-section-label" id="v4-history-lineage-title">조건식 History 트리</h2>
         </summary>
         <div className="evo-group-body" data-region="scroll" tabIndex={0} aria-label="조건식 계보 트리 영역">
           <p className="v4-history-feature-copy">목적: 조건식 계보와 평가 흔적을 탐색합니다. 방법: research ID를 선택해 단계와 조건을 펼치세요. 필요성: <b>loop_run과 campaign ID는 서로 호환되지 않는 경우가 있어</b> 서버가 허용한 기록만 표시합니다.</p>
-          {treeOpen && <HistoryConditionTreePanel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />}
+          <HistoryConditionTreePanel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />
         </div>
       </details>
-      <details className="evo-group" onToggle={(e) => setVizOpen(e.currentTarget.open)}>
+      <details className="evo-group" open>
         <summary className="evo-group-summary">
           <h2 className="stom-section-label">A/B · 셀 히트맵 · 홀드아웃 퍼널 (클릭 시 로드)</h2>
         </summary>
         <div className="evo-group-body" data-region="scroll" tabIndex={0} aria-label="조건식 대용량 시각화 근거 영역">
           <p className="v4-history-feature-copy">목적: A/B와 홀드아웃 근거를 교차 확인합니다. 방법: 트리 검토 뒤 필요할 때만 펼치세요. 필요성: 대용량 증거는 lazy 로드하며 호환되지 않는 research ID를 추정 결합하지 않습니다.</p>
-          {vizOpen && (
-            <React.Fragment>
-              <AbPairCompareView baseUrl={baseUrl} wsStatus={wsStatus} />
-              <CellHeatmap baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />
-              <HoldoutFunnel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />
-            </React.Fragment>
-          )}
+          <AbPairCompareView baseUrl={baseUrl} wsStatus={wsStatus} />
+          <CellHeatmap baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />
+          <HoldoutFunnel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />
         </div>
       </details>
       {/* v5.3.1: 엣지 섹션 제거 — 채점·부검 스테이지(Live)가 정위치. 중복 mount 해소. */}
 
-      <details className="evo-group" aria-labelledby="v4-history-index-title"
-               onToggle={(e) => setIndexOpen(e.currentTarget.open)}>
+      <details className="evo-group" open aria-labelledby="v4-history-index-title">
         <summary className="evo-group-summary">
           <h2 className="stom-section-label" id="v4-history-index-title">연구 기록 색인 · 상세 근거 (클릭 시 로드)</h2>
         </summary>
         <div className="evo-group-body" data-region="scroll" tabIndex={0} aria-label="연구 기록 표와 상세 데이터 영역" aria-busy={historyLoading}>
           <p className="v4-history-feature-copy">목적: 대량 연구 기록의 상세 근거를 찾습니다. 방법: 필요할 때만 펼쳐 검색하세요. 필요성: 색인은 무겁고, 호환되지 않는 research ID는 독립 조회로 남습니다.</p>
-          {indexOpen && <ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} initialQuery={selResearch ? selResearch.researchId : ""} preferredResearchId={selResearch && selResearch.researchId} />}
+          <ResearchIndexPage baseUrl={baseUrl} onNavigate={onNavigate} initialQuery={selResearch ? selResearch.researchId : ""} preferredResearchId={selResearch && selResearch.researchId} />
         </div>
       </details>
+      </div>
+      )}
 
-      {/* v5.3.1(U3 추천 채택): 거버넌스 UI 는 기본닫힘 fold 로 격하 — export human 승인 계약은 백엔드 불변. */}
-      <details className="evo-group" aria-labelledby="v4-history-gov-title"
-               onToggle={(e) => setGovOpen(e.currentTarget.open)}>
-        <summary className="evo-group-summary">
-          <div className="stom-section-label" id="v4-history-gov-title">거버넌스 · 결정 원장 (기본 접힘 · export 승인 경계는 불변)</div>
-        </summary>
-        <div className="evo-group-body">
-          <p className="v4-history-feature-copy">목적: 결정 감사와 승인 경계를 확인합니다. 방법: 필요할 때만 펼쳐 원장을 읽으세요. 필요성: 거버넌스는 증거 조회 전용이며 호환되지 않는 연구 ID를 결합하지 않습니다.</p>
-          <p className="mono v4-history-governance-note">
-            append-only 결정 감사 · freeze/verdict · human-approval/export 경계(이전 Audit 탭에서 이전).
-          </p>
-          <div data-region="scroll" tabIndex={0} aria-label="거버넌스 결정 원장과 검증 결산 영역">
-            {govOpen && <AuditDecisionTrace baseUrl={baseUrl} />}
-            {govOpen && <VerdictPanel baseUrl={baseUrl} onNavigate={onNavigate} />}
-          </div>
-        </div>
-      </details>
     </div>
   );
 }

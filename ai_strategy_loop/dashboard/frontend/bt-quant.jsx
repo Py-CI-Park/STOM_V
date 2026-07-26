@@ -157,14 +157,10 @@ function BtQuantPanel({ analysis }) {
   const dowMaxAbs = dowRows.reduce((m, r) => Math.max(m, Math.abs(r.n ? r.sum / r.n : 0)), 0) || 1;
 
   return (
-    <div className="panel v54-quant" aria-label="퀀트 인사이트 · 회귀 분석">
-      <div className="panel-hd">
-        <div className="panel-hd-title"><span className="dot" style={{ background: "var(--violet)" }}></span>퀀트 인사이트 · 회귀 분석</div>
-        <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>표본 내 표시용 통계 · 거래 {model.nTrades}건 · advisory-only</span>
-      </div>
-      <div className="panel-bd v54-quant-grid">
-        <section>
-          <h4 className="stom-section-label">다차원 회귀 — 무엇이 수익률을 설명하나</h4>
+    <>
+      <section className="panel bt-equal-card bt-quant-card" aria-label="다차원 회귀">
+        <div className="panel-hd"><div className="panel-hd-title"><span className="dot" style={{ background: "var(--violet)" }}></span>다차원 회귀 · 수익률 설명력</div></div>
+        <div className="panel-bd">
           {multi ? (
             <div>
               {betaRows.map(r => (
@@ -183,27 +179,33 @@ function BtQuantPanel({ analysis }) {
                   : " 이익 실현(MFE) 포착이 수익률을 더 크게 좌우 — 청산 타이밍 개선이 우선순위."}</p>
             </div>
           ) : <p className="v54-quant-note">거래 표본 부족(8건 미만) — 다차원 회귀 생략.</p>}
-        </section>
-        <section>
-          <h4 className="stom-section-label">보유시간 → 수익률 (회귀선)</h4>
+        </div>
+      </section>
+      <section className="panel bt-equal-card bt-quant-card" aria-label="보유시간 수익률 회귀">
+        <div className="panel-hd"><div className="panel-hd-title"><span className="dot" style={{ background: "var(--blue)" }}></span>보유시간 → 수익률</div></div>
+        <div className="panel-bd">
           {holdPts.length >= 3 ? (
             <div>
               <_BtqScatter pts={holdPts} xLab="보유시간(분)" yLab="수익률(%)" ols={holdOls} />
               {holdOls && <p className="v54-quant-note">기울기 {holdOls.b >= 0 ? "+" : ""}{holdOls.b.toFixed(3)}%/분 · R² {(holdOls.r2 * 100).toFixed(0)}% — {holdOls.b < 0 ? "오래 들고 있을수록 불리: 시간 손절 검토." : "보유 시간이 길수록 유리: 조기 청산 완화 검토."}</p>}
             </div>
           ) : <p className="v54-quant-note">보유시간 표본 부족.</p>}
-        </section>
-        <section>
-          <h4 className="stom-section-label">일별 수익 자기상관 (lag-1)</h4>
+        </div>
+      </section>
+      <section className="panel bt-equal-card bt-quant-card" aria-label="일별 수익 자기상관">
+        <div className="panel-hd"><div className="panel-hd-title"><span className="dot" style={{ background: "var(--amber)" }}></span>일별 수익 자기상관 · lag-1</div></div>
+        <div className="panel-bd">
           {lagPts.length >= 3 ? (
             <div>
               <_BtqScatter pts={lagPts} xLab="전일 수익(원)" yLab="당일 수익(원)" ols={lagOls} />
               {lagOls && <p className="v54-quant-note">β {lagOls.b >= 0 ? "+" : ""}{lagOls.b.toFixed(2)} · R² {(lagOls.r2 * 100).toFixed(0)}% — {lagWord}.</p>}
             </div>
           ) : <p className="v54-quant-note">일별 수익 표본 부족.</p>}
-        </section>
-        <section>
-          <h4 className="stom-section-label">요일 구조 — 평균 수익·승일률</h4>
+        </div>
+      </section>
+      <section className="panel bt-equal-card bt-quant-card" aria-label="요일별 평균 수익과 승일률">
+        <div className="panel-hd"><div className="panel-hd-title"><span className="dot" style={{ background: "var(--teal)" }}></span>요일 구조 · 평균 수익·승일률</div></div>
+        <div className="panel-bd">
           {dowRows.some(r => r.n > 0) ? (
             <div>
               {dowRows.map(r => {
@@ -222,9 +224,9 @@ function BtQuantPanel({ analysis }) {
               <p className="v54-quant-note">요일별 평균 일수익과 수익일 비율. 특정 요일 열세가 뚜렷하면 요일 필터 가설로 환류.</p>
             </div>
           ) : <p className="v54-quant-note">날짜 정보가 없어 요일 구조 생략.</p>}
-        </section>
-      </div>
-    </div>
+        </div>
+      </section>
+    </>
   );
 }
 

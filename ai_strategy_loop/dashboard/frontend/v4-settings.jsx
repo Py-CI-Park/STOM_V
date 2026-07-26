@@ -4,7 +4,7 @@ const { useState: useState_v4s, useEffect: useEffect_v4s } = React;
 const V4S_PREFERENCES = {
   appearance: ["stom_theme"],
   navigation: ["stom_active_tab", "stom_active_evolution_tab", "bt_subtab"],
-  result_layout: ["stom_v511_result_layout", "stom_v511_result_diagnostics_open", "stom_v511_live_stage_density"],
+  result_layout: ["stom_v511_result_layout", "stom_v511_live_stage_density"],
 };
 const V4S_LOG_LIMIT = 200;
 function _v4sGet(key, dflt) { try { const v = window.localStorage.getItem(key); return v === null ? dflt : v; } catch (e) { return dflt; } }
@@ -60,7 +60,7 @@ function V4SettingsTab({ baseUrl, dashVersion }) {
     <div className="panel"><div className="panel-hd"><div className="panel-hd-title"><span className="dot" />Appearance / Layout</div></div><div className="panel-bd">
       <_V4sRow label="공통 레이아웃" hint="뷰는 반응형 패널과 의미 있는 차트 프레임(상태·출처·원본값)을 사용합니다. 높이와 열 수는 콘텐츠·화면 폭별 계약입니다."><span className="mono">responsive panels · semantic chart frames</span></_V4sRow>
       <_V4sRow label="테마" hint="상단 테마 버튼에서 변경하며 브라우저에만 저장됩니다."><span className="mono">{_v4sGet("stom_theme", "dark")}</span></_V4sRow>
-      <_V4sRow label="결과 분석 레이아웃" hint="History, Backtest와 Live가 공유합니다. auto · wide · balanced · dense입니다."><span className="mono">{_v4sGet("stom_v511_result_layout", "balanced")}</span></_V4sRow>
+      <_V4sRow label="결과 분석 레이아웃" hint="History, Backtest와 Live가 공유합니다. 기본 3열이며 2열·3열·4열을 직접 선택할 수 있습니다."><span className="mono">{_v4sGet("stom_v511_result_layout", "3")}열</span></_V4sRow>
     </div></div>
     <div className="panel"><div className="panel-hd"><div className="panel-hd-title"><span className="dot" />Release / Capability Probes</div></div><div className="panel-bd"><p className="v4s-note">번들 manifest와 읽기 전용 /health 응답에서 받은 값만 표시합니다. 응답에 없는 기능은 지원으로 추정하지 않습니다.</p><div className="v4s-probe-grid"><div className="v4s-probe-card"><b>대시보드 릴리스</b><span className="mono">{dashVersion || "—"}</span></div><div className="v4s-probe-card"><b>번들 빌드</b><span className="mono">{bundleVersion}</span></div><div className="v4s-probe-card"><b>/health 상태</b><span className="mono">{healthStatus}</span></div>{capabilityRows.map(row => <div className="v4s-probe-card" key={row.label}><b>{row.label}</b><span className="mono">{row.value}</span></div>)}</div>{!capabilityRows.length && <p className="v4s-note" role="status">Capability probe 사용 불가 — /health 또는 manifest에 capability 필드가 없습니다.</p>}</div></div>
     <div className="panel"><div className="panel-hd"><div className="panel-hd-title"><span className="dot" />Browser State</div></div><div className="panel-bd"><p className="v4s-note">초기화는 아래 허용 목록의 UI 환경설정에만 적용됩니다. 임의의 stom_* 키, 연구 데이터 및 런타임 상태는 삭제하지 않습니다.</p>{Object.entries(V4S_PREFERENCES).map(([category, keys]) => <_V4sRow key={category} label={`${category} (${keys.length})`} hint={keys.join(" · ")}><button className="btn ghost sm" type="button" onClick={() => setPendingReset(category)}>미리보기·초기화</button></_V4sRow>)}{pendingReset && <div className="v4s-note" role="alert">{pendingReset}에서 삭제될 키: {resetKeys.join(" · ")}<button className="btn primary sm" type="button" onClick={resetCategory}>확인하고 초기화</button><button className="btn ghost sm" type="button" onClick={() => setPendingReset("")}>취소</button></div>}</div></div>

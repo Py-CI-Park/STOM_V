@@ -108,7 +108,7 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
     let cancelled = false;
     setLoading(true);
     fetch(`${baseUrl}/strategy_code?run=${encodeURIComponent(runId)}&gen=${gen}`,
-          { signal: AbortSignal.timeout(2500) })
+          { signal: AbortSignal.timeout(window.CONDITION_FETCH_TIMEOUT_MS || 10000) })
       .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
       .then(j => { if (!cancelled) setFetched({ buy_code: j.buy_code || "", sell_code: j.sell_code || "" }); })
       .catch(e => { if (!cancelled) setFetchErr(String(e)); })
