@@ -188,7 +188,8 @@ def test_g006_removes_duplicate_inner_tabs_and_pins_readability() -> None:
     assert "lab-example" not in lab
     assert "/ui/pro.html" not in lab
     assert "onOpenWorkbench" in lab
-    assert "/ui/evolution/workbench" in lab
+    # v5.11.2 단일 진입점: 탭 이동은 정본 루트 + ?tab= 을 쓴다.
+    assert "/?tab=workbench" in lab
     assert "RL_FALLBACK_PIPELINE" not in lab
     assert "_rlPipelineState" in lab
     assert "프로세스 정본 로드 실패" in lab

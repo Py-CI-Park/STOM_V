@@ -77,7 +77,7 @@ function ResearchProPanel({ baseUrl, wsStatus, runId }) {
        에서 열린 경우엔 이 콜백이 주입되지 않으므로 이 경로는 풀스크린 전용이다. */
     try {
       localStorage.setItem("stom_active_tab", "backtest");
-      window.location.href = "/ui/";
+      window.location.href = "/";
     } catch (e) {
       /* 무시 — 이동 실패해도 CustomEvent/localStorage 적재는 이미 끝났다. */
     }
@@ -161,7 +161,7 @@ function ResearchProPanel({ baseUrl, wsStatus, runId }) {
                     try {
                       localStorage.setItem("stom_active_tab", "evolution");
                       localStorage.setItem("stom_active_evolution_tab", "records");
-                      window.location.href = "/ui/evolution/records";
+                      window.location.href = "/?tab=history";
                     } catch (e) {}
                   }}>
                     히스토리에서 열기

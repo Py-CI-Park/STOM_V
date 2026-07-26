@@ -9668,7 +9668,7 @@ def signal_sell(pos, bar, ind):
     const onOpenWorkbench = useCallback_rp(() => {
       try {
         localStorage.setItem("stom_active_tab", "backtest");
-        window.location.href = "/ui/";
+        window.location.href = "/";
       } catch (e) {
       }
     }, []);
@@ -9699,7 +9699,7 @@ def signal_sell(pos, bar, ind):
       try {
         localStorage.setItem("stom_active_tab", "evolution");
         localStorage.setItem("stom_active_evolution_tab", "records");
-        window.location.href = "/ui/evolution/records";
+        window.location.href = "/?tab=history";
       } catch (e) {
       }
     } }, "\uD788\uC2A4\uD1A0\uB9AC\uC5D0\uC11C \uC5F4\uAE30")))))), showFlow && /* @__PURE__ */ React.createElement(_RpProcessFlowOverlay, { onClose: () => setShowFlow(false), liveState, ops }));
@@ -32480,7 +32480,7 @@ def signal_sell(pos, bar, ind):
     const onOpenWorkbench = useCallback_rrp(() => {
       try {
         localStorage.setItem("stom_active_tab", "backtest");
-        window.location.href = "/ui/backtest";
+        window.location.href = "/?tab=backtest";
       } catch (e) {
       }
     }, []);
@@ -35116,9 +35116,9 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       try {
         window.localStorage.setItem("stom_active_tab", "evolution");
         window.localStorage.setItem("stom_active_evolution_tab", "workbench");
-        window.location.href = "/ui/evolution/workbench";
+        window.location.href = "/?tab=workbench";
       } catch (e) {
-        if (window.location) window.location.href = "/ui/evolution/workbench";
+        if (window.location) window.location.href = "/?tab=workbench";
       }
     }, [onOpenWorkbench]);
     return /* @__PURE__ */ React.createElement("div", { className: "research-lab-shell" }, /* @__PURE__ */ React.createElement("div", { className: "research-section-filter", "aria-label": "\uC5F0\uAD6C\uC2E4 \uBCF4\uAE30 \uC120\uD0DD" }, !viewAll && RESEARCH_TABS.map((item) => /* @__PURE__ */ React.createElement(
@@ -37491,17 +37491,6 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     "audit": "history",
     "process": "research"
   };
-  var V4_CANONICAL_PATHS = {
-    "research": "/ui/evolution",
-    "history": "/ui/evolution/records",
-    "workbench": "/ui/evolution/workbench",
-    "backtest": "/ui/backtest",
-    "replay": "/ui/chart-replay",
-    "catalog": "/ui/evolution/catalog"
-  };
-  function v4CanonicalPathForTab(tab) {
-    return V4_CANONICAL_PATHS[tab] || "";
-  }
   var V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research", "alpha": "catalog" };
   function v4TabFromPathname(pathname) {
     try {
@@ -37661,14 +37650,12 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       document.title = "STOM AI \xB7 \uC870\uAC74\uC2DD \uC790\uC728 \uC9C4\uD654 \uB300\uC2DC\uBCF4\uB4DC " + V4_DASH_VERSION;
     }, [theme]);
     useEffect_v4(() => {
-      const fromPath = v4TabFromPathname(window.location.pathname);
-      if (!fromPath) return;
+      if (!/^\/ui(\/|$)/.test(window.location.pathname)) return;
       try {
         const url = new URL(window.location.href);
-        if (url.searchParams.has("tab")) {
-          url.searchParams.delete("tab");
-          window.history.replaceState(null, "", url.pathname + url.search);
-        }
+        url.pathname = "/";
+        url.searchParams.set("tab", v4TabFromPathname(window.location.pathname) || activeTab);
+        window.history.replaceState(null, "", url.pathname + url.search);
       } catch (e) {
       }
     }, []);
@@ -37797,14 +37784,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       setActiveTab(key);
       try {
         const url = new URL(window.location.href);
-        const canonicalPath = v4CanonicalPathForTab(key);
-        if (canonicalPath) {
-          url.pathname = canonicalPath;
-          url.searchParams.delete("tab");
-        } else {
-          url.pathname = "/ui/v4/";
-          url.searchParams.set("tab", key);
-        }
+        url.pathname = "/";
+        url.searchParams.set("tab", key);
         window.history.replaceState(null, "", url.pathname + url.search);
       } catch (e) {
       }
@@ -37834,7 +37815,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       /* @__PURE__ */ React.createElement(V4RailIcon, { name: tab.key }),
       /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, tab.label),
       /* @__PURE__ */ React.createElement("i", { className: "v4-ri-dot" })
-    )))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-rail-item" + (contextDrawerOpen ? " active" : ""), onClick: () => setContextDrawerOpen((v) => !v), title: "AI Context Pack(\uAC1C\uBC1C\uC790 \uC11C\uB78D) \uD1A0\uAE00", "aria-pressed": contextDrawerOpen }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "3", width: "12", height: "12", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M6 7 h6 M6 10 h4" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "Context")), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/ui/?dashboard_version=legacy", title: "Legacy \uB300\uC2DC\uBCF4\uB4DC\uB97C 1\uD68C \uC5F4\uAE30(\uC601\uC18D \uC5C6\uC74C)" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "LEGACY"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, newVer && /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "v4-rail-spacer" }), /* @__PURE__ */ React.createElement("button", { type: "button", className: "v4-rail-item" + (contextDrawerOpen ? " active" : ""), onClick: () => setContextDrawerOpen((v) => !v), title: "AI Context Pack(\uAC1C\uBC1C\uC790 \uC11C\uB78D) \uD1A0\uAE00", "aria-pressed": contextDrawerOpen }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "3", width: "12", height: "12", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M6 7 h6 M6 10 h4" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "Context")), /* @__PURE__ */ React.createElement("a", { className: "v4-rail-item", href: "/?dashboard_version=legacy", title: "Legacy \uB300\uC2DC\uBCF4\uB4DC\uB97C 1\uD68C \uC5F4\uAE30(\uC601\uC18D \uC5C6\uC74C)" }, /* @__PURE__ */ React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 18 18", fill: "none", stroke: "currentColor", strokeWidth: "1.4" }, /* @__PURE__ */ React.createElement("path", { d: "M11 3 L5 9 L11 15" })), /* @__PURE__ */ React.createElement("span", { className: "v4-ri-label" }, "LEGACY"))), /* @__PURE__ */ React.createElement("div", { className: "v4-workspace" }, newVer && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",

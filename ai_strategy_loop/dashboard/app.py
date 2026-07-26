@@ -3553,10 +3553,11 @@ def create_app(
     app.include_router(simulation_router)
     app.include_router(alpha_router)
 
-    @app.get("/")
-    def root() -> RedirectResponse:
-        # 단일 진입점: 루트로 들어오면 정적 대시보드(/ui/)로 보낸다.
-        return RedirectResponse(url="/ui/")
+    @app.get("/", response_class=HTMLResponse)
+    def root(request: Request) -> HTMLResponse:
+        # 단일 진입점: 루트가 최신 대시보드를 그대로 서빙한다.
+        #   버전 접미사(/ui/v4/)나 중간 리다이렉트 없이 http://host:port/ 하나만 정본 주소다.
+        return _dashboard_selected_index_response(request)
 
     def _dashboard_index_response() -> HTMLResponse:
         index_path = os.path.join(_FRONTEND_DIR, "index.html")
@@ -3691,11 +3692,12 @@ def create_app(
 
     @app.get("/ui", response_class=HTMLResponse)
     def ui_root_no_slash(request: Request) -> RedirectResponse:
-        return _redirect_with_query(request, "/ui/")
+        return _redirect_with_query(request, "/")
 
     @app.get("/ui/", response_class=HTMLResponse)
-    def ui_root(request: Request) -> HTMLResponse:
-        return _dashboard_selected_index_response(request)
+    def ui_root(request: Request) -> RedirectResponse:
+        # 구 진입점. 정본 루트로 보낸다(?dashboard_version=legacy 등 쿼리는 보존).
+        return _redirect_with_query(request, "/")
 
     @app.get("/ui/remodel", response_class=HTMLResponse)
     def ui_remodel_root_no_slash() -> RedirectResponse:
@@ -3725,15 +3727,15 @@ def create_app(
 
     @app.get("/ui/v4", response_class=HTMLResponse)
     def ui_v4_root_no_slash(request: Request) -> RedirectResponse:
-        # 쿼리스트링 보존(V2/V3 no-slash 라우트와 동일 규약) — 없으면 ?base=/?tab= 가
-        #   /ui/v4/ 리다이렉트에서 유실돼(예: cross-origin 데이터 연동 ?base=8791) 로컬
-        #   백엔드로 붙는 사고가 난다.
-        return _redirect_with_query(request, "/ui/v4/")
+        # 버전 접미사 주소는 은퇴했다. 쿼리스트링은 보존한다 — 없으면 ?base=/?tab= 가
+        #   리다이렉트에서 유실돼(예: cross-origin 데이터 연동 ?base=8791) 로컬 백엔드로
+        #   붙는 사고가 난다.
+        return _redirect_with_query(request, "/")
 
     @app.get("/ui/v4/", response_class=HTMLResponse)
-    def ui_v4_root() -> HTMLResponse:
-        # graph-first 프리뷰 진입점. V4 운영 정본(/ui, /ui/evolution)은 불변, 미지 버전은 운영 정본 폴백.
-        return _dashboard_v4_index_response()
+    def ui_v4_root(request: Request) -> RedirectResponse:
+        # 구 graph-first 진입점 → 정본 루트 하나로 통합(2026-07-26).
+        return _redirect_with_query(request, "/")
 
     @app.get("/ui/evolution", response_class=HTMLResponse)
     @app.get("/ui/evolution/{subtab}", response_class=HTMLResponse)

@@ -112,18 +112,8 @@ const V4_PATH_TAB_MAP = {
   "audit": "history",
   "process": "research",
 };
-const V4_CANONICAL_PATHS = {
-  "research": "/ui/evolution",
-  "history": "/ui/evolution/records",
-  "workbench": "/ui/evolution/workbench",
-  "backtest": "/ui/backtest",
-  "replay": "/ui/chart-replay",
-  "catalog": "/ui/evolution/catalog",
-};
-
-function v4CanonicalPathForTab(tab) {
-  return V4_CANONICAL_PATHS[tab] || "";
-}
+// 2026-07-26 단일 진입점 통합: 주소를 쓸 때는 항상 정본 루트(`/?tab=`)를 쓴다.
+//   위 V4_PATH_TAB_MAP 은 기존 북마크·외부 문서의 /ui/… 딥링크를 탭으로 되읽는 용도로만 남는다.
 
 // v5.3.1: 은퇴 탭(audit·verdict·lab·alpha) legacy ?tab= 딥링크를 소유 탭으로 봉인한다.
 const V4_LEGACY_TAB_ALIAS = { "audit": "history", "verdict": "history", "lab": "research", "alpha": "catalog" };
@@ -297,14 +287,14 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     document.title = "STOM AI · 조건식 자율 진화 대시보드 " + V4_DASH_VERSION;
   }, [theme]);
   useEffect_v4(() => {
-    const fromPath = v4TabFromPathname(window.location.pathname);
-    if (!fromPath) return;
+    // 구 딥링크(/ui/…, /ui/v4/)로 들어와도 주소창은 정본 루트 + ?tab= 으로 정규화한다.
+    //   탭 상태는 그대로 유지되므로 사용자는 화면을 잃지 않는다.
+    if (!/^\/ui(\/|$)/.test(window.location.pathname)) return;
     try {
       const url = new URL(window.location.href);
-      if (url.searchParams.has("tab")) {
-        url.searchParams.delete("tab");
-        window.history.replaceState(null, "", url.pathname + url.search);
-      }
+      url.pathname = "/";
+      url.searchParams.set("tab", v4TabFromPathname(window.location.pathname) || activeTab);
+      window.history.replaceState(null, "", url.pathname + url.search);
     } catch (e) {}
   }, []);
   useEffect_v4(() => { if (activeTab === "replay") setReplayVisited(true); }, [activeTab]);
@@ -432,15 +422,11 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     if (retainFocus) pendingTabFocusRef.current = key;
     setActiveTab(key);
     try {
+      // 단일 진입점 규약(2026-07-26): 주소는 항상 루트 + ?tab= 이다.
+      //   /ui/v4/ 같은 버전 접미사나 탭마다 다른 경로를 주소창에 남기지 않는다.
       const url = new URL(window.location.href);
-      const canonicalPath = v4CanonicalPathForTab(key);
-      if (canonicalPath) {
-        url.pathname = canonicalPath;
-        url.searchParams.delete("tab");
-      } else {
-        url.pathname = "/ui/v4/";
-        url.searchParams.set("tab", key);
-      }
+      url.pathname = "/";
+      url.searchParams.set("tab", key);
       window.history.replaceState(null, "", url.pathname + url.search);
     } catch (e) {}
   };
@@ -485,7 +471,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><rect x="3" y="3" width="12" height="12" rx="2" /><path d="M6 7 h6 M6 10 h4" /></svg>
           <span className="v4-ri-label">Context</span>
         </button>
-        <a className="v4-rail-item" href="/ui/?dashboard_version=legacy" title="Legacy 대시보드를 1회 열기(영속 없음)">
+        <a className="v4-rail-item" href="/?dashboard_version=legacy" title="Legacy 대시보드를 1회 열기(영속 없음)">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M11 3 L5 9 L11 15" /></svg>
           <span className="v4-ri-label">LEGACY</span>
         </a>

@@ -115,7 +115,8 @@ class TestResearchProSource:
         # E10 — 프로세스 버튼 + SPA 분석 워크벤치 전환.
         assert "프로세스" in src
         assert "/ui/pro.html" not in src
-        assert "/ui/evolution/workbench" in src
+        # v5.11.2 단일 진입점: 탭 이동은 정본 루트 + ?tab= 을 쓴다.
+        assert "/?tab=workbench" in src
         assert "onOpenWorkbench" in src
 
     def test_app_jsx_links_research_pro(self):

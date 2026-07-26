@@ -274,9 +274,9 @@ function ResearchLabPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
     try {
       window.localStorage.setItem("stom_active_tab", "evolution");
       window.localStorage.setItem("stom_active_evolution_tab", "workbench");
-      window.location.href = "/ui/evolution/workbench";
+      window.location.href = "/?tab=workbench";
     } catch (e) {
-      if (window.location) window.location.href = "/ui/evolution/workbench";
+      if (window.location) window.location.href = "/?tab=workbench";
     }
   }, [onOpenWorkbench]);
   return (

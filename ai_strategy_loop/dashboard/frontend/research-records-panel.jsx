@@ -143,7 +143,7 @@ function ResearchRecordsPanel({ baseUrl, wsStatus, onSelectCampaign }) {
   const onOpenWorkbench = useCallback_rrp(() => {
     try {
       localStorage.setItem("stom_active_tab", "backtest");
-      window.location.href = "/ui/backtest";
+      window.location.href = "/?tab=backtest";
     } catch (e) {}
   }, []);
 

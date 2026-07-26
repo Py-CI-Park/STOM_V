@@ -102,16 +102,21 @@ def test_exact_v4_bootstrap_issues_bounded_strict_cookie(
 ) -> None:
     client = _client(monkeypatch, tmp_path)
 
-    response = client.get(path, headers=ORIGIN_HEADER)
-
-    cookie = response.headers.get("set-cookie", "").lower()
-    assert response.status_code == 200
+    # v5.11.2: /ui/v4 는 정본 루트(/)로 통합돼 307 을 낸다. 세션은 그 첫 응답에서 발급되므로
+    #   쿠키 속성은 리다이렉트를 따라가기 전 응답에서 확인한다(계약은 그대로).
+    first = client.get(path, headers=ORIGIN_HEADER, follow_redirects=False)
+    cookie = first.headers.get("set-cookie", "").lower()
+    assert first.status_code in (200, 307)
     assert f"{SESSION_COOKIE_NAME}=" in cookie
     assert "httponly" in cookie
     assert "samesite=strict" in cookie
     assert "path=/" in cookie
     max_age = int(cookie.split("max-age=")[1].split(";")[0])
     assert 1 <= max_age <= 3600
+
+    followed = client.get(path, headers=ORIGIN_HEADER)
+    assert followed.status_code == 200
+    assert client.cookies.get(SESSION_COOKIE_NAME)
 
 
 @pytest.mark.parametrize("path", ["/ui/v4", "/ui/v4/"])
@@ -148,13 +153,16 @@ def test_canonical_v4_shell_paths_bootstrap_session_cookie(
     """V4 graph-first 승격 정본 경로도 세션을 발급해야 /ws 4401 무한 거부가 없다(UXR-P2)."""
     client = _client(monkeypatch, tmp_path)
 
-    response = client.get(path, headers=ORIGIN_HEADER)
-
-    assert response.status_code == 200
-    cookie = response.headers.get("set-cookie", "").lower()
+    # 정본 루트로 통합된 경로(/ui/)는 307, 딥링크는 200 — 어느 쪽이든 첫 응답이 세션을 발급한다.
+    first = client.get(path, headers=ORIGIN_HEADER, follow_redirects=False)
+    assert first.status_code in (200, 307)
+    cookie = first.headers.get("set-cookie", "").lower()
     assert f"{SESSION_COOKIE_NAME}=" in cookie
     assert "httponly" in cookie
     assert "samesite=strict" in cookie
+
+    response = client.get(path, headers=ORIGIN_HEADER)
+    assert response.status_code == 200
     assert client.cookies.get(SESSION_COOKIE_NAME)
 
 
