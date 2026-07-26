@@ -1185,13 +1185,38 @@ def run_backtest(payload: BacktestRunPayload) -> Dict[str, Any]:
                 "status": "error",
                 "message": "sweep 스펙 임시 파일 생성에 실패했습니다.",
             }
+    # 없는 조건식으로는 잡을 만들지 않는다. 이전에는 그대로 실행돼 CLI 가 0.05초 만에
+    #   exit=1 로 죽었고, 화면에는 종료 기록만 쌓여 "결과가 왜 없냐"로 읽혔다.
+    #   (2026-07-26 전수 조사: 잡 333건 전부 이미 삭제된 `기존매수`/`기존매도` 참조)
+    buy_code = _lookup_strategy_code("buy", payload.buy)
+    sell_code = _lookup_strategy_code("sell", payload.sell)
+    missing = [
+        label for label, name, code in (
+            ("매수", payload.buy, buy_code),
+            ("매도", payload.sell, sell_code),
+        )
+        if not code
+    ]
+    if missing:
+        names = " · ".join(
+            f"{label} '{payload.buy if label == '매수' else payload.sell}'" for label in missing
+        )
+        return {
+            "status": "error",
+            "code": "strategy_not_found",
+            "message": (
+                f"{names} 조건식을 라이브러리에서 찾을 수 없습니다. "
+                "조건식 편집 탭에서 현재 저장된 이름을 다시 선택하세요."
+            ),
+        }
+
     spec = BacktestJobSpec(
         buy=payload.buy,
         sell=payload.sell,
         start=payload.start,
         end=payload.end,
-        buy_code=_lookup_strategy_code("buy", payload.buy),
-        sell_code=_lookup_strategy_code("sell", payload.sell),
+        buy_code=buy_code,
+        sell_code=sell_code,
         timeframe=payload.timeframe,
         engines=payload.engines,
         timeout=payload.timeout,

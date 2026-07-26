@@ -433,3 +433,41 @@ def test_v511_result_layout_preferences_use_a_flat_individual_chart_matrix():
     assert "결과 분석 열기" in research_source
     assert 'const isDemo = wsStatus === "demo";' in research_source
     assert "window.isDemoSource" not in research_source
+
+
+class TestRunRejectsMissingStrategy:
+    """없는 조건식으로 잡을 만들지 않는다 — 즉사 후 '취소됨' 기록만 남는 경로를 막는다."""
+
+    def test_missing_buy_strategy_is_rejected_before_spawn(self, client) -> None:
+        before = len(client.get("/bt/jobs").json()["jobs"])
+
+        r = client.post("/bt/run", json={
+            "buy": "존재하지않는매수", "sell": "기존매도",
+            "start": 20250407, "end": 20250409,
+        })
+        body = r.json()
+
+        assert body["status"] == "error"
+        assert body["code"] == "strategy_not_found"
+        assert "존재하지않는매수" in body["message"]
+        # 잡이 큐잉되지 않아야 한다(종료 기록만 쌓이는 원인 제거).
+        assert len(client.get("/bt/jobs").json()["jobs"]) == before
+
+    def test_missing_sell_strategy_is_rejected_before_spawn(self, client) -> None:
+        body = client.post("/bt/run", json={
+            "buy": "기존매수", "sell": "존재하지않는매도",
+            "start": 20250407, "end": 20250409,
+        }).json()
+
+        assert body["status"] == "error"
+        assert body["code"] == "strategy_not_found"
+        assert "존재하지않는매도" in body["message"]
+
+    def test_existing_strategies_still_submit(self, client) -> None:
+        body = client.post("/bt/run", json={
+            "buy": "기존매수", "sell": "기존매도",
+            "start": 20250407, "end": 20250409,
+        }).json()
+
+        assert body["status"] == "ok", body
+        client.post("/bt/job/cancel", json={"job_id": body["job_id"]})
