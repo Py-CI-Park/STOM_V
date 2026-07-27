@@ -10,6 +10,8 @@
 // Track Z — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { useState_bt, useEffect_bt, useCallback_bt, useRef_bt, _btFetchJson, _btPostJson, _BT_OVERLAY_COLORS, _btNum, _pfFmtMoney } from "./bt-tab-utils.jsx";
 import { fetchRunsShared } from "./runs-shared.jsx";
+// v5.13.0(H3) — 진화 세대 행에서 조건식 즉시 열람. KEEP on ONE physical line.
+import { CodeViewer } from "./code-viewer.jsx";
 
 // ===========================================================================
 // 3b-3. 다중 잡 오버레이 — 결과 라이브러리에서 2~4개 선택 → 수익곡선 겹쳐 보기.
@@ -261,6 +263,8 @@ function BtEvoSelector({ baseUrl, isDemo, onPickGen, activeEvo, compareA, onSetC
   const [gens, setGens] = useState_bt([]);
   const [loadingRuns, setLoadingRuns] = useState_bt(false);
   const [loadingGens, setLoadingGens] = useState_bt(false);
+  // v5.13.0(H3) — 조건식 즉시 열람 모달 상태({gen_no, buy_name, sell_name} | null).
+  const [codeGen, setCodeGen] = useState_bt(null);
   const autoPickedRunRef = useRef_bt("");
 
   // run 목록 로드(최신 우선 — 서버 정렬 그대로).
@@ -354,17 +358,25 @@ function BtEvoSelector({ baseUrl, isDemo, onPickGen, activeEvo, compareA, onSetC
                           cursor: "pointer", display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0,
                         }}>
                         <span className="mono" style={{ fontSize: 11, color: active ? "var(--violet)" : "var(--ink-0)", flexShrink: 0 }}>
-                          g{g.gen_no}
+                          Gen {g.gen_no}
                         </span>
                         <span className={"badge " + (g.gate_passed ? "done" : "idle")} style={{ flexShrink: 0 }}>
                           {g.gate_passed ? "gate" : "—"}
                         </span>
-                        <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>
-                          {g.strategy_gist || g.buy_name || ""}
+                        {/* v5.13.0(H3) — 조건식 이름을 우선 표시(어느 조건식인지 즉시 식별). */}
+                        <span className="mono" title={(g.buy_name || "") + (g.sell_name ? " / " + g.sell_name : "")}
+                              style={{ fontSize: 10, color: "var(--ink-2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>
+                          {g.buy_name || g.strategy_gist || ""}
                         </span>
                         <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)", flexShrink: 0 }}>
                           {g.trade_count}거래{g.has_csv ? "" : " ·축약"}
                         </span>
+                      </button>
+                      {/* v5.13.0(H3) — 조건식 즉시 열람. */}
+                      <button className="btn ghost sm" style={{ flexShrink: 0, fontSize: 10, padding: "2px 6px" }}
+                              title="이 세대의 매수·매도 조건식 코드를 봅니다"
+                              onClick={() => setCodeGen({ gen_no: g.gen_no, buy_name: g.buy_name, sell_name: g.sell_name })}>
+                        &lt;/&gt;
                       </button>
                       {typeof onSetCompareA === "function" && g.has_csv && (
                         <button className={"btn ghost sm" + (isCompareA ? " active" : "")}
@@ -388,6 +400,10 @@ function BtEvoSelector({ baseUrl, isDemo, onPickGen, activeEvo, compareA, onSetC
           </>
         )}
       </div>
+      {/* v5.13.0(H3) — 조건식 즉시 열람 모달. */}
+      {codeGen && (
+        <CodeViewer generation={codeGen} runId={runId} baseUrl={baseUrl} onClose={() => setCodeGen(null)} />
+      )}
     </div>
   );
 }

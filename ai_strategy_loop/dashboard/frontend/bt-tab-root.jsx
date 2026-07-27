@@ -50,6 +50,8 @@ function BacktestTab({ baseUrl, wsStatus }) {
   // A/B 비교 — compareA(기준 잡 id), compareView(/bt/compare 응답).
   const [compareA, setCompareA] = useState_bt("");
   const [compareView, setCompareView] = useState_bt(null);
+  // v5.13.0(H2) — 결과 소스 보기: 모두(2열) | AI 연구(진화만) | 인간 벤치마크(직접 실행 잡만).
+  const [sourceView, setSourceView] = useState_bt("all");
 
   // B2 — 하위 탭 [조건식 편집 | 결과 분석]. STOM GUI 처럼 화면 전환(상단 실행바는 항상 노출).
   //   localStorage 로 마지막 선택을 유지(선택). 잘못된 값/접근 실패는 기본값으로 흡수.
@@ -239,25 +241,48 @@ function BacktestTab({ baseUrl, wsStatus }) {
       {/* 결과 분석 탭 — 결과 라이브러리 + 전폭 결과/분석 영역 + 접이식 분석 섹션 */}
       {subTab === "result" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {/* v5.11.2 — 두 목록이 무엇이 다른지 화면에서 먼저 말한다. 이 구분을 모르면
-              "결과가 왜 없냐"가 UI 고장으로 오해된다(사용자 지적 2026-07-26). */}
+          {/* v5.13.0(H4) — 이전 화면 복귀는 상단 고정. 다른 탭에서 결과로 넘어온 뒤
+              돌아갈 길이 없다는 육안 검토 지적 반영(SPA 는 브라우저 히스토리를 그대로 쓴다). */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <button className="btn ghost sm" title="직전 화면(탭)으로 돌아갑니다"
+                    onClick={() => { try { window.history.back(); } catch (e) {} }}>
+              ← 이전 화면으로
+            </button>
+            {/* v5.13.0(H2) — 결과 소스 필터: 인간 벤치마크 / AI 연구 / 모두. */}
+            <span className="mono" style={{ fontSize: 11, color: "var(--ink-3)" }}>결과 출처</span>
+            {[["all", "모두 보기"], ["human", "인간 벤치마크(직접 실행)"], ["ai", "AI 연구(진화 세대)"]].map(([v, lbl]) => (
+              <button key={v} className={"btn ghost sm" + (sourceView === v ? " active" : "")}
+                      style={sourceView === v ? { color: "var(--teal)", borderColor: "var(--teal)" } : undefined}
+                      onClick={() => setSourceView(v)}>{lbl}</button>
+            ))}
+          </div>
+          {/* v5.11.2 — 두 목록이 무엇이 다른지 화면에서 먼저 말한다. */}
           <div className="bt-source-legend" role="note">
             <div>
-              <b>진화 세대 결과</b>
-              <span>AI 연구 루프가 스스로 돌린 세대별 백테스트입니다. 결과 CSV가 남아 있어 바로 분석할 수 있습니다.</span>
+              <b>진화 세대 결과 = AI 연구</b>
+              <span>AI 연구 루프가 스스로 돌린 세대별 백테스트입니다. 어느 연구(run)·어느 세대(Gen)·어떤 조건식인지 표시되며, 클릭하면 결과 분석이 열립니다.</span>
             </div>
             <div>
-              <b>잡 결과 · 실행 기록</b>
+              <b>잡 결과 · 실행 기록 = 인간 벤치마크</b>
               <span>이 화면에서 사람이 직접 실행 버튼을 눌러 만든 백테스트입니다. 완주해야 분석 결과가 남습니다.</span>
             </div>
           </div>
-          <BtCollapsible title="진화 세대 결과 라이브러리" accent="var(--violet)" defaultOpen={true}>
-            <BtEvoSelector baseUrl={baseUrl} isDemo={isDemo} onPickGen={onPickGen} activeEvo={evoSource}
-                           compareA={compareA} onSetCompareA={onSetCompareA} onCompareB={runCompare} />
-          </BtCollapsible>
-          <BtResultLibrary baseUrl={baseUrl} isDemo={isDemo} jobs={jobsList} onResult={onPickJobResult}
-                           selectedJobId={resultJobId} onReload={reloadJobs}
-                           compareA={compareA} onSetCompareA={onSetCompareA} onCompareB={runCompare} />
+          {/* v5.13.0(H1) — 상하 반반이 아니라 2열 배치(넓은 화면). 소스 필터에 따라 한쪽만 전폭. */}
+          <div className={"bt-source-columns" + (sourceView !== "all" ? " single" : "")}>
+            {(sourceView === "all" || sourceView === "ai") && (
+              <div style={{ minWidth: 0 }}>
+                <BtEvoSelector baseUrl={baseUrl} isDemo={isDemo} onPickGen={onPickGen} activeEvo={evoSource}
+                               compareA={compareA} onSetCompareA={onSetCompareA} onCompareB={runCompare} />
+              </div>
+            )}
+            {(sourceView === "all" || sourceView === "human") && (
+              <div style={{ minWidth: 0 }}>
+                <BtResultLibrary baseUrl={baseUrl} isDemo={isDemo} jobs={jobsList} onResult={onPickJobResult}
+                                 selectedJobId={resultJobId} onReload={reloadJobs}
+                                 compareA={compareA} onSetCompareA={onSetCompareA} onCompareB={runCompare} />
+              </div>
+            )}
+          </div>
           <div style={{ minWidth: 0, position: "relative" }}>
             {isModeResult ? (
               <BtModeResultPanel baseUrl={baseUrl} isDemo={isDemo} jobId={resultJobId} mode={selectedJobMode} />

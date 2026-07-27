@@ -7,6 +7,8 @@
 import { LegendDot } from "./chart-primitives.jsx";
 import { HofInventoryGate } from "./hof-inventory.jsx";
 import { HofPerformanceOverview } from "./hof-performance-overview.jsx";
+// v5.13.0(G4) — 조건식 즉시 열람: 카탈로그 행에서 코드 뷰어를 바로 연다. KEEP on ONE physical line.
+import { CodeViewer } from "./code-viewer.jsx";
 
 // HallOfFamePanel · ReferenceGallery 가 쓰는 React hook 별칭(이동 시 각 모듈이 자체 선언).
 const { useState: useState_eq, useEffect: useEffect_eq, useCallback: useCallback_eq, useRef: useRef_eq } = React;
@@ -83,7 +85,13 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
   const [gateFilter, setGateFilter] = useState_eq("");
   const [outcomeFilter, setOutcomeFilter] = useState_eq("");
   const [galleryOpen, setGalleryOpen] = useState_eq(false);
+  const [galleryInitial, setGalleryInitial] = useState_eq(null);
   const [lastUpdated, setLastUpdated] = useState_eq(null);
+  // v5.13.0(G3/G4) — TOP10(게이트 통과 · score 순) + 조건식 즉시 열람 상태.
+  const [top10, setTop10] = useState_eq([]);
+  const [codeView, setCodeView] = useState_eq(null); // {run_id, gen_no, buy_name, sell_name} | null
+  // v5.13.0(G1) — 인간 결과 스크린샷을 모달 뒤에 숨기지 않고 표와 나란히 상시 표시.
+  const [shots, setShots] = useState_eq([]);
   const requestRef = useRef_eq(null);
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
@@ -130,6 +138,29 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
     return () => { clearInterval(id); if (requestRef.current) requestRef.current.abort(); };
   }, [fetchCatalog]);
 
+  // v5.13.0(G3) — TOP10 은 필터·정렬과 독립: 게이트 통과 세대를 score 내림차순 10개.
+  useEffect_eq(() => {
+    if (isDemo || !baseUrl) { setTop10([]); return undefined; }
+    const controller = new AbortController();
+    fetch(baseUrl + "/hall_of_fame/catalog?limit=10&offset=0&sort=score&order=desc&gate=passed",
+          { signal: controller.signal })
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+      .then(j => setTop10(Array.isArray(j && j.items) ? j.items : []))
+      .catch(() => setTop10([]));
+    return () => controller.abort();
+  }, [baseUrl, isDemo]);
+
+  // v5.13.0(G1) — 스크린샷 파일 목록(상시 스트립용).
+  useEffect_eq(() => {
+    if (!baseUrl) { setShots([]); return undefined; }
+    const controller = new AbortController();
+    fetch(baseUrl + "/reference_screenshots", { signal: controller.signal })
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+      .then(j => setShots(Array.isArray(j && j.screenshots) ? j.screenshots : []))
+      .catch(() => setShots([]));
+    return () => controller.abort();
+  }, [baseUrl]);
+
   const fmtPct = (v) => typeof v === "number" ? `${v >= 0 ? "+" : ""}${v.toFixed(1)}%` : "—";
   const fmtNumber = (v, digits = 2) => typeof v === "number" ? v.toFixed(digits) : "—";
   const fmtInt = (v) => typeof v === "number" ? Math.round(v).toLocaleString("ko-KR") : "—";
@@ -171,7 +202,58 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
         ) : (
           <>
             <HofPerformanceOverview humanRows={humanRows} catalogRows={catalogRows} />
+
+            {/* v5.13.0(G3) — 바로 사용해도 좋은 상위 TOP10: 게이트 통과 · score 내림차순.
+                조건식 이름을 앞세우고 [조건식 보기]로 즉시 열람(G4). */}
+            {top10.length > 0 && (
+              <>
+                <div style={{ margin: "16px 0 8px", fontWeight: 700 }}>⭐ 바로 쓸 만한 TOP {top10.length} — 게이트 통과 · score 순</div>
+                <div className="hof-top10-grid">
+                  {top10.map((row, i) => (
+                    <div key={`${row.run_id}/${row.gen_no}`} className={"hof-top10-card" + (i < 3 ? " podium" : "")}>
+                      <div className="hof-top10-rank">{i + 1}</div>
+                      <div className="hof-top10-body">
+                        <div className="hof-top10-name mono" title={row.buy_name || "—"}>
+                          <span className="k">매수</span> {row.buy_name || "—"}
+                        </div>
+                        <div className="hof-top10-name mono sell" title={row.sell_name || "—"}>
+                          <span className="k">매도</span> {row.sell_name || "—"}
+                        </div>
+                        <div className="hof-top10-metrics mono">
+                          <span>score <b>{fmtNumber(row.score)}</b></span>
+                          <span className={typeof row.return_pct === "number" && row.return_pct > 0 ? "num-pos" : "num-neg"}>
+                            수익률 <b>{fmtPct(row.return_pct)}</b>
+                          </span>
+                          <span style={{ color: "var(--red)" }}>MDD <b>{typeof row.mdd_pct === "number" ? Math.abs(row.mdd_pct).toFixed(1) + "%" : "—"}</b></span>
+                          <span>{row.label || `${row.run_id}/g${row.gen_no}`}</span>
+                        </div>
+                      </div>
+                      <button className="btn ghost sm" title="이 세대의 매수·매도 조건식 전체 코드를 바로 봅니다"
+                              onClick={() => setCodeView({ run_id: row.run_id, gen_no: row.gen_no, buy_name: row.buy_name, sell_name: row.sell_name })}>
+                        &lt;/&gt; 조건식 보기
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
             <div style={{ margin: "14px 0 8px", fontWeight: 700 }}>👤 인간 벤치마크 ({humanRows.length})</div>
+            {/* v5.13.0(G1) — 인간 결과 스크린샷을 표와 나란히 상시 표시(클릭 시 확대). */}
+            {shots.length > 0 && (
+              <div className="hof-shot-strip" aria-label="인간 결과 스크린샷 스트립">
+                {shots.slice(0, 10).map(name => (
+                  <img key={name} src={baseUrl + "/reference_img/" + encodeURIComponent(name)} alt={name}
+                       loading="lazy" title={name + " — 클릭하면 확대"}
+                       onClick={() => { setGalleryInitial(name); setGalleryOpen(true); }} />
+                ))}
+                {shots.length > 10 && (
+                  <button className="btn ghost sm" onClick={() => { setGalleryInitial(null); setGalleryOpen(true); }}>
+                    +{shots.length - 10}장 전체
+                  </button>
+                )}
+              </div>
+            )}
             <div className="hof-scroll" tabIndex="0" aria-label="인간 벤치마크 표">
               <table className="data-table hof-table hof-human-table">
                 <thead><tr><th scope="col" className="hof-identity">이름</th><th scope="col" className="hof-num">운영금</th><th scope="col" className="hof-num">총수익금(원)</th><th scope="col" className="hof-num">총수익률</th><th scope="col" className="hof-num">연평균</th><th scope="col" className="hof-num">MDD</th><th scope="col" className="hof-num">payoff</th><th scope="col" className="hof-num">승률</th><th scope="col" className="hof-num">일평균 거래</th><th scope="col" className="hof-num">최대 보유</th><th scope="col">백테 기간</th><th scope="col" className="hof-num">거래수</th></tr></thead>
@@ -221,7 +303,20 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
                   <td className="hof-num"><HofSignedValue value={row.return_krw} format={value => fmtMoney(Math.abs(value))} label="총수익금" /></td><td className="hof-num"><HofSignedValue value={row.return_pct} format={value => `${Math.abs(value).toFixed(1)}%`} label="총수익률" /></td>
                   <td className="hof-num"><HofSignedValue value={row.annual_return_pct} format={value => `${Math.abs(value).toFixed(1)}%`} label="연평균 수익률" /></td><td className="hof-num"><HofMddValue value={row.mdd_pct} /></td><td className="hof-num">{fmtNumber(row.calmar)}</td><td className="hof-num">{fmtNumber(row.payoff)}</td>
                   <td className="hof-num">{fmtPct(row.win_rate_pct)}</td><td className="hof-num">{fmtInt(row.trades)}</td><td className="hof-num">{fmtNumber(row.daily_avg_trades)}</td><td className="hof-num">{fmtInt(row.max_hold_count)}</td><td>{row.period || "—"}</td>
-                  <td className="hof-long" title={row.buy_name || "—"}>{row.buy_name || "—"}</td><td className="hof-long" title={row.sell_name || "—"}>{row.sell_name || "—"}</td><td className="hof-long" title={row.reason || "—"}>{row.reason || "—"}</td>
+                  {/* v5.13.0(G4) — 조건식 이름 클릭 = 코드 즉시 열람. */}
+                  <td className="hof-long">
+                    <button type="button" className="hof-cond-link" title={(row.buy_name || "—") + " — 클릭하면 조건식 코드를 봅니다"}
+                            onClick={() => setCodeView({ run_id: row.run_id, gen_no: row.gen_no, buy_name: row.buy_name, sell_name: row.sell_name })}>
+                      {row.buy_name || "—"}
+                    </button>
+                  </td>
+                  <td className="hof-long">
+                    <button type="button" className="hof-cond-link sell" title={(row.sell_name || "—") + " — 클릭하면 조건식 코드를 봅니다"}
+                            onClick={() => setCodeView({ run_id: row.run_id, gen_no: row.gen_no, buy_name: row.buy_name, sell_name: row.sell_name })}>
+                      {row.sell_name || "—"}
+                    </button>
+                  </td>
+                  <td className="hof-long" title={row.reason || "—"}>{row.reason || "—"}</td>
                   <td>{row.provenance && row.provenance.source ? row.provenance.source : "—"}</td>
                 </tr>)}</tbody>
               </table>
@@ -235,7 +330,17 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
           </>
         )}
       </div>
-      {galleryOpen && <ReferenceGallery baseUrl={baseUrl} onClose={() => setGalleryOpen(false)} />}
+      {galleryOpen && <ReferenceGallery baseUrl={baseUrl} initialZoom={galleryInitial}
+                                        onClose={() => { setGalleryOpen(false); setGalleryInitial(null); }} />}
+      {/* v5.13.0(G4) — 조건식 즉시 열람 모달(코드는 CodeViewer 가 /strategy_code 로 조회). */}
+      {codeView && (
+        <CodeViewer
+          generation={{ gen_no: codeView.gen_no, buy_name: codeView.buy_name, sell_name: codeView.sell_name }}
+          runId={codeView.run_id}
+          baseUrl={baseUrl}
+          onClose={() => setCodeView(null)}
+        />
+      )}
     </div>
   );
 }
@@ -246,10 +351,11 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
    baseUrl+'/reference_img/'+filename(StaticFiles 읽기 전용 마운트)로 직접 가져온다.
    스크린샷↔전략# 매핑은 불확실하므로 개별 행 정확 매핑을 시도하지 않고 전체 갤러리
    브라우징만 제공한다(정직). 모달 패턴은 CodeViewer(modal-bd/modal)를 따른다. */
-function ReferenceGallery({ baseUrl, onClose }) {
+function ReferenceGallery({ baseUrl, onClose, initialZoom }) {
   const [files, setFiles] = useState_rg(null);   // string[] | null
   const [err, setErr] = useState_rg(null);
-  const [zoom, setZoom] = useState_rg(null);     // 확대 중인 파일명 | null
+  // v5.13.0(G1) — 스트립 썸네일 클릭 시 해당 이미지로 바로 확대 진입.
+  const [zoom, setZoom] = useState_rg(initialZoom || null);     // 확대 중인 파일명 | null
 
   useEffect_rg(() => {
     if (!baseUrl) { setFiles([]); return; }

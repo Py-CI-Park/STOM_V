@@ -84,19 +84,19 @@
 
 | # | 내용 | 파일 | 상태 |
 |---|------|------|------|
-| G1 | 인간 스크린샷 복구 → 차트와 오버랩 동시 표시 | chart-hall-of-fame.jsx | 대기 |
-| G2 | 차트 세로 높이 확대 | chart-hall-of-fame.jsx, v4.css | 대기 |
-| G3 | 바로 사용 가능한 상위 TOP10 매수 조건식 강조 | chart-hall-of-fame.jsx | 대기 |
-| G4 | 조건식 즉시 열람 | chart-hall-of-fame.jsx | 대기 |
+| G1 | 인간 스크린샷 복구 → 차트와 오버랩 동시 표시 | chart-hall-of-fame.jsx | 완료 |
+| G2 | 차트 세로 높이 확대 | chart-hall-of-fame.jsx, v4.css | 완료 |
+| G3 | 바로 사용 가능한 상위 TOP10 매수 조건식 강조 | chart-hall-of-fame.jsx | 완료 |
+| G4 | 조건식 즉시 열람 | chart-hall-of-fame.jsx | 완료 |
 
 ### H. 백테스트 결과 라이브러리
 
 | # | 내용 | 파일 | 상태 |
 |---|------|------|------|
-| H1 | 진화 세대 결과 / 잡 결과 실행기록 → 상하가 아닌 2열 배치 | bt-tab-library.jsx | 대기 |
-| H2 | 분류 추가: 인간 벤치마크 / AI 연구 / 모두 보기 | bt-tab-library.jsx | 대기 |
-| H3 | AI 연구 항목에 연구·세대·조건식 표시, 클릭 시 결과 열람 (백테스트 결과로 이동) | bt-tab-library.jsx | 대기 |
-| H4 | 이전 페이지로 돌아오는 기능 상단 고정 | 셸/라이브러리 | 대기 |
+| H1 | 진화 세대 결과 / 잡 결과 실행기록 → 상하가 아닌 2열 배치 | bt-tab-library.jsx | 완료 |
+| H2 | 분류 추가: 인간 벤치마크 / AI 연구 / 모두 보기 | bt-tab-library.jsx | 완료 |
+| H3 | AI 연구 항목에 연구·세대·조건식 표시, 클릭 시 결과 열람 (백테스트 결과로 이동) | bt-tab-library.jsx | 완료 |
+| H4 | 이전 페이지로 돌아오는 기능 상단 고정 | 셸/라이브러리 | 완료 |
 
 ### I. 리플레이
 

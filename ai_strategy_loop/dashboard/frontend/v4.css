@@ -1856,6 +1856,26 @@
 }
 .ri-chart { max-width: 1400px; margin: 0 auto; }
 
+/* v5.13.0(G1/G3/G4) — 명예의 전당: TOP10 카드 · 스크린샷 스트립 · 조건식 링크. */
+.hof-top10-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 10px; margin-bottom: 6px; }
+.hof-top10-card { display: flex; align-items: center; gap: 12px; padding: 11px 13px; border: 1px solid var(--line-1); border-radius: 10px; background: var(--bg-0); }
+.hof-top10-card.podium { border-color: rgba(240, 179, 90, 0.55); background: rgba(240, 179, 90, 0.05); }
+.hof-top10-rank { flex-shrink: 0; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--bg-2); color: var(--ink-2); font: 700 14px var(--mono); }
+.hof-top10-card.podium .hof-top10-rank { background: var(--amber); color: var(--bg-0); }
+.hof-top10-body { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 3px; }
+.hof-top10-name { font-size: 12.5px; color: var(--teal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hof-top10-name.sell { color: var(--amber); }
+.hof-top10-name .k { color: var(--ink-3); font-size: 10px; margin-right: 4px; }
+.hof-top10-metrics { display: flex; gap: 12px; flex-wrap: wrap; font-size: 10.5px; color: var(--ink-2); }
+.hof-top10-metrics b { font-size: 11.5px; }
+.hof-shot-strip { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 8px; margin-bottom: 6px; align-items: center; }
+.hof-shot-strip img { height: 96px; border: 1px solid var(--line-2); border-radius: 6px; cursor: zoom-in; flex-shrink: 0; }
+.hof-shot-strip img:hover { border-color: var(--teal); }
+.hof-cond-link { background: none; border: none; padding: 0; color: var(--teal); font: inherit; cursor: pointer; text-decoration: underline dotted; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hof-cond-link.sell { color: var(--amber); }
+.hof-cond-link:hover { text-decoration: underline; }
+.performance-scatter svg { width: 100%; height: auto; }
+
 /* v5.13.0(F1) — 리포트 보기 순서를 단계식 버튼으로. */
 .v4-report-steps { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
 .v4-report-step { display: flex; align-items: center; gap: 9px; padding: 8px 14px; border: 1px solid var(--line-1); border-radius: 10px; background: var(--bg-0); color: var(--ink-1); cursor: pointer; }
@@ -1867,6 +1887,11 @@
 .v4-report-step.active i { background: var(--teal); color: var(--bg-0); }
 .v4-report-step.active b { color: var(--teal); }
 .v4-report-step-arrow { color: var(--ink-3); }
+
+/* v5.13.0(H1) — 진화 세대 결과와 잡 결과를 2열로 나란히(상하 반반 폐지). */
+.bt-source-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.bt-source-columns.single { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 1400px) { .bt-source-columns { grid-template-columns: minmax(0, 1fr); } }
 
 /* 결과 소스 두 가지의 차이를 목록 위에서 먼저 밝힌다. */
 .bt-source-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
