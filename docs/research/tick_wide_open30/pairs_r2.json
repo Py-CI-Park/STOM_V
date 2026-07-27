@@ -1,0 +1,42 @@
+[
+  {
+    "label": "r2_L1_str",
+    "buy": "CLW30_B_r2_L1_str",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r2_L2_core",
+    "buy": "CLW30_B_r2_L2_core",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r2_L3_flux",
+    "buy": "CLW30_B_r2_L3_flux",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r2_L4_capprice",
+    "buy": "CLW30_B_r2_L4_capprice",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r2_L5_depth",
+    "buy": "CLW30_B_r2_L5_depth",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r2_L6_full",
+    "buy": "CLW30_B_r2_L6_full",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r2_champ_wide",
+    "buy": "CLW30_B_r2_L6_full",
+    "sell": "AILOOP_abmain0716f_p5_typed_g11_sell"
+  },
+  {
+    "label": "r2_champ_orig",
+    "buy": "AILOOP_abmain0716f_p5_typed_g11_buy",
+    "sell": "AILOOP_abmain0716f_p5_typed_g11_sell"
+  }
+]
