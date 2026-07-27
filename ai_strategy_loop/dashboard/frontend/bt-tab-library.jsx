@@ -6,6 +6,33 @@
 */
 // Track Z — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { useState_bt, useEffect_bt, useCallback_bt, useMemo_bt, _btFetchJson, _btPostJson } from "./bt-tab-utils.jsx";
+const { useRef: useRef_btl } = React;
+
+/* v5.13.1(A2 누락분) — 백테스트 탭 조건식 "에디터"에도 파이썬 문법 강조.
+   textarea 자체는 색을 못 입히므로, 동일 글꼴·행간·패딩의 강조 레이어를 뒤에 깔고
+   textarea 글자를 투명하게(캐럿만 표시) 겹치는 표준 오버레이 기법을 쓴다.
+   토크나이저는 code-viewer.jsx 의 highlightPython(window 전역)을 재사용한다. */
+function _BtEditorBackdrop({ code, fontSize, backdropRef }) {
+  const rows = useMemo_bt(() => {
+    const fn = typeof window.highlightPython === "function" ? window.highlightPython : null;
+    return fn ? fn(code || "") : null;
+  }, [code]);
+  return (
+    // 줄을 div 로 감싸지 않고 실제 개행 문자로 흘린다 — textarea 의 텍스트 메트릭과
+    //   문자 단위로 동일해야 캐럿·선택 영역이 어긋나지 않는다(빈 줄 div 높이 붕괴 방지).
+    <pre ref={backdropRef} aria-hidden="true" className="bt-editor-backdrop mono" style={{ fontSize }}>
+      {rows
+        ? rows.map((row, i) => (
+            <React.Fragment key={i}>
+              {i > 0 ? "\n" : null}
+              {row.parts.map((p, j) => <span key={j} className={p.cls}>{p.t}</span>)}
+            </React.Fragment>
+          ))
+        : (code || "")}
+      {"\n"}
+    </pre>
+  );
+}
 
 // ===========================================================================
 // 1. 조건식 라이브러리 패널 (좌) — kind 토글 + 검색 + 목록.
@@ -216,6 +243,8 @@ function BtCodeEditor({ baseUrl, isDemo, kind, label, accent, name, onSaved, onD
 
   const lineCount = useMemo_bt(() => code.split("\n").length, [code]);
   const editorMinHeight = large ? 720 : 500;
+  // v5.13.1(A2) — 문법 강조 백드롭 스크롤 동기화용 ref.
+  const backdropRef = useRef_btl(null);
 
   const runValidate = () => {
     if (isDemo) return;
@@ -278,11 +307,20 @@ function BtCodeEditor({ baseUrl, isDemo, kind, label, accent, name, onSaved, onD
       <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <input className="input" value={editName} onChange={e => setEditName(e.target.value)}
                placeholder={label + " 조건식 이름"} spellCheck={false} disabled={isDemo} />
-        <textarea className="input mono" value={code}
-          onChange={e => { setCode(e.target.value); setValidate(null); }}
-          spellCheck={false} disabled={isDemo}
-          style={{ minHeight: editorMinHeight, resize: "vertical", lineHeight: 1.55, whiteSpace: "pre", tabSize: 4, fontSize: large ? 13.5 : 12 }}
-          placeholder={"# " + label + " 전략 코드 (Python)"} />
+        {/* v5.13.1(A2 누락분) — 에디터 문법 강조 오버레이: 강조 레이어(아래) + 투명 글자
+            textarea(위). 스크롤은 textarea onScroll 로 강조 레이어에 동기화한다. */}
+        <div className="bt-editor-wrap" style={{ minHeight: editorMinHeight }}>
+          <_BtEditorBackdrop code={code} fontSize={large ? 13.5 : 12} backdropRef={backdropRef} />
+          <textarea className="mono bt-editor-input" value={code}
+            onChange={e => { setCode(e.target.value); setValidate(null); }}
+            onScroll={e => {
+              const bd = backdropRef.current;
+              if (bd) { bd.scrollTop = e.target.scrollTop; bd.scrollLeft = e.target.scrollLeft; }
+            }}
+            spellCheck={false} disabled={isDemo}
+            style={{ fontSize: large ? 13.5 : 12 }}
+            placeholder={"# " + label + " 전략 코드 (Python)"} />
+        </div>
         <BtVarChips baseUrl={baseUrl} isDemo={isDemo} code={code} />
         {validate && (
           <div style={{

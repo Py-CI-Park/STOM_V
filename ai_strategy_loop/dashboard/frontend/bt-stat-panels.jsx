@@ -22,10 +22,27 @@ function BtExitReasonPanel({ rows }) {
         <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>청산사유 기준</span>
       </div>
       <div className="panel-bd">
+        {/* v5.13.1(C10 마감) — 공통 양식: 제목(좌)·범례(우) 아래 설명 스트립. */}
+        <MetricHelpStrip items={[
+          "어떤 매도조건(청산 사유)으로 팔렸는지 분해",
+          "막대 = 총손익 크기 · 색 = 이익/손실",
+          "손실이 몰린 사유가 매도식 수선 1순위",
+        ]} />
         {items.length === 0 ? (
           <div className="research-empty">매도조건 데이터가 없습니다</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {/* v5.13.1 — 인사이트: 손실이 가장 큰 매도 사유를 문장으로 짚는다. */}
+            {(() => {
+              const worst = items.reduce((a, b) => ((b.total_pnl || 0) < (a.total_pnl || 0) ? b : a), items[0]);
+              if (!worst || (worst.total_pnl || 0) >= 0) return null;
+              return (
+                <p className="mono" style={{ margin: "0 0 6px", fontSize: 11, color: "var(--ink-2)", lineHeight: 1.55 }}>
+                  손실이 가장 큰 사유 = <b style={{ color: "var(--red)" }}>{worst.reason}</b> ({fmtMoney(worst.total_pnl)} · {worst.count}건)
+                  — 이 청산 규칙부터 손보는 것이 효율적입니다.
+                </p>
+              );
+            })()}
             {items.map((r, i) => {
               const frac = Math.abs(r.total_pnl || 0) / maxAbs;
               const pos = (r.total_pnl || 0) >= 0;
@@ -248,6 +265,18 @@ function BtStatTestPanel({ stats }) {
         <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>유의 {sig.length}건 / 전체 {rows.length}버킷</span>
       </div>
       <div className="panel-bd" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {/* v5.13.1(C10 마감) — 공통 양식: 설명 스트립 + 유의 버킷 인사이트. */}
+        <MetricHelpStrip items={[
+          "요일·시간대별 평균 수익률이 우연인지 검정",
+          "p값 < 0.05 = 우연으로 보기 어려움(유의)",
+          "유의한 약세 버킷은 시간대 필터 후보",
+        ]} />
+        {sig.length > 0 && (
+          <p className="mono" style={{ margin: "0 0 4px", fontSize: 11, color: "var(--ink-2)", lineHeight: 1.55 }}>
+            유의 버킷: {sig.slice(0, 4).map(r => `${r.kind === "weekday" ? "요일" : "시간대"} ${r.label}(${r.mean > 0 ? "+" : ""}${(r.mean || 0).toFixed(2)}%)`).join(" · ")}
+            {sig.length > 4 ? ` 외 ${sig.length - 4}건` : ""}
+          </p>
+        )}
         {rows.map((r, i) => {
           const pos = r.mean > 0;
           return (

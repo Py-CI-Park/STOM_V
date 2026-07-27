@@ -563,7 +563,20 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <div className="v54-span-all">
               <GenerationsTable state={s} mddCap={mddCap} minDailyTrades={minDailyTrades}
                                 onViewCode={(g) => viewCode(g && g.gen_no != null ? g.gen_no : g)}
-                                onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
+                                onSelectDetail={(genNo) => {
+                                  // v5.13.1(D1 재수정) — 세대표는 스테이지 2, 결과 분석 섹션은
+                                  //   스테이지 1 에 있어 클릭 효과가 화면 밖 스테이지에서 일어났다
+                                  //   ("눌러도 반응 없음"의 v4 셸 실체). 세대를 고정하고 스테이지
+                                  //   1 로 전환한 뒤 결과 섹션으로 스크롤한다.
+                                  setSelectedDetailGen(genNo);
+                                  setStagePin(1);
+                                  try {
+                                    setTimeout(() => {
+                                      const el = document.getElementById("v59-live-result-heading");
+                                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                                    }, 80);
+                                  } catch (e) {}
+                                }} />
             </div>
           </div>
         )}

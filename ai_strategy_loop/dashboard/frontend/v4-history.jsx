@@ -149,20 +149,25 @@ function _HistoryStrategyCode({ baseUrl, selection }) {
         <div className="research-empty danger" role="alert">조건식 조회 실패 — {state.error}</div>
       ) : (
         <div className="rp-code-grid">
-          <div>
-            <div className="rp-code-label">
-              <span>매수 · {data.buy_name || "이름 미발행"}</span>
-              <button type="button" className="btn ghost sm" onClick={() => copy(buyCode)} disabled={!buyCode}>매수 복사</button>
-            </div>
-            <pre className="rp-code-block">{state.status === "loading" ? "불러오는 중…" : buyCode || "코드 미발행"}</pre>
-          </div>
-          <div>
-            <div className="rp-code-label">
-              <span>매도 · {data.sell_name || "이름 미발행"}</span>
-              <button type="button" className="btn ghost sm" onClick={() => copy(sellCode)} disabled={!sellCode}>매도 복사</button>
-            </div>
-            <pre className="rp-code-block">{state.status === "loading" ? "불러오는 중…" : sellCode || "코드 미발행"}</pre>
-          </div>
+          {/* v5.13.1(A2 누락분) — 히스토리 결과 상세의 조건식도 문법 강조로 표시한다. */}
+          {[["매수", data.buy_name, buyCode], ["매도", data.sell_name, sellCode]].map(([side, name, codeText]) => {
+            const CodeBlock = window.CvCodeBlock;
+            return (
+              <div key={side}>
+                <div className="rp-code-label">
+                  <span>{side} · {name || "이름 미발행"}</span>
+                  <button type="button" className="btn ghost sm" onClick={() => copy(codeText)} disabled={!codeText}>{side} 복사</button>
+                </div>
+                {state.status === "loading" ? (
+                  <pre className="rp-code-block">불러오는 중…</pre>
+                ) : codeText && typeof CodeBlock === "function" ? (
+                  <div className="rp-code-block rp-code-highlight"><CodeBlock code={codeText} /></div>
+                ) : (
+                  <pre className="rp-code-block">{codeText || "코드 미발행"}</pre>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </section>
