@@ -1,0 +1,37 @@
+[
+  {
+    "label": "r1_base_w30",
+    "buy": "CLW30_B_w2900",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r1_str120",
+    "buy": "CLW30_B_r1_str120",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r1_persec",
+    "buy": "CLW30_B_r1_persec",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r1_cumsec",
+    "buy": "CLW30_B_r1_cumsec",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r1_tdmx2",
+    "buy": "CLW30_B_r1_tdmx2",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r1_break",
+    "buy": "CLW30_B_r1_break",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r1_core",
+    "buy": "CLW30_B_r1_core",
+    "sell": "CLW30_S_notime"
+  }
+]
