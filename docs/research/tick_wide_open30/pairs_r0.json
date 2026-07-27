@@ -1,0 +1,32 @@
+[
+  {
+    "label": "r0_baseline_seed",
+    "buy": "CLW30_B_seed",
+    "sell": "CLW30_S_seed"
+  },
+  {
+    "label": "r0_window_2900",
+    "buy": "CLW30_B_w2900",
+    "sell": "CLW30_S_x2950"
+  },
+  {
+    "label": "r0_asym_p5m2",
+    "buy": "CLW30_B_w2900",
+    "sell": "CLW30_S_asym_p5m2"
+  },
+  {
+    "label": "r0_asym_p2m4",
+    "buy": "CLW30_B_w2900",
+    "sell": "CLW30_S_asym_p2m4"
+  },
+  {
+    "label": "r0_notime",
+    "buy": "CLW30_B_w2900",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r0_tight15",
+    "buy": "CLW30_B_w2900",
+    "sell": "CLW30_S_tight15"
+  }
+]
