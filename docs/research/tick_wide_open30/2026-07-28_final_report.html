@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tick 초기 30분 연구 최종 보고 · 2026-07-28</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(180deg,#0a0d13,#0e1117 260px);color:#e6edf3;font-family:-apple-system,'Segoe UI','Malgun Gothic',sans-serif;line-height:1.6;max-width:1100px;margin:0 auto;padding:28px 22px 60px}
+.hd{border:1.5px solid transparent;border-radius:14px;padding:22px 26px;background:linear-gradient(#161b22,#161b22) padding-box,linear-gradient(120deg,#4cd6b3,#a78bfa 55%,#f0b35a) border-box;margin-bottom:14px}
+.hd h1{font-size:23px;margin-bottom:8px}
+.hd .meta{color:#7d8590;font-size:12px;font-family:monospace;line-height:1.8}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 2px}
+.chip{padding:4px 12px;border-radius:999px;border:1px solid #272d36;background:#0e1117;font-size:11.5px;font-family:monospace;color:#aeb6bf}
+.chip b{color:#4cd6b3}
+.verdict{margin:14px 0;padding:16px 18px;border:1px solid #272d36;border-left:5px solid #f0b35a;border-radius:10px;background:#161b22;font-size:14.5px;line-height:1.75}
+.verdict b{color:#f0b35a}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 14px}
+.tabs button{padding:9px 16px;border-radius:999px;border:1px solid #272d36;background:#161b22;color:#aeb6bf;font-size:13px;cursor:pointer}
+.tabs button.on{color:#0e1117;background:#4cd6b3;border-color:#4cd6b3;font-weight:700}
+.pane{display:none}.pane.on{display:block}
+h2{display:flex;align-items:center;gap:9px;font-size:15.5px;margin:20px 0 10px}
+h2::before{content:'';width:5px;height:17px;border-radius:3px;background:linear-gradient(180deg,#4cd6b3,#a78bfa)}
+.card{background:#161b22;border:1px solid #272d36;border-radius:12px;padding:16px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{color:#7d8590;font-family:monospace;font-weight:500;text-align:left;padding:7px 9px;border-bottom:1px solid #272d36}
+td{padding:7px 9px;border-bottom:1px solid #272d36;font-family:monospace;color:#aeb6bf}
+tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
+.pos{color:#4cd6b3}.neg{color:#ff6b6b}.hl{color:#e6edf3;font-weight:700}.mut{color:#7d8590}
+.note{color:#7d8590;font-size:12px;margin-top:8px;line-height:1.6}
+.bar{display:flex;align-items:center;gap:10px;margin:6px 0;font-family:monospace;font-size:12px}
+.bar .lbl{width:190px;color:#aeb6bf;flex-shrink:0}
+.bar .tr{flex:1;height:16px;background:#0e1117;border:1px solid #272d36;border-radius:8px;position:relative;overflow:hidden}
+.bar .tr i{position:absolute;top:0;bottom:0;border-radius:8px}
+.bar .v{width:90px;text-align:right;flex-shrink:0}
+ol,ul{padding-left:22px}li{margin:6px 0}
+.fw{color:#e6edf3}
+footer{margin-top:34px;padding-top:12px;border-top:1px solid #272d36;color:#7d8590;font-size:11px;font-family:monospace;text-align:center}
+</style></head><body>
+
+<div class="hd">
+<h1>Tick 초기 30분 조건식 연구 — 최종 보고</h1>
+<div class="chips">
+<span class="chip">기간 <b>2025-04-07 ~ 2026-02-27</b></span>
+<span class="chip">평가 <b>26쌍 · 5라운드 · 4기간</b></span>
+<span class="chip">엔진 <b>warm 32 · 공식 채점</b></span>
+<span class="chip">원장 전수 <b>5,391세대</b></span>
+</div>
+<div class="meta">브랜치 research/tick-wide-open30-loop-20260727 · Claude 분석주도 루프 × claude_candidate_batch_eval(LLM 0회) · 대시보드 v5.13.1 관찰</div>
+</div>
+
+<div class="verdict">
+<b>결론.</b> 수익 조건식은 만들 수 있었고 실제로 만들어졌다 — anchor 다밴드 가계는 3년(2023~2025)간
+<b class="pos" style="color:#4cd6b3">+0.61%/거래·MDD 9.6%</b>를 실증했다. 그러나 <b>2025-04 을 기점으로 그 원엣지가
+거래비용선(0.21%p) 아래로 수축</b>했고, 본 연구 구간은 정확히 그 수축기다(공식 재검증 −0.04%/거래).
+"개선 능력의 문제"가 아니라 <b>잔여 엣지 &lt; 비용</b>이라는 레짐 문제다.
+</div>
+
+<div class="tabs">
+<button class="on" data-p="p1">① 실측 사다리</button>
+<button data-p="p2">② 레짐 소멸</button>
+<button data-p="p3">③ 원인 분해</button>
+<button data-p="p4">④ 프로세스 전수검사</button>
+<button data-p="p5">⑤ 제언·재현</button>
+</div>
+
+<div id="p1" class="pane on">
+<h2>광범위 → 챔피언 사다리 (전부 공식 엔진 · 종목당 500만)</h2>
+<div class="card">
+<div class="bar"><span class="lbl">광범위 진입(시드)</span><span class="tr"><i style="left:0;width:100%;background:#ff6b6b55"></i></span><span class="v neg">−0.683%</span></div>
+<div class="bar"><span class="lbl">+ 체결강도 90–250</span><span class="tr"><i style="left:0;width:89%;background:#ff6b6b55"></i></span><span class="v neg">−0.605%</span></div>
+<div class="bar"><span class="lbl">+ 수요코어 4절</span><span class="tr"><i style="left:0;width:65%;background:#ff6b6b55"></i></span><span class="v neg">−0.442%</span></div>
+<div class="bar"><span class="lbl">+ 등락율 2–10</span><span class="tr"><i style="left:0;width:64%;background:#ff6b6b55"></i></span><span class="v neg">−0.435%</span></div>
+<div class="bar"><span class="lbl">+ 시총·가격 밴드</span><span class="tr"><i style="left:0;width:71%;background:#ff6b6b55"></i></span><span class="v neg">−0.486%</span></div>
+<div class="bar"><span class="lbl">+ 호가잔량 절</span><span class="tr"><i style="left:0;width:68%;background:#ff6b6b55"></i></span><span class="v neg">−0.462%</span></div>
+<div class="bar"><span class="lbl">챔피언 절 전체(L6)</span><span class="tr"><i style="left:0;width:36%;background:#f0b35a66"></i></span><span class="v neg">−0.249%</span></div>
+<div class="bar"><span class="lbl fw">anchor 다밴드(실증 승자)</span><span class="tr"><i style="left:0;width:6%;background:#4cd6b366"></i></span><span class="v neg hl">−0.043%</span></div>
+<p class="note">절 스택은 +0.43%p 를 실제로 회복하지만 0 을 못 넘고, 실증 최강 가계도 현 구간에선 −0.04%로 손익분기 직하.
+출구 6종 그리드는 전패(시간청산 제거만 −31% 완화, 손실 ≈ 거래수 × 상수). R1 탐침: 체결강도 +0.163 · 수요코어 +0.185 ·
+신고가돌파 +0.095 · <span class="neg">거래대금 급증 추격 −0.011(악화)</span>.</p>
+</div>
+<h2>대조군 교정 — g11 은 챔피언이 아니었다</h2>
+<div class="card">
+<table><thead><tr><th>기간</th><th>g11 원본쌍 거래당</th><th>payoff</th></tr></thead><tbody>
+<tr><td>2023-04~2024-04</td><td class="neg">−0.173%</td><td>2.05</td></tr>
+<tr><td>2024-04~2025-04</td><td class="neg">−0.265%</td><td>2.04</td></tr>
+<tr><td>2025-04~2026-02</td><td class="neg">−0.316%</td><td>1.97</td></tr>
+</tbody></table>
+<p class="note">원기록조차 −1,917만·gate 미통과(score 0.018). 세 시대 전부 손실 + 단조 악화 — 대시보드 라이브러리의
+"세대 존재"가 "승자"를 뜻하지 않음을 확인, 원장 전수 조회로 진짜 승자(anchor)를 재탐색했다.</p>
+</div>
+</div>
+
+<div id="p2" class="pane">
+<h2>anchor 다밴드 가계 — 비용선 교차의 정량</h2>
+<div class="card">
+<table><thead><tr><th>구간</th><th>거래당(비용 후)</th><th>원엣지(비용 전)</th><th>판정</th></tr></thead><tbody>
+<tr><td>2023</td><td class="pos">+0.81%</td><td class="pos">+1.02%p</td><td class="pos">비용선 위</td></tr>
+<tr><td>2024</td><td class="pos">+0.68%</td><td class="pos">+0.89%p</td><td class="pos">비용선 위</td></tr>
+<tr><td>2025-01~03</td><td class="pos">강세(+355만/39건)</td><td>—</td><td class="pos">비용선 위</td></tr>
+<tr><td class="hl">2025-04~2026-02 (R4 공식)</td><td class="neg hl">−0.043%</td><td class="pos">+0.17%p</td><td class="neg hl">비용선 아래</td></tr>
+</tbody></table>
+<p class="note">엣지가 0 이 된 게 아니라 <b class="fw">+0.17%p 로 수축해 고정비용(0.21%p)+슬리피지를 못 넘는 상태</b>.
+MDD 도 9.6% → 23.1% 로 악화. 독립 가계(g11)도 같은 방향 기울기 — 초반 30분 소형주 수요압력·모멘텀 엣지의 시장 전반 감쇠.</p>
+</div>
+<h2>anchor 의 구조 (수익 실증 가계의 생김새)</h2>
+<div class="card">
+<ul>
+<li><b class="fw">진입은 09:07까지만</b> — 09:00–09:02 / 09:02–09:07 두 밴드의 독립 절셋(다밴드 이산분기). 나머지 23분은 청산 전용.</li>
+<li>소형주(&lt;3000억) 한정 · 시가갭 밴드 · <b class="fw">수요압력</b>(초당매수 ≥ 매도총잔량 × 비율) · 잔량 균형 밴드 · 체결강도 70–250 · VI/라운드피겨 가드.</li>
+<li>매도: 와이드 스톱(+9/−7) + <b class="fw">최고수익률 40% 반납 트레일링</b> + 60초 신저 이탈 + 등락율각도 밴드별 수요붕괴 감지.</li>
+</ul>
+<p class="note">광범위 시드와의 격차 = 이 구조 전체. 절 스택 실험은 이 격차의 크기(+0.64%p)를 사다리로 실측한 것.</p>
+</div>
+</div>
+
+<div id="p3" class="pane">
+<h2>"왜 수익 내는 조건식을 못 만드는가" — 원인 분해</h2>
+<div class="card"><ol>
+<li><b class="fw">[지배] 레짐 수축</b> — 현구간 최강 가계의 원엣지 +0.17%p &lt; 비용 0.21%p+슬리피지. 절 조합만으로는 부등식 반전 불가(26쌍 실증).</li>
+<li><b class="fw">[구조] 광범위 진입의 역선택</b> — "관심종목이면 산다" = 비용 전 −0.37%p. 분단위 28구간·가격·시총·보유시간 전 세그먼트 음수(양(+) 셀 0).</li>
+<li><b class="fw">[비용] 고정 0.21%p + 슬리피지</b> — 회전과 선형: 타이트 출구(±1.5)는 66,210거래 −20.6억.</li>
+<li><b class="fw">[인프라] 코드 결함 조건식의 무한 정지</b> — 과거 CSS_V7 연구는 성과가 아니라 '평가 불능'으로 좌초(④ 탭).</li>
+</ol></div>
+<h2>부검 스냅샷 (baseline 35,609거래)</h2>
+<div class="card">
+<table><thead><tr><th>세그먼트</th><th>최악</th><th>최선</th></tr></thead><tbody>
+<tr><td>분단위(28)</td><td class="neg">0~1분 −0.84%</td><td class="neg">14분 −0.33% (양수 없음)</td></tr>
+<tr><td>가격대</td><td class="neg">&lt;1,000원 −0.88%</td><td class="neg">1~2만원 −0.50%</td></tr>
+<tr><td>시가총액 5분위</td><td class="neg">최하 −0.79%</td><td class="neg">최상 −0.48%</td></tr>
+<tr><td>보유시간</td><td class="neg">0~30초 −1.37%</td><td class="neg">300초+ −0.15%</td></tr>
+</tbody></table>
+</div>
+</div>
+
+<div id="p4" class="pane">
+<h2>프로세스 전수검사 — 연구 중 실검증 5건</h2>
+<div class="card">
+<table><thead><tr><th>#</th><th>발견</th><th>증거</th><th>처방</th></tr></thead><tbody>
+<tr><td class="hl">A</td><td>구문 오류 조건식 → <b class="neg">fail-fast 없이 600초 정지</b></td><td>elelif 결함 2회 재현(678s/683s) → 수정 후 동일 쌍 46s — 인과 확정</td><td>평가 전 ast 구문 게이트</td></tr>
+<tr><td class="hl">B</td><td>기존 교착(P1)의 기전 = <b class="neg">미정의 변수</b></td><td>CSS_V7 매도식 9종 전부 SSOT(284) 밖·할당 없는 `강제청산` 사용. 매도식은 체결 시에만 평가 → "거래 0건만 완주" 기존 실측과 정합</td><td>미정의 변수 검사(SSOT∪로컬할당) — AI 생성물 포함</td></tr>
+<tr><td class="hl">C</td><td>거버넌스 <b class="neg">무음 클램프</b></td><td>93000 설정이 fast 프리셋에서 경고 없이 92800 강제(쌍 결과 바이트 동일로 발각). research 프리셋+tick_window_end 로 정식 개방 검증</td><td>유효 창을 로그·대시보드에 명시</td></tr>
+<tr><td class="hl">D</td><td>청산사유 분기 미분해</td><td>CSV 매도조건 = 조건식 이름 단위(전 행 동일) — 대시보드 '매도조건별 분해' 단일행의 원인</td><td>분기 태그 발행 또는 역산 표기</td></tr>
+<tr><td class="hl">E</td><td class="pos">관찰성 폐루프 정상</td><td>clw30 run 7개 — 진화 라이브러리·결과 분석·리포트 실시간 노출(세대·CSV·gist)</td><td>—</td></tr>
+</tbody></table>
+</div>
+<h2>UX/UI 검토 (연구 관점)</h2>
+<div class="card"><ul>
+<li>v5.13.1 로 전 라운드 관찰 가능 — 세대 선택 → 전체 분석 차트 → HTML 리포트 동선 유효.</li>
+<li>개선 후보: 유효 창/프리셋 배지(C) · 매도조건 분기 분해(D) · "동일 쌍 × 다른 기간" 묶음 비교(레짐 연구 반복용).</li>
+</ul></div>
+</div>
+
+<div id="p5" class="pane">
+<h2>성과로 가는 다음 축</h2>
+<div class="card"><ol>
+<li><b class="fw">레짐 분기 조건식</b> — anchor 를 상시 켜지 말고 시장 상태 변수(시가갭 분포·전일 변동성·상승종목비율)로 온/오프. 현구간에도 양(+)월 6/12 실존.</li>
+<li><b class="fw">anchor 청산부 현대화</b> — payoff 1.19 로 낮아진 트레일링(반납 40%·스톱 −7)을 현 변동성에 재적합. 진입부 보존(입구/출구 국소 최적 원칙).</li>
+<li><b class="fw">비용 우위</b> — 엣지 +0.2%p 미만 시대에는 슬리피지 절감이 알파와 동급.</li>
+<li><b class="fw">사전 검증 게이트(A/B 처방) 구현</b> — 엔진 무수정, 배치/루프 생성 직후 삽입.</li>
+<li>min 확장은 tick 성과 재확보 후(사용자 지시 유지).</li>
+</ol></div>
+<h2>재현</h2>
+<div class="card">
+<p class="note" style="margin-top:0">
+run: clw30_r0(6쌍) · r1(7) · r2/r2b(8) · r3a/r3b(4×2) · r4(1) — loop_runs.db, 대시보드 8770 에서 열람.<br>
+입력: docs/research/tick_wide_open30/{pairs,config}_*.json · 실행기: ai_strategy_loop/scripts/claude_candidate_batch_eval.py<br>
+라운드 노트: round_notes/R0~R3 · 본 문서의 md 원본: 2026-07-28_final_report.md</p>
+</div>
+</div>
+
+<footer>STOM tick 초기 30분 연구 · 2026-07-28 · 자가완결 보고서(외부 리소스 없음)</footer>
+<script>
+document.querySelectorAll('.tabs button').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.tabs button').forEach(function(x){x.classList.remove('on')});
+    document.querySelectorAll('.pane').forEach(function(x){x.classList.remove('on')});
+    b.classList.add('on');
+    document.getElementById(b.dataset.p).classList.add('on');
+  });
+});
+</script>
+</body></html>
