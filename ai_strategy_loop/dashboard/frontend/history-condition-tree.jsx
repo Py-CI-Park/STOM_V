@@ -104,6 +104,59 @@ function _hctMetric(row, key) {
   return m[key] != null ? m[key] : row[key];
 }
 
+/* v5.13.0(E5) — "조건식인데 눌러도 정보가 없다" 해소: 조건 노드를 펼치면 평가 ID 나열만
+ * 보였다. loop_run 기록(label meta 에 gen_no 보유)은 /strategy_code 로 해당 세대의
+ * 조건식 원문을 가져와 문법 강조로 보여준다. campaign 기록은 저장된 이름만 정직하게 표시. */
+function _HctCondCode({ baseUrl, researchId, meta, side }) {
+  const [state, setState] = useState_hct({ status: "idle", code: "", name: "" });
+  const isLoopRun = typeof researchId === "string" && researchId.startsWith("loop_run:");
+  const genNo = meta && meta.gen_no != null ? meta.gen_no : null;
+  const runId = isLoopRun ? researchId.slice("loop_run:".length) : null;
+  const wantName = meta ? (side === "sell" ? meta.sell_name : meta.buy_name) : null;
+  useEffect_hct(() => {
+    if (!baseUrl || !runId || genNo == null) return undefined;
+    const controller = new AbortController();
+    setState({ status: "loading", code: "", name: wantName || "" });
+    fetch(baseUrl + "/strategy_code?run=" + encodeURIComponent(runId) + "&gen=" + encodeURIComponent(genNo),
+          { signal: controller.signal })
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+      .then(j => setState({
+        status: "ready",
+        code: (side === "sell" ? j.sell_code : j.buy_code) || "",
+        name: (side === "sell" ? j.sell_name : j.buy_name) || wantName || "",
+      }))
+      .catch(e => { if (e.name !== "AbortError") setState({ status: "error", code: "", name: wantName || "" }); });
+    return () => controller.abort();
+  }, [baseUrl, runId, genNo, side]);
+  if (!runId || genNo == null) {
+    return (
+      <div className="mono" style={{ fontSize: 11, color: "var(--ink-2)", padding: "4px 0" }}>
+        조건식 이름: <b>{wantName || "저장 안 됨"}</b> — 이 기록 유형(campaign)은 조건식 원문을 보관하지 않습니다.
+      </div>
+    );
+  }
+  const CodeBlock = window.CvCodeBlock;
+  return (
+    <div style={{ padding: "4px 0" }}>
+      <div className="mono" style={{ fontSize: 11, color: "var(--ink-1)", marginBottom: 4 }}>
+        {side === "sell" ? "매도" : "매수"} 조건식 · <b>{state.name || "이름 미발행"}</b>
+        <span style={{ color: "var(--ink-3)", marginLeft: 6 }}>Gen {genNo}</span>
+      </div>
+      {state.status === "loading" && <div className="research-empty" style={{ padding: "4px 0" }}>조건식 원문 불러오는 중…</div>}
+      {state.status === "error" && <div className="research-empty" style={{ padding: "4px 0" }}>조건식 원문 조회 실패</div>}
+      {state.status === "ready" && (
+        state.code
+          ? (typeof CodeBlock === "function"
+              ? <div style={{ maxHeight: 260, overflow: "auto", border: "1px solid var(--line-1)", borderRadius: 6 }}>
+                  <CodeBlock code={state.code} />
+                </div>
+              : <pre className="code-block" style={{ maxHeight: 260, overflow: "auto" }}>{state.code}</pre>)
+          : <div className="research-empty" style={{ padding: "4px 0" }}>이 세대의 {side === "sell" ? "매도" : "매수"} 조건식 원문이 없습니다.</div>
+      )}
+    </div>
+  );
+}
+
 function _hctSortedEvaluations(rows, sortKey, sortDir) {
   if (!sortKey) return rows;
   const dir = sortDir === "asc" ? 1 : -1;
@@ -442,6 +495,13 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
                                   <button type="button" className="history-condition-toggle" aria-expanded={condOpen} onClick={() => toggleCondition(cond.condition_id)}>
                                     <span className="mono">{condOpen ? "▼" : "▶"}</span>
                                     <span className="badge" style={{ color: cond.side === "sell" ? "var(--red)" : "var(--teal)" }}>{cond.side || "-"}</span>
+                                    {/* v5.13.0(E5) — 사람이 읽는 조건식 이름을 앞세운다(ID만 보이던 문제). */}
+                                    {(() => {
+                                      const nm = meta ? (cond.side === "sell" ? meta.sell_name : meta.buy_name) : null;
+                                      const plain = (!meta && typeof cond.label === "string" && cond.label) ? cond.label : null;
+                                      const shown = nm || plain;
+                                      return shown ? <b style={{ fontSize: 12, color: "var(--ink-0)" }}>{shown}</b> : null;
+                                    })()}
                                     <span className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5 }}>{cond.condition_id}</span>
                                     {parentId && (
                                       <span className="mono" style={{ color: "var(--ink-3)", fontSize: 10.5 }}>
@@ -457,6 +517,8 @@ function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId }) {
                                   </button>
                                   {condOpen && (
                                     <div className="history-condition-code-viewport" style={{ marginTop: 6, marginLeft: 18 }}>
+                                      {/* v5.13.0(E5) — 펼치면 조건식 원문/이름부터 보여준다. */}
+                                      <_HctCondCode baseUrl={baseUrl} researchId={selectedId} meta={meta} side={cond.side} />
                                       {sections.evaluations && sections.evaluations.err && (
                                         <div className="research-empty danger">
                                           {sections.evaluations.err}

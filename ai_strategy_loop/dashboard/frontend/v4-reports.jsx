@@ -307,14 +307,29 @@ function V4Reports({ baseUrl }) {
               {catalogReports.length > visibleReports.length && <button className="btn ghost sm" onClick={() => setReportLimit(limit => Math.min(limit + 50, 250))}>더 보기 · {visibleReports.length}/{catalogReports.length}</button>}
             </aside>
             <div className="v4-reports-main">
-              {selectedReport && <div className="v4-report-view-tabs" role="tablist" aria-label="선택 보고서 보기 방식">
-                <button role="tab" aria-selected={reportView === "summary"} className={"btn ghost sm" + (reportView === "summary" ? " active" : "")} onClick={() => setReportView("summary")}>결과 Summary</button>
-                <button role="tab" aria-selected={reportView === "html"} className={"btn ghost sm" + (reportView === "html" ? " active" : "")} onClick={() => setReportView("html")}>HTML 보고서</button>
-                <button role="tab" aria-selected={reportView === "provenance"} className={"btn ghost sm" + (reportView === "provenance" ? " active" : "")} onClick={() => setReportView("provenance")}>정본 · 출처</button>
+              {/* v5.13.0(F1) — 순서대로 누르는 단계식 버튼: ① 요약 확인 → ② 보고서 열람 → ③ 출처 검증. */}
+              {selectedReport && <div className="v4-report-view-tabs v4-report-steps" role="tablist" aria-label="선택 보고서 보기 순서">
+                <button role="tab" aria-selected={reportView === "summary"} className={"v4-report-step" + (reportView === "summary" ? " active" : "")} onClick={() => setReportView("summary")}>
+                  <i>1</i><span><b>결과 Summary</b><small>핵심 지표 먼저</small></span>
+                </button>
+                <span className="v4-report-step-arrow" aria-hidden="true">→</span>
+                <button role="tab" aria-selected={reportView === "html"} className={"v4-report-step" + (reportView === "html" ? " active" : "")} onClick={() => setReportView("html")}>
+                  <i>2</i><span><b>HTML 보고서</b><small>전체 차트·표 열람</small></span>
+                </button>
+                <span className="v4-report-step-arrow" aria-hidden="true">→</span>
+                <button role="tab" aria-selected={reportView === "provenance"} className={"v4-report-step" + (reportView === "provenance" ? " active" : "")} onClick={() => setReportView("provenance")}>
+                  <i>3</i><span><b>정본 · 출처</b><small>원본 검증(선택)</small></span>
+                </button>
               </div>}
               {reportView === "summary" && <ReportSummaryBoard report={selectedReport} runMeta={runMeta} />}
               {reportView === "provenance" && selectedReport && <section className="v4-report-provenance mono" aria-label="보고서 메타데이터와 출처">
                 <header><span className={"v4-report-badge " + _reportClassification(selectedReport)}>{_reportClassificationLabel(_reportClassification(selectedReport))}</span><b>정본 등록 · 검증 · 생성 출처</b></header>
+                {/* v5.13.0(F3) — "정본"이 무슨 뜻인지부터 밝힌다. */}
+                <p style={{ margin: "0 0 10px", fontSize: 12, lineHeight: 1.6, color: "var(--ink-2)" }}>
+                  <b style={{ color: "var(--ink-0)" }}>정본(正本)</b> = 시스템이 등록하고 해시로 검증한 <b>원본 보고서</b>라는 뜻입니다.
+                  도서관 원본 대장과 같아서, 이 화면은 지금 보는 보고서가 <b>어디서(어느 연구·세대) 어떻게(어느 생성기·템플릿) 만들어졌고
+                  위·변조 없이 보관 중인지</b>를 보여줍니다. 값이 "없음"이면 그 정보가 발행되지 않았다는 뜻입니다.
+                </p>
                 <div className="v4-report-details">
                   <div><b>분류 사유</b><span>{selectedReport.catalog_reason || "없음"}</span></div>
                   <div><b>검증</b><span>{selectedReport.integrity_status || "없음"}</span></div>

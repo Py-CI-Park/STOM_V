@@ -1856,6 +1856,18 @@
 }
 .ri-chart { max-width: 1400px; margin: 0 auto; }
 
+/* v5.13.0(F1) — 리포트 보기 순서를 단계식 버튼으로. */
+.v4-report-steps { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.v4-report-step { display: flex; align-items: center; gap: 9px; padding: 8px 14px; border: 1px solid var(--line-1); border-radius: 10px; background: var(--bg-0); color: var(--ink-1); cursor: pointer; }
+.v4-report-step i { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--bg-2); color: var(--ink-2); font-style: normal; font-weight: 700; font-size: 12px; }
+.v4-report-step span { display: flex; flex-direction: column; text-align: left; }
+.v4-report-step b { font-size: 13px; color: var(--ink-0); }
+.v4-report-step small { font-size: 10.5px; color: var(--ink-3); }
+.v4-report-step.active { border-color: var(--teal); }
+.v4-report-step.active i { background: var(--teal); color: var(--bg-0); }
+.v4-report-step.active b { color: var(--teal); }
+.v4-report-step-arrow { color: var(--ink-3); }
+
 /* 결과 소스 두 가지의 차이를 목록 위에서 먼저 밝힌다. */
 .bt-source-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .bt-source-legend > div { min-width: 0; padding: 10px 12px; border: 1px solid var(--line-1); border-left: 3px solid var(--violet); border-radius: 9px; background: var(--bg-0); }

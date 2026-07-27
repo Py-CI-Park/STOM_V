@@ -370,7 +370,7 @@ def _pct_plain(value: Any, digits: int = 2) -> str:
 def _montecarlo_block(mc: Optional[Dict[str, Any]]) -> str:
     """몬테카를로 요약 표(p5/p50/p95·파산확률)."""
     if not mc or not mc.get("n"):
-        return _section("몬테카를로", '<p class="empty">몬테카를로 데이터 없음</p>')
+        return _section("몬테카를로", '<p class="empty">몬테카를로 데이터 없음</p>', "sec-mc")
     mdd = mc.get("mdd_krw", {}) or {}
     final = mc.get("final", {}) or {}
     ruin = float(mc.get("ruin_prob", 0.0) or 0.0)
@@ -393,14 +393,14 @@ def _montecarlo_block(mc: Optional[Dict[str, Any]]) -> str:
         f'(자본 대비 -{_num(mc.get("ruin_pct"))}% 도달) · '
         f'실측 MDD {_num(_get(obs, "mdd_krw"))}원</p>'
     )
-    return _section("몬테카를로 시뮬레이션", table + meta)
+    return _section("몬테카를로 시뮬레이션", table + meta, "sec-mc")
 
 
 def _orderflow_block(orderflow: Optional[Dict[str, Any]]) -> str:
     """오더플로우 승/패 진입 분포 비교 표(separation 순위)."""
     sep = _get(orderflow, "separation", default=[]) or []
     if not sep:
-        return _section("오더플로우 승패 비교", '<p class="empty">오더플로우 데이터 없음</p>')
+        return _section("오더플로우 승패 비교", '<p class="empty">오더플로우 데이터 없음</p>', "sec-orderflow")
     body = "".join(
         f"<tr><td>{_esc(r.get('label'))}</td><td>{_num(r.get('win_p50'), 2)}</td>"
         f"<td>{_num(r.get('loss_p50'), 2)}</td>"
@@ -413,14 +413,14 @@ def _orderflow_block(orderflow: Optional[Dict[str, Any]]) -> str:
         "<th>차이</th></tr></thead>"
         f"<tbody>{body}</tbody></table>"
     )
-    return _section("오더플로우 승패 비교(진입 분포)", table)
+    return _section("오더플로우 승패 비교(진입 분포)", table, "sec-orderflow")
 
 
 def _exit_reason_block(exit_reasons: Optional[List[Dict[str, Any]]]) -> str:
     """매도조건(청산사유)별 거래수/총손익/승률 분해 표."""
     rows = exit_reasons or []
     if not rows:
-        return _section("매도조건 분해", '<p class="empty">매도조건 데이터 없음</p>')
+        return _section("매도조건 분해", '<p class="empty">매도조건 데이터 없음</p>', "sec-exit")
     body = "".join(
         f"<tr><td>{_esc(r.get('reason'))}</td><td>{_num(r.get('count'))}</td>"
         f'<td style="color:{_C_GREEN if float(r.get("total_pnl", 0.0) or 0.0) >= 0 else _C_RED}">'
@@ -432,14 +432,14 @@ def _exit_reason_block(exit_reasons: Optional[List[Dict[str, Any]]]) -> str:
         "<th>승률</th></tr></thead>"
         f"<tbody>{body}</tbody></table>"
     )
-    return _section("매도조건 분해", table)
+    return _section("매도조건 분해", table, "sec-exit")
 
 
 def _insights_block(insights: Optional[List[Dict[str, Any]]]) -> str:
     """규칙 기반 인사이트 목록(severity 색)."""
     rows = insights or []
     if not rows:
-        return _section("인사이트", '<p class="empty">인사이트 없음</p>')
+        return _section("인사이트", '<p class="empty">인사이트 없음</p>', "sec-insights")
     items = "".join(
         f'<li class="insight" style="border-left-color:{_SEV_COLOR.get(r.get("severity"), _C_INK2)}">'
         f'<span class="sev" style="color:{_SEV_COLOR.get(r.get("severity"), _C_INK2)}">'
@@ -447,14 +447,14 @@ def _insights_block(insights: Optional[List[Dict[str, Any]]]) -> str:
         f'<b>{_esc(r.get("title"))}</b><br><span class="detail">{_esc(r.get("detail"))}</span></li>'
         for r in rows
     )
-    return _section("인사이트", f'<ul class="insights">{items}</ul>')
+    return _section("인사이트", f'<ul class="insights">{items}</ul>', "sec-insights")
 
 
 def _stats_block(stats: Optional[List[Dict[str, Any]]]) -> str:
     """통계검정 표(요일/시간대 버킷 평균 수익률 유의성)."""
     rows = stats or []
     if not rows:
-        return _section("통계 검정", '<p class="empty">통계 검정 데이터 없음</p>')
+        return _section("통계 검정", '<p class="empty">통계 검정 데이터 없음</p>', "sec-stats")
     # 유의 + 표본 충분한 행을 위로, 나머지는 표본수 큰 순.
     ordered = sorted(rows, key=lambda r: (not r.get("significant"), -int(r.get("n", 0) or 0)))
     body = "".join(
@@ -471,55 +471,94 @@ def _stats_block(stats: Optional[List[Dict[str, Any]]]) -> str:
         "<th>p값</th><th>판정</th></tr></thead>"
         f"<tbody>{body}</tbody></table>"
     )
-    return _section("통계 검정(요일·시간대 효과)", table)
+    return _section("통계 검정(요일·시간대 효과)", table, "sec-stats")
 
 
-def _section(title: str, inner: str) -> str:
+def _section(title: str, inner: str, sec_id: str = "") -> str:
+    anchor = f' id="{_esc(sec_id)}"' if sec_id else ""
     return (
-        f'<section class="sec"><h2>{_esc(title)}</h2><div class="sec-bd">{inner}</div></section>'
+        f'<section class="sec"{anchor}><h2>{_esc(title)}</h2><div class="sec-bd">{inner}</div></section>'
     )
 
 
 # --------------------------------------------------------------------- styles
 def _styles() -> str:
-    """인라인 CSS(외부 폰트/리소스 0 — 시스템 폰트 스택만)."""
+    """인라인 CSS(외부 폰트/리소스 0 — 시스템 폰트 스택만).
+
+    v5.13.0(F2) — 다크 테마 고급화: 그라디언트 히어로 헤더 · 악센트 카드 · 줄무늬 표 ·
+    앵커 목차. 자급자족(외부 URL 0)·인쇄 친화 계약은 그대로 유지한다.
+    """
     return (
         "*{box-sizing:border-box;margin:0;padding:0}"
-        f"body{{background:{_C_BG};color:{_C_INK0};"
+        f"body{{background:linear-gradient(180deg,#0a0d13 0%,{_C_BG} 240px);color:{_C_INK0};"
         "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',sans-serif;"
-        "line-height:1.5;padding:24px;max-width:880px;margin:0 auto}"
-        f"header.rpt-hd{{border-bottom:2px solid {_C_TEAL};padding-bottom:14px;margin-bottom:20px}}"
-        f"header.rpt-hd h1{{font-size:22px;color:{_C_INK0};margin-bottom:6px}}"
-        f"header.rpt-hd .meta{{font-size:12px;color:{_C_INK2};font-family:monospace;line-height:1.7}}"
-        f".note{{background:{_C_PANEL};border:1px solid {_C_AMBER};border-radius:6px;"
+        "line-height:1.55;padding:28px 24px 40px;max-width:1080px;margin:0 auto}"
+        # 히어로 헤더 — 그라디언트 보더 밴드 + 칩 메타.
+        "header.rpt-hd{position:relative;border-radius:14px;padding:22px 24px 18px;margin-bottom:18px;"
+        f"background:linear-gradient({_C_PANEL},{_C_PANEL}) padding-box,"
+        f"linear-gradient(120deg,{_C_TEAL},{_C_VIOLET} 55%,{_C_AMBER}) border-box;"
+        "border:1.5px solid transparent}"
+        f"header.rpt-hd h1{{font-size:24px;color:{_C_INK0};margin-bottom:10px;letter-spacing:-.01em}}"
+        ".chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px}"
+        f".chip{{display:inline-flex;gap:6px;align-items:center;padding:4px 11px;border-radius:999px;"
+        f"border:1px solid {_C_LINE};background:{_C_BG};font-size:11.5px;font-family:monospace;color:{_C_INK1}}}"
+        f".chip b{{color:{_C_INK0};font-weight:600}}"
+        f".chip.buy b{{color:{_C_TEAL}}}.chip.sell b{{color:{_C_AMBER}}}"
+        f"header.rpt-hd .meta{{font-size:11.5px;color:{_C_INK2};font-family:monospace;line-height:1.7}}"
+        # 히어로 손익 배너.
+        ".hero{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 16px}"
+        f".hero>div{{background:{_C_PANEL};border:1px solid {_C_LINE};border-left:4px solid {_C_TEAL};"
+        "border-radius:10px;padding:14px 16px}"
+        f".hero .hl{{font-size:11px;color:{_C_INK2};font-family:monospace;margin-bottom:5px}}"
+        ".hero .hv{font-size:26px;font-weight:700;letter-spacing:-.01em}"
+        f".hero .pos{{color:{_C_TEAL}}}.hero .neg{{color:{_C_RED}}}.hero .mid{{color:{_C_INK0}}}"
+        f".hero>div.risk{{border-left-color:{_C_RED}}}"
+        f".hero>div.rate{{border-left-color:{_C_VIOLET}}}"
+        # 앵커 목차.
+        ".toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px}"
+        f".toc a{{padding:5px 12px;border-radius:999px;border:1px solid {_C_LINE};background:{_C_PANEL};"
+        f"color:{_C_INK1};font-size:11.5px;font-family:monospace;text-decoration:none}}"
+        f".toc a:hover{{color:{_C_TEAL};border-color:{_C_TEAL}}}"
+        f".note{{background:{_C_PANEL};border:1px solid {_C_AMBER};border-radius:8px;"
         f"padding:10px 12px;margin-bottom:16px;color:{_C_AMBER};font-size:12.5px}}"
-        ".cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px}"
-        f".card{{background:{_C_PANEL};border:1px solid {_C_LINE};border-radius:8px;padding:12px}}"
-        f".card-label{{font-size:11px;color:{_C_INK2};font-family:monospace;margin-bottom:4px}}"
-        f".card-value{{font-size:18px;color:{_C_INK0};font-weight:600}}"
-        "section.sec{margin-top:22px}"
-        f"section.sec h2{{font-size:14px;color:{_C_TEAL};margin-bottom:10px;"
-        f"border-bottom:1px solid {_C_LINE};padding-bottom:5px;font-family:monospace}}"
-        f".sec-bd{{background:{_C_PANEL};border:1px solid {_C_LINE};border-radius:8px;padding:14px}}"
+        ".cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:8px}"
+        f".card{{background:{_C_PANEL};border:1px solid {_C_LINE};border-top:3px solid {_C_LINE};"
+        "border-radius:10px;padding:12px 13px}"
+        f".card:nth-child(5n+1){{border-top-color:{_C_TEAL}}}"
+        f".card:nth-child(5n+2){{border-top-color:{_C_VIOLET}}}"
+        f".card:nth-child(5n+3){{border-top-color:{_C_AMBER}}}"
+        f".card:nth-child(5n+4){{border-top-color:{_C_RED}}}"
+        f".card:nth-child(5n){{border-top-color:{_C_GREEN}}}"
+        f".card-label{{font-size:11px;color:{_C_INK2};font-family:monospace;margin-bottom:5px}}"
+        f".card-value{{font-size:19px;color:{_C_INK0};font-weight:650}}"
+        "section.sec{margin-top:24px}"
+        f"section.sec h2{{display:flex;align-items:center;gap:9px;font-size:14.5px;color:{_C_INK0};"
+        "margin-bottom:10px;font-weight:650}"
+        "section.sec h2::before{content:'';display:inline-block;width:5px;height:17px;border-radius:3px;"
+        f"background:linear-gradient(180deg,{_C_TEAL},{_C_VIOLET})}}"
+        f".sec-bd{{background:{_C_PANEL};border:1px solid {_C_LINE};border-radius:12px;padding:16px}}"
         "table.tbl{width:100%;border-collapse:collapse;font-size:12.5px}"
         f"table.tbl th{{text-align:left;color:{_C_INK2};font-family:monospace;font-weight:500;"
-        f"padding:6px 8px;border-bottom:1px solid {_C_LINE}}}"
-        f"table.tbl td{{padding:6px 8px;border-bottom:1px solid {_C_LINE};color:{_C_INK1};"
+        f"padding:7px 9px;border-bottom:1px solid {_C_LINE}}}"
+        f"table.tbl td{{padding:7px 9px;border-bottom:1px solid {_C_LINE};color:{_C_INK1};"
         "font-family:monospace}"
+        f"table.tbl tbody tr:nth-child(even){{background:rgba(255,255,255,0.02)}}"
         "table.tbl tr:last-child td{border-bottom:0}"
         f".empty{{color:{_C_INK2};font-size:12.5px;font-family:monospace;padding:8px 0}}"
         f".mc-meta{{margin-top:10px;font-size:12px;color:{_C_INK1};font-family:monospace}}"
         ".insights{list-style:none}"
-        f".insight{{border-left:3px solid {_C_INK2};padding:8px 12px;margin-bottom:8px;"
-        f"background:{_C_BG};border-radius:0 5px 5px 0;font-size:12.5px}}"
+        f".insight{{border-left:3px solid {_C_INK2};padding:9px 13px;margin-bottom:8px;"
+        f"background:{_C_BG};border-radius:0 8px 8px 0;font-size:12.5px}}"
         ".insight .sev{font-family:monospace;font-size:11px}"
         f".insight .detail{{color:{_C_INK1};font-size:12px}}"
-        f"footer.rpt-ft{{margin-top:28px;padding-top:12px;border-top:1px solid {_C_LINE};"
+        f"footer.rpt-ft{{margin-top:30px;padding-top:12px;border-top:1px solid {_C_LINE};"
         f"font-size:11px;color:{_C_INK2};font-family:monospace;text-align:center}}"
+        "@media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:1fr}}"
         "@media print{"
         "body{background:#fff;color:#111;padding:0}"
-        ".card,.sec-bd,.insight{background:#f7f7f7 !important}"
-        "section.sec h2{color:#0a7}"
+        "header.rpt-hd,.card,.sec-bd,.insight,.chip,.toc a{background:#f7f7f7 !important}"
+        "section.sec h2{color:#053}"
+        ".toc{display:none}"
         "svg{background:#fff !important}"
         "}"
     )
@@ -536,19 +575,78 @@ def _header(meta: Dict[str, Any]) -> str:
     trade_count = meta.get("trade_count")
     # 측정계 프레임 라벨 필수 표기(T0.3) — 니치/포트폴리오 교차 비교 방지.
     frame = resolve_frame(meta, default=DEFAULT_MEASUREMENT_FRAME)
+    # v5.13.0(F2) — 칩 형태 메타(매수/매도/기간/거래수) + 잔여 메타 줄.
+    chips = (
+        f'<div class="chips">'
+        f'<span class="chip buy">매수 <b>{_esc(buy)}</b></span>'
+        f'<span class="chip sell">매도 <b>{_esc(sell)}</b></span>'
+        f'<span class="chip">기간 <b>{_esc(period)}</b></span>'
+        f'<span class="chip">거래수 <b>{_esc(_num(trade_count))}</b></span>'
+        f'</div>'
+    )
     lines = [
-        f"매수: {_esc(buy)} · 매도: {_esc(sell)}",
-        f"기간: {_esc(period)}",
-        f"거래수: {_esc(_num(trade_count))} · 생성: {_esc(gen_at)}",
+        f"생성: {_esc(gen_at)}",
         f"측정계: {_esc(frame_label(frame))} [{_esc(frame)}]",
     ]
     if source:
         lines.append(f"출처: {_esc(source)}")
-    meta_html = "<br>".join(lines)
+    meta_html = " · ".join(lines)
     return (
         f'<header class="rpt-hd"><h1>{_esc(title)}</h1>'
-        f'<div class="meta">{meta_html}</div></header>'
+        f'{chips}<div class="meta">{meta_html}</div></header>'
     )
+
+
+def _hero_block(metrics: Optional[Dict[str, Any]], summary: Dict[str, Any]) -> str:
+    """히어로 손익 배너 — 총수익금·총수익률·MDD 를 가장 크게(F2/F4)."""
+    m = metrics or {}
+
+    def pick(*keys: str) -> Any:
+        for k in keys:
+            if m.get(k) is not None:
+                return m[k]
+            if summary.get(k) is not None:
+                return summary[k]
+        return None
+
+    profit = pick("total_profit_krw", "profit")
+    pct = pick("total_profit_pct", "return_pct")
+    mdd = pick("mdd_pct", "max_drawdown_pct")
+    try:
+        profit_cls = "pos" if float(profit) > 0 else ("neg" if float(profit) < 0 else "mid")
+    except (TypeError, ValueError):
+        profit_cls = "mid"
+    try:
+        pct_cls = "pos" if float(pct) > 0 else ("neg" if float(pct) < 0 else "mid")
+    except (TypeError, ValueError):
+        pct_cls = "mid"
+    return (
+        '<div class="hero">'
+        f'<div><div class="hl">총수익금</div><div class="hv {profit_cls}">'
+        f'{_num(profit)}{"원" if profit is not None else ""}</div></div>'
+        f'<div class="rate"><div class="hl">총수익률</div><div class="hv {pct_cls}">{_pct(pct)}</div></div>'
+        f'<div class="risk"><div class="hl">MDD (최대 낙폭)</div><div class="hv neg">{_pct_plain(mdd)}</div></div>'
+        '</div>'
+    )
+
+
+_TOC_ITEMS = [
+    ("sec-equity", "수익곡선"),
+    ("sec-underwater", "언더워터"),
+    ("sec-dist", "손익 분포"),
+    ("sec-heatmap", "히트맵"),
+    ("sec-maemfe", "MAE/MFE"),
+    ("sec-mc", "몬테카를로"),
+    ("sec-orderflow", "오더플로우"),
+    ("sec-exit", "매도조건"),
+    ("sec-insights", "인사이트"),
+    ("sec-stats", "통계 검정"),
+]
+
+
+def _toc_block() -> str:
+    links = "".join(f'<a href="#{sid}">{_esc(label)}</a>' for sid, label in _TOC_ITEMS)
+    return f'<nav class="toc">{links}</nav>'
 
 
 # --------------------------------------------------------------- entry point
@@ -580,12 +678,14 @@ def render_report(payload: Dict[str, Any]) -> str:
     body_parts = [
         _header(meta),
         note_html,
+        _hero_block(metrics, summary),
+        _toc_block(),
         _metric_cards(metrics, summary),
-        _section("수익곡선 · 일별손익", _equity_svg(_get(analysis, "equity"))),
-        _section("언더워터(고점 대비 반납)", _underwater_svg(_get(analysis, "underwater"))),
-        _section("손익 분포", _histogram_svg(_get(analysis, "distribution"))),
-        _section("요일 × 시간 히트맵", _heatmap_svg(_get(analysis, "heatmap"))),
-        _section("MAE / MFE 산점도", _scatter_svg(_get(analysis, "mae_mfe"))),
+        _section("수익곡선 · 일별손익", _equity_svg(_get(analysis, "equity")), "sec-equity"),
+        _section("언더워터(고점 대비 반납)", _underwater_svg(_get(analysis, "underwater")), "sec-underwater"),
+        _section("손익 분포", _histogram_svg(_get(analysis, "distribution")), "sec-dist"),
+        _section("요일 × 시간 히트맵", _heatmap_svg(_get(analysis, "heatmap")), "sec-heatmap"),
+        _section("MAE / MFE 산점도", _scatter_svg(_get(analysis, "mae_mfe")), "sec-maemfe"),
         _montecarlo_block(mc),
         _orderflow_block(_get(analysis, "orderflow")),
         _exit_reason_block(_get(analysis, "exit_reasons")),

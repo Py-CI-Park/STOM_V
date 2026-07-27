@@ -7,7 +7,6 @@
 // dual-safe ESM import. KEEP each on ONE physical line.
 import { ResearchRecordsPanel } from "./research-records-panel.jsx";
 import { HistoryConditionTreePanel } from "./history-condition-tree.jsx";
-import { AbPairCompareView, CellHeatmap, HoldoutFunnel } from "./history-viz.jsx";
 import { ResearchIndexPage } from "./dashboard-pages.jsx";
 import { RunComparePanel } from "./run-compare.jsx";
 import { BtResultArea } from "./backtest-charts.jsx";
@@ -170,6 +169,99 @@ function _HistoryStrategyCode({ baseUrl, selection }) {
   );
 }
 
+/* v5.13.0(E4) — 결과 상세 직접 선택기. 종전에는 결과 상세로 가는 유일한 길이 Run Compare 의
+ *   [분석 보기]뿐이라 "상세를 보려면 비교부터 해야 하는" 뒤집힌 동선이었다.
+ *   /runs → run 선택 → /bt/evo_gens → 세대 선택으로 비교 없이 바로 상세를 연다. */
+function _HistoryDirectPicker({ baseUrl, onSelectAnalysis }) {
+  const [runs, setRuns] = useState_v4h([]);
+  const [runId, setRunId] = useState_v4h("");
+  const [gens, setGens] = useState_v4h([]);
+  const [loading, setLoading] = useState_v4h(false);
+  useEffect_v4h(() => {
+    if (!baseUrl) return undefined;
+    const controller = new AbortController();
+    fetch(baseUrl + "/runs", { signal: controller.signal })
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+      .then(j => {
+        const rows = Array.isArray(j && j.runs) ? j.runs : [];
+        rows.sort((a, b) => (Number(b.started_at) || 0) - (Number(a.started_at) || 0));
+        setRuns(rows);
+        if (rows.length && !runId) setRunId(rows[0].run_id);
+      })
+      .catch(() => setRuns([]));
+    return () => controller.abort();
+  }, [baseUrl]);
+  useEffect_v4h(() => {
+    if (!baseUrl || !runId) { setGens([]); return undefined; }
+    const controller = new AbortController();
+    setLoading(true);
+    fetch(baseUrl + "/bt/evo_gens?run_id=" + encodeURIComponent(runId), { signal: controller.signal })
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+      .then(j => setGens(Array.isArray(j && j.items) ? j.items : []))
+      .catch(() => setGens([]))
+      .finally(() => setLoading(false));
+    return () => controller.abort();
+  }, [baseUrl, runId]);
+  const top = gens.filter(g => g.gen_no >= 0).slice().sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 10);
+  return (
+    <div className="history-direct-picker">
+      <p className="v4-history-feature-copy">연구(run)와 세대를 고르면 결과 비교를 거치지 않고 바로 상세를 엽니다.</p>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 10 }}>
+        <label className="mono" style={{ fontSize: 12, color: "var(--ink-2)" }}>연구(run)</label>
+        <select className="mono" value={runId} onChange={e => setRunId(e.target.value)}
+                aria-label="상세를 볼 연구 run 선택"
+                style={{ fontSize: 12, background: "var(--bg-1)", color: "var(--ink-0)",
+                         border: "1px solid var(--line-2)", borderRadius: 5, padding: "4px 8px", maxWidth: 320 }}>
+          {!runs.length && <option value="">기록된 run 없음</option>}
+          {runs.map(r => (
+            <option key={r.run_id} value={r.run_id}>
+              {r.run_id}{r.gate_passed_count > 0 ? " ✓" : ""}
+            </option>
+          ))}
+        </select>
+        {loading && <span className="mono" style={{ fontSize: 11, color: "var(--ink-3)" }}>세대 불러오는 중…</span>}
+      </div>
+      {top.length > 0 && (
+        <table className="mono" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+          <thead>
+            <tr style={{ color: "var(--ink-2)", textAlign: "right" }}>
+              <th style={{ textAlign: "left", padding: "5px 8px" }}>세대</th>
+              <th style={{ padding: "5px 8px" }}>score</th>
+              <th style={{ padding: "5px 8px" }}>손익</th>
+              <th style={{ padding: "5px 8px" }}>MDD</th>
+              <th style={{ textAlign: "center", padding: "5px 8px" }}>게이트</th>
+              <th style={{ padding: "5px 8px" }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {top.map(g => (
+              <tr key={g.gen_no} style={{ borderTop: "1px solid var(--line-1)", textAlign: "right" }}>
+                <td style={{ textAlign: "left", padding: "5px 8px" }}>Gen {g.gen_no}</td>
+                <td style={{ padding: "5px 8px", color: "var(--teal)" }}>{typeof g.score === "number" ? g.score.toFixed(3) : "—"}</td>
+                <td style={{ padding: "5px 8px" }} className={g.profit > 0 ? "num-pos" : g.profit < 0 ? "num-neg" : ""}>
+                  {typeof g.profit === "number" ? g.profit.toLocaleString("ko-KR") + "원" : "—"}
+                </td>
+                <td style={{ padding: "5px 8px", color: "var(--red)" }}>{typeof g.mdd === "number" ? g.mdd.toFixed(2) + "%" : "—"}</td>
+                <td style={{ textAlign: "center", padding: "5px 8px", color: g.gate_passed ? "var(--teal)" : "var(--ink-3)" }}>
+                  {g.gate_passed ? "✓" : "—"}
+                </td>
+                <td style={{ padding: "5px 8px", textAlign: "center" }}>
+                  <button className="btn primary sm" onClick={() => onSelectAnalysis({ run_id: runId, gen_no: g.gen_no })}>
+                    상세 열기
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {runId && !loading && top.length === 0 && (
+        <div className="research-empty">이 run 에는 표시할 세대가 없습니다.</div>
+      )}
+    </div>
+  );
+}
+
 function V4History({ baseUrl, wsStatus, onNavigate }) {
   const historyLoading = wsStatus === "connecting" || wsStatus === "reconnecting";
   const [historyStage, setHistoryStage] = useState_v4h("research");
@@ -239,12 +331,14 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
           </div>
         </header>
         <div className="panel-bd">
+          {/* v5.13.0(E1) — 단계 순서 재정렬: 상세가 본류, 비교는 필요할 때만.
+              종전 "선택→비교→상세"는 상세를 보려고 비교를 강제하는 뒤집힌 동선이었다. */}
           <div className="v4-history-stage-nav" role="tablist" aria-label="History 연구 조회 단계">
             {[
               ["research", "1", "연구 선택", "캠페인과 연구 ID 고정"],
-              ["results", "2", "결과 비교", "run·winner를 같은 기준으로 비교"],
-              ["detail", "3", "결과 상세", "조건식·차트·반복 성과 검토"],
-              ["evidence", "4", "근거 · 문서", "계보·A/B·색인으로 깊게 조회"],
+              ["detail", "2", "결과 상세", "run·세대를 바로 골라 조건식·차트 검토"],
+              ["results", "3", "결과 비교 (선택)", "필요할 때만 run 끼리 비교"],
+              ["evidence", "4", "근거 · 문서", "조건식 계보·색인으로 깊게 조회"],
             ].map(([stage, number, title, detail]) => (
               <button key={stage} type="button" role="tab" data-history-stage={stage}
                       aria-selected={historyStage === stage}
@@ -278,7 +372,10 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
       {historyStage === "research" && (
       <section className="panel v4-history-stage-panel" aria-labelledby="v4-history-archive-title" aria-busy={historyLoading}>
         <h2 className="stom-section-label" id="v4-history-archive-title">아카이브 선택 · 요약</h2>
-        <p className="v4-history-feature-copy">목적: 기록의 출처와 후보를 고정합니다. 방법: 캠페인을 선택해 상세를 확인하세요. 필요성: 이후 비교는 선택된 읽기 전용 근거를 기준으로 합니다.</p>
+        <p className="v4-history-feature-copy">
+          <b>캠페인 = 하나의 연구 묶음</b>입니다. AI 가 조건식을 발굴한 한 번의 연구 단위(기간·시간대·가설이 같은 세대들의 모음)를
+          캠페인이라고 부릅니다. 아래에서 캠페인을 고르면 그 연구의 후보·기록이 고정되고, 이후 상세·비교는 이 선택을 기준으로 동작합니다.
+        </p>
         <div className="v4-history-archive-scroll" data-region="scroll" tabIndex={0} aria-label="과거 run과 세대 비교 데이터 영역">
           <ResearchRecordsPanel baseUrl={baseUrl} wsStatus={wsStatus} onSelectCampaign={onSelectCampaign} />
         </div>
@@ -311,7 +408,15 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
             <BtResultArea key={`${selectedAnalysis.run_id}:${selectedAnalysis.gen_no}`} baseUrl={baseUrl} isDemo={wsStatus === "demo"} jobId={null} evoSource={selectedAnalysis} />
           </section>
         ) : (
-          <section className="panel v4-history-stage-panel"><div className="panel-bd"><div className="research-empty">결과 비교 단계에서 run과 winner 세대를 선택하면 조건식·차트·반복 성과가 여기에 표시됩니다.<div><button className="btn primary sm" onClick={() => setHistoryStage("results")}>결과 비교로 이동</button></div></div></div></section>
+          <section className="panel v4-history-stage-panel" aria-label="결과 상세 직접 선택">
+            <header className="panel-hd"><h2 className="stom-section-label">결과 상세 · 연구/세대 직접 선택</h2></header>
+            <div className="panel-bd">
+              <_HistoryDirectPicker baseUrl={baseUrl} onSelectAnalysis={onSelectAnalysis} />
+              <p className="v4-history-feature-copy" style={{ marginTop: 10 }}>
+                여러 run 을 나란히 비교하려면 <button className="btn ghost sm" onClick={() => setHistoryStage("results")}>결과 비교</button> 단계를 사용하세요.
+              </p>
+            </div>
+          </section>
         )
       )}
       {historyStage === "evidence" && (
@@ -325,17 +430,8 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
           <HistoryConditionTreePanel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />
         </div>
       </details>
-      <details className="evo-group" open>
-        <summary className="evo-group-summary">
-          <h2 className="stom-section-label">A/B · 셀 히트맵 · 홀드아웃 퍼널 (클릭 시 로드)</h2>
-        </summary>
-        <div className="evo-group-body" data-region="scroll" tabIndex={0} aria-label="조건식 대용량 시각화 근거 영역">
-          <p className="v4-history-feature-copy">목적: A/B와 홀드아웃 근거를 교차 확인합니다. 방법: 트리 검토 뒤 필요할 때만 펼치세요. 필요성: 대용량 증거는 lazy 로드하며 호환되지 않는 research ID를 추정 결합하지 않습니다.</p>
-          <AbPairCompareView baseUrl={baseUrl} wsStatus={wsStatus} />
-          <CellHeatmap baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />
-          <HoldoutFunnel baseUrl={baseUrl} wsStatus={wsStatus} preferredResearchId={selResearch && selResearch.researchId} />
-        </div>
-      </details>
+      {/* v5.13.0(E5) — A/B 쌍대비교·셀 히트맵·홀드아웃 퍼널 묶음 제거(육안 검토: 불필요 잔재).
+          해당 시각화 정본은 레거시 records 화면에만 남긴다. */}
       {/* v5.3.1: 엣지 섹션 제거 — 채점·부검 스테이지(Live)가 정위치. 중복 mount 해소. */}
 
       <details className="evo-group" open aria-labelledby="v4-history-index-title">

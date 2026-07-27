@@ -62,6 +62,10 @@ function RunComparePanel({ baseUrl, wsStatus, preferredResearchId, onSelectAnaly
     return [...runs].sort((a, b) => rcValue(b, sortKey) - rcValue(a, sortKey));
   }, [runs, sortKey]);
 
+  // v5.13.0(E2) — 선택/취소 불능 버그 수정. 종전에는 refresh 가 selected.length 에 의존해
+  //   체크박스를 누를 때마다 목록을 다시 불러왔고, 마지막 선택을 해제하면 기본 선택을
+  //   강제로 되살렸다("취소가 안 된다"의 실체). 기본 선택은 첫 로드에 한 번만 채운다.
+  const didInitRef = React.useRef(false);
   const refresh = React.useCallback(() => {
     if (isDemo || !baseUrl) return;
     setLoading(true);
@@ -71,11 +75,14 @@ function RunComparePanel({ baseUrl, wsStatus, preferredResearchId, onSelectAnaly
         const rows = Array.isArray(j.runs) ? j.runs : [];
         setRuns(rows);
         setErr(j.error || "");
-        if (!selected.length) setSelected(rcDefaultCompareIds(rows));
+        if (!didInitRef.current) {
+          didInitRef.current = true;
+          setSelected(prev => (prev.length ? prev : rcDefaultCompareIds(rows)));
+        }
       })
       .catch(e => setErr(String(e)))
       .finally(() => setLoading(false));
-  }, [baseUrl, isDemo, selected.length]);
+  }, [baseUrl, isDemo]);
 
   useEffect_rc(() => { refresh(); }, [refresh]);
   useEffect_rc(() => {
@@ -118,11 +125,15 @@ function RunComparePanel({ baseUrl, wsStatus, preferredResearchId, onSelectAnaly
           {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
         </div>
         <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-          <button className="btn ghost sm" onClick={() => setSortKey("final_profit")}>Sort: Total Profit</button>
-          <button className="btn ghost sm" onClick={() => setSortKey("total_profit_pct")}>Return %</button>
-          <button className="btn ghost sm" onClick={selectSeedAi} disabled={!runs.length}>Seed vs AI</button>
+          <button className={"btn ghost sm" + (sortKey === "final_profit" ? " active" : "")}
+                  onClick={() => setSortKey("final_profit")}>정렬: 수익금</button>
+          <button className={"btn ghost sm" + (sortKey === "total_profit_pct" ? " active" : "")}
+                  onClick={() => setSortKey("total_profit_pct")}>정렬: 수익률</button>
+          <button className="btn ghost sm" onClick={selectSeedAi} disabled={!runs.length}>Seed vs AI 선택</button>
+          <button className="btn ghost sm" onClick={() => setSelected([])} disabled={!selected.length}
+                  title="선택한 run 을 모두 해제">선택 해제</button>
           <button className="btn ghost sm" onClick={refresh} disabled={isDemo || loading}>
-            {loading ? "loading" : "refresh"}
+            {loading ? "로딩…" : "↻ 새로고침"}
           </button>
         </div>
       </div>
@@ -139,10 +150,11 @@ function RunComparePanel({ baseUrl, wsStatus, preferredResearchId, onSelectAnaly
               <div className="run-compare-empty">선택 연구 {preferredResearchId}는 Run Compare와 호환되지 않습니다. 이 패널은 독립 run 비교입니다.</div>
             )}
             <div className="run-compare-kpis">
-              <span>runs={runs.length}</span>
-              <span>selected={selected.length}</span>
-              <span>generation_rows={compareRows.length}</span>
-              <span>sort={sortKey}</span>
+              <span>전체 run {runs.length}개</span>
+              <span>선택 {selected.length}/6</span>
+              <span>세대 행 {compareRows.length}</span>
+              <span>정렬 {sortKey === "final_profit" ? "수익금" : "수익률"}</span>
+              {selected.length >= 6 && <span style={{ color: "var(--amber)" }}>최대 6개 — 더 담으려면 먼저 해제하세요</span>}
             </div>
             <div className="run-compare-scroll run-compare-viewport" data-region="scroll" tabIndex={0} aria-label="run 비교 목록">
               <table className="run-compare-table">
