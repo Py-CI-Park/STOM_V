@@ -29,7 +29,7 @@ import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 // v5.3.9: 대시보드 버전(릴리스 태그와 동기 수동 갱신) — 브랜드/탭 타이틀에 명시.
 // v5.5 F9 — 대시보드 버전은 STOM 본체와 분리(태그 V2UC-Dashboard-v*). 릴리스마다 수동 갱신.
-const V4_DASH_VERSION = "v5.11.0";
+const V4_DASH_VERSION = "v5.12.0";
 // v5.10 P2 — process-local browser diagnostic ring. Entries are redacted before
 // they enter the ring; no diagnostic data is persisted by this frontend.
 (function _initFeLogBuffer() {

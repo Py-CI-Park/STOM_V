@@ -38033,7 +38033,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
-  var V4_DASH_VERSION = "v5.11.0";
+  var V4_DASH_VERSION = "v5.12.0";
   (function _initFeLogBuffer() {
     const capacity = 200;
     const redact = (value) => {
