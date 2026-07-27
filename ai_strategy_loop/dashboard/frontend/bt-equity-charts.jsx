@@ -20,7 +20,7 @@ function _btEquityWithEvidence(Chart, describe) {
 /* ① 누적수익곡선 + 일별손익 — analysis.equity {daily[], cumulative[], drawdown[]}.
    일별손익은 막대(이익 teal 위 / 손실 red 아래, 좌축 원), 누적수익은 라인(amber, 우축 원).
    chart.jsx BacktestDetailChart 의 듀얼축 패턴을 분석 응답 필드명(date/pnl, date/cum_profit)에 맞춰 재현. */
-function _BtEquityChartContent({ equity, onBrush, brushActive, onBrushClear }) {
+function _BtEquityChartContent({ equity, onBrush, brushActive, onBrushClear, moneyCtx }) {
   const daily = (equity && equity.daily) || [];
   const cumulative = (equity && equity.cumulative) || [];
   const [hover, setHover] = useState_btc(null);
@@ -147,6 +147,10 @@ function _BtEquityChartContent({ equity, onBrush, brushActive, onBrushClear }) {
 
   const onWheel = (e) => {
     if (!n || total <= 1) return;
+    // v5.13.0 — 휠 단독은 페이지 스크롤에 양보한다. 커서가 차트 위에 있을 때
+    //   페이지를 내리면 차트가 줌아웃/줌인되어 "스크롤할수록 곡선이 작아지는" 오동작이 있었다.
+    //   시간축 줌은 Ctrl(또는 ⌘)+휠 로만 동작한다.
+    if (!e.ctrlKey && !e.metaKey) return;
     e.preventDefault();
     const px = _localPx(e);
     if (px == null) return;
@@ -193,6 +197,18 @@ function _BtEquityChartContent({ equity, onBrush, brushActive, onBrushClear }) {
   const peakCum = cumulative.length ? Math.max(...cumulative.map(c => c.cum_profit || 0)) : null;
   const zoomed = view != null;
 
+  // v5.13.0 — 특이 지점 레이블(C4): 가시 구간의 누적 고점·저점을 곡선 위에 마커+값으로 표기.
+  const extremes = useMemo_btc(() => {
+    if (vCum.length < 2) return null;
+    let hiI = 0, loI = 0;
+    for (let i = 1; i < vCum.length; i++) {
+      const v = vCum[i].cum_profit || 0;
+      if (v > (vCum[hiI].cum_profit || 0)) hiI = i;
+      if (v < (vCum[loI].cum_profit || 0)) loI = i;
+    }
+    return { hiI, loI, hi: vCum[hiI].cum_profit || 0, lo: vCum[loI].cum_profit || 0 };
+  }, [vCum]);
+
   // 브러시 밴드 px 좌표.
   const brushBand = (brushSel && brushSel.a != null) ? (() => {
     const a = Math.min(brushSel.a, brushSel.b), b = Math.max(brushSel.a, brushSel.b);
@@ -215,7 +231,7 @@ function _BtEquityChartContent({ equity, onBrush, brushActive, onBrushClear }) {
       </div>
       <div className="panel-bd">
         <MetricHelpStrip items={[
-          "휠 = 시간축 줌 · 드래그 = 팬",
+          "Ctrl+휠 = 시간축 줌 · 드래그 = 팬 (휠 단독 = 페이지 스크롤)",
           "Shift+드래그 = 구간 선택 → 구간 분석",
           zoomed ? "줌 상태 — 더블클릭으로 전체 복귀" : "크로스헤어로 일별 값 확인",
         ]} />
@@ -224,6 +240,14 @@ function _BtEquityChartContent({ equity, onBrush, brushActive, onBrushClear }) {
                 color={last != null && last > 0 ? "var(--teal)" : last != null && last < 0 ? "var(--red)" : undefined} />
           <Mini label="누적 고점" value={peakCum != null ? fmtMoney(peakCum) : "—"} />
           <Mini label="거래일수" value={total > 0 ? String(total) : "—"} />
+          {moneyCtx && moneyCtx.betting != null && (
+            <Mini label="종목당 배팅" value={fmtMoney(moneyCtx.betting)}
+                  sub={moneyCtx.bettingDerived ? "파생값 · 수익금÷수익률" : undefined} />
+          )}
+          {moneyCtx && moneyCtx.cagr != null && (
+            <Mini label="연평균(CAGR)" value={fmtPct(moneyCtx.cagr)}
+                  color={moneyCtx.cagr > 0 ? "var(--teal)" : moneyCtx.cagr < 0 ? "var(--red)" : undefined} />
+          )}
           {zoomed && (
             <button className="btn ghost sm" onClick={() => { setView(null); setBrushSel(null); }}>
               ⤢ 전체 보기
@@ -290,6 +314,31 @@ function _BtEquityChartContent({ equity, onBrush, brushActive, onBrushClear }) {
                     style={(!zoomed && !_btReducedMotion())
                       ? { strokeDasharray: cumLen, strokeDashoffset: cumLen }
                       : undefined} />
+            )}
+            {/* v5.13.0 — 누적 고점·저점 마커 + 값 레이블(특이 지점 표기). */}
+            {extremes && (
+              <>
+                <circle cx={xCenter(extremes.hiI)} cy={yCum(extremes.hi)} r="4"
+                        fill="var(--chart-profit)" stroke="var(--bg-0)" strokeWidth="1.2" />
+                <text className="chart-axis-text"
+                      x={Math.max(padL + 30, Math.min(W - padR - 30, xCenter(extremes.hiI)))}
+                      y={Math.max(padT + 10, yCum(extremes.hi) - 8)}
+                      textAnchor="middle" fill="var(--chart-profit)">
+                  고점 {_btMoneyTick(extremes.hi)}
+                </text>
+                {extremes.loI !== extremes.hiI && (
+                  <>
+                    <circle cx={xCenter(extremes.loI)} cy={yCum(extremes.lo)} r="4"
+                            fill="var(--chart-loss)" stroke="var(--bg-0)" strokeWidth="1.2" />
+                    <text className="chart-axis-text"
+                          x={Math.max(padL + 30, Math.min(W - padR - 30, xCenter(extremes.loI)))}
+                          y={Math.min(padT + innerH - 4, yCum(extremes.lo) + 14)}
+                          textAnchor="middle" fill="var(--chart-loss)">
+                      저점 {_btMoneyTick(extremes.lo)}
+                    </text>
+                  </>
+                )}
+              </>
             )}
             {/* X 라벨 — 연도 경계/첫 틱은 YYYY-MM-DD, 그 외 MM/DD. */}
             {xTickIdx.map((i, k) => (
@@ -487,6 +536,11 @@ function _BtUnderwaterChartContent({ underwater }) {
         <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>고점 대비 반납액(원)</span>
       </div>
       <div className="panel-bd">
+        <MetricHelpStrip items={[
+          "고점 대비 반납액을 시간순으로 그립니다",
+          "0 = 신고점 갱신 중 · 아래로 깊을수록 큰 낙폭",
+          maxDd && maxDd.recovery_date ? "최대낙폭은 이미 회복됨" : "최대낙폭 구간 미회복 — 위험 관리 주의",
+        ]} />
         <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
           <Mini label="최대낙폭" value={maxDd ? fmtMoney(maxDd.drawdown) : "—"} color={maxDd ? "var(--red)" : undefined} />
           {maxDd && (
@@ -528,6 +582,23 @@ function _BtUnderwaterChartContent({ underwater }) {
                 <path d={linePath} fill="none" stroke="var(--chart-loss)" strokeWidth="1.4" opacity="0.85" />
               </>
             )}
+            {/* v5.13.0 — 최대낙폭 저점 마커 + 값 레이블. */}
+            {n > 1 && maxDd && maxDd.trough_date != null && (() => {
+              const ti = series.findIndex(s => s.date === maxDd.trough_date);
+              if (ti < 0) return null;
+              return (
+                <>
+                  <circle cx={x(ti)} cy={y(series[ti].drawdown || 0)} r="4"
+                          fill="var(--chart-loss)" stroke="var(--bg-0)" strokeWidth="1.2" />
+                  <text className="chart-axis-text"
+                        x={Math.max(padL + 40, Math.min(W - padR - 40, x(ti)))}
+                        y={Math.min(padT + innerH - 4, y(series[ti].drawdown || 0) + 14)}
+                        textAnchor="middle" fill="var(--chart-loss)">
+                    최대낙폭 −{_btMoneyTick(series[ti].drawdown || 0)}
+                  </text>
+                </>
+              );
+            })()}
             {/* X 라벨 — 연도 경계/첫 틱은 YYYY-MM-DD, 그 외 MM/DD. */}
             {xTickIdx.map((i, k) => (
               <text key={`ux${i}`} className="chart-axis-text" x={x(i)} y={H - 10} textAnchor="middle">
@@ -687,7 +758,7 @@ function _BtRollingChartContent({ rolling }) {
 
 /* ⑬ 누적 거래 듀얼축(트랙 D) — analysis.cumulative_trades {series:[{index,sell_time,cum_trades,cum_profit_krw}]}.
    거래 순서 축으로 누적 거래수(좌축, 면적)와 누적 실현손익(우축, 라인)을 겹쳐 그린다. */
-function _BtCumulativeTradesChartContent({ data }) {
+function _BtCumulativeTradesChartContent({ data, moneyCtx }) {
   const series = (data && data.series) || [];
   const [hover, setHover] = useState_btc(null);
   const svgRef = useRef_btc(null);
@@ -757,6 +828,18 @@ function _BtCumulativeTradesChartContent({ data }) {
           "좌축 = 누적 거래수 · 우축 = 누적 실현손익",
           "체결 빈도와 자본 증가를 한 화면에서 비교",
         ]} />
+        {moneyCtx && (moneyCtx.betting != null || moneyCtx.cagr != null) && (
+          <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
+            {moneyCtx.betting != null && (
+              <Mini label="종목당 배팅" value={fmtMoney(moneyCtx.betting)}
+                    sub={moneyCtx.bettingDerived ? "파생값 · 수익금÷수익률" : undefined} />
+            )}
+            {moneyCtx.cagr != null && (
+              <Mini label="연평균(CAGR)" value={fmtPct(moneyCtx.cagr)}
+                    color={moneyCtx.cagr > 0 ? "var(--teal)" : moneyCtx.cagr < 0 ? "var(--red)" : undefined} />
+            )}
+          </div>
+        )}
         <div className="chart-wrap">
           <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
                onMouseMove={onMove} onMouseLeave={() => setHover(null)}>

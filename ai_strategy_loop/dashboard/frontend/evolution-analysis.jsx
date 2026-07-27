@@ -47,15 +47,28 @@ const EA_SERIES = [
   { key: "trade_count", label: "trades", color: "var(--blue)", fmt: _fInt },
 ];
 
-// 빈 차트/패널 공통 플레이스홀더.
+// 빈 차트/패널 공통 플레이스홀더 — v5.13.0(D6): 예시 스케치 고스트 포함.
 function EaEmpty({ text }) {
   return (
     <div style={{
       position: "absolute", inset: 0,
       display: "flex", alignItems: "center", justifyContent: "center",
-      color: "var(--ink-3)", fontSize: 12, fontFamily: "var(--mono)",
+      color: "var(--ink-3)", fontSize: 12, fontFamily: "var(--mono)", textAlign: "center",
     }}>
-      {text}
+      <svg viewBox="0 0 200 80" preserveAspectRatio="none" aria-hidden="true"
+           style={{ position: "absolute", inset: "12%", width: "76%", height: "76%", opacity: 0.13, pointerEvents: "none" }}>
+        <path d="M 10 66 L 40 58 L 70 61 L 100 44 L 130 49 L 160 28 L 190 20"
+              fill="none" stroke="var(--teal)" strokeWidth="3" />
+        {[30, 70, 110, 150, 185].map((cx, i) => (
+          <circle key={i} cx={cx} cy={[60, 52, 40, 46, 24][i]} r="4" fill="var(--violet)" />
+        ))}
+      </svg>
+      <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+        <span style={{ padding: "1px 8px", border: "1px solid var(--line-2)", borderRadius: 999, fontSize: 9.5 }}>
+          예시 미리보기 — 데이터가 쌓이면 이런 모양으로 그려집니다
+        </span>
+        <span>{text}</span>
+      </div>
     </div>
   );
 }
@@ -145,7 +158,7 @@ function EaMultiMetricChart({ gens, normalize }) {
         {/* X 눈금 */}
         {xTicks.map((g, i) => (
           <text key={`x${i}`} className="chart-axis-text" x={x(g)} y={H - 14} textAnchor="middle">
-            g{g}
+            Gen {g}
           </text>
         ))}
         {/* 프레임 */}
@@ -265,16 +278,24 @@ function EaScatterChart({ gens }) {
         {/* 프레임 */}
         <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
         <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--line-2)" strokeWidth="1" />
-        {/* 점 */}
+        {/* 점 — v5.13.0(D3): 색 = 손익 부호(이익 teal / 손실 red / 0 회색), 링 = 게이트 통과,
+            크기 = 거래수(√ 스케일). 한 점에서 수익성·통과 여부·표본 크기를 같이 읽는다. */}
         {pts.map((p, i) => {
           const cx = x(typeof p.mdd === "number" ? p.mdd : 0);
           const cy = y(typeof p.profit === "number" ? p.profit : 0);
-          const col = p.gate_passed ? "var(--teal)" : "var(--ink-3)";
+          const profit = typeof p.profit === "number" ? p.profit : 0;
+          const col = profit > 0 ? "var(--chart-profit)" : profit < 0 ? "var(--chart-loss)" : "var(--ink-3)";
+          const tc = Math.max(0, Number(p.trade_count) || 0);
+          const maxTc = Math.max(1, ...pts.map(q => Number(q.trade_count) || 0));
+          const rBase = 3 + Math.sqrt(tc / maxTc) * 4;   // 3~7px.
           const isH = hover && hover.gen_no === p.gen_no;
           return (
             <g key={i} onMouseEnter={() => setHover(p)} style={{ cursor: "pointer" }}>
-              {p.gate_passed && <circle cx={cx} cy={cy} r="8" fill="rgba(76,214,179,0.14)" />}
-              <circle cx={cx} cy={cy} r={isH ? 6 : 4} fill={col}
+              {p.gate_passed && (
+                <circle cx={cx} cy={cy} r={rBase + 4} fill="none"
+                        stroke="var(--teal)" strokeWidth="1.6" opacity="0.85" />
+              )}
+              <circle cx={cx} cy={cy} r={isH ? rBase + 2 : rBase} fill={col} fillOpacity="0.8"
                       stroke={isH ? "var(--ink-0)" : "none"} strokeWidth="1.2" />
             </g>
           );
@@ -307,7 +328,9 @@ function EaScatterChart({ gens }) {
   );
 }
 
-// 3) 게이트 통과 누적률 — 세대별 통과 여부와 누적 비율을 함께 본다.
+// 3) 게이트 통과 누적률 — v5.13.0(D4) 재작성: 막대 높이가 통과율이라 초반 통과율이 낮으면
+//    "납작해서 안 보이는" 문제가 있었다. 0~100% 고정 y축 + 누적 통과율 스텝 라인 +
+//    세대별 통과(▲)/탈락(·) 마커로 바꾼다.
 function EaGateTrendChart({ gens }) {
   const rows = gens.filter(g => g.gen_no >= 0);
   if (!rows.length) return <div className="research-empty">게이트 이력이 없습니다.</div>;
@@ -316,39 +339,97 @@ function EaGateTrendChart({ gens }) {
     if (row.gate_passed) passed += 1;
     return { ...row, ratio: passed / (index + 1) };
   });
+  const W = 720, H = 240;
+  const padL = 44, padR = 16, padT = 14, padB = 34;
+  const iw = W - padL - padR, ih = H - padT - padB;
+  const x = (i) => padL + (points.length <= 1 ? iw / 2 : (i / (points.length - 1)) * iw);
+  const y = (ratio) => padT + ih - ratio * ih;
+  const path = points.map((p, i) => `${i ? "L" : "M"} ${x(i).toFixed(1)} ${y(p.ratio).toFixed(1)}`).join(" ");
+  const lblStep = Math.max(1, Math.ceil(points.length / 10));
   return (
-    <div className="ea-gate-trend" role="img" aria-label="세대별 게이트 통과와 누적 통과율">
-      {points.map(point => (
-        <div key={point.gen_no} className={"ea-gate-column" + (point.gate_passed ? " passed" : " failed")}
-             title={`g${point.gen_no} · ${point.gate_passed ? "통과" : "탈락"} · 누적 ${(point.ratio * 100).toFixed(1)}%`}>
-          <span style={{ height: Math.max(4, point.ratio * 100) + "%" }}></span>
-          <b>g{point.gen_no}</b>
-        </div>
-      ))}
+    <div className="ea-efficiency-chart">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="세대별 게이트 통과와 누적 통과율">
+        {[0, 0.25, 0.5, 0.75, 1].map(t => (
+          <g key={t}>
+            <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} stroke="rgba(255,255,255,0.07)" />
+            <text className="chart-axis-text" x={padL - 6} y={y(t) + 3} textAnchor="end">{Math.round(t * 100)}%</text>
+          </g>
+        ))}
+        <line x1={padL} x2={W - padR} y1={padT + ih} y2={padT + ih} stroke="var(--line-2)" />
+        <line x1={padL} x2={padL} y1={padT} y2={padT + ih} stroke="var(--line-2)" />
+        <path d={path} fill="none" stroke="var(--teal)" strokeWidth="2" />
+        {points.map((p, i) => (
+          <g key={p.gen_no}>
+            {p.gate_passed
+              ? <path d={`M ${x(i)} ${padT + ih - 8} l 4.5 8 l -9 0 Z`} fill="var(--teal)" opacity="0.9">
+                  <title>{`Gen ${p.gen_no} · 통과 · 누적 ${(p.ratio * 100).toFixed(1)}%`}</title>
+                </path>
+              : <circle cx={x(i)} cy={padT + ih - 4} r="2" fill="var(--ink-3)">
+                  <title>{`Gen ${p.gen_no} · 탈락 · 누적 ${(p.ratio * 100).toFixed(1)}%`}</title>
+                </circle>}
+            {i % lblStep === 0 && (
+              <text className="chart-axis-text" x={x(i)} y={H - 8} textAnchor="middle">Gen {p.gen_no}</text>
+            )}
+          </g>
+        ))}
+        {/* 마지막 누적 통과율 값 레이블 */}
+        <text className="chart-axis-text" x={W - padR - 2} y={Math.max(padT + 10, y(points[points.length - 1].ratio) - 7)}
+              textAnchor="end" fill="var(--teal)">
+          누적 {(points[points.length - 1].ratio * 100).toFixed(1)}%
+        </text>
+      </svg>
+      <p className="mono">선 = 누적 통과율(0~100%) · ▲ = 통과 세대 · · = 탈락 세대</p>
     </div>
   );
 }
 
 // 4) 점수·위험 효율 — score / (1 + MDD/100), 연구 비교용 advisory 지표.
+//    v5.13.0(D5) — x/y축 눈금·그리드·Gen 라벨을 채웠다(축 없는 선 하나였던 문제).
 function EaEfficiencyChart({ gens }) {
   const points = gens.filter(g => g.gen_no >= 0 && typeof g.score === "number").map(g => ({
     gen: g.gen_no,
     value: g.score / (1 + Math.max(0, Number(g.mdd) || 0) / 100),
   }));
   if (!points.length) return <div className="research-empty">효율 지표가 없습니다.</div>;
-  const W = 720, H = 190, pad = 24;
+  const W = 720, H = 240;
+  const padL = 48, padR = 16, padT = 14, padB = 34;
+  const iw = W - padL - padR, ih = H - padT - padB;
   const max = Math.max(0.001, ...points.map(p => p.value));
-  const x = index => pad + (points.length <= 1 ? 0 : index * (W - pad * 2) / (points.length - 1));
-  const y = value => H - pad - (value / max) * (H - pad * 2);
+  const x = index => padL + (points.length <= 1 ? iw / 2 : index * iw / (points.length - 1));
+  const y = value => padT + ih - (value / max) * ih;
   const path = points.map((point, index) => `${index ? "L" : "M"} ${x(index).toFixed(1)} ${y(point.value).toFixed(1)}`).join(" ");
+  const best = points.reduce((a, b) => (b.value > a.value ? b : a), points[0]);
+  const lblStep = Math.max(1, Math.ceil(points.length / 10));
   return (
     <div className="ea-efficiency-chart">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="세대별 점수 대비 MDD 효율 추이">
-        <line x1={pad} x2={W - pad} y1={H - pad} y2={H - pad} stroke="var(--line-2)" />
+        {[0, 0.25, 0.5, 0.75, 1].map(t => (
+          <g key={t}>
+            <line x1={padL} x2={W - padR} y1={padT + ih - t * ih} y2={padT + ih - t * ih} stroke="rgba(255,255,255,0.07)" />
+            <text className="chart-axis-text" x={padL - 6} y={padT + ih - t * ih + 3} textAnchor="end">{(max * t).toFixed(2)}</text>
+          </g>
+        ))}
+        <line x1={padL} x2={W - padR} y1={padT + ih} y2={padT + ih} stroke="var(--line-2)" />
+        <line x1={padL} x2={padL} y1={padT} y2={padT + ih} stroke="var(--line-2)" />
         <path d={path} fill="none" stroke="var(--blue)" strokeWidth="2" />
-        {points.map((point, index) => <circle key={point.gen} cx={x(index)} cy={y(point.value)} r="4" fill="var(--blue)"><title>{`g${point.gen} · ${point.value.toFixed(4)}`}</title></circle>)}
+        {points.map((point, index) => (
+          <g key={point.gen}>
+            <circle cx={x(index)} cy={y(point.value)} r={point.gen === best.gen ? 5 : 3.5}
+                    fill={point.gen === best.gen ? "var(--teal)" : "var(--blue)"}>
+              <title>{`Gen ${point.gen} · 효율 ${point.value.toFixed(4)}`}</title>
+            </circle>
+            {index % lblStep === 0 && (
+              <text className="chart-axis-text" x={x(index)} y={H - 8} textAnchor="middle">Gen {point.gen}</text>
+            )}
+          </g>
+        ))}
+        {/* 최고 효율 세대 레이블(특이 지점) */}
+        <text className="chart-axis-text" x={Math.max(padL + 30, Math.min(W - padR - 30, x(points.indexOf(best))))}
+              y={Math.max(padT + 10, y(best.value) - 9)} textAnchor="middle" fill="var(--teal)">
+          최고 Gen {best.gen} · {best.value.toFixed(3)}
+        </text>
       </svg>
-      <p className="mono">연구 비교용 · score ÷ (1 + MDD/100) · 성능 증명 아님</p>
+      <p className="mono">y = score ÷ (1 + MDD/100) — 같은 점수라면 낙폭이 얕을수록 높다 · 연구 비교용(성능 증명 아님)</p>
     </div>
   );
 }
@@ -569,8 +650,10 @@ function EvolutionAnalysisPanel({ baseUrl, wsStatus, runId, onOpenWorkbench }) {
                   <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" }}>
                     세대 산점도 — MDD × 손익(니치 지도)
                   </span>
-                  <LegendDot color="var(--teal)" label="게이트 통과" filled="ring" />
-                  <LegendDot color="var(--ink-3)" label="게이트 탈락(흐린 점)" />
+                  <LegendDot color="var(--chart-profit)" label="이익 세대" />
+                  <LegendDot color="var(--chart-loss)" label="손실 세대" />
+                  <LegendDot color="var(--teal)" label="링 = 게이트 통과" filled="ring" />
+                  <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>점 크기 = 거래수</span>
                 </div>
                 <EaScatterChart gens={gens} />
               </section>

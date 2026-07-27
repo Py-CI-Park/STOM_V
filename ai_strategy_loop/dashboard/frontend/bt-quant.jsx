@@ -76,8 +76,18 @@ function _btqParseDow(dateVal) {
 }
 
 // ---- 소형 SVG 산점도 + 회귀선 ----
+// 눈금 값 배열 — 빌드 번들(stom-ui.js)의 공용 구현 재사용(로드 순서상 항상 선행).
+const _btqTicks = (lo, hi, n) => (window._axisTicks ? window._axisTicks(lo, hi, n) : []);
+// 큰 수 축약(원 단위 축 라벨) — 1e4 이상이면 만/억 축약, 그 외 소수 1자리.
+function _btqTickLabel(v, span) {
+  const a = Math.abs(v);
+  if (a >= 1e8) return (v / 1e8).toFixed(1) + "억";
+  if (a >= 1e4) return Math.round(v / 1e4) + "만";
+  if (span >= 50) return String(Math.round(v));
+  return (Math.abs(v - Math.round(v)) < 1e-9 ? String(Math.round(v)) : v.toFixed(1));
+}
 function _BtqScatter({ pts, xLab, yLab, ols, colorFn }) {
-  const W = 560, H = 260, padL = 46, padR = 14, padT = 12, padB = 30;
+  const W = 560, H = 260, padL = 52, padR = 14, padT = 12, padB = 40;
   const iw = W - padL - padR, ih = H - padT - padB;
   const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
   const xMin = Math.min(...xs), xMax = Math.max(...xs);
@@ -85,24 +95,46 @@ function _BtqScatter({ pts, xLab, yLab, ols, colorFn }) {
   const xr = (xMax - xMin) || 1, yr = (yMax - yMin) || 1;
   const sx = v => padL + ((v - xMin) / xr) * iw;
   const sy = v => padT + ih - ((v - yMin) / yr) * ih;
+  // v5.13.0 — 숫자 눈금(C5/C6): 이름 라벨만 있고 값 눈금이 없던 축에 눈금·그리드를 채운다.
+  const xTicks = _btqTicks(xMin, xMax, 5).filter(v => v >= xMin - 1e-9 && v <= xMax + 1e-9);
+  const yTicks = _btqTicks(yMin, yMax, 5).filter(v => v >= yMin - 1e-9 && v <= yMax + 1e-9);
   return (
     // 플롯 높이는 매트릭스 공통 토큰(.bt-plot-svg)이 정한다 — 인라인 height 를 두면
     //   같은 매트릭스 안에서 카드마다 그래프 높이가 달라진다(2026-07-26 실측 372/303/420px).
     <svg viewBox={`0 0 ${W} ${H}`} className="bt-plot-svg" preserveAspectRatio="none"
          role="img" aria-label={`${xLab} 대 ${yLab} 산점도`}>
+      {/* y 그리드 + 값 눈금 */}
+      {yTicks.map((tv, i) => (
+        <g key={`qy${i}`}>
+          <line x1={padL} x2={padL + iw} y1={sy(tv)} y2={sy(tv)} stroke="rgba(255,255,255,0.06)" />
+          <text className="chart-axis-text" x={padL - 6} y={sy(tv) + 3} textAnchor="end" fill="var(--chart-axis)">
+            {_btqTickLabel(tv, yr)}
+          </text>
+        </g>
+      ))}
+      {/* x 값 눈금 */}
+      {xTicks.map((tv, i) => (
+        <g key={`qx${i}`}>
+          <line x1={sx(tv)} x2={sx(tv)} y1={padT + ih} y2={padT + ih + 4} stroke="var(--chart-grid)" />
+          <text className="chart-axis-text" x={sx(tv)} y={padT + ih + 14} textAnchor="middle" fill="var(--chart-axis)">
+            {_btqTickLabel(tv, xr)}
+          </text>
+        </g>
+      ))}
       <line x1={padL} y1={padT + ih} x2={padL + iw} y2={padT + ih} stroke="var(--line)" />
       <line x1={padL} y1={padT} x2={padL} y2={padT + ih} stroke="var(--line)" />
       {yMin < 0 && yMax > 0 && <line x1={padL} y1={sy(0)} x2={padL + iw} y2={sy(0)} stroke="var(--chart-grid)" strokeDasharray="3 3" />}
+      {xMin < 0 && xMax > 0 && <line x1={sx(0)} y1={padT} x2={sx(0)} y2={padT + ih} stroke="var(--chart-grid)" strokeDasharray="3 3" />}
       {pts.map((p, i) => (
-        <circle key={i} cx={sx(p.x)} cy={sy(p.y)} r={2.6}
+        <circle key={i} cx={sx(p.x)} cy={sy(p.y)} r={2.8}
                 fill={colorFn ? colorFn(p) : (p.y >= 0 ? "var(--teal)" : "var(--red)")} fillOpacity={0.65} />
       ))}
       {ols && (
         <line x1={sx(xMin)} y1={sy(ols.a + ols.b * xMin)} x2={sx(xMax)} y2={sy(ols.a + ols.b * xMax)}
               stroke="var(--chart-accent)" strokeWidth={2} strokeDasharray="6 3" />
       )}
-      <text x={padL + iw / 2} y={H - 6} textAnchor="middle" fontSize="10.5" fill="var(--chart-axis)">{xLab}</text>
-      <text x={12} y={padT + ih / 2} textAnchor="middle" fontSize="10.5" fill="var(--chart-axis)"
+      <text x={padL + iw / 2} y={H - 6} textAnchor="middle" fontSize="11.5" fill="var(--chart-axis)">{xLab}</text>
+      <text x={12} y={padT + ih / 2} textAnchor="middle" fontSize="11.5" fill="var(--chart-axis)"
             transform={`rotate(-90 12 ${padT + ih / 2})`}>{yLab}</text>
     </svg>
   );

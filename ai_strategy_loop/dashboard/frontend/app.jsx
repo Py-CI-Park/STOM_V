@@ -474,7 +474,15 @@ function App() {
               <_EvoSection storageKey="stom_evo_strategy" label={<SectionLabel text="Strategy / Prompt" />}>
                 <GenerationsTable state={state} mddCap={mddCap} minDailyTrades={minDailyTrades}
                                   onViewCode={(g) => setCodeViewGen(g)}
-                                  onSelectDetail={(genNo) => setSelectedDetailGen(genNo)} />
+                                  onSelectDetail={(genNo) => {
+                                    // v5.13.0(D1) — 차트가 표보다 위에 있어 "무반응"으로 보였다.
+                                    //   선택 반영 후 백테 상세 차트로 스크롤해 갱신을 보여준다.
+                                    setSelectedDetailGen(genNo);
+                                    try {
+                                      const el = document.getElementById("backtest-detail-chart");
+                                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                                    } catch (e) {}
+                                  }} />
               </_EvoSection>
               {/* History owns Compare; overview keeps navigation only to avoid duplicate result owners. */}
               <_EvoSection storageKey="stom_evo_historynav" label={<SectionLabel text="History / Compare" />}>

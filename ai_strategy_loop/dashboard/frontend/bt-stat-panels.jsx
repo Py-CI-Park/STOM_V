@@ -141,6 +141,13 @@ function BtOrderflowPanel({ orderflow }) {
         </div>
       </div>
       <div className="panel-bd">
+        {/* v5.13.0 — "오더플로우가 뭘 뜻하는지 모르겠다" 피드백: 비유 먼저, 그 다음 기술 설명. */}
+        <p className="mono" style={{ margin: "0 0 10px", fontSize: 11.5, color: "var(--ink-2)", lineHeight: 1.6 }}>
+          오더플로우 = <b>매수 버튼을 누르던 순간의 시장 상태</b>입니다. 가게로 치면 "손님이 몰려드는
+          중이었나, 빠져나가는 중이었나"를 보는 것 — 체결강도·호가잔량 같은 주문 흐름 변수를 기준으로,
+          이긴 진입과 진 진입의 시장 상태가 어떻게 달랐는지 비교합니다. 승/패 분포가 뚜렷이 갈리는
+          변수일수록 매수 조건식에 넣을 필터 후보입니다.
+        </p>
         {sep.length === 0 ? (
           <div className="research-empty">오더플로우 데이터가 없습니다 (B_체결강도·잔량 등 결측)</div>
         ) : (

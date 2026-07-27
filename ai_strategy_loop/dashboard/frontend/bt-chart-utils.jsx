@@ -180,6 +180,8 @@ function _BtSparkline({ values, w, h }) {
 }
 
 // 차트 공용 빈 상태 오버레이.
+// v5.13.0(D6) — 빈 카드가 "여기에 무엇이 그려질지"를 보여주도록, 흐릿한 예시 스케치(정적
+//   고스트 라인+막대)를 문구 뒤에 깔고 '예시 미리보기' 배지를 붙인다.
 function _BtChartEmpty({ message }) {
   return (
     <div style={{
@@ -188,7 +190,21 @@ function _BtChartEmpty({ message }) {
       color: "var(--ink-3)", fontSize: 12, fontFamily: "var(--mono)",
       textAlign: "center", padding: "0 16px",
     }}>
-      {message || "분석 데이터가 없습니다"}
+      <svg viewBox="0 0 200 80" preserveAspectRatio="none" aria-hidden="true"
+           style={{ position: "absolute", inset: "12%", width: "76%", height: "76%", opacity: 0.13, pointerEvents: "none" }}>
+        {[14, 30, 46, 62, 78, 94, 110, 126, 142, 158, 174].map((bx, i) => {
+          const hs = [18, 30, 12, 36, 24, 44, 16, 38, 28, 48, 34];
+          return <rect key={i} x={bx} y={72 - hs[i]} width="9" height={hs[i]} fill="var(--ink-2)" />;
+        })}
+        <path d="M 10 62 L 40 55 L 70 58 L 100 42 L 130 46 L 160 26 L 190 18"
+              fill="none" stroke="var(--teal)" strokeWidth="3" />
+      </svg>
+      <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+        <span style={{ padding: "1px 8px", border: "1px solid var(--line-2)", borderRadius: 999, fontSize: 9.5, color: "var(--ink-3)" }}>
+          예시 미리보기 — 데이터가 쌓이면 이런 모양으로 그려집니다
+        </span>
+        <span>{message || "분석 데이터가 없습니다"}</span>
+      </div>
     </div>
   );
 }

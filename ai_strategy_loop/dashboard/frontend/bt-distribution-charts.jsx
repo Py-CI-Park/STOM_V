@@ -102,17 +102,41 @@ function _BtDistributionChartContent({ distribution }) {
                 <text className="chart-axis-text" x={zeroX} y={padT - 4} textAnchor="middle" fill="var(--ink-1)">0%</text>
               </>
             )}
-            {/* X 라벨(min/max) */}
-            {n > 0 && (
-              <>
-                <text className="chart-axis-text" x={padL} y={H - 10} textAnchor="start">
-                  {(bins[0].bin_start).toFixed(1)}%
+            {/* X 라벨 — v5.13.0: 양 끝만 있던 축에 중간 눈금을 채운다(값→위치 선형 매핑). */}
+            {n > 0 && (() => {
+              const vLo = bins[0].bin_start, vHi = bins[n - 1].bin_end;
+              const vSpan = (vHi - vLo) || 1;
+              const vx = (v) => padL + ((v - vLo) / vSpan) * innerW;
+              const mids = (_btAxisTicks ? _btAxisTicks(vLo, vHi, 6) : [])
+                .filter(tv => tv > vLo + vSpan * 0.04 && tv < vHi - vSpan * 0.04);
+              return (
+                <>
+                  <text className="chart-axis-text" x={padL} y={H - 10} textAnchor="start">{vLo.toFixed(1)}%</text>
+                  {mids.map((tv, i) => (
+                    <g key={`hx${i}`}>
+                      <line x1={vx(tv)} x2={vx(tv)} y1={padT + innerH} y2={padT + innerH + 4}
+                            stroke="var(--chart-grid)" strokeWidth="1" />
+                      <text className="chart-axis-text" x={vx(tv)} y={H - 10} textAnchor="middle">
+                        {Math.abs(tv) < 1e-9 ? "0%" : tv.toFixed(1) + "%"}
+                      </text>
+                    </g>
+                  ))}
+                  <text className="chart-axis-text" x={W - padR} y={H - 10} textAnchor="end">{vHi.toFixed(1)}%</text>
+                </>
+              );
+            })()}
+            {/* v5.13.0 — 최빈 구간(가장 높은 막대) 값 레이블. */}
+            {n > 0 && (() => {
+              let pk = 0;
+              for (let i = 1; i < n; i++) if ((bins[i].count || 0) > (bins[pk].count || 0)) pk = i;
+              const cx = xLeft(pk) + slot / 2;
+              return (
+                <text className="chart-axis-text" x={Math.max(padL + 20, Math.min(W - padR - 20, cx))}
+                      y={Math.max(padT + 10, yBar(bins[pk].count || 0) - 5)} textAnchor="middle" fill="var(--ink-1)">
+                  최빈 {bins[pk].count}건
                 </text>
-                <text className="chart-axis-text" x={W - padR} y={H - 10} textAnchor="end">
-                  {(bins[n - 1].bin_end).toFixed(1)}%
-                </text>
-              </>
-            )}
+              );
+            })()}
           </svg>
 
           {hover != null && bins[hover] && (
@@ -303,6 +327,22 @@ function _BtHeatmapContent({ heatmap }) {
                   {big ? "셀 = 수익률 합계(%) · 거래 건수" : "셀 = 수익률 합계(%)"}
                 </span>
               </div>
+              {/* v5.13.0 — 인사이트: 가장 강한/약한 (요일,슬롯) 셀을 문장으로 짚는다. */}
+              {cells.length >= 2 && (() => {
+                let best = cells[0], worst = cells[0];
+                for (const c of cells) {
+                  if (cellPct(c) > cellPct(best)) best = c;
+                  if (cellPct(c) < cellPct(worst)) worst = c;
+                }
+                if (best === worst) return null;
+                return (
+                  <p className="mono" style={{ margin: "8px 0 0", fontSize: 11, color: "var(--ink-2)", lineHeight: 1.55 }}>
+                    가장 강한 구간 = <b style={{ color: "var(--teal)" }}>{_BT_WEEKDAYS[best.weekday]} {slotLabel(best.slot)} ({cellPctLabel(cellPct(best))})</b>
+                    {" · "}가장 약한 구간 = <b style={{ color: "var(--red)" }}>{_BT_WEEKDAYS[worst.weekday]} {slotLabel(worst.slot)} ({cellPctLabel(cellPct(worst))})</b>
+                    {" — 약한 구간이 반복되면 시간대 필터 가설로 환류하세요."}
+                  </p>
+                );
+              })()}
               {slots.length === 1 && (
                 <p className="mono" style={{ margin: "8px 0 0", fontSize: 10.5, color: "var(--ink-3)", lineHeight: 1.55 }}>
                   이 연구는 시간대가 <b>{slotLabel(slots[0])}</b> 한 구간뿐이라 시간대 축이 만들어지지 않습니다.
@@ -319,7 +359,7 @@ function _BtHeatmapContent({ heatmap }) {
 
 /* ⑦ 몬테카를로 팬 차트 — analysis montecarlo {fan:[{day_index,p5,p25,p50,p75,p95}], mdd_pct, final, ruin_prob, observed}.
    누적 손익 분포 밴드(p5~p95 음영) + 실측 곡선 오버레이 + MDD 분포 미니 히스토그램 + 파산/기대MDD 카드. */
-function _BtMonteCarloChartContent({ mc, loading, onRun }) {
+function _BtMonteCarloChartContent({ mc, loading, onRun, moneyCtx }) {
   const fan = (mc && mc.fan) || [];
   const observed = mc && mc.observed;
   const n = fan.length;
@@ -387,6 +427,14 @@ function _BtMonteCarloChartContent({ mc, loading, onRun }) {
           <Mini label="파산확률" value={ruin != null ? fmtPct(ruin * 100) : "—"}
                 color={ruin != null && ruin >= 0.2 ? "var(--red)" : ruin != null && ruin >= 0.05 ? "var(--amber)" : undefined}
                 sub={mc && mc.ruin_pct ? `자본 -${Math.round(mc.ruin_pct)}%` : undefined} />
+          {moneyCtx && moneyCtx.betting != null && (
+            <Mini label="종목당 배팅" value={fmtMoney(moneyCtx.betting)}
+                  sub={moneyCtx.bettingDerived ? "파생값 · 수익금÷수익률" : undefined} />
+          )}
+          {moneyCtx && moneyCtx.cagr != null && (
+            <Mini label="연평균(CAGR)" value={fmtPct(moneyCtx.cagr)}
+                  color={moneyCtx.cagr > 0 ? "var(--teal)" : moneyCtx.cagr < 0 ? "var(--red)" : undefined} />
+          )}
         </div>
         <div className="chart-wrap">
           <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
@@ -395,6 +443,15 @@ function _BtMonteCarloChartContent({ mc, loading, onRun }) {
             <text className="chart-axis-text" x={padL - 8} y={zeroY + 3} textAnchor="end" fill="var(--ink-2)">0</text>
             <text className="chart-axis-text" x={padL - 8} y={y(yMax) + 3} textAnchor="end" fill="var(--chart-profit)">{_btMoneyTick(yMax)}</text>
             <text className="chart-axis-text" x={padL - 8} y={y(yMin) + 3} textAnchor="end" fill="var(--chart-loss)">{_btMoneyTick(yMin)}</text>
+            {/* v5.13.0 — y 중간 눈금(가로 점선 + 라벨). 0·max·min 과 겹치면 생략. */}
+            {n > 1 && (_btAxisTicks ? _btAxisTicks(yMin, yMax, 5) : []).map((tv, i) => (
+              (Math.abs(tv) < 1e-9 || Math.abs(tv - yMax) < 1e-9 || Math.abs(tv - yMin) < 1e-9) ? null : (
+                <g key={`mcy${i}`}>
+                  <line x1={padL} x2={W - padR} y1={y(tv)} y2={y(tv)} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+                  <text className="chart-axis-text" x={padL - 8} y={y(tv) + 3} textAnchor="end" fill="var(--chart-axis)">{_btMoneyTick(tv)}</text>
+                </g>
+              )
+            ))}
             {/* Frame */}
             <line x1={padL} x2={padL} y1={padT} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
             <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} stroke="var(--chart-grid)" strokeWidth="1" />
@@ -539,6 +596,21 @@ function _BtMonthlyCalendarContent({ monthly }) {
               <LegendDot color="rgba(255,107,107,0.78)" label="손실 월" />
               <span className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>셀 = 손익 · 거래수</span>
             </div>
+            {/* v5.13.0 — 인사이트: 최고/최저 월을 문장으로 짚는다. */}
+            {cells.length >= 2 && (() => {
+              let best = cells[0], worst = cells[0];
+              for (const c of cells) {
+                if ((c.profit_krw || 0) > (best.profit_krw || 0)) best = c;
+                if ((c.profit_krw || 0) < (worst.profit_krw || 0)) worst = c;
+              }
+              if (best === worst) return null;
+              return (
+                <p className="mono" style={{ margin: "8px 0 0", fontSize: 11, color: "var(--ink-2)", lineHeight: 1.55 }}>
+                  최고 월 = <b style={{ color: "var(--teal)" }}>{best.year}년 {best.month}월 ({fmtMoney(best.profit_krw)})</b>
+                  {" · "}최저 월 = <b style={{ color: "var(--red)" }}>{worst.year}년 {worst.month}월 ({fmtMoney(worst.profit_krw)})</b>
+                </p>
+              );
+            })()}
           </div>
         )}
       </div>

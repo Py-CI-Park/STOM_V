@@ -150,14 +150,22 @@ function StrategyInspectorTabs({ generation, runId, baseUrl, buyCode, sellCode }
     } catch {}
   };
 
+  // v5.13.0 — 각 탭이 무엇을 보여주는지 한국어 설명(A4). 라벨은 한국어 우선 + 원어 병기.
+  const tabExplain = {
+    diff: "직전 세대의 조건식과 비교해 이번 세대에서 무엇이 더해지고(＋) 빠졌는지(−) 보여줍니다. AI가 세대를 어떻게 고쳐 왔는지 추적하는 용도입니다.",
+    prompts: "이 세대를 만들 때 AI에게 보낸 지시문(프롬프트) 기록입니다. 어떤 요구로 이 조건식이 나왔는지 확인합니다.",
+    context: "이 세대의 요약(이름·점수·거래수·diff 근거)을 복사하기 좋은 텍스트로 정리한 것입니다. 외부 AI에게 이 전략을 설명하거나 질문할 때 붙여넣는 용도입니다.",
+    code: "이 세대의 매수·매도 조건식 전체 코드입니다.",
+  };
   return (
     <div className="strategy-inspector">
       <div className="strategy-inspector-tabs">
-        <button className={tab === "diff" ? "active" : ""} onClick={() => setTab("diff")}>Previous Diff</button>
-        <button className={tab === "prompts" ? "active" : ""} onClick={() => setTab("prompts")}>Prompt Timeline</button>
-        <button className={tab === "context" ? "active" : ""} onClick={() => setTab("context")}>AI Context</button>
-        <button className={tab === "code" ? "active" : ""} onClick={() => setTab("code")}>Current Code</button>
+        <button className={tab === "diff" ? "active" : ""} onClick={() => setTab("diff")}>이전 세대와 비교 <small>Previous Diff</small></button>
+        <button className={tab === "prompts" ? "active" : ""} onClick={() => setTab("prompts")}>프롬프트 기록 <small>Prompt Timeline</small></button>
+        <button className={tab === "context" ? "active" : ""} onClick={() => setTab("context")}>AI 컨텍스트 <small>AI Context</small></button>
+        <button className={tab === "code" ? "active" : ""} onClick={() => setTab("code")}>현재 코드 <small>Current Code</small></button>
       </div>
+      <p className="strategy-tab-explain mono">{tabExplain[tab]}</p>
       {loading && <div className="strategy-empty">loading strategy inspector...</div>}
       {diffError && <div className="strategy-empty danger">{diffError}</div>}
       {promptsError && <div className="strategy-empty danger">{promptsError}</div>}

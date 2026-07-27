@@ -454,8 +454,18 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
   useEffect_bd(() => { setSelGen(defaultGen); }, [defaultGen, runId, gens]);
   // #65 P1 — 외부(세대표 '백테상세' 클릭)에서 선택 세대를 내려주면 내부 선택을 동기화한다.
   //   externalSelGen이 null이면(미선택) 내부 선택/기본값을 그대로 쓴다(하위호환).
+  // v5.13.0(D1) — "눌러도 반응 없음" 실체는 무동작이 아니라 무피드백이었다: 차트가 표보다
+  //   위에 있어 갱신이 화면 밖에서 일어났다. 외부 선택이 오면 테두리 플래시로 갱신을 알린다
+  //   (스크롤 이동은 클릭 지점인 app.jsx 에서 수행).
+  const [flash, setFlash] = useState_bd(false);
   useEffect_bd(() => {
-    if (externalSelGen != null) setSelGen(externalSelGen);
+    if (externalSelGen != null) {
+      setSelGen(externalSelGen);
+      setFlash(true);
+      const t = setTimeout(() => setFlash(false), 1600);
+      return () => clearTimeout(t);
+    }
+    return undefined;
   }, [externalSelGen]);
   const genNo = selGen != null ? selGen : defaultGen;
 
@@ -636,7 +646,7 @@ function BacktestDetailChart({ baseUrl, wsStatus, state, externalSelGen }) {
   const onLeave = () => setHover(null);
 
   return (
-    <div className="panel bt-backtest-detail bt-equal-card">
+    <div id="backtest-detail-chart" className={"panel bt-backtest-detail bt-equal-card" + (flash ? " bt-detail-flash" : "")}>
       <div className="panel-hd">
         <div className="panel-hd-title">
           <span className="dot" style={{ background: "var(--amber)" }}></span>

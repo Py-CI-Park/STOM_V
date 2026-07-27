@@ -73,16 +73,39 @@ function _RiChart({ series }) {
         {zeroY != null && (
           <line x1={padL} y1={zeroY} x2={padL + iw} y2={zeroY} stroke="var(--chart-grid)" strokeDasharray="4 4" />
         )}
+        {/* v5.13.0(D2) — y 중간 눈금 + 그리드(양끝만 있던 축 보강). */}
+        {[0.25, 0.5, 0.75].map(t => {
+          const v = lo + span * t;
+          return (
+            <g key={t}>
+              <line x1={padL} x2={padL + iw} y1={y(v)} y2={y(v)} stroke="rgba(255,255,255,0.06)" />
+              <text x={padL - 6} y={y(v) + 4} textAnchor="end" fontSize="11" fill="var(--chart-axis)">{v.toFixed(1)}%</text>
+            </g>
+          );
+        })}
         <path d={path("bestPct")} fill="none" stroke="var(--chart-profit)" strokeWidth="3" />
         <path d={path("pct")} fill="none" stroke="var(--chart-accent)" strokeWidth="1.6" strokeDasharray="5 3" />
         {pts.map((p, i) => (
           <circle key={p.gen} cx={x(i)} cy={y(p.pct)} r={p.isRecord ? 4.2 : 2.6}
-                  fill={p.isRecord ? "var(--teal)" : "var(--ink-3)"} />
+                  fill={p.isRecord ? "var(--teal)" : "var(--ink-3)"}>
+            <title>{`Gen ${p.gen} · ${p.pct.toFixed(2)}%${p.isRecord ? " · 신기록" : ""}${p.gatePassed ? " · 게이트 통과" : ""}`}</title>
+          </circle>
         ))}
         <text x={padL - 6} y={y(hi) + 4} textAnchor="end" fontSize="11" fill="var(--chart-axis)">{hi.toFixed(1)}%</text>
         <text x={padL - 6} y={y(lo) + 4} textAnchor="end" fontSize="11" fill="var(--chart-axis)">{lo.toFixed(1)}%</text>
-        <text x={padL} y={H - 8} fontSize="11" fill="var(--chart-axis)">g{pts[0].gen}</text>
-        <text x={padL + iw} y={H - 8} textAnchor="end" fontSize="11" fill="var(--chart-axis)">g{pts[pts.length - 1].gen}</text>
+        {/* v5.13.0(D2) — x축 세대 라벨: g0 표기 대신 Gen N, 중간 라벨 포함(≤10개). */}
+        {(() => {
+          const step = Math.max(1, Math.ceil(pts.length / 10));
+          const idx = [];
+          for (let i = 0; i < pts.length; i += step) idx.push(i);
+          if (idx[idx.length - 1] !== pts.length - 1) idx.push(pts.length - 1);
+          return idx.map(i => (
+            <text key={`gx${i}`} x={x(i)} y={H - 8} fontSize="11" fill="var(--chart-axis)"
+                  textAnchor={i === 0 ? "start" : i === pts.length - 1 ? "end" : "middle"}>
+              Gen {pts[i].gen}
+            </text>
+          ));
+        })()}
       </svg>
     </div>
   );

@@ -10649,6 +10649,418 @@ def signal_sell(pos, bar, ind):
   }
   Object.assign(window, { ConnBadge, StatusBadge, ResearchCriteriaBanner, ExportStatusBanner });
 
+  // ai_strategy_loop/dashboard/frontend/strategy-inspector.jsx
+  var { useState: useState_si, useEffect: useEffect_si, useMemo: useMemo_si } = React;
+  function asList(value) {
+    return Array.isArray(value) ? value : [];
+  }
+  function safeText(value, fallback = "-") {
+    if (value === null || value === void 0 || value === "") return fallback;
+    return String(value);
+  }
+  function diffClass(line) {
+    if (line.startsWith("+") && !line.startsWith("+++")) return "add";
+    if (line.startsWith("-") && !line.startsWith("---")) return "del";
+    if (line.startsWith("@@")) return "meta";
+    return "";
+  }
+  function PromptRow({ prompt }) {
+    const features = prompt && prompt.injected_features ? prompt.injected_features : {};
+    return /* @__PURE__ */ React.createElement("div", { className: "strategy-prompt-row" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-prompt-meta" }, /* @__PURE__ */ React.createElement("span", { className: "pill" }, safeText(prompt.kind)), /* @__PURE__ */ React.createElement("span", null, "attempt=", safeText(prompt.attempt)), /* @__PURE__ */ React.createElement("span", null, "model=", safeText(prompt.model)), /* @__PURE__ */ React.createElement("span", null, "total_tokens=", safeText(prompt.total_tokens, "0"))), /* @__PURE__ */ React.createElement("div", { className: "strategy-prompt-head" }, "user_text_head: ", safeText(prompt.user_text_head, "not stored")), /* @__PURE__ */ React.createElement("pre", { className: "strategy-json" }, "injected_features ", JSON.stringify(features, null, 2)));
+  }
+  function DiffBlock({ title, lines }) {
+    const rows = asList(lines);
+    if (!rows.length) {
+      return /* @__PURE__ */ React.createElement("div", { className: "strategy-empty" }, title, ": no diff lines");
+    }
+    return /* @__PURE__ */ React.createElement("div", { className: "strategy-diff-block" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-section-title" }, title), /* @__PURE__ */ React.createElement("pre", { className: "strategy-diff-lines" }, rows.map((line, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: diffClass(line) }, line))));
+  }
+  function CodeBlock({ title, code }) {
+    const text = code || "";
+    if (!text.trim()) {
+      return /* @__PURE__ */ React.createElement("div", { className: "strategy-empty" }, title, ": no strategy code loaded");
+    }
+    return /* @__PURE__ */ React.createElement("div", { className: "strategy-diff-block" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-section-title" }, title), /* @__PURE__ */ React.createElement("pre", { className: "strategy-diff-lines" }, text));
+  }
+  function buildAiContext({ generation, runId, diffPayload, promptsPayload, buyCode, sellCode }) {
+    const prompts = asList(promptsPayload && promptsPayload.prompts);
+    const parts = [
+      "STOM strategy research context",
+      `run_id: ${safeText(runId)}`,
+      `gen_no: ${safeText(generation && generation.gen_no)}`,
+      `status: ${safeText(generation && generation.status)}`,
+      `graded_score: ${safeText(generation && generation.graded_score)}`,
+      `gate_passed: ${safeText(generation && generation.gate_passed)}`,
+      `buy_name: ${safeText(generation && generation.buy_name)}`,
+      `sell_name: ${safeText(generation && generation.sell_name)}`,
+      `buy_code_lines: ${(buyCode || "").split("\n").filter(Boolean).length}`,
+      `sell_code_lines: ${(sellCode || "").split("\n").filter(Boolean).length}`,
+      `diff_base_gen: ${safeText(diffPayload && diffPayload.base_gen)}`,
+      `diff_reason: ${safeText(diffPayload && diffPayload.reason, "available")}`,
+      `prompt_count: ${prompts.length}`,
+      `prompt_reason: ${safeText(promptsPayload && promptsPayload.reason, "available")}`,
+      "buy_code:",
+      buyCode || "(empty)",
+      "sell_code:",
+      sellCode || "(empty)",
+      "Forbidden actions: do not approve or deploy from this copied context."
+    ];
+    return parts.join("\n");
+  }
+  function StrategyInspectorTabs({ generation, runId, baseUrl, buyCode, sellCode }) {
+    const [tab, setTab] = useState_si("diff");
+    const [diffPayload, setDiffPayload] = useState_si(null);
+    const [promptsPayload, setPromptsPayload] = useState_si(null);
+    const [loading, setLoading] = useState_si(false);
+    const [diffError, setDiffError] = useState_si("");
+    const [promptsError, setPromptsError] = useState_si("");
+    const [copied, setCopied] = useState_si(false);
+    const genNo = generation && generation.gen_no;
+    useEffect_si(() => {
+      setDiffPayload(null);
+      setPromptsPayload(null);
+      setDiffError("");
+      setPromptsError("");
+      if (!generation || !baseUrl || !runId || genNo === void 0 || genNo === null) {
+        setLoading(false);
+        return;
+      }
+      let cancelled = false;
+      let pending = 2;
+      const finishOne = () => {
+        pending -= 1;
+        if (!cancelled && pending <= 0) setLoading(false);
+      };
+      setLoading(true);
+      const params = `run_id=${encodeURIComponent(runId)}&gen_no=${encodeURIComponent(genNo)}&base_gen=previous`;
+      fetch(`${baseUrl}/strategy_diff?${params}`, { signal: AbortSignal.timeout(3e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((diff) => {
+        if (!cancelled) setDiffPayload(diff || {});
+      }).catch((e) => {
+        if (!cancelled) setDiffError("strategy_diff route unavailable: " + String(e));
+      }).finally(finishOne);
+      fetch(
+        `${baseUrl}/prompts?run_id=${encodeURIComponent(runId)}&gen_no=${encodeURIComponent(genNo)}`,
+        { signal: AbortSignal.timeout(3e3) }
+      ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((prompts2) => {
+        if (!cancelled) setPromptsPayload(prompts2 || {});
+      }).catch((e) => {
+        if (!cancelled) setPromptsError("prompts route unavailable: " + String(e));
+      }).finally(finishOne);
+      return () => {
+        cancelled = true;
+      };
+    }, [generation, baseUrl, runId, genNo]);
+    const prompts = asList(promptsPayload && promptsPayload.prompts);
+    const aiContext = useMemo_si(() => buildAiContext({
+      generation,
+      runId,
+      diffPayload,
+      promptsPayload,
+      buyCode,
+      sellCode
+    }), [generation, runId, diffPayload, promptsPayload, buyCode, sellCode]);
+    const copyAiContext = async () => {
+      try {
+        await navigator.clipboard.writeText(aiContext);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1400);
+      } catch (e) {
+      }
+    };
+    const tabExplain = {
+      diff: "\uC9C1\uC804 \uC138\uB300\uC758 \uC870\uAC74\uC2DD\uACFC \uBE44\uAD50\uD574 \uC774\uBC88 \uC138\uB300\uC5D0\uC11C \uBB34\uC5C7\uC774 \uB354\uD574\uC9C0\uACE0(\uFF0B) \uBE60\uC84C\uB294\uC9C0(\u2212) \uBCF4\uC5EC\uC90D\uB2C8\uB2E4. AI\uAC00 \uC138\uB300\uB97C \uC5B4\uB5BB\uAC8C \uACE0\uCCD0 \uC654\uB294\uC9C0 \uCD94\uC801\uD558\uB294 \uC6A9\uB3C4\uC785\uB2C8\uB2E4.",
+      prompts: "\uC774 \uC138\uB300\uB97C \uB9CC\uB4E4 \uB54C AI\uC5D0\uAC8C \uBCF4\uB0B8 \uC9C0\uC2DC\uBB38(\uD504\uB86C\uD504\uD2B8) \uAE30\uB85D\uC785\uB2C8\uB2E4. \uC5B4\uB5A4 \uC694\uAD6C\uB85C \uC774 \uC870\uAC74\uC2DD\uC774 \uB098\uC654\uB294\uC9C0 \uD655\uC778\uD569\uB2C8\uB2E4.",
+      context: "\uC774 \uC138\uB300\uC758 \uC694\uC57D(\uC774\uB984\xB7\uC810\uC218\xB7\uAC70\uB798\uC218\xB7diff \uADFC\uAC70)\uC744 \uBCF5\uC0AC\uD558\uAE30 \uC88B\uC740 \uD14D\uC2A4\uD2B8\uB85C \uC815\uB9AC\uD55C \uAC83\uC785\uB2C8\uB2E4. \uC678\uBD80 AI\uC5D0\uAC8C \uC774 \uC804\uB7B5\uC744 \uC124\uBA85\uD558\uAC70\uB098 \uC9C8\uBB38\uD560 \uB54C \uBD99\uC5EC\uB123\uB294 \uC6A9\uB3C4\uC785\uB2C8\uB2E4.",
+      code: "\uC774 \uC138\uB300\uC758 \uB9E4\uC218\xB7\uB9E4\uB3C4 \uC870\uAC74\uC2DD \uC804\uCCB4 \uCF54\uB4DC\uC785\uB2C8\uB2E4."
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "strategy-inspector" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-inspector-tabs" }, /* @__PURE__ */ React.createElement("button", { className: tab === "diff" ? "active" : "", onClick: () => setTab("diff") }, "\uC774\uC804 \uC138\uB300\uC640 \uBE44\uAD50 ", /* @__PURE__ */ React.createElement("small", null, "Previous Diff")), /* @__PURE__ */ React.createElement("button", { className: tab === "prompts" ? "active" : "", onClick: () => setTab("prompts") }, "\uD504\uB86C\uD504\uD2B8 \uAE30\uB85D ", /* @__PURE__ */ React.createElement("small", null, "Prompt Timeline")), /* @__PURE__ */ React.createElement("button", { className: tab === "context" ? "active" : "", onClick: () => setTab("context") }, "AI \uCEE8\uD14D\uC2A4\uD2B8 ", /* @__PURE__ */ React.createElement("small", null, "AI Context")), /* @__PURE__ */ React.createElement("button", { className: tab === "code" ? "active" : "", onClick: () => setTab("code") }, "\uD604\uC7AC \uCF54\uB4DC ", /* @__PURE__ */ React.createElement("small", null, "Current Code"))), /* @__PURE__ */ React.createElement("p", { className: "strategy-tab-explain mono" }, tabExplain[tab]), loading && /* @__PURE__ */ React.createElement("div", { className: "strategy-empty" }, "loading strategy inspector..."), diffError && /* @__PURE__ */ React.createElement("div", { className: "strategy-empty danger" }, diffError), promptsError && /* @__PURE__ */ React.createElement("div", { className: "strategy-empty danger" }, promptsError), !loading && tab === "diff" && /* @__PURE__ */ React.createElement("div", { className: "strategy-inspector-body" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-kpis" }, /* @__PURE__ */ React.createElement("span", null, "base_gen=", safeText(diffPayload && diffPayload.base_gen)), /* @__PURE__ */ React.createElement("span", null, "reason=", safeText(diffPayload && diffPayload.reason, "available")), /* @__PURE__ */ React.createElement("span", null, "no_previous_generation=", String((diffPayload && diffPayload.reason) === "no_previous_generation"))), /* @__PURE__ */ React.createElement(DiffBlock, { title: "buy_diff", lines: diffPayload && diffPayload.buy_diff }), /* @__PURE__ */ React.createElement(DiffBlock, { title: "sell_diff", lines: diffPayload && diffPayload.sell_diff })), !loading && tab === "prompts" && /* @__PURE__ */ React.createElement("div", { className: "strategy-inspector-body" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-kpis" }, /* @__PURE__ */ React.createElement("span", null, "prompt_count=", prompts.length), /* @__PURE__ */ React.createElement("span", null, "no-record reason=", safeText(promptsPayload && promptsPayload.reason, "available"))), prompts.length ? prompts.map((prompt, i) => /* @__PURE__ */ React.createElement(PromptRow, { key: `${prompt.kind || "prompt"}-${prompt.attempt || i}`, prompt })) : /* @__PURE__ */ React.createElement("div", { className: "strategy-empty" }, "no prompt records for this generation. no-record reason: ", safeText(promptsPayload && promptsPayload.reason, "prompt_logging_not_enabled_or_no_records"))), !loading && tab === "context" && /* @__PURE__ */ React.createElement("div", { className: "strategy-inspector-body" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("div", { className: "strategy-section-title" }, "Safe current-run summary"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: copyAiContext }, copied ? "copied" : "copy AI context")), /* @__PURE__ */ React.createElement("pre", { className: "strategy-context" }, aiContext)), tab === "code" && /* @__PURE__ */ React.createElement("div", { className: "strategy-inspector-body" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-section-title" }, "Current Strategy Code"), /* @__PURE__ */ React.createElement(CodeBlock, { title: "buy_code", code: buyCode }), /* @__PURE__ */ React.createElement(CodeBlock, { title: "sell_code", code: sellCode })));
+  }
+  Object.assign(window, { StrategyInspectorTabs });
+
+  // ai_strategy_loop/dashboard/frontend/code-viewer.jsx
+  var { useState: useState_cv, useMemo: useMemo_cv, useEffect: useEffect_cv } = React;
+  function highlightPython(code) {
+    if (!code) return [];
+    const lines = code.split("\n");
+    const KEYWORDS = /* @__PURE__ */ new Set([
+      "def",
+      "return",
+      "if",
+      "elif",
+      "else",
+      "and",
+      "or",
+      "not",
+      "for",
+      "while",
+      "in",
+      "is",
+      "None",
+      "True",
+      "False",
+      "import",
+      "from",
+      "as",
+      "pass",
+      "break",
+      "continue",
+      "lambda",
+      "try",
+      "except",
+      "finally",
+      "with",
+      "yield",
+      "max",
+      "min",
+      "abs",
+      "len"
+    ]);
+    const out = [];
+    for (let ln = 0; ln < lines.length; ln++) {
+      const line = lines[ln];
+      const parts = [];
+      let i = 0;
+      while (i < line.length) {
+        const ch = line[i];
+        if (ch === "#") {
+          parts.push({ cls: "tok-com", t: line.slice(i) });
+          break;
+        }
+        if (ch === '"' || ch === "'") {
+          const q = ch;
+          let j = i + 1;
+          while (j < line.length && line[j] !== q) j++;
+          parts.push({ cls: "tok-str", t: line.slice(i, j + 1) });
+          i = j + 1;
+          continue;
+        }
+        if (/[0-9]/.test(ch) && (i === 0 || /[^a-zA-Z_]/.test(line[i - 1]))) {
+          let j = i;
+          while (j < line.length && /[0-9_.e+-]/.test(line[j])) j++;
+          parts.push({ cls: "tok-num", t: line.slice(i, j) });
+          i = j;
+          continue;
+        }
+        if (/[a-zA-Z_]/.test(ch)) {
+          let j = i;
+          while (j < line.length && /[a-zA-Z0-9_]/.test(line[j])) j++;
+          const word = line.slice(i, j);
+          let k = j;
+          while (k < line.length && line[k] === " ") k++;
+          if (KEYWORDS.has(word)) parts.push({ cls: "tok-kw", t: word });
+          else if (line[k] === "(") parts.push({ cls: "tok-fn", t: word });
+          else parts.push({ cls: "", t: word });
+          i = j;
+          continue;
+        }
+        parts.push({ cls: "", t: ch });
+        i++;
+      }
+      out.push({ ln: ln + 1, parts });
+    }
+    return out;
+  }
+  function _cvMatchRanges(lineText, needle) {
+    if (!needle) return [];
+    const lower2 = lineText.toLowerCase();
+    const target = needle.toLowerCase();
+    const ranges = [];
+    let from = lower2.indexOf(target);
+    while (from !== -1) {
+      ranges.push([from, from + target.length]);
+      from = lower2.indexOf(target, from + target.length);
+    }
+    return ranges;
+  }
+  function _cvSplitToken(text, offset, ranges, keyPrefix) {
+    if (ranges.length === 0) return text;
+    const end = offset + text.length;
+    const hits = ranges.filter(([s, e]) => s < end && e > offset);
+    if (hits.length === 0) return text;
+    const out = [];
+    let cursor = offset;
+    for (const [s, e] of hits) {
+      const from = Math.max(s, offset);
+      const to = Math.min(e, end);
+      if (from > cursor) out.push(text.slice(cursor - offset, from - offset));
+      out.push(/* @__PURE__ */ React.createElement("mark", { key: `${keyPrefix}-${from}`, className: "cv-hit" }, text.slice(from - offset, to - offset)));
+      cursor = to;
+    }
+    if (cursor < end) out.push(text.slice(cursor - offset));
+    return out;
+  }
+  function CvCodeBlock({ code, query = "", emptyLabel }) {
+    const highlighted = useMemo_cv(() => highlightPython(code), [code]);
+    if (!code) return /* @__PURE__ */ React.createElement("div", { className: "code-block", style: { color: "var(--ink-3)" } }, emptyLabel || "unavailable: strategy code not found for this generation.");
+    const needle = String(query || "").trim();
+    return /* @__PURE__ */ React.createElement("pre", { className: "code-block" }, highlighted.map((row, i) => {
+      const lineText = row.parts.map((p) => p.t).join("");
+      const ranges = _cvMatchRanges(lineText, needle);
+      let offset = 0;
+      return /* @__PURE__ */ React.createElement("div", { key: i, className: ranges.length ? "cv-hit-line" : void 0 }, /* @__PURE__ */ React.createElement("span", { className: "ln" }, row.ln), row.parts.map((p, j) => {
+        const at = offset;
+        offset += p.t.length;
+        return /* @__PURE__ */ React.createElement("span", { key: j, className: p.cls }, _cvSplitToken(p.t, at, ranges, `${i}-${j}`));
+      }));
+    }));
+  }
+  var _CV_FONT_STEPS = [11, 12.5, 14, 16, 18];
+  function CodeViewer({ generation, onClose, runId, baseUrl }) {
+    const [tab, setTab] = useState_cv("buy");
+    const [copied, setCopied] = useState_cv(false);
+    const [expandedCodeView, setExpandedCodeView] = useState_cv(false);
+    const [splitView, setSplitView] = useState_cv(false);
+    const [fontIdx, setFontIdx] = useState_cv(2);
+    const [query, setQuery] = useState_cv("");
+    const [debouncedQuery, setDebouncedQuery] = useState_cv("");
+    useEffect_cv(() => {
+      const t = setTimeout(() => setDebouncedQuery(query), 150);
+      return () => clearTimeout(t);
+    }, [query]);
+    const [fetched, setFetched] = useState_cv(null);
+    const [loading, setLoading] = useState_cv(false);
+    const [fetchErr, setFetchErr] = useState_cv(null);
+    const hasInline = Boolean(generation && (generation.buy_code || generation.sell_code));
+    useEffect_cv(() => {
+      setFetched(null);
+      setFetchErr(null);
+      if (!generation || hasInline || !baseUrl || !runId) return;
+      const gen = generation.gen_no;
+      let cancelled = false;
+      setLoading(true);
+      fetch(
+        `${baseUrl}/strategy_code?run=${encodeURIComponent(runId)}&gen=${gen}`,
+        { signal: AbortSignal.timeout(window.CONDITION_FETCH_TIMEOUT_MS || 1e4) }
+      ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
+        if (!cancelled) setFetched({ buy_code: j.buy_code || "", sell_code: j.sell_code || "" });
+      }).catch((e) => {
+        if (!cancelled) setFetchErr(String(e));
+      }).finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [generation, hasInline, baseUrl, runId]);
+    if (!generation) return null;
+    const isErr = generation.status === "error";
+    const buyCode = generation.buy_code || fetched && fetched.buy_code || "";
+    const sellCode = generation.sell_code || fetched && fetched.sell_code || "";
+    const code = tab === "buy" ? buyCode : sellCode;
+    const name = tab === "buy" ? generation.buy_name : generation.sell_name;
+    const fontSize = _CV_FONT_STEPS[Math.max(0, Math.min(_CV_FONT_STEPS.length - 1, fontIdx))];
+    const modalClass = "modal code-viewer-modal" + (expandedCodeView ? " code-viewer-expanded" : "") + (splitView ? " code-viewer-split" : "");
+    const modalStyle = {
+      width: expandedCodeView ? "calc(100vw - 20px)" : splitView ? "min(1720px, calc(100vw - 32px))" : "min(1400px, calc(100vw - 32px))",
+      maxHeight: expandedCodeView ? "calc(100vh - 18px)" : void 0
+    };
+    const countHits = (text) => {
+      const needle = String(debouncedQuery || "").trim().toLowerCase();
+      if (!needle) return 0;
+      return String(text || "").toLowerCase().split(needle).length - 1;
+    };
+    const hits = splitView ? countHits(buyCode) + countHits(sellCode) : countHits(code);
+    const copyText = async (text) => {
+      try {
+        await navigator.clipboard.writeText(text || "");
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1400);
+      } catch (e) {
+      }
+    };
+    const onCopy = () => copyText(splitView ? `# \uB9E4\uC218 \u2014 ${generation.buy_name || "\u2014"}
+${buyCode}
+
+# \uB9E4\uB3C4 \u2014 ${generation.sell_name || "\u2014"}
+${sellCode}` : code);
+    return /* @__PURE__ */ React.createElement("div", { className: "modal-bd", onMouseDown: (e) => {
+      if (e.target === e.currentTarget) onClose();
+    } }, /* @__PURE__ */ React.createElement("div", { className: modalClass, style: modalStyle, onMouseDown: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "modal-hd" }, /* @__PURE__ */ React.createElement("h2", null, "\uC804\uB7B5 \uCF54\uB4DC \uBCF4\uAE30", /* @__PURE__ */ React.createElement("span", { className: "sub" }, "gen_", String(generation.gen_no).padStart(2, "0"), " \xB7 score ", fmtScore(generation.graded_score), generation.gate_passed && /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)", marginLeft: 8 } }, "\u2713 \uAC8C\uC774\uD2B8 \uD1B5\uACFC"), isErr && /* @__PURE__ */ React.createElement("span", { style: { color: "var(--red)", marginLeft: 8 } }, "\u26A0 \uC624\uB958"))), /* @__PURE__ */ React.createElement("div", { className: "cv-toolbar" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "input cv-search",
+        type: "search",
+        spellCheck: false,
+        placeholder: "\uC870\uAC74\uC2DD \uC548\uC5D0\uC11C \uCC3E\uAE30 (\uC608: \uB4F1\uB77D\uC728)",
+        value: query,
+        onChange: (e) => setQuery(e.target.value)
+      }
+    ), query.trim() && /* @__PURE__ */ React.createElement("span", { className: "cv-hitcount mono" }, hits, "\uAC74"), /* @__PURE__ */ React.createElement("span", { className: "cv-fontctl", role: "group", "aria-label": "\uAE00\uC790 \uD06C\uAE30" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: () => setFontIdx(Math.max(0, fontIdx - 1)),
+        disabled: fontIdx <= 0,
+        title: "\uAE00\uC790 \uC791\uAC8C"
+      },
+      "A\u2212"
+    ), /* @__PURE__ */ React.createElement("b", { className: "mono" }, fontSize, "px"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: () => setFontIdx(Math.min(_CV_FONT_STEPS.length - 1, fontIdx + 1)),
+        disabled: fontIdx >= _CV_FONT_STEPS.length - 1,
+        title: "\uAE00\uC790 \uD06C\uAC8C"
+      },
+      "A+"
+    )), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        "aria-pressed": splitView,
+        "data-testid": "code-viewer-split-toggle",
+        "data-tip": splitView ? "\uD55C \uCABD\uC529 \uD06C\uAC8C \uBD05\uB2C8\uB2E4." : "\uB9E4\uC218\uC640 \uB9E4\uB3C4\uB97C \uB098\uB780\uD788 \uB193\uACE0 \uBE44\uAD50\uD569\uB2C8\uB2E4.",
+        onClick: () => setSplitView(!splitView)
+      },
+      splitView ? "\uD55C\uCABD\uB9CC \uBCF4\uAE30" : "\uB9E4\uC218\xB7\uB9E4\uB3C4 \uB098\uB780\uD788"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        "data-testid": "code-viewer-height-toggle",
+        "data-tip": expandedCodeView ? "\uC870\uAC74\uC2DD \uBCF4\uAE30 \uCC3D\uC744 \uAE30\uBCF8 \uD06C\uAE30\uB85C \uC904\uC785\uB2C8\uB2E4." : "\uC870\uAC74\uC2DD \uBCF4\uAE30 \uCC3D\uC744 \uD654\uBA74 \uC804\uCCB4\uB85C \uB113\uD799\uB2C8\uB2E4.",
+        "aria-pressed": expandedCodeView,
+        onClick: () => setExpandedCodeView(!expandedCodeView)
+      },
+      expandedCodeView ? "\uAE30\uBCF8 \uD06C\uAE30" : "\uC804\uCCB4\uD654\uBA74"
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onCopy }, copied ? "\uBCF5\uC0AC\uB428 \u2713" : splitView ? "\uB9E4\uC218+\uB9E4\uB3C4 \uBCF5\uC0AC" : "\uBCF5\uC0AC"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\uB2EB\uAE30"))), !splitView && /* @__PURE__ */ React.createElement("div", { className: "code-tabs" }, /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        className: `code-tab ${tab === "buy" ? "active" : ""}`,
+        onClick: () => setTab("buy")
+      },
+      /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)" } }, "\u25CF"),
+      " \uB9E4\uC218 \u2014 ",
+      generation.buy_name || "\u2014"
+    ), /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        className: `code-tab ${tab === "sell" ? "active" : ""}`,
+        onClick: () => setTab("sell")
+      },
+      /* @__PURE__ */ React.createElement("span", { style: { color: "var(--amber)" } }, "\u25CF"),
+      " \uB9E4\uB3C4 \u2014 ",
+      generation.sell_name || "\u2014"
+    ), /* @__PURE__ */ React.createElement("div", { style: { marginLeft: "auto", padding: "8px 16px", fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)" } }, (code || "").split("\n").length, " lines")), /* @__PURE__ */ React.createElement("div", { className: "cv-body" + (splitView ? " split" : ""), style: { fontSize } }, loading ? /* @__PURE__ */ React.createElement("div", { className: "code-block", style: { color: "var(--ink-3)" } }, "\uCF54\uB4DC \uBD88\uB7EC\uC624\uB294 \uC911\u2026") : fetchErr && !buyCode && !sellCode ? /* @__PURE__ */ React.createElement("div", { className: "code-block", style: { color: "var(--red)" } }, "\uCF54\uB4DC \uC870\uD68C \uC2E4\uD328: ", fetchErr) : splitView ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("section", { className: "cv-pane" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)" } }, "\u25CF"), " \uB9E4\uC218 \u2014 ", generation.buy_name || "\u2014", /* @__PURE__ */ React.createElement("small", { className: "mono" }, (buyCode || "").split("\n").length, " lines"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => copyText(buyCode) }, "\uBCF5\uC0AC")), /* @__PURE__ */ React.createElement(CvCodeBlock, { code: buyCode, query: debouncedQuery, emptyLabel: "\uC774 \uC138\uB300\uC758 \uB9E4\uC218 \uC870\uAC74\uC2DD \uCF54\uB4DC\uB97C \uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4." })), /* @__PURE__ */ React.createElement("section", { className: "cv-pane" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--amber)" } }, "\u25CF"), " \uB9E4\uB3C4 \u2014 ", generation.sell_name || "\u2014", /* @__PURE__ */ React.createElement("small", { className: "mono" }, (sellCode || "").split("\n").length, " lines"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => copyText(sellCode) }, "\uBCF5\uC0AC")), /* @__PURE__ */ React.createElement(CvCodeBlock, { code: sellCode, query: debouncedQuery, emptyLabel: "\uC774 \uC138\uB300\uC758 \uB9E4\uB3C4 \uC870\uAC74\uC2DD \uCF54\uB4DC\uB97C \uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4." }))) : /* @__PURE__ */ React.createElement(
+      CvCodeBlock,
+      {
+        code,
+        query: debouncedQuery,
+        emptyLabel: `\uC774 \uC138\uB300\uC758 ${tab === "buy" ? "\uB9E4\uC218" : "\uB9E4\uB3C4"} \uC870\uAC74\uC2DD \uCF54\uB4DC\uB97C \uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.`
+      }
+    )), /* @__PURE__ */ React.createElement(
+      StrategyInspectorTabs,
+      {
+        generation,
+        runId,
+        baseUrl,
+        buyCode,
+        sellCode
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "modal-ft", style: { justifyContent: "space-between" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, color: "var(--ink-2)", fontFamily: "var(--mono)" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, "\uC694\uC9C0:"), " ", generation.strategy_gist || "\u2014")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, "\uAC70\uB798 ", generation.trade_count, " \xB7 MDD ", /* @__PURE__ */ React.createElement("span", { style: { color: "var(--red)" } }, fmtPct(generation.mdd)), " \xB7 \uC190\uC775 ", /* @__PURE__ */ React.createElement("span", { className: generation.profit > 0 ? "num-pos" : "num-neg" }, fmtMoney(generation.profit))), /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: onClose }, "\uB2EB\uAE30")))));
+  }
+  Object.assign(window, { CodeViewer, CvCodeBlock, highlightPython });
+
   // ai_strategy_loop/dashboard/frontend/panels-config.jsx
   var { useState: useState_pcf, useEffect: useEffect_pcf, useMemo: useMemo_pcf } = React;
   var CONDITION_FETCH_TIMEOUT_MS = 1e4;
@@ -10786,7 +11198,7 @@ def signal_sell(pos, bar, ind):
       }
       navigator.clipboard.writeText(code).then(() => setCopyStatus(`${label} \uCF54\uB4DC\uB97C \uBCF5\uC0AC\uD588\uC2B5\uB2C8\uB2E4.`)).catch(() => setCopyStatus(`${label} \uCF54\uB4DC \uBCF5\uC0AC\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4.`));
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "panel active-strategy-panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uD604\uC7AC \uC870\uAC74\uC2DD \xB7 \uB9E4\uC218/\uB9E4\uB3C4"), /* @__PURE__ */ React.createElement("span", { className: "active-strategy-status mono" }, "gen ", genNo != null ? genNo : "\u2014", " \xB7 ", codeStatus === "ok" ? "\uCF54\uB4DC \uC218\uC2E0" : codeStatus)), /* @__PURE__ */ React.createElement("div", { className: "panel-bd active-strategy-body" }, /* @__PURE__ */ React.createElement("div", { className: "active-strategy-identity" }, /* @__PURE__ */ React.createElement("div", { className: "v54-cond-names" }, /* @__PURE__ */ React.createElement("div", { className: "v54-cond-name buy" }, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, buyName || "\uC0DD\uC131 \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "v54-cond-name sell" }, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, sellName || "\uC0DD\uC131 \uB300\uAE30"))), /* @__PURE__ */ React.createElement("span", { className: "active-strategy-provenance mono" }, "run ", runId || "\u2014", " \xB7 gen ", genNo != null ? genNo : "\u2014", " \xB7 source ", active.source, " \xB7 diff ", diffStatus)), codeFetchError && /* @__PURE__ */ React.createElement("div", { className: "active-strategy-fetch-error mono" }, "\uC870\uAC74\uC2DD \uCF54\uB4DC \uC870\uD68C \uC2E4\uD328: ", codeFetchError, " \xB7 10\uCD08 \uD6C4 \uC911\uB2E8\uB428"), !codeFetchError && diffFetchError && /* @__PURE__ */ React.createElement("div", { className: "active-strategy-diff-warning mono" }, "\uC870\uAC74\uC2DD \uCF54\uB4DC\uB294 \uD45C\uC2DC\uB428 \xB7 \uC870\uAC74\uC2DD \uBCC0\uACBD \uBE44\uAD50 \uC9C0\uC5F0: ", diffFetchError), /* @__PURE__ */ React.createElement("div", { className: "active-strategy-code-columns" + (wrapCode ? " is-wrapped" : "") }, /* @__PURE__ */ React.createElement("div", { className: "active-strategy-code-viewport buy" }, /* @__PURE__ */ React.createElement("div", { className: "cap" }, "\uB9E4\uC218 \uB85C\uC9C1 \xB7 \uC804\uCCB4 \uCF54\uB4DC"), /* @__PURE__ */ React.createElement("pre", { className: "code-block" }, buyCode || `\uB300\uAE30: ${codeStatus}`)), /* @__PURE__ */ React.createElement("div", { className: "active-strategy-code-viewport sell" }, /* @__PURE__ */ React.createElement("div", { className: "cap" }, "\uB9E4\uB3C4 \uB85C\uC9C1 \xB7 \uC804\uCCB4 \uCF54\uB4DC"), /* @__PURE__ */ React.createElement("pre", { className: "code-block" }, sellCode || `\uB300\uAE30: ${codeStatus}`))), /* @__PURE__ */ React.createElement("div", { className: "active-strategy-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setWrapCode((value) => !value), "aria-pressed": wrapCode }, "\uC904\uBC14\uAFC8 ", wrapCode ? "\uD574\uC81C" : "\uCF1C\uAE30"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => copyCode("\uB9E4\uC218", buyCode) }, "\uB9E4\uC218 \uBCF5\uC0AC"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => copyCode("\uB9E4\uB3C4", sellCode) }, "\uB9E4\uB3C4 \uBCF5\uC0AC"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => copyCode("\uB9E4\uC218\xB7\uB9E4\uB3C4", [buyCode, sellCode].filter(Boolean).join("\n\n")) }, "\uB9E4\uC218\xB7\uB9E4\uB3C4 \uD568\uAED8 \uBCF5\uC0AC"), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "panel active-strategy-panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uD604\uC7AC \uC870\uAC74\uC2DD \xB7 \uB9E4\uC218/\uB9E4\uB3C4"), /* @__PURE__ */ React.createElement("span", { className: "active-strategy-status mono" }, "gen ", genNo != null ? genNo : "\u2014", " \xB7 ", codeStatus === "ok" ? "\uCF54\uB4DC \uC218\uC2E0" : codeStatus)), /* @__PURE__ */ React.createElement("div", { className: "panel-bd active-strategy-body" }, /* @__PURE__ */ React.createElement("div", { className: "active-strategy-identity" }, /* @__PURE__ */ React.createElement("div", { className: "v54-cond-names" }, /* @__PURE__ */ React.createElement("div", { className: "v54-cond-name buy" }, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, buyName || "\uC0DD\uC131 \uB300\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "v54-cond-name sell" }, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, sellName || "\uC0DD\uC131 \uB300\uAE30"))), /* @__PURE__ */ React.createElement("span", { className: "active-strategy-provenance mono" }, "run ", runId || "\u2014", " \xB7 gen ", genNo != null ? genNo : "\u2014", " \xB7 source ", active.source, " \xB7 diff ", diffStatus)), codeFetchError && /* @__PURE__ */ React.createElement("div", { className: "active-strategy-fetch-error mono" }, "\uC870\uAC74\uC2DD \uCF54\uB4DC \uC870\uD68C \uC2E4\uD328: ", codeFetchError, " \xB7 10\uCD08 \uD6C4 \uC911\uB2E8\uB428"), !codeFetchError && diffFetchError && /* @__PURE__ */ React.createElement("div", { className: "active-strategy-diff-warning mono" }, "\uC870\uAC74\uC2DD \uCF54\uB4DC\uB294 \uD45C\uC2DC\uB428 \xB7 \uC870\uAC74\uC2DD \uBCC0\uACBD \uBE44\uAD50 \uC9C0\uC5F0: ", diffFetchError), /* @__PURE__ */ React.createElement("div", { className: "active-strategy-code-columns" + (wrapCode ? " is-wrapped" : "") }, /* @__PURE__ */ React.createElement("div", { className: "active-strategy-code-viewport buy" }, /* @__PURE__ */ React.createElement("div", { className: "cap" }, "\uB9E4\uC218 \uB85C\uC9C1 \xB7 \uC804\uCCB4 \uCF54\uB4DC"), /* @__PURE__ */ React.createElement(CvCodeBlock, { code: buyCode, emptyLabel: `\uB300\uAE30: ${codeStatus}` })), /* @__PURE__ */ React.createElement("div", { className: "active-strategy-code-viewport sell" }, /* @__PURE__ */ React.createElement("div", { className: "cap" }, "\uB9E4\uB3C4 \uB85C\uC9C1 \xB7 \uC804\uCCB4 \uCF54\uB4DC"), /* @__PURE__ */ React.createElement(CvCodeBlock, { code: sellCode, emptyLabel: `\uB300\uAE30: ${codeStatus}` }))), /* @__PURE__ */ React.createElement("div", { className: "active-strategy-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setWrapCode((value) => !value), "aria-pressed": wrapCode }, "\uC904\uBC14\uAFC8 ", wrapCode ? "\uD574\uC81C" : "\uCF1C\uAE30"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => copyCode("\uB9E4\uC218", buyCode) }, "\uB9E4\uC218 \uBCF5\uC0AC"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => copyCode("\uB9E4\uB3C4", sellCode) }, "\uB9E4\uB3C4 \uBCF5\uC0AC"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => copyCode("\uB9E4\uC218\xB7\uB9E4\uB3C4", [buyCode, sellCode].filter(Boolean).join("\n\n")) }, "\uB9E4\uC218\xB7\uB9E4\uB3C4 \uD568\uAED8 \uBCF5\uC0AC"), /* @__PURE__ */ React.createElement(
       "button",
       {
         className: "btn ghost sm",
@@ -11018,7 +11430,7 @@ def signal_sell(pos, bar, ind):
     { key: "evidence", label: "\u2462 \uC99D\uAC70 \u2014 \uBB34\uC5C7\uC774 \uC2B9\uACA9\uC744 \uB9C9\uACE0 \uC788\uB098", hint: "\uC800\uC7A5\uB41C \uADFC\uAC70\uAC00 \uCDA9\uBD84\uD55C\uC9C0, \uC9C0\uAE08 \uB9C9\uD600 \uC788\uB294 \uC774\uC720\uAC00 \uBB34\uC5C7\uC778\uC9C0\uC785\uB2C8\uB2E4." }
   ];
   function ConditionDiscoveryPanel({ state, wsStatus }) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
     const discovery = (_a = state.page_data) == null ? void 0 : _a.condition_discovery;
     const scores = (_b = state.page_data) == null ? void 0 : _b.advisory_scores;
     const feedback = (_c = state.page_data) == null ? void 0 : _c.condition_feedback;
@@ -11060,23 +11472,7 @@ def signal_sell(pos, bar, ind):
         value: modeAuthority.generation_allowed === true ? "\uC5F0\uAD6C\uC6A9 \uC0DD\uC131 \uD5C8\uC6A9" : modeAuthority.generation_allowed === false ? "\uC0DD\uC131 \uAE08\uC9C0 \xB7 \uAC80\uD1A0 \uC804\uC6A9" : "\uAD8C\uD55C \uD655\uC778 \uC911",
         hint: `${modeAuthority.process || ((_k = discovery.current_process) == null ? void 0 : _k.code) || "process"} \xB7 ${modeAuthority.preset || discovery.preset}`
       }
-    ), /* @__PURE__ */ React.createElement(
-      _CdFact,
-      {
-        ko: "\uCD5C\uB300 \uB099\uD3ED \uD55C\uB3C4",
-        en: "MDD",
-        value: `${(_l = mddGate.cap) != null ? _l : "\u2014"}%`,
-        hint: `\uAE30\uBCF8 ${(_m = mddGate.preset_cap) != null ? _m : "\u2014"} \xB7 \uD604\uC7AC \uC124\uC815 ${(_n = mddGate.configured_cap) != null ? _n : "\u2014"}`
-      }
-    ), /* @__PURE__ */ React.createElement(
-      _CdFact,
-      {
-        ko: "\uD558\uB8E8 \uCD5C\uC18C \uAC70\uB798 \uC218",
-        en: "minimum daily trades",
-        value: `${(_o = tradeGate.value) != null ? _o : "\u2014"}\uAC74 / \uC77C`,
-        hint: "\uC774 \uD55C\uB3C4\uB294 \uC810\uC218\uB85C \uC0C1\uC1C4\uB418\uC9C0 \uC54A\uB294 \uD1B5\uACFC \uC870\uAC74\uC785\uB2C8\uB2E4."
-      }
-    )), /* @__PURE__ */ React.createElement("section", { className: "condition-discovery-block", "aria-label": _CD_SECTIONS[1].label }, /* @__PURE__ */ React.createElement("h4", null, _CD_SECTIONS[1].label), /* @__PURE__ */ React.createElement("p", { className: "condition-discovery-tab-intro" }, _CD_SECTIONS[1].hint), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-note" }, "\uB099\uD3ED \uD55C\uB3C4 ", /* @__PURE__ */ React.createElement("b", null, (_l = mddGate.cap) != null ? _l : "\u2014", "%"), " \xB7 \uD558\uB8E8 \uCD5C\uC18C \uAC70\uB798 ", /* @__PURE__ */ React.createElement("b", null, (_m = tradeGate.value) != null ? _m : "\u2014", "\uAC74"), " \u2014 \uC704 \uCE74\uB4DC\uC758 \uAC12\uC774 \uC815\uBCF8\uC774\uBA70, \uC774 \uB450 \uD55C\uB3C4\uB294 \uC810\uC218\uB85C \uC0C1\uC1C4\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", { className: "condition-discovery-block", "aria-label": _CD_SECTIONS[1].label }, /* @__PURE__ */ React.createElement("h4", null, _CD_SECTIONS[1].label), /* @__PURE__ */ React.createElement("p", { className: "condition-discovery-tab-intro" }, _CD_SECTIONS[1].hint), /* @__PURE__ */ React.createElement(
       _CdFact,
       {
         ko: "\uC5F0\uAD6C \uC790\uB8CC \uBB36\uC74C \uC0C1\uD0DC",
@@ -11084,7 +11480,7 @@ def signal_sell(pos, bar, ind):
         value: contextPackHealth.status || "\uD655\uC778 \uC911",
         hint: `\uC77D\uB294 \uC790\uB8CC \uD1A0\uD070 \uC0C1\uD55C ${(contextPackHealth.fail_closed_budget_tokens || 25e4).toLocaleString()} \u2014 \uB118\uC73C\uBA74 \uC0DD\uC131\uC744 \uBA48\uCDA5\uB2C8\uB2E4.`
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-pillrow" }, contextFields.map((field) => /* @__PURE__ */ React.createElement(_CdPill, { key: field, label: field, tone: "info", title: "\uC0DD\uC131 \uC804\uC5D0 \uBC18\uB4DC\uC2DC \uCC44\uC6CC\uC838\uC57C \uD558\uB294 \uC790\uB8CC \uD56D\uBAA9" }))), branchTree.length > 0 && /* @__PURE__ */ React.createElement("ol", { className: "condition-discovery-note condition-discovery-branch-tree" }, branchTree.map((step) => /* @__PURE__ */ React.createElement("li", { key: step.step }, /* @__PURE__ */ React.createElement("b", null, step.step), " \u2192 ", step.output))), /* @__PURE__ */ React.createElement(
+    ), contextFields.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "condition-discovery-fields" }, /* @__PURE__ */ React.createElement("summary", null, "\uC0DD\uC131 \uC804 \uD544\uC218 \uC790\uB8CC ", contextFields.length, "\uAC1C \uD3BC\uCCD0 \uBCF4\uAE30"), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-pillrow" }, contextFields.map((field) => /* @__PURE__ */ React.createElement(_CdPill, { key: field, label: field, tone: "info", title: "\uC0DD\uC131 \uC804\uC5D0 \uBC18\uB4DC\uC2DC \uCC44\uC6CC\uC838\uC57C \uD558\uB294 \uC790\uB8CC \uD56D\uBAA9" })))), branchTree.length > 0 && /* @__PURE__ */ React.createElement("ol", { className: "condition-discovery-note condition-discovery-branch-tree" }, branchTree.map((step) => /* @__PURE__ */ React.createElement("li", { key: step.step }, /* @__PURE__ */ React.createElement("b", null, step.step), " \u2192 ", step.output))), /* @__PURE__ */ React.createElement(
       _CdFact,
       {
         ko: "\uD6C4\uBCF4 \uBB36\uC74C",
@@ -11092,7 +11488,7 @@ def signal_sell(pos, bar, ind):
         value: `${candidatePack.recommended_candidates || "2-3+"}\uAC1C \uAD8C\uC7A5`,
         hint: `\uCD5C\uC18C ${candidatePack.min_candidates || 2}\uAC1C \xB7 \uBD80\uC871\uD558\uBA74 ${candidatePack.fallback_source || "\uC9C4\uB2E8\uC6A9 \uB300\uCCB4 \uD6C4\uBCF4"}`
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-pillrow" }, candidateFields.map((field) => /* @__PURE__ */ React.createElement(_CdPill, { key: field, label: field, tone: "success", title: "\uD6C4\uBCF4\uB9C8\uB2E4 \uCC44\uC6CC\uC838\uC57C \uD558\uB294 \uD56D\uBAA9" }))), /* @__PURE__ */ React.createElement(
+    ), candidateFields.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "condition-discovery-fields" }, /* @__PURE__ */ React.createElement("summary", null, "\uD6C4\uBCF4\uBCC4 \uD544\uC218 \uD56D\uBAA9 ", candidateFields.length, "\uAC1C \uD3BC\uCCD0 \uBCF4\uAE30"), /* @__PURE__ */ React.createElement("div", { className: "condition-discovery-pillrow" }, candidateFields.map((field) => /* @__PURE__ */ React.createElement(_CdPill, { key: field, label: field, tone: "success", title: "\uD6C4\uBCF4\uB9C8\uB2E4 \uCC44\uC6CC\uC838\uC57C \uD558\uB294 \uD56D\uBAA9" })))), /* @__PURE__ */ React.createElement(
       _CdFact,
       {
         ko: "\uBD84\uC11D \uCE74\uB4DC \uD615\uC2DD",
@@ -22481,8 +22877,15 @@ def signal_sell(pos, bar, ind):
     useEffect_bd(() => {
       setSelGen(defaultGen);
     }, [defaultGen, runId, gens]);
+    const [flash, setFlash] = useState_bd(false);
     useEffect_bd(() => {
-      if (externalSelGen != null) setSelGen(externalSelGen);
+      if (externalSelGen != null) {
+        setSelGen(externalSelGen);
+        setFlash(true);
+        const t = setTimeout(() => setFlash(false), 1600);
+        return () => clearTimeout(t);
+      }
+      return void 0;
     }, [externalSelGen]);
     const genNo = selGen != null ? selGen : defaultGen;
     const [data, setData] = useState_bd(null);
@@ -22626,7 +23029,7 @@ def signal_sell(pos, bar, ind):
       else setHover(null);
     };
     const onLeave = () => setHover(null);
-    return /* @__PURE__ */ React.createElement("div", { className: "panel bt-backtest-detail bt-equal-card" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uBC31\uD14C \uC0C1\uC138 \u2014 \uBD80\uBD84 GUI \uD328\uB9AC\uD2F0 \xB7 \uBCF4\uC720 \xB7 \uC77C\uBCC4\uC190\uC775 \xB7 \uB204\uC801\uC218\uC775"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 12, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uB3D9\uC2DC\uBCF4\uC720 \uC885\uBAA9\uC218" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--red)", label: "\uC774\uC775(\uC77C)" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--blue)", label: "\uC190\uC2E4(\uC77C)" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uB204\uC801\uC218\uC775 \u20A9" }), gens.length > 0 && /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { id: "backtest-detail-chart", className: "panel bt-backtest-detail bt-equal-card" + (flash ? " bt-detail-flash" : "") }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uBC31\uD14C \uC0C1\uC138 \u2014 \uBD80\uBD84 GUI \uD328\uB9AC\uD2F0 \xB7 \uBCF4\uC720 \xB7 \uC77C\uBCC4\uC190\uC775 \xB7 \uB204\uC801\uC218\uC775"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 12, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uB3D9\uC2DC\uBCF4\uC720 \uC885\uBAA9\uC218" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--red)", label: "\uC774\uC775(\uC77C)" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--blue)", label: "\uC190\uC2E4(\uC77C)" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uB204\uC801\uC218\uC775 \u20A9" }), gens.length > 0 && /* @__PURE__ */ React.createElement(
       "select",
       {
         value: genNo != null ? genNo : "",
@@ -23675,407 +24078,6 @@ def signal_sell(pos, bar, ind):
   }
   Object.assign(window, { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog });
 
-  // ai_strategy_loop/dashboard/frontend/strategy-inspector.jsx
-  var { useState: useState_si, useEffect: useEffect_si, useMemo: useMemo_si } = React;
-  function asList(value) {
-    return Array.isArray(value) ? value : [];
-  }
-  function safeText(value, fallback = "-") {
-    if (value === null || value === void 0 || value === "") return fallback;
-    return String(value);
-  }
-  function diffClass(line) {
-    if (line.startsWith("+") && !line.startsWith("+++")) return "add";
-    if (line.startsWith("-") && !line.startsWith("---")) return "del";
-    if (line.startsWith("@@")) return "meta";
-    return "";
-  }
-  function PromptRow({ prompt }) {
-    const features = prompt && prompt.injected_features ? prompt.injected_features : {};
-    return /* @__PURE__ */ React.createElement("div", { className: "strategy-prompt-row" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-prompt-meta" }, /* @__PURE__ */ React.createElement("span", { className: "pill" }, safeText(prompt.kind)), /* @__PURE__ */ React.createElement("span", null, "attempt=", safeText(prompt.attempt)), /* @__PURE__ */ React.createElement("span", null, "model=", safeText(prompt.model)), /* @__PURE__ */ React.createElement("span", null, "total_tokens=", safeText(prompt.total_tokens, "0"))), /* @__PURE__ */ React.createElement("div", { className: "strategy-prompt-head" }, "user_text_head: ", safeText(prompt.user_text_head, "not stored")), /* @__PURE__ */ React.createElement("pre", { className: "strategy-json" }, "injected_features ", JSON.stringify(features, null, 2)));
-  }
-  function DiffBlock({ title, lines }) {
-    const rows = asList(lines);
-    if (!rows.length) {
-      return /* @__PURE__ */ React.createElement("div", { className: "strategy-empty" }, title, ": no diff lines");
-    }
-    return /* @__PURE__ */ React.createElement("div", { className: "strategy-diff-block" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-section-title" }, title), /* @__PURE__ */ React.createElement("pre", { className: "strategy-diff-lines" }, rows.map((line, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: diffClass(line) }, line))));
-  }
-  function CodeBlock({ title, code }) {
-    const text = code || "";
-    if (!text.trim()) {
-      return /* @__PURE__ */ React.createElement("div", { className: "strategy-empty" }, title, ": no strategy code loaded");
-    }
-    return /* @__PURE__ */ React.createElement("div", { className: "strategy-diff-block" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-section-title" }, title), /* @__PURE__ */ React.createElement("pre", { className: "strategy-diff-lines" }, text));
-  }
-  function buildAiContext({ generation, runId, diffPayload, promptsPayload, buyCode, sellCode }) {
-    const prompts = asList(promptsPayload && promptsPayload.prompts);
-    const parts = [
-      "STOM strategy research context",
-      `run_id: ${safeText(runId)}`,
-      `gen_no: ${safeText(generation && generation.gen_no)}`,
-      `status: ${safeText(generation && generation.status)}`,
-      `graded_score: ${safeText(generation && generation.graded_score)}`,
-      `gate_passed: ${safeText(generation && generation.gate_passed)}`,
-      `buy_name: ${safeText(generation && generation.buy_name)}`,
-      `sell_name: ${safeText(generation && generation.sell_name)}`,
-      `buy_code_lines: ${(buyCode || "").split("\n").filter(Boolean).length}`,
-      `sell_code_lines: ${(sellCode || "").split("\n").filter(Boolean).length}`,
-      `diff_base_gen: ${safeText(diffPayload && diffPayload.base_gen)}`,
-      `diff_reason: ${safeText(diffPayload && diffPayload.reason, "available")}`,
-      `prompt_count: ${prompts.length}`,
-      `prompt_reason: ${safeText(promptsPayload && promptsPayload.reason, "available")}`,
-      "buy_code:",
-      buyCode || "(empty)",
-      "sell_code:",
-      sellCode || "(empty)",
-      "Forbidden actions: do not approve or deploy from this copied context."
-    ];
-    return parts.join("\n");
-  }
-  function StrategyInspectorTabs({ generation, runId, baseUrl, buyCode, sellCode }) {
-    const [tab, setTab] = useState_si("diff");
-    const [diffPayload, setDiffPayload] = useState_si(null);
-    const [promptsPayload, setPromptsPayload] = useState_si(null);
-    const [loading, setLoading] = useState_si(false);
-    const [diffError, setDiffError] = useState_si("");
-    const [promptsError, setPromptsError] = useState_si("");
-    const [copied, setCopied] = useState_si(false);
-    const genNo = generation && generation.gen_no;
-    useEffect_si(() => {
-      setDiffPayload(null);
-      setPromptsPayload(null);
-      setDiffError("");
-      setPromptsError("");
-      if (!generation || !baseUrl || !runId || genNo === void 0 || genNo === null) {
-        setLoading(false);
-        return;
-      }
-      let cancelled = false;
-      let pending = 2;
-      const finishOne = () => {
-        pending -= 1;
-        if (!cancelled && pending <= 0) setLoading(false);
-      };
-      setLoading(true);
-      const params = `run_id=${encodeURIComponent(runId)}&gen_no=${encodeURIComponent(genNo)}&base_gen=previous`;
-      fetch(`${baseUrl}/strategy_diff?${params}`, { signal: AbortSignal.timeout(3e3) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((diff) => {
-        if (!cancelled) setDiffPayload(diff || {});
-      }).catch((e) => {
-        if (!cancelled) setDiffError("strategy_diff route unavailable: " + String(e));
-      }).finally(finishOne);
-      fetch(
-        `${baseUrl}/prompts?run_id=${encodeURIComponent(runId)}&gen_no=${encodeURIComponent(genNo)}`,
-        { signal: AbortSignal.timeout(3e3) }
-      ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((prompts2) => {
-        if (!cancelled) setPromptsPayload(prompts2 || {});
-      }).catch((e) => {
-        if (!cancelled) setPromptsError("prompts route unavailable: " + String(e));
-      }).finally(finishOne);
-      return () => {
-        cancelled = true;
-      };
-    }, [generation, baseUrl, runId, genNo]);
-    const prompts = asList(promptsPayload && promptsPayload.prompts);
-    const aiContext = useMemo_si(() => buildAiContext({
-      generation,
-      runId,
-      diffPayload,
-      promptsPayload,
-      buyCode,
-      sellCode
-    }), [generation, runId, diffPayload, promptsPayload, buyCode, sellCode]);
-    const copyAiContext = async () => {
-      try {
-        await navigator.clipboard.writeText(aiContext);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1400);
-      } catch (e) {
-      }
-    };
-    return /* @__PURE__ */ React.createElement("div", { className: "strategy-inspector" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-inspector-tabs" }, /* @__PURE__ */ React.createElement("button", { className: tab === "diff" ? "active" : "", onClick: () => setTab("diff") }, "Previous Diff"), /* @__PURE__ */ React.createElement("button", { className: tab === "prompts" ? "active" : "", onClick: () => setTab("prompts") }, "Prompt Timeline"), /* @__PURE__ */ React.createElement("button", { className: tab === "context" ? "active" : "", onClick: () => setTab("context") }, "AI Context"), /* @__PURE__ */ React.createElement("button", { className: tab === "code" ? "active" : "", onClick: () => setTab("code") }, "Current Code")), loading && /* @__PURE__ */ React.createElement("div", { className: "strategy-empty" }, "loading strategy inspector..."), diffError && /* @__PURE__ */ React.createElement("div", { className: "strategy-empty danger" }, diffError), promptsError && /* @__PURE__ */ React.createElement("div", { className: "strategy-empty danger" }, promptsError), !loading && tab === "diff" && /* @__PURE__ */ React.createElement("div", { className: "strategy-inspector-body" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-kpis" }, /* @__PURE__ */ React.createElement("span", null, "base_gen=", safeText(diffPayload && diffPayload.base_gen)), /* @__PURE__ */ React.createElement("span", null, "reason=", safeText(diffPayload && diffPayload.reason, "available")), /* @__PURE__ */ React.createElement("span", null, "no_previous_generation=", String((diffPayload && diffPayload.reason) === "no_previous_generation"))), /* @__PURE__ */ React.createElement(DiffBlock, { title: "buy_diff", lines: diffPayload && diffPayload.buy_diff }), /* @__PURE__ */ React.createElement(DiffBlock, { title: "sell_diff", lines: diffPayload && diffPayload.sell_diff })), !loading && tab === "prompts" && /* @__PURE__ */ React.createElement("div", { className: "strategy-inspector-body" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-kpis" }, /* @__PURE__ */ React.createElement("span", null, "prompt_count=", prompts.length), /* @__PURE__ */ React.createElement("span", null, "no-record reason=", safeText(promptsPayload && promptsPayload.reason, "available"))), prompts.length ? prompts.map((prompt, i) => /* @__PURE__ */ React.createElement(PromptRow, { key: `${prompt.kind || "prompt"}-${prompt.attempt || i}`, prompt })) : /* @__PURE__ */ React.createElement("div", { className: "strategy-empty" }, "no prompt records for this generation. no-record reason: ", safeText(promptsPayload && promptsPayload.reason, "prompt_logging_not_enabled_or_no_records"))), !loading && tab === "context" && /* @__PURE__ */ React.createElement("div", { className: "strategy-inspector-body" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("div", { className: "strategy-section-title" }, "Safe current-run summary"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: copyAiContext }, copied ? "copied" : "copy AI context")), /* @__PURE__ */ React.createElement("pre", { className: "strategy-context" }, aiContext)), tab === "code" && /* @__PURE__ */ React.createElement("div", { className: "strategy-inspector-body" }, /* @__PURE__ */ React.createElement("div", { className: "strategy-section-title" }, "Current Strategy Code"), /* @__PURE__ */ React.createElement(CodeBlock, { title: "buy_code", code: buyCode }), /* @__PURE__ */ React.createElement(CodeBlock, { title: "sell_code", code: sellCode })));
-  }
-  Object.assign(window, { StrategyInspectorTabs });
-
-  // ai_strategy_loop/dashboard/frontend/code-viewer.jsx
-  var { useState: useState_cv, useMemo: useMemo_cv, useEffect: useEffect_cv } = React;
-  function highlightPython(code) {
-    if (!code) return [];
-    const lines = code.split("\n");
-    const KEYWORDS = /* @__PURE__ */ new Set([
-      "def",
-      "return",
-      "if",
-      "elif",
-      "else",
-      "and",
-      "or",
-      "not",
-      "for",
-      "while",
-      "in",
-      "is",
-      "None",
-      "True",
-      "False",
-      "import",
-      "from",
-      "as",
-      "pass",
-      "break",
-      "continue",
-      "lambda",
-      "try",
-      "except",
-      "finally",
-      "with",
-      "yield",
-      "max",
-      "min",
-      "abs",
-      "len"
-    ]);
-    const out = [];
-    for (let ln = 0; ln < lines.length; ln++) {
-      const line = lines[ln];
-      const parts = [];
-      let i = 0;
-      while (i < line.length) {
-        const ch = line[i];
-        if (ch === "#") {
-          parts.push({ cls: "tok-com", t: line.slice(i) });
-          break;
-        }
-        if (ch === '"' || ch === "'") {
-          const q = ch;
-          let j = i + 1;
-          while (j < line.length && line[j] !== q) j++;
-          parts.push({ cls: "tok-str", t: line.slice(i, j + 1) });
-          i = j + 1;
-          continue;
-        }
-        if (/[0-9]/.test(ch) && (i === 0 || /[^a-zA-Z_]/.test(line[i - 1]))) {
-          let j = i;
-          while (j < line.length && /[0-9_.e+-]/.test(line[j])) j++;
-          parts.push({ cls: "tok-num", t: line.slice(i, j) });
-          i = j;
-          continue;
-        }
-        if (/[a-zA-Z_]/.test(ch)) {
-          let j = i;
-          while (j < line.length && /[a-zA-Z0-9_]/.test(line[j])) j++;
-          const word = line.slice(i, j);
-          let k = j;
-          while (k < line.length && line[k] === " ") k++;
-          if (KEYWORDS.has(word)) parts.push({ cls: "tok-kw", t: word });
-          else if (line[k] === "(") parts.push({ cls: "tok-fn", t: word });
-          else parts.push({ cls: "", t: word });
-          i = j;
-          continue;
-        }
-        parts.push({ cls: "", t: ch });
-        i++;
-      }
-      out.push({ ln: ln + 1, parts });
-    }
-    return out;
-  }
-  function _cvMatchRanges(lineText, needle) {
-    if (!needle) return [];
-    const lower2 = lineText.toLowerCase();
-    const target = needle.toLowerCase();
-    const ranges = [];
-    let from = lower2.indexOf(target);
-    while (from !== -1) {
-      ranges.push([from, from + target.length]);
-      from = lower2.indexOf(target, from + target.length);
-    }
-    return ranges;
-  }
-  function _cvSplitToken(text, offset, ranges, keyPrefix) {
-    if (ranges.length === 0) return text;
-    const end = offset + text.length;
-    const hits = ranges.filter(([s, e]) => s < end && e > offset);
-    if (hits.length === 0) return text;
-    const out = [];
-    let cursor = offset;
-    for (const [s, e] of hits) {
-      const from = Math.max(s, offset);
-      const to = Math.min(e, end);
-      if (from > cursor) out.push(text.slice(cursor - offset, from - offset));
-      out.push(/* @__PURE__ */ React.createElement("mark", { key: `${keyPrefix}-${from}`, className: "cv-hit" }, text.slice(from - offset, to - offset)));
-      cursor = to;
-    }
-    if (cursor < end) out.push(text.slice(cursor - offset));
-    return out;
-  }
-  function CvCodeBlock({ code, query = "", emptyLabel }) {
-    const highlighted = useMemo_cv(() => highlightPython(code), [code]);
-    if (!code) return /* @__PURE__ */ React.createElement("div", { className: "code-block", style: { color: "var(--ink-3)" } }, emptyLabel || "unavailable: strategy code not found for this generation.");
-    const needle = String(query || "").trim();
-    return /* @__PURE__ */ React.createElement("pre", { className: "code-block" }, highlighted.map((row, i) => {
-      const lineText = row.parts.map((p) => p.t).join("");
-      const ranges = _cvMatchRanges(lineText, needle);
-      let offset = 0;
-      return /* @__PURE__ */ React.createElement("div", { key: i, className: ranges.length ? "cv-hit-line" : void 0 }, /* @__PURE__ */ React.createElement("span", { className: "ln" }, row.ln), row.parts.map((p, j) => {
-        const at = offset;
-        offset += p.t.length;
-        return /* @__PURE__ */ React.createElement("span", { key: j, className: p.cls }, _cvSplitToken(p.t, at, ranges, `${i}-${j}`));
-      }));
-    }));
-  }
-  var _CV_FONT_STEPS = [11, 12.5, 14, 16, 18];
-  function CodeViewer({ generation, onClose, runId, baseUrl }) {
-    const [tab, setTab] = useState_cv("buy");
-    const [copied, setCopied] = useState_cv(false);
-    const [expandedCodeView, setExpandedCodeView] = useState_cv(false);
-    const [splitView, setSplitView] = useState_cv(false);
-    const [fontIdx, setFontIdx] = useState_cv(1);
-    const [query, setQuery] = useState_cv("");
-    const [fetched, setFetched] = useState_cv(null);
-    const [loading, setLoading] = useState_cv(false);
-    const [fetchErr, setFetchErr] = useState_cv(null);
-    const hasInline = Boolean(generation && (generation.buy_code || generation.sell_code));
-    useEffect_cv(() => {
-      setFetched(null);
-      setFetchErr(null);
-      if (!generation || hasInline || !baseUrl || !runId) return;
-      const gen = generation.gen_no;
-      let cancelled = false;
-      setLoading(true);
-      fetch(
-        `${baseUrl}/strategy_code?run=${encodeURIComponent(runId)}&gen=${gen}`,
-        { signal: AbortSignal.timeout(window.CONDITION_FETCH_TIMEOUT_MS || 1e4) }
-      ).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
-        if (!cancelled) setFetched({ buy_code: j.buy_code || "", sell_code: j.sell_code || "" });
-      }).catch((e) => {
-        if (!cancelled) setFetchErr(String(e));
-      }).finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-      return () => {
-        cancelled = true;
-      };
-    }, [generation, hasInline, baseUrl, runId]);
-    if (!generation) return null;
-    const isErr = generation.status === "error";
-    const buyCode = generation.buy_code || fetched && fetched.buy_code || "";
-    const sellCode = generation.sell_code || fetched && fetched.sell_code || "";
-    const code = tab === "buy" ? buyCode : sellCode;
-    const name = tab === "buy" ? generation.buy_name : generation.sell_name;
-    const fontSize = _CV_FONT_STEPS[Math.max(0, Math.min(_CV_FONT_STEPS.length - 1, fontIdx))];
-    const modalClass = "modal code-viewer-modal" + (expandedCodeView ? " code-viewer-expanded" : "") + (splitView ? " code-viewer-split" : "");
-    const modalStyle = {
-      width: expandedCodeView ? "calc(100vw - 20px)" : splitView ? "min(1720px, calc(100vw - 32px))" : "min(960px, calc(100vw - 32px))",
-      maxHeight: expandedCodeView ? "calc(100vh - 18px)" : void 0
-    };
-    const countHits = (text) => {
-      const needle = String(query || "").trim().toLowerCase();
-      if (!needle) return 0;
-      return String(text || "").toLowerCase().split(needle).length - 1;
-    };
-    const hits = splitView ? countHits(buyCode) + countHits(sellCode) : countHits(code);
-    const copyText = async (text) => {
-      try {
-        await navigator.clipboard.writeText(text || "");
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1400);
-      } catch (e) {
-      }
-    };
-    const onCopy = () => copyText(splitView ? `# \uB9E4\uC218 \u2014 ${generation.buy_name || "\u2014"}
-${buyCode}
-
-# \uB9E4\uB3C4 \u2014 ${generation.sell_name || "\u2014"}
-${sellCode}` : code);
-    return /* @__PURE__ */ React.createElement("div", { className: "modal-bd", onMouseDown: (e) => {
-      if (e.target === e.currentTarget) onClose();
-    } }, /* @__PURE__ */ React.createElement("div", { className: modalClass, style: modalStyle, onMouseDown: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "modal-hd" }, /* @__PURE__ */ React.createElement("h2", null, "\uC804\uB7B5 \uCF54\uB4DC \uBCF4\uAE30", /* @__PURE__ */ React.createElement("span", { className: "sub" }, "gen_", String(generation.gen_no).padStart(2, "0"), " \xB7 score ", fmtScore(generation.graded_score), generation.gate_passed && /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)", marginLeft: 8 } }, "\u2713 \uAC8C\uC774\uD2B8 \uD1B5\uACFC"), isErr && /* @__PURE__ */ React.createElement("span", { style: { color: "var(--red)", marginLeft: 8 } }, "\u26A0 \uC624\uB958"))), /* @__PURE__ */ React.createElement("div", { className: "cv-toolbar" }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        className: "input cv-search",
-        type: "search",
-        spellCheck: false,
-        placeholder: "\uC870\uAC74\uC2DD \uC548\uC5D0\uC11C \uCC3E\uAE30 (\uC608: \uB4F1\uB77D\uC728)",
-        value: query,
-        onChange: (e) => setQuery(e.target.value)
-      }
-    ), query.trim() && /* @__PURE__ */ React.createElement("span", { className: "cv-hitcount mono" }, hits, "\uAC74"), /* @__PURE__ */ React.createElement("span", { className: "cv-fontctl", role: "group", "aria-label": "\uAE00\uC790 \uD06C\uAE30" }, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: () => setFontIdx(Math.max(0, fontIdx - 1)),
-        disabled: fontIdx <= 0,
-        title: "\uAE00\uC790 \uC791\uAC8C"
-      },
-      "A\u2212"
-    ), /* @__PURE__ */ React.createElement("b", { className: "mono" }, fontSize, "px"), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: () => setFontIdx(Math.min(_CV_FONT_STEPS.length - 1, fontIdx + 1)),
-        disabled: fontIdx >= _CV_FONT_STEPS.length - 1,
-        title: "\uAE00\uC790 \uD06C\uAC8C"
-      },
-      "A+"
-    )), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        "aria-pressed": splitView,
-        "data-testid": "code-viewer-split-toggle",
-        "data-tip": splitView ? "\uD55C \uCABD\uC529 \uD06C\uAC8C \uBD05\uB2C8\uB2E4." : "\uB9E4\uC218\uC640 \uB9E4\uB3C4\uB97C \uB098\uB780\uD788 \uB193\uACE0 \uBE44\uAD50\uD569\uB2C8\uB2E4.",
-        onClick: () => setSplitView(!splitView)
-      },
-      splitView ? "\uD55C\uCABD\uB9CC \uBCF4\uAE30" : "\uB9E4\uC218\xB7\uB9E4\uB3C4 \uB098\uB780\uD788"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        "data-testid": "code-viewer-height-toggle",
-        "data-tip": expandedCodeView ? "\uC870\uAC74\uC2DD \uBCF4\uAE30 \uCC3D\uC744 \uAE30\uBCF8 \uD06C\uAE30\uB85C \uC904\uC785\uB2C8\uB2E4." : "\uC870\uAC74\uC2DD \uBCF4\uAE30 \uCC3D\uC744 \uD654\uBA74 \uC804\uCCB4\uB85C \uB113\uD799\uB2C8\uB2E4.",
-        "aria-pressed": expandedCodeView,
-        onClick: () => setExpandedCodeView(!expandedCodeView)
-      },
-      expandedCodeView ? "\uAE30\uBCF8 \uD06C\uAE30" : "\uC804\uCCB4\uD654\uBA74"
-    ), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onCopy }, copied ? "\uBCF5\uC0AC\uB428 \u2713" : splitView ? "\uB9E4\uC218+\uB9E4\uB3C4 \uBCF5\uC0AC" : "\uBCF5\uC0AC"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\uB2EB\uAE30"))), !splitView && /* @__PURE__ */ React.createElement("div", { className: "code-tabs" }, /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        className: `code-tab ${tab === "buy" ? "active" : ""}`,
-        onClick: () => setTab("buy")
-      },
-      /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)" } }, "\u25CF"),
-      " \uB9E4\uC218 \u2014 ",
-      generation.buy_name || "\u2014"
-    ), /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        className: `code-tab ${tab === "sell" ? "active" : ""}`,
-        onClick: () => setTab("sell")
-      },
-      /* @__PURE__ */ React.createElement("span", { style: { color: "var(--amber)" } }, "\u25CF"),
-      " \uB9E4\uB3C4 \u2014 ",
-      generation.sell_name || "\u2014"
-    ), /* @__PURE__ */ React.createElement("div", { style: { marginLeft: "auto", padding: "8px 16px", fontSize: 10.5, color: "var(--ink-3)", fontFamily: "var(--mono)" } }, (code || "").split("\n").length, " lines")), /* @__PURE__ */ React.createElement("div", { className: "cv-body" + (splitView ? " split" : ""), style: { fontSize } }, loading ? /* @__PURE__ */ React.createElement("div", { className: "code-block", style: { color: "var(--ink-3)" } }, "\uCF54\uB4DC \uBD88\uB7EC\uC624\uB294 \uC911\u2026") : fetchErr && !buyCode && !sellCode ? /* @__PURE__ */ React.createElement("div", { className: "code-block", style: { color: "var(--red)" } }, "\uCF54\uB4DC \uC870\uD68C \uC2E4\uD328: ", fetchErr) : splitView ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("section", { className: "cv-pane" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--teal)" } }, "\u25CF"), " \uB9E4\uC218 \u2014 ", generation.buy_name || "\u2014", /* @__PURE__ */ React.createElement("small", { className: "mono" }, (buyCode || "").split("\n").length, " lines"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => copyText(buyCode) }, "\uBCF5\uC0AC")), /* @__PURE__ */ React.createElement(CvCodeBlock, { code: buyCode, query, emptyLabel: "\uC774 \uC138\uB300\uC758 \uB9E4\uC218 \uC870\uAC74\uC2DD \uCF54\uB4DC\uB97C \uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4." })), /* @__PURE__ */ React.createElement("section", { className: "cv-pane" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--amber)" } }, "\u25CF"), " \uB9E4\uB3C4 \u2014 ", generation.sell_name || "\u2014", /* @__PURE__ */ React.createElement("small", { className: "mono" }, (sellCode || "").split("\n").length, " lines"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => copyText(sellCode) }, "\uBCF5\uC0AC")), /* @__PURE__ */ React.createElement(CvCodeBlock, { code: sellCode, query, emptyLabel: "\uC774 \uC138\uB300\uC758 \uB9E4\uB3C4 \uC870\uAC74\uC2DD \uCF54\uB4DC\uB97C \uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4." }))) : /* @__PURE__ */ React.createElement(
-      CvCodeBlock,
-      {
-        code,
-        query,
-        emptyLabel: `\uC774 \uC138\uB300\uC758 ${tab === "buy" ? "\uB9E4\uC218" : "\uB9E4\uB3C4"} \uC870\uAC74\uC2DD \uCF54\uB4DC\uB97C \uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.`
-      }
-    )), /* @__PURE__ */ React.createElement(
-      StrategyInspectorTabs,
-      {
-        generation,
-        runId,
-        baseUrl,
-        buyCode,
-        sellCode
-      }
-    ), /* @__PURE__ */ React.createElement("div", { className: "modal-ft", style: { justifyContent: "space-between" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, color: "var(--ink-2)", fontFamily: "var(--mono)" } }, /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, "\uC694\uC9C0:"), " ", generation.strategy_gist || "\u2014")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)" } }, "\uAC70\uB798 ", generation.trade_count, " \xB7 MDD ", /* @__PURE__ */ React.createElement("span", { style: { color: "var(--red)" } }, fmtPct(generation.mdd)), " \xB7 \uC190\uC775 ", /* @__PURE__ */ React.createElement("span", { className: generation.profit > 0 ? "num-pos" : "num-neg" }, fmtMoney(generation.profit))), /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: onClose }, "\uB2EB\uAE30")))));
-  }
-  Object.assign(window, { CodeViewer, CvCodeBlock, highlightPython });
-
   // ai_strategy_loop/dashboard/frontend/settings.jsx
   var { useState: useState_s, useMemo: useMemo_s, useEffect: useEffect_s } = React;
   function SettingsModal({
@@ -24428,7 +24430,28 @@ ${sellCode}` : code);
       fontFamily: "var(--mono)",
       textAlign: "center",
       padding: "0 16px"
-    } }, message || "\uBD84\uC11D \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4");
+    } }, /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        viewBox: "0 0 200 80",
+        preserveAspectRatio: "none",
+        "aria-hidden": "true",
+        style: { position: "absolute", inset: "12%", width: "76%", height: "76%", opacity: 0.13, pointerEvents: "none" }
+      },
+      [14, 30, 46, 62, 78, 94, 110, 126, 142, 158, 174].map((bx, i) => {
+        const hs = [18, 30, 12, 36, 24, 44, 16, 38, 28, 48, 34];
+        return /* @__PURE__ */ React.createElement("rect", { key: i, x: bx, y: 72 - hs[i], width: "9", height: hs[i], fill: "var(--ink-2)" });
+      }),
+      /* @__PURE__ */ React.createElement(
+        "path",
+        {
+          d: "M 10 62 L 40 55 L 70 58 L 100 42 L 130 46 L 160 26 L 190 18",
+          fill: "none",
+          stroke: "var(--teal)",
+          strokeWidth: "3"
+        }
+      )
+    ), /* @__PURE__ */ React.createElement("div", { style: { position: "relative", display: "flex", flexDirection: "column", gap: 6, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { style: { padding: "1px 8px", border: "1px solid var(--line-2)", borderRadius: 999, fontSize: 9.5, color: "var(--ink-3)" } }, "\uC608\uC2DC \uBBF8\uB9AC\uBCF4\uAE30 \u2014 \uB370\uC774\uD130\uAC00 \uC313\uC774\uBA74 \uC774\uB7F0 \uBAA8\uC591\uC73C\uB85C \uADF8\uB824\uC9D1\uB2C8\uB2E4"), /* @__PURE__ */ React.createElement("span", null, message || "\uBD84\uC11D \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4")));
   }
   function _gpMoney(v) {
     const a = Math.abs(v || 0);
@@ -24444,7 +24467,7 @@ ${sellCode}` : code);
       return /* @__PURE__ */ React.createElement(ChartFrame, { ...evidence }, /* @__PURE__ */ React.createElement(Chart, { ...props }));
     };
   }
-  function _BtEquityChartContent({ equity, onBrush, brushActive, onBrushClear }) {
+  function _BtEquityChartContent({ equity, onBrush, brushActive, onBrushClear, moneyCtx }) {
     const daily = equity && equity.daily || [];
     const cumulative = equity && equity.cumulative || [];
     const [hover, setHover] = useState_btc(null);
@@ -24550,6 +24573,7 @@ ${sellCode}` : code);
     };
     const onWheel = (e) => {
       if (!n || total <= 1) return;
+      if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
       const px = _localPx(e);
       if (px == null) return;
@@ -24597,13 +24621,23 @@ ${sellCode}` : code);
     const last = cumulative.length ? cumulative[cumulative.length - 1].cum_profit : null;
     const peakCum = cumulative.length ? Math.max(...cumulative.map((c) => c.cum_profit || 0)) : null;
     const zoomed = view != null;
+    const extremes = useMemo_btc(() => {
+      if (vCum.length < 2) return null;
+      let hiI = 0, loI = 0;
+      for (let i = 1; i < vCum.length; i++) {
+        const v = vCum[i].cum_profit || 0;
+        if (v > (vCum[hiI].cum_profit || 0)) hiI = i;
+        if (v < (vCum[loI].cum_profit || 0)) loI = i;
+      }
+      return { hiI, loI, hi: vCum[hiI].cum_profit || 0, lo: vCum[loI].cum_profit || 0 };
+    }, [vCum]);
     const brushBand = brushSel && brushSel.a != null ? (() => {
       const a = Math.min(brushSel.a, brushSel.b), b = Math.max(brushSel.a, brushSel.b);
       const x0 = xCenter(a) - slot / 2, x1 = xCenter(b) + slot / 2;
       return { x: Math.max(padL, x0), w: Math.min(W - padR, x1) - Math.max(padL, x0) };
     })() : null;
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--teal)" } }), "\uB204\uC801\uC218\uC775\uACE1\uC120 \xB7 \uC77C\uBCC4\uC190\uC775"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uC77C\uC774\uC775 \u20A9" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--red)", label: "\uC77C\uC190\uC2E4 \u20A9" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--amber)", label: "\uB204\uC801\uC218\uC775 \u20A9" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
-      "\uD720 = \uC2DC\uAC04\uCD95 \uC90C \xB7 \uB4DC\uB798\uADF8 = \uD32C",
+      "Ctrl+\uD720 = \uC2DC\uAC04\uCD95 \uC90C \xB7 \uB4DC\uB798\uADF8 = \uD32C (\uD720 \uB2E8\uB3C5 = \uD398\uC774\uC9C0 \uC2A4\uD06C\uB864)",
       "Shift+\uB4DC\uB798\uADF8 = \uAD6C\uAC04 \uC120\uD0DD \u2192 \uAD6C\uAC04 \uBD84\uC11D",
       zoomed ? "\uC90C \uC0C1\uD0DC \u2014 \uB354\uBE14\uD074\uB9AD\uC73C\uB85C \uC804\uCCB4 \uBCF5\uADC0" : "\uD06C\uB85C\uC2A4\uD5E4\uC5B4\uB85C \uC77C\uBCC4 \uAC12 \uD655\uC778"
     ] }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
@@ -24613,7 +24647,21 @@ ${sellCode}` : code);
         value: last != null ? fmtMoney(last) : "\u2014",
         color: last != null && last > 0 ? "var(--teal)" : last != null && last < 0 ? "var(--red)" : void 0
       }
-    ), /* @__PURE__ */ React.createElement(Mini, { label: "\uB204\uC801 \uACE0\uC810", value: peakCum != null ? fmtMoney(peakCum) : "\u2014" }), /* @__PURE__ */ React.createElement(Mini, { label: "\uAC70\uB798\uC77C\uC218", value: total > 0 ? String(total) : "\u2014" }), zoomed && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => {
+    ), /* @__PURE__ */ React.createElement(Mini, { label: "\uB204\uC801 \uACE0\uC810", value: peakCum != null ? fmtMoney(peakCum) : "\u2014" }), /* @__PURE__ */ React.createElement(Mini, { label: "\uAC70\uB798\uC77C\uC218", value: total > 0 ? String(total) : "\u2014" }), moneyCtx && moneyCtx.betting != null && /* @__PURE__ */ React.createElement(
+      Mini,
+      {
+        label: "\uC885\uBAA9\uB2F9 \uBC30\uD305",
+        value: fmtMoney(moneyCtx.betting),
+        sub: moneyCtx.bettingDerived ? "\uD30C\uC0DD\uAC12 \xB7 \uC218\uC775\uAE08\xF7\uC218\uC775\uB960" : void 0
+      }
+    ), moneyCtx && moneyCtx.cagr != null && /* @__PURE__ */ React.createElement(
+      Mini,
+      {
+        label: "\uC5F0\uD3C9\uADE0(CAGR)",
+        value: fmtPct(moneyCtx.cagr),
+        color: moneyCtx.cagr > 0 ? "var(--teal)" : moneyCtx.cagr < 0 ? "var(--red)" : void 0
+      }
+    ), zoomed && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => {
       setView(null);
       setBrushSel(null);
     } }, "\u2922 \uC804\uCCB4 \uBCF4\uAE30"), brushActive && /* @__PURE__ */ React.createElement(
@@ -24700,6 +24748,49 @@ ${sellCode}` : code);
           style: !zoomed && !_btReducedMotion() ? { strokeDasharray: cumLen, strokeDashoffset: cumLen } : void 0
         }
       ),
+      extremes && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+        "circle",
+        {
+          cx: xCenter(extremes.hiI),
+          cy: yCum(extremes.hi),
+          r: "4",
+          fill: "var(--chart-profit)",
+          stroke: "var(--bg-0)",
+          strokeWidth: "1.2"
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "text",
+        {
+          className: "chart-axis-text",
+          x: Math.max(padL + 30, Math.min(W - padR - 30, xCenter(extremes.hiI))),
+          y: Math.max(padT + 10, yCum(extremes.hi) - 8),
+          textAnchor: "middle",
+          fill: "var(--chart-profit)"
+        },
+        "\uACE0\uC810 ",
+        _btMoneyTick(extremes.hi)
+      ), extremes.loI !== extremes.hiI && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+        "circle",
+        {
+          cx: xCenter(extremes.loI),
+          cy: yCum(extremes.lo),
+          r: "4",
+          fill: "var(--chart-loss)",
+          stroke: "var(--bg-0)",
+          strokeWidth: "1.2"
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "text",
+        {
+          className: "chart-axis-text",
+          x: Math.max(padL + 30, Math.min(W - padR - 30, xCenter(extremes.loI))),
+          y: Math.min(padT + innerH - 4, yCum(extremes.lo) + 14),
+          textAnchor: "middle",
+          fill: "var(--chart-loss)"
+        },
+        "\uC800\uC810 ",
+        _btMoneyTick(extremes.lo)
+      ))),
       xTickIdx.map((i, k) => /* @__PURE__ */ React.createElement("text", { key: `x${i}`, className: "chart-axis-text", x: xCenter(i), y: H - 10, textAnchor: "middle" }, vDaily[i] ? _btDateLabelY(vDaily[i].date, k > 0 && vDaily[xTickIdx[k - 1]] ? vDaily[xTickIdx[k - 1]].date : null) : "")),
       hover != null && vDaily[hover] && /* @__PURE__ */ React.createElement(
         "line",
@@ -24846,7 +24937,11 @@ ${sellCode}` : code);
       if (i >= 0 && i < n) setHover(i);
       else setHover(null);
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--red)" } }), "\uC5B8\uB354\uC6CC\uD130 \u2014 Drawdown"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uACE0\uC810 \uB300\uBE44 \uBC18\uB0A9\uC561(\uC6D0)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Mini, { label: "\uCD5C\uB300\uB099\uD3ED", value: maxDd ? fmtMoney(maxDd.drawdown) : "\u2014", color: maxDd ? "var(--red)" : void 0 }), maxDd && /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--red)" } }), "\uC5B8\uB354\uC6CC\uD130 \u2014 Drawdown"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "\uACE0\uC810 \uB300\uBE44 \uBC18\uB0A9\uC561(\uC6D0)")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
+      "\uACE0\uC810 \uB300\uBE44 \uBC18\uB0A9\uC561\uC744 \uC2DC\uAC04\uC21C\uC73C\uB85C \uADF8\uB9BD\uB2C8\uB2E4",
+      "0 = \uC2E0\uACE0\uC810 \uAC31\uC2E0 \uC911 \xB7 \uC544\uB798\uB85C \uAE4A\uC744\uC218\uB85D \uD070 \uB099\uD3ED",
+      maxDd && maxDd.recovery_date ? "\uCD5C\uB300\uB099\uD3ED\uC740 \uC774\uBBF8 \uD68C\uBCF5\uB428" : "\uCD5C\uB300\uB099\uD3ED \uAD6C\uAC04 \uBBF8\uD68C\uBCF5 \u2014 \uC704\uD5D8 \uAD00\uB9AC \uC8FC\uC758"
+    ] }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Mini, { label: "\uCD5C\uB300\uB099\uD3ED", value: maxDd ? fmtMoney(maxDd.drawdown) : "\u2014", color: maxDd ? "var(--red)" : void 0 }), maxDd && /* @__PURE__ */ React.createElement(
       Mini,
       {
         label: "\uB099\uD3ED \uAD6C\uAC04",
@@ -24869,6 +24964,32 @@ ${sellCode}` : code);
       _btAxisTicks(0, ddMax, 5).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - ddMax) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `uyl${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: y(tv), y2: y(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(tv) + 3, textAnchor: "end", fill: "var(--chart-axis)" }, "\u2212", _btMoneyTick(tv)))),
       /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--chart-grid)", strokeWidth: "1" }),
       n > 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: areaPath, fill: "url(#bt-uw-grad)" }), /* @__PURE__ */ React.createElement("path", { d: linePath, fill: "none", stroke: "var(--chart-loss)", strokeWidth: "1.4", opacity: "0.85" })),
+      n > 1 && maxDd && maxDd.trough_date != null && (() => {
+        const ti = series.findIndex((s) => s.date === maxDd.trough_date);
+        if (ti < 0) return null;
+        return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+          "circle",
+          {
+            cx: x(ti),
+            cy: y(series[ti].drawdown || 0),
+            r: "4",
+            fill: "var(--chart-loss)",
+            stroke: "var(--bg-0)",
+            strokeWidth: "1.2"
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: Math.max(padL + 40, Math.min(W - padR - 40, x(ti))),
+            y: Math.min(padT + innerH - 4, y(series[ti].drawdown || 0) + 14),
+            textAnchor: "middle",
+            fill: "var(--chart-loss)"
+          },
+          "\uCD5C\uB300\uB099\uD3ED \u2212",
+          _btMoneyTick(series[ti].drawdown || 0)
+        ));
+      })(),
       xTickIdx.map((i, k) => /* @__PURE__ */ React.createElement("text", { key: `ux${i}`, className: "chart-axis-text", x: x(i), y: H - 10, textAnchor: "middle" }, series[i] ? _btDateLabelY(series[i].date, k > 0 && series[xTickIdx[k - 1]] ? series[xTickIdx[k - 1]].date : null) : "")),
       hover != null && series[hover] && /* @__PURE__ */ React.createElement(
         "line",
@@ -24984,7 +25105,7 @@ ${sellCode}` : code);
       "%"
     ))), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: `\uAC70\uB798\uAC00 ${window2}\uAC74 \uC774\uC0C1 \uB204\uC801\uB418\uBA74 \uB864\uB9C1 \uC9C0\uD45C\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4` }))));
   }
-  function _BtCumulativeTradesChartContent({ data }) {
+  function _BtCumulativeTradesChartContent({ data, moneyCtx }) {
     const series = data && data.series || [];
     const [hover, setHover] = useState_btc(null);
     const svgRef = useRef_btc(null);
@@ -25032,7 +25153,21 @@ ${sellCode}` : code);
       "x\uCD95 = \uAC70\uB798 \uC21C\uC11C(\uCCB4\uACB0 \uC21C)",
       "\uC88C\uCD95 = \uB204\uC801 \uAC70\uB798\uC218 \xB7 \uC6B0\uCD95 = \uB204\uC801 \uC2E4\uD604\uC190\uC775",
       "\uCCB4\uACB0 \uBE48\uB3C4\uC640 \uC790\uBCF8 \uC99D\uAC00\uB97C \uD55C \uD654\uBA74\uC5D0\uC11C \uBE44\uAD50"
-    ] }), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
+    ] }), moneyCtx && (moneyCtx.betting != null || moneyCtx.cagr != null) && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, moneyCtx.betting != null && /* @__PURE__ */ React.createElement(
+      Mini,
+      {
+        label: "\uC885\uBAA9\uB2F9 \uBC30\uD305",
+        value: fmtMoney(moneyCtx.betting),
+        sub: moneyCtx.bettingDerived ? "\uD30C\uC0DD\uAC12 \xB7 \uC218\uC775\uAE08\xF7\uC218\uC775\uB960" : void 0
+      }
+    ), moneyCtx.cagr != null && /* @__PURE__ */ React.createElement(
+      Mini,
+      {
+        label: "\uC5F0\uD3C9\uADE0(CAGR)",
+        value: fmtPct(moneyCtx.cagr),
+        color: moneyCtx.cagr > 0 ? "var(--teal)" : moneyCtx.cagr < 0 ? "var(--red)" : void 0
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement(
       "svg",
       {
         ref: svgRef,
@@ -25217,7 +25352,41 @@ ${sellCode}` : code);
           strokeDasharray: "3 3"
         }
       ), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: zeroX, y: padT - 4, textAnchor: "middle", fill: "var(--ink-1)" }, "0%")),
-      n > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL, y: H - 10, textAnchor: "start" }, bins[0].bin_start.toFixed(1), "%"), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR, y: H - 10, textAnchor: "end" }, bins[n - 1].bin_end.toFixed(1), "%"))
+      n > 0 && (() => {
+        const vLo = bins[0].bin_start, vHi = bins[n - 1].bin_end;
+        const vSpan = vHi - vLo || 1;
+        const vx = (v) => padL + (v - vLo) / vSpan * innerW;
+        const mids = (_btAxisTicks ? _btAxisTicks(vLo, vHi, 6) : []).filter((tv) => tv > vLo + vSpan * 0.04 && tv < vHi - vSpan * 0.04);
+        return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL, y: H - 10, textAnchor: "start" }, vLo.toFixed(1), "%"), mids.map((tv, i) => /* @__PURE__ */ React.createElement("g", { key: `hx${i}` }, /* @__PURE__ */ React.createElement(
+          "line",
+          {
+            x1: vx(tv),
+            x2: vx(tv),
+            y1: padT + innerH,
+            y2: padT + innerH + 4,
+            stroke: "var(--chart-grid)",
+            strokeWidth: "1"
+          }
+        ), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: vx(tv), y: H - 10, textAnchor: "middle" }, Math.abs(tv) < 1e-9 ? "0%" : tv.toFixed(1) + "%"))), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: W - padR, y: H - 10, textAnchor: "end" }, vHi.toFixed(1), "%"));
+      })(),
+      n > 0 && (() => {
+        let pk = 0;
+        for (let i = 1; i < n; i++) if ((bins[i].count || 0) > (bins[pk].count || 0)) pk = i;
+        const cx = xLeft(pk) + slot / 2;
+        return /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            className: "chart-axis-text",
+            x: Math.max(padL + 20, Math.min(W - padR - 20, cx)),
+            y: Math.max(padT + 10, yBar(bins[pk].count || 0) - 5),
+            textAnchor: "middle",
+            fill: "var(--ink-1)"
+          },
+          "\uCD5C\uBE48 ",
+          bins[pk].count,
+          "\uAC74"
+        );
+      })()
     ), hover != null && bins[hover] && /* @__PURE__ */ React.createElement("div", { style: {
       position: "absolute",
       top: 16,
@@ -25334,9 +25503,17 @@ ${sellCode}` : code);
         },
         c ? big ? /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, color: cellPct(c) >= 0 ? "var(--teal)" : "var(--red)" } }, cellPctLabel(cellPct(c))), /* @__PURE__ */ React.createElement("span", { style: { fontSize: Math.max(8.5, valFont - 5), color: "var(--ink-3)" } }, c.trades, "\uAC74")) : cellPctLabel(cellPct(c)) : ""
       );
-    }))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, marginTop: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(76,214,179,0.78)", label: "\uC774\uC775 \uC2AC\uB86F(\uC218\uC775\uB960 \uD569\uACC4 +)" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(255,107,107,0.78)", label: "\uC190\uC2E4 \uC2AC\uB86F(\uC218\uC775\uB960 \uD569\uACC4 \u2212)" }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, big ? "\uC140 = \uC218\uC775\uB960 \uD569\uACC4(%) \xB7 \uAC70\uB798 \uAC74\uC218" : "\uC140 = \uC218\uC775\uB960 \uD569\uACC4(%)")), slots.length === 1 && /* @__PURE__ */ React.createElement("p", { className: "mono", style: { margin: "8px 0 0", fontSize: 10.5, color: "var(--ink-3)", lineHeight: 1.55 } }, "\uC774 \uC5F0\uAD6C\uB294 \uC2DC\uAC04\uB300\uAC00 ", /* @__PURE__ */ React.createElement("b", null, slotLabel(slots[0])), " \uD55C \uAD6C\uAC04\uBFD0\uC774\uB77C \uC2DC\uAC04\uB300 \uCD95\uC774 \uB9CC\uB4E4\uC5B4\uC9C0\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC9C0\uAE08\uC740 \uC694\uC77C\uBCC4 \uBE44\uAD50\uB85C \uC77D\uC73C\uC138\uC694.")))));
+    }))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, marginTop: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(76,214,179,0.78)", label: "\uC774\uC775 \uC2AC\uB86F(\uC218\uC775\uB960 \uD569\uACC4 +)" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(255,107,107,0.78)", label: "\uC190\uC2E4 \uC2AC\uB86F(\uC218\uC775\uB960 \uD569\uACC4 \u2212)" }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, big ? "\uC140 = \uC218\uC775\uB960 \uD569\uACC4(%) \xB7 \uAC70\uB798 \uAC74\uC218" : "\uC140 = \uC218\uC775\uB960 \uD569\uACC4(%)")), cells.length >= 2 && (() => {
+      let best = cells[0], worst = cells[0];
+      for (const c of cells) {
+        if (cellPct(c) > cellPct(best)) best = c;
+        if (cellPct(c) < cellPct(worst)) worst = c;
+      }
+      if (best === worst) return null;
+      return /* @__PURE__ */ React.createElement("p", { className: "mono", style: { margin: "8px 0 0", fontSize: 11, color: "var(--ink-2)", lineHeight: 1.55 } }, "\uAC00\uC7A5 \uAC15\uD55C \uAD6C\uAC04 = ", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--teal)" } }, _BT_WEEKDAYS[best.weekday], " ", slotLabel(best.slot), " (", cellPctLabel(cellPct(best)), ")"), " \xB7 ", "\uAC00\uC7A5 \uC57D\uD55C \uAD6C\uAC04 = ", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--red)" } }, _BT_WEEKDAYS[worst.weekday], " ", slotLabel(worst.slot), " (", cellPctLabel(cellPct(worst)), ")"), " \u2014 \uC57D\uD55C \uAD6C\uAC04\uC774 \uBC18\uBCF5\uB418\uBA74 \uC2DC\uAC04\uB300 \uD544\uD130 \uAC00\uC124\uB85C \uD658\uB958\uD558\uC138\uC694.");
+    })(), slots.length === 1 && /* @__PURE__ */ React.createElement("p", { className: "mono", style: { margin: "8px 0 0", fontSize: 10.5, color: "var(--ink-3)", lineHeight: 1.55 } }, "\uC774 \uC5F0\uAD6C\uB294 \uC2DC\uAC04\uB300\uAC00 ", /* @__PURE__ */ React.createElement("b", null, slotLabel(slots[0])), " \uD55C \uAD6C\uAC04\uBFD0\uC774\uB77C \uC2DC\uAC04\uB300 \uCD95\uC774 \uB9CC\uB4E4\uC5B4\uC9C0\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC9C0\uAE08\uC740 \uC694\uC77C\uBCC4 \uBE44\uAD50\uB85C \uC77D\uC73C\uC138\uC694.")))));
   }
-  function _BtMonteCarloChartContent({ mc, loading, onRun }) {
+  function _BtMonteCarloChartContent({ mc, loading, onRun, moneyCtx }) {
     const fan = mc && mc.fan || [];
     const observed = mc && mc.observed;
     const n = fan.length;
@@ -25386,7 +25563,21 @@ ${sellCode}` : code);
         color: ruin != null && ruin >= 0.2 ? "var(--red)" : ruin != null && ruin >= 0.05 ? "var(--amber)" : void 0,
         sub: mc && mc.ruin_pct ? `\uC790\uBCF8 -${Math.round(mc.ruin_pct)}%` : void 0
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none" }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: zeroY, y2: zeroY, stroke: "rgba(255,255,255,0.28)", strokeWidth: "1", strokeDasharray: "2 3" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: zeroY + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0"), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(yMax) + 3, textAnchor: "end", fill: "var(--chart-profit)" }, _btMoneyTick(yMax)), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(yMin) + 3, textAnchor: "end", fill: "var(--chart-loss)" }, _btMoneyTick(yMin)), /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--chart-grid)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--chart-grid)", strokeWidth: "1" }), n > 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: band("p5", "p95"), fill: "rgba(155,135,245,0.12)" }), /* @__PURE__ */ React.createElement("path", { d: band("p25", "p75"), fill: "rgba(155,135,245,0.24)" }), /* @__PURE__ */ React.createElement("path", { d: median, fill: "none", stroke: "var(--chart-accent)", strokeWidth: "2" })), observed && n > 1 && /* @__PURE__ */ React.createElement("circle", { cx: x(n - 1), cy: y(observed.final_krw), r: "4", fill: "var(--amber)", stroke: "var(--bg-0)", strokeWidth: "1" })), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uBAAC\uD14C\uCE74\uB97C\uB85C\uB97C \uC2E4\uD589\uD558\uBA74 \uC190\uC775 \uBD84\uD3EC \uD32C\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4 (\uAC70\uB798\uC77C 2\uC77C \uC774\uC0C1 \uD544\uC694)" })), mc && mc.n > 0 && /* @__PURE__ */ React.createElement(_BtMddBox, { mddPct, observedPct: observed ? observed.mdd_pct : null })));
+    ), moneyCtx && moneyCtx.betting != null && /* @__PURE__ */ React.createElement(
+      Mini,
+      {
+        label: "\uC885\uBAA9\uB2F9 \uBC30\uD305",
+        value: fmtMoney(moneyCtx.betting),
+        sub: moneyCtx.bettingDerived ? "\uD30C\uC0DD\uAC12 \xB7 \uC218\uC775\uAE08\xF7\uC218\uC775\uB960" : void 0
+      }
+    ), moneyCtx && moneyCtx.cagr != null && /* @__PURE__ */ React.createElement(
+      Mini,
+      {
+        label: "\uC5F0\uD3C9\uADE0(CAGR)",
+        value: fmtPct(moneyCtx.cagr),
+        color: moneyCtx.cagr > 0 ? "var(--teal)" : moneyCtx.cagr < 0 ? "var(--red)" : void 0
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap" }, /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none" }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: zeroY, y2: zeroY, stroke: "rgba(255,255,255,0.28)", strokeWidth: "1", strokeDasharray: "2 3" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: zeroY + 3, textAnchor: "end", fill: "var(--ink-2)" }, "0"), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(yMax) + 3, textAnchor: "end", fill: "var(--chart-profit)" }, _btMoneyTick(yMax)), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(yMin) + 3, textAnchor: "end", fill: "var(--chart-loss)" }, _btMoneyTick(yMin)), n > 1 && (_btAxisTicks ? _btAxisTicks(yMin, yMax, 5) : []).map((tv, i) => Math.abs(tv) < 1e-9 || Math.abs(tv - yMax) < 1e-9 || Math.abs(tv - yMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `mcy${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: y(tv), y2: y(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(tv) + 3, textAnchor: "end", fill: "var(--chart-axis)" }, _btMoneyTick(tv)))), /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--chart-grid)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--chart-grid)", strokeWidth: "1" }), n > 1 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: band("p5", "p95"), fill: "rgba(155,135,245,0.12)" }), /* @__PURE__ */ React.createElement("path", { d: band("p25", "p75"), fill: "rgba(155,135,245,0.24)" }), /* @__PURE__ */ React.createElement("path", { d: median, fill: "none", stroke: "var(--chart-accent)", strokeWidth: "2" })), observed && n > 1 && /* @__PURE__ */ React.createElement("circle", { cx: x(n - 1), cy: y(observed.final_krw), r: "4", fill: "var(--amber)", stroke: "var(--bg-0)", strokeWidth: "1" })), n === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uBAAC\uD14C\uCE74\uB97C\uB85C\uB97C \uC2E4\uD589\uD558\uBA74 \uC190\uC775 \uBD84\uD3EC \uD32C\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4 (\uAC70\uB798\uC77C 2\uC77C \uC774\uC0C1 \uD544\uC694)" })), mc && mc.n > 0 && /* @__PURE__ */ React.createElement(_BtMddBox, { mddPct, observedPct: observed ? observed.mdd_pct : null })));
   }
   function _BtMddBox({ mddPct, observedPct }) {
     const lo = mddPct.p5, hi = Math.max(mddPct.p95, observedPct || 0, 1e-4);
@@ -25445,7 +25636,15 @@ ${sellCode}` : code);
         },
         c ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11 } }, _btMoneyTick(c.profit_krw)), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9.5, color: "var(--ink-2)" } }, c.trades, "\uAC74")) : ""
       );
-    }))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, marginTop: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(76,214,179,0.78)", label: "\uC774\uC775 \uC6D4" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(255,107,107,0.78)", label: "\uC190\uC2E4 \uC6D4" }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC140 = \uC190\uC775 \xB7 \uAC70\uB798\uC218")))));
+    }))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, marginTop: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(76,214,179,0.78)", label: "\uC774\uC775 \uC6D4" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "rgba(255,107,107,0.78)", label: "\uC190\uC2E4 \uC6D4" }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC140 = \uC190\uC775 \xB7 \uAC70\uB798\uC218")), cells.length >= 2 && (() => {
+      let best = cells[0], worst = cells[0];
+      for (const c of cells) {
+        if ((c.profit_krw || 0) > (best.profit_krw || 0)) best = c;
+        if ((c.profit_krw || 0) < (worst.profit_krw || 0)) worst = c;
+      }
+      if (best === worst) return null;
+      return /* @__PURE__ */ React.createElement("p", { className: "mono", style: { margin: "8px 0 0", fontSize: 11, color: "var(--ink-2)", lineHeight: 1.55 } }, "\uCD5C\uACE0 \uC6D4 = ", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--teal)" } }, best.year, "\uB144 ", best.month, "\uC6D4 (", fmtMoney(best.profit_krw), ")"), " \xB7 ", "\uCD5C\uC800 \uC6D4 = ", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--red)" } }, worst.year, "\uB144 ", worst.month, "\uC6D4 (", fmtMoney(worst.profit_krw), ")"));
+    })())));
   }
   var BtDistributionChart = _btDistributionWithEvidence(_BtDistributionChartContent, ({ distribution }) => ({
     title: "\uC190\uC775 \uBD84\uD3EC \u2014 Histogram",
@@ -25545,7 +25744,7 @@ ${sellCode}` : code);
     const sep = orderflow && orderflow.separation || [];
     const wins = orderflow && orderflow.wins || {};
     const losses = orderflow && orderflow.losses || {};
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC624\uB354\uD50C\uB85C\uC6B0 \u2014 \uC774\uAE30\uB294 \uC9C4\uC785 \uD504\uB85C\uD30C\uC77C"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uC2B9 \uC9C4\uC785" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--red)", label: "\uD328 \uC9C4\uC785" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, sep.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC624\uB354\uD50C\uB85C\uC6B0 \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 (B_\uCCB4\uACB0\uAC15\uB3C4\xB7\uC794\uB7C9 \uB4F1 \uACB0\uCE21)") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC624\uB354\uD50C\uB85C\uC6B0 \u2014 \uC774\uAE30\uB294 \uC9C4\uC785 \uD504\uB85C\uD30C\uC77C"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uC2B9 \uC9C4\uC785" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--red)", label: "\uD328 \uC9C4\uC785" }))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "mono", style: { margin: "0 0 10px", fontSize: 11.5, color: "var(--ink-2)", lineHeight: 1.6 } }, "\uC624\uB354\uD50C\uB85C\uC6B0 = ", /* @__PURE__ */ React.createElement("b", null, "\uB9E4\uC218 \uBC84\uD2BC\uC744 \uB204\uB974\uB358 \uC21C\uAC04\uC758 \uC2DC\uC7A5 \uC0C1\uD0DC"), '\uC785\uB2C8\uB2E4. \uAC00\uAC8C\uB85C \uCE58\uBA74 "\uC190\uB2D8\uC774 \uBAB0\uB824\uB4DC\uB294 \uC911\uC774\uC5C8\uB098, \uBE60\uC838\uB098\uAC00\uB294 \uC911\uC774\uC5C8\uB098"\uB97C \uBCF4\uB294 \uAC83 \u2014 \uCCB4\uACB0\uAC15\uB3C4\xB7\uD638\uAC00\uC794\uB7C9 \uAC19\uC740 \uC8FC\uBB38 \uD750\uB984 \uBCC0\uC218\uB97C \uAE30\uC900\uC73C\uB85C, \uC774\uAE34 \uC9C4\uC785\uACFC \uC9C4 \uC9C4\uC785\uC758 \uC2DC\uC7A5 \uC0C1\uD0DC\uAC00 \uC5B4\uB5BB\uAC8C \uB2EC\uB790\uB294\uC9C0 \uBE44\uAD50\uD569\uB2C8\uB2E4. \uC2B9/\uD328 \uBD84\uD3EC\uAC00 \uB69C\uB837\uC774 \uAC08\uB9AC\uB294 \uBCC0\uC218\uC77C\uC218\uB85D \uB9E4\uC218 \uC870\uAC74\uC2DD\uC5D0 \uB123\uC744 \uD544\uD130 \uD6C4\uBCF4\uC785\uB2C8\uB2E4.'), sep.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC624\uB354\uD50C\uB85C\uC6B0 \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 (B_\uCCB4\uACB0\uAC15\uB3C4\xB7\uC794\uB7C9 \uB4F1 \uACB0\uCE21)") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
       "\uBCC0\uC218\uBCC4 \uC2B9/\uD328 \uC9C4\uC785 \uBD84\uD3EC(p10~p90) \uBE44\uAD50",
       "\uBC15\uC2A4 = p25~p75 \xB7 \uC138\uB85C\uC120 = \uC911\uC559\uAC12(p50)",
       "\uBD84\uB9AC\uB825 = \uC2B9\uD328 \uC911\uC559\uAC12 \uCC28 \uC808\uB300\uAC12 \uC21C\uC704"
@@ -26311,8 +26510,16 @@ ${sellCode}` : code);
     else if (Number.isFinite(Number(dateVal)) && Number(dateVal) > 1e9) d = new Date(Number(dateVal) * (Number(dateVal) > 1e12 ? 1 : 1e3));
     return d && !isNaN(d.getTime()) ? d.getDay() : null;
   }
+  var _btqTicks = (lo, hi, n) => window._axisTicks ? window._axisTicks(lo, hi, n) : [];
+  function _btqTickLabel(v, span) {
+    const a = Math.abs(v);
+    if (a >= 1e8) return (v / 1e8).toFixed(1) + "\uC5B5";
+    if (a >= 1e4) return Math.round(v / 1e4) + "\uB9CC";
+    if (span >= 50) return String(Math.round(v));
+    return Math.abs(v - Math.round(v)) < 1e-9 ? String(Math.round(v)) : v.toFixed(1);
+  }
   function _BtqScatter({ pts, xLab, yLab, ols, colorFn }) {
-    const W = 560, H = 260, padL = 46, padR = 14, padT = 12, padB = 30;
+    const W = 560, H = 260, padL = 52, padR = 14, padT = 12, padB = 40;
     const iw = W - padL - padR, ih = H - padT - padB;
     const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
     const xMin = Math.min(...xs), xMax = Math.max(...xs);
@@ -26320,6 +26527,8 @@ ${sellCode}` : code);
     const xr = xMax - xMin || 1, yr = yMax - yMin || 1;
     const sx = (v) => padL + (v - xMin) / xr * iw;
     const sy = (v) => padT + ih - (v - yMin) / yr * ih;
+    const xTicks = _btqTicks(xMin, xMax, 5).filter((v) => v >= xMin - 1e-9 && v <= xMax + 1e-9);
+    const yTicks = _btqTicks(yMin, yMax, 5).filter((v) => v >= yMin - 1e-9 && v <= yMax + 1e-9);
     return (
       // 플롯 높이는 매트릭스 공통 토큰(.bt-plot-svg)이 정한다 — 인라인 height 를 두면
       //   같은 매트릭스 안에서 카드마다 그래프 높이가 달라진다(2026-07-26 실측 372/303/420px).
@@ -26332,16 +26541,19 @@ ${sellCode}` : code);
           role: "img",
           "aria-label": `${xLab} \uB300 ${yLab} \uC0B0\uC810\uB3C4`
         },
+        yTicks.map((tv, i) => /* @__PURE__ */ React.createElement("g", { key: `qy${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL + iw, y1: sy(tv), y2: sy(tv), stroke: "rgba(255,255,255,0.06)" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: sy(tv) + 3, textAnchor: "end", fill: "var(--chart-axis)" }, _btqTickLabel(tv, yr)))),
+        xTicks.map((tv, i) => /* @__PURE__ */ React.createElement("g", { key: `qx${i}` }, /* @__PURE__ */ React.createElement("line", { x1: sx(tv), x2: sx(tv), y1: padT + ih, y2: padT + ih + 4, stroke: "var(--chart-grid)" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: sx(tv), y: padT + ih + 14, textAnchor: "middle", fill: "var(--chart-axis)" }, _btqTickLabel(tv, xr)))),
         /* @__PURE__ */ React.createElement("line", { x1: padL, y1: padT + ih, x2: padL + iw, y2: padT + ih, stroke: "var(--line)" }),
         /* @__PURE__ */ React.createElement("line", { x1: padL, y1: padT, x2: padL, y2: padT + ih, stroke: "var(--line)" }),
         yMin < 0 && yMax > 0 && /* @__PURE__ */ React.createElement("line", { x1: padL, y1: sy(0), x2: padL + iw, y2: sy(0), stroke: "var(--chart-grid)", strokeDasharray: "3 3" }),
+        xMin < 0 && xMax > 0 && /* @__PURE__ */ React.createElement("line", { x1: sx(0), y1: padT, x2: sx(0), y2: padT + ih, stroke: "var(--chart-grid)", strokeDasharray: "3 3" }),
         pts.map((p, i) => /* @__PURE__ */ React.createElement(
           "circle",
           {
             key: i,
             cx: sx(p.x),
             cy: sy(p.y),
-            r: 2.6,
+            r: 2.8,
             fill: colorFn ? colorFn(p) : p.y >= 0 ? "var(--teal)" : "var(--red)",
             fillOpacity: 0.65
           }
@@ -26358,14 +26570,14 @@ ${sellCode}` : code);
             strokeDasharray: "6 3"
           }
         ),
-        /* @__PURE__ */ React.createElement("text", { x: padL + iw / 2, y: H - 6, textAnchor: "middle", fontSize: "10.5", fill: "var(--chart-axis)" }, xLab),
+        /* @__PURE__ */ React.createElement("text", { x: padL + iw / 2, y: H - 6, textAnchor: "middle", fontSize: "11.5", fill: "var(--chart-axis)" }, xLab),
         /* @__PURE__ */ React.createElement(
           "text",
           {
             x: 12,
             y: padT + ih / 2,
             textAnchor: "middle",
-            fontSize: "10.5",
+            fontSize: "11.5",
             fill: "var(--chart-axis)",
             transform: `rotate(-90 12 ${padT + ih / 2})`
           },
@@ -26718,6 +26930,14 @@ ${sellCode}` : code);
         return /* @__PURE__ */ React.createElement(_BtMetricCard, { key: meta.key, meta, num, dailyPnl: [] });
       })), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { marginTop: 10, color: "var(--ink-3)" } }, "artifact=", result.artifact_state || "metrics_only", " \xB7 evidence=", result.evidence_id || "\uC5C6\uC74C"), /* @__PURE__ */ React.createElement(_BtResultCapabilities, { capabilities })));
     }
+    const _mxPct = metricVal("total_profit_pct");
+    const _mxKrw = metricVal("total_profit_krw");
+    const _mxCagr = metricVal("cagr");
+    const moneyCtx = {
+      betting: typeof _mxPct === "number" && Math.abs(_mxPct) > 0.01 && typeof _mxKrw === "number" && Number.isFinite(_mxKrw) ? Math.round(_mxKrw / _mxPct * 100) : null,
+      bettingDerived: true,
+      cagr: typeof _mxCagr === "number" && Number.isFinite(_mxCagr) ? _mxCagr : null
+    };
     const distribution = analysis.distribution || {};
     const insights = analysis.insights || [];
     const topC = distribution.top_contributors || [];
@@ -26844,9 +27064,10 @@ ${sellCode}` : code);
           equity: analysis.equity,
           onBrush: capabilities.range ? onBrush : void 0,
           brushActive: capabilities.range && !!range,
-          onBrushClear
+          onBrushClear,
+          moneyCtx
         }
-      ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), capabilities.monteCarlo ? /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }) : /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card bt-analysis-unavailable", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBAAC\uD14C\uCE74\uB97C\uB85C")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uBBF8\uC9C0\uC6D0 \xB7 ", capabilities.notes.monteCarlo))), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades }))),
+      ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), capabilities.monteCarlo ? /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc, moneyCtx }) : /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card bt-analysis-unavailable", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBAAC\uD14C\uCE74\uB97C\uB85C")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uBBF8\uC9C0\uC6D0 \xB7 ", capabilities.notes.monteCarlo))), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades, moneyCtx }))),
       (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("section", { className: "bt-result-section bt-result-evidence bt-contributor-evidence", "aria-label": "\uC885\uBAA9 \uAE30\uC5EC \uC99D\uAC70" }, /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC }))))),
       /* @__PURE__ */ React.createElement("section", { className: "bt-result-section bt-result-evidence", "aria-label": "\uBD84\uC11D \uC778\uC0AC\uC774\uD2B8" }, /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights })),
       fullscreen && /* @__PURE__ */ React.createElement(
@@ -26863,7 +27084,8 @@ ${sellCode}` : code);
           range,
           onBrush,
           onBrushClear,
-          onClose: onCloseFullscreen
+          onClose: onCloseFullscreen,
+          moneyCtx
         }
       )
     );
@@ -26880,7 +27102,8 @@ ${sellCode}` : code);
     range,
     onBrush,
     onBrushClear,
-    onClose
+    onClose,
+    moneyCtx
   }) {
     return /* @__PURE__ */ React.createElement("div", { style: {
       position: "fixed",
@@ -26914,9 +27137,10 @@ ${sellCode}` : code);
         equity: analysis.equity,
         onBrush,
         brushActive: !!range,
-        onBrushClear
+        onBrushClear,
+        moneyCtx
       }
-    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades })));
+    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc, moneyCtx }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades, moneyCtx })));
   }
   function _BtMetricCard({ meta, num, dailyPnl }) {
     const animated = _useCountUp(num != null ? num : 0, 600);
@@ -32354,8 +32578,27 @@ ${sellCode}` : code);
       justifyContent: "center",
       color: "var(--ink-3)",
       fontSize: 12,
-      fontFamily: "var(--mono)"
-    } }, text);
+      fontFamily: "var(--mono)",
+      textAlign: "center"
+    } }, /* @__PURE__ */ React.createElement(
+      "svg",
+      {
+        viewBox: "0 0 200 80",
+        preserveAspectRatio: "none",
+        "aria-hidden": "true",
+        style: { position: "absolute", inset: "12%", width: "76%", height: "76%", opacity: 0.13, pointerEvents: "none" }
+      },
+      /* @__PURE__ */ React.createElement(
+        "path",
+        {
+          d: "M 10 66 L 40 58 L 70 61 L 100 44 L 130 49 L 160 28 L 190 20",
+          fill: "none",
+          stroke: "var(--teal)",
+          strokeWidth: "3"
+        }
+      ),
+      [30, 70, 110, 150, 185].map((cx, i) => /* @__PURE__ */ React.createElement("circle", { key: i, cx, cy: [60, 52, 40, 46, 24][i], r: "4", fill: "var(--violet)" }))
+    ), /* @__PURE__ */ React.createElement("div", { style: { position: "relative", display: "flex", flexDirection: "column", gap: 6, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { style: { padding: "1px 8px", border: "1px solid var(--line-2)", borderRadius: 999, fontSize: 9.5 } }, "\uC608\uC2DC \uBBF8\uB9AC\uBCF4\uAE30 \u2014 \uB370\uC774\uD130\uAC00 \uC313\uC774\uBA74 \uC774\uB7F0 \uBAA8\uC591\uC73C\uB85C \uADF8\uB824\uC9D1\uB2C8\uB2E4"), /* @__PURE__ */ React.createElement("span", null, text)));
   }
   function EaMultiMetricChart({ gens, normalize }) {
     const W = 880, H = 320;
@@ -32422,7 +32665,7 @@ ${sellCode}` : code);
         const yy = normalize ? padT + innerH - t * innerH : yNorm(t, "score");
         return /* @__PURE__ */ React.createElement("g", { key: `g${i}` }, /* @__PURE__ */ React.createElement("line", { className: "chart-grid-line", x1: padL, x2: W - padR, y1: yy, y2: yy }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: yy + 3, textAnchor: "end" }, normalize ? t.toFixed(2) : t.toFixed(1)));
       }),
-      xTicks.map((g, i) => /* @__PURE__ */ React.createElement("text", { key: `x${i}`, className: "chart-axis-text", x: x(g), y: H - 14, textAnchor: "middle" }, "g", g)),
+      xTicks.map((g, i) => /* @__PURE__ */ React.createElement("text", { key: `x${i}`, className: "chart-axis-text", x: x(g), y: H - 14, textAnchor: "middle" }, "Gen ", g)),
       /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
       /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--line-2)", strokeWidth: "1" }),
       nums.length > 1 && paths.map((p) => /* @__PURE__ */ React.createElement(
@@ -32527,15 +32770,31 @@ ${sellCode}` : code);
       pts.map((p, i) => {
         const cx = x(typeof p.mdd === "number" ? p.mdd : 0);
         const cy = y(typeof p.profit === "number" ? p.profit : 0);
-        const col = p.gate_passed ? "var(--teal)" : "var(--ink-3)";
+        const profit = typeof p.profit === "number" ? p.profit : 0;
+        const col = profit > 0 ? "var(--chart-profit)" : profit < 0 ? "var(--chart-loss)" : "var(--ink-3)";
+        const tc = Math.max(0, Number(p.trade_count) || 0);
+        const maxTc = Math.max(1, ...pts.map((q) => Number(q.trade_count) || 0));
+        const rBase = 3 + Math.sqrt(tc / maxTc) * 4;
         const isH = hover && hover.gen_no === p.gen_no;
-        return /* @__PURE__ */ React.createElement("g", { key: i, onMouseEnter: () => setHover(p), style: { cursor: "pointer" } }, p.gate_passed && /* @__PURE__ */ React.createElement("circle", { cx, cy, r: "8", fill: "rgba(76,214,179,0.14)" }), /* @__PURE__ */ React.createElement(
+        return /* @__PURE__ */ React.createElement("g", { key: i, onMouseEnter: () => setHover(p), style: { cursor: "pointer" } }, p.gate_passed && /* @__PURE__ */ React.createElement(
           "circle",
           {
             cx,
             cy,
-            r: isH ? 6 : 4,
+            r: rBase + 4,
+            fill: "none",
+            stroke: "var(--teal)",
+            strokeWidth: "1.6",
+            opacity: "0.85"
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "circle",
+          {
+            cx,
+            cy,
+            r: isH ? rBase + 2 : rBase,
             fill: col,
+            fillOpacity: "0.8",
             stroke: isH ? "var(--ink-0)" : "none",
             strokeWidth: "1.2"
           }
@@ -32564,16 +32823,26 @@ ${sellCode}` : code);
       if (row.gate_passed) passed += 1;
       return { ...row, ratio: passed / (index2 + 1) };
     });
-    return /* @__PURE__ */ React.createElement("div", { className: "ea-gate-trend", role: "img", "aria-label": "\uC138\uB300\uBCC4 \uAC8C\uC774\uD2B8 \uD1B5\uACFC\uC640 \uB204\uC801 \uD1B5\uACFC\uC728" }, points.map((point) => /* @__PURE__ */ React.createElement(
-      "div",
+    const W = 720, H = 240;
+    const padL = 44, padR = 16, padT = 14, padB = 34;
+    const iw = W - padL - padR, ih = H - padT - padB;
+    const x = (i) => padL + (points.length <= 1 ? iw / 2 : i / (points.length - 1) * iw);
+    const y = (ratio) => padT + ih - ratio * ih;
+    const path = points.map((p, i) => `${i ? "L" : "M"} ${x(i).toFixed(1)} ${y(p.ratio).toFixed(1)}`).join(" ");
+    const lblStep = Math.max(1, Math.ceil(points.length / 10));
+    return /* @__PURE__ */ React.createElement("div", { className: "ea-efficiency-chart" }, /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "\uC138\uB300\uBCC4 \uAC8C\uC774\uD2B8 \uD1B5\uACFC\uC640 \uB204\uC801 \uD1B5\uACFC\uC728" }, [0, 0.25, 0.5, 0.75, 1].map((t) => /* @__PURE__ */ React.createElement("g", { key: t }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: y(t), y2: y(t), stroke: "rgba(255,255,255,0.07)" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: y(t) + 3, textAnchor: "end" }, Math.round(t * 100), "%"))), /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + ih, y2: padT + ih, stroke: "var(--line-2)" }), /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + ih, stroke: "var(--line-2)" }), /* @__PURE__ */ React.createElement("path", { d: path, fill: "none", stroke: "var(--teal)", strokeWidth: "2" }), points.map((p, i) => /* @__PURE__ */ React.createElement("g", { key: p.gen_no }, p.gate_passed ? /* @__PURE__ */ React.createElement("path", { d: `M ${x(i)} ${padT + ih - 8} l 4.5 8 l -9 0 Z`, fill: "var(--teal)", opacity: "0.9" }, /* @__PURE__ */ React.createElement("title", null, `Gen ${p.gen_no} \xB7 \uD1B5\uACFC \xB7 \uB204\uC801 ${(p.ratio * 100).toFixed(1)}%`)) : /* @__PURE__ */ React.createElement("circle", { cx: x(i), cy: padT + ih - 4, r: "2", fill: "var(--ink-3)" }, /* @__PURE__ */ React.createElement("title", null, `Gen ${p.gen_no} \xB7 \uD0C8\uB77D \xB7 \uB204\uC801 ${(p.ratio * 100).toFixed(1)}%`)), i % lblStep === 0 && /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: x(i), y: H - 8, textAnchor: "middle" }, "Gen ", p.gen_no))), /* @__PURE__ */ React.createElement(
+      "text",
       {
-        key: point.gen_no,
-        className: "ea-gate-column" + (point.gate_passed ? " passed" : " failed"),
-        title: `g${point.gen_no} \xB7 ${point.gate_passed ? "\uD1B5\uACFC" : "\uD0C8\uB77D"} \xB7 \uB204\uC801 ${(point.ratio * 100).toFixed(1)}%`
+        className: "chart-axis-text",
+        x: W - padR - 2,
+        y: Math.max(padT + 10, y(points[points.length - 1].ratio) - 7),
+        textAnchor: "end",
+        fill: "var(--teal)"
       },
-      /* @__PURE__ */ React.createElement("span", { style: { height: Math.max(4, point.ratio * 100) + "%" } }),
-      /* @__PURE__ */ React.createElement("b", null, "g", point.gen_no)
-    )));
+      "\uB204\uC801 ",
+      (points[points.length - 1].ratio * 100).toFixed(1),
+      "%"
+    )), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC120 = \uB204\uC801 \uD1B5\uACFC\uC728(0~100%) \xB7 \u25B2 = \uD1B5\uACFC \uC138\uB300 \xB7 \xB7 = \uD0C8\uB77D \uC138\uB300"));
   }
   function EaEfficiencyChart({ gens }) {
     const points = gens.filter((g) => g.gen_no >= 0 && typeof g.score === "number").map((g) => ({
@@ -32581,12 +32850,38 @@ ${sellCode}` : code);
       value: g.score / (1 + Math.max(0, Number(g.mdd) || 0) / 100)
     }));
     if (!points.length) return /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uD6A8\uC728 \uC9C0\uD45C\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.");
-    const W = 720, H = 190, pad = 24;
+    const W = 720, H = 240;
+    const padL = 48, padR = 16, padT = 14, padB = 34;
+    const iw = W - padL - padR, ih = H - padT - padB;
     const max = Math.max(1e-3, ...points.map((p) => p.value));
-    const x = (index2) => pad + (points.length <= 1 ? 0 : index2 * (W - pad * 2) / (points.length - 1));
-    const y = (value) => H - pad - value / max * (H - pad * 2);
+    const x = (index2) => padL + (points.length <= 1 ? iw / 2 : index2 * iw / (points.length - 1));
+    const y = (value) => padT + ih - value / max * ih;
     const path = points.map((point, index2) => `${index2 ? "L" : "M"} ${x(index2).toFixed(1)} ${y(point.value).toFixed(1)}`).join(" ");
-    return /* @__PURE__ */ React.createElement("div", { className: "ea-efficiency-chart" }, /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "\uC138\uB300\uBCC4 \uC810\uC218 \uB300\uBE44 MDD \uD6A8\uC728 \uCD94\uC774" }, /* @__PURE__ */ React.createElement("line", { x1: pad, x2: W - pad, y1: H - pad, y2: H - pad, stroke: "var(--line-2)" }), /* @__PURE__ */ React.createElement("path", { d: path, fill: "none", stroke: "var(--blue)", strokeWidth: "2" }), points.map((point, index2) => /* @__PURE__ */ React.createElement("circle", { key: point.gen, cx: x(index2), cy: y(point.value), r: "4", fill: "var(--blue)" }, /* @__PURE__ */ React.createElement("title", null, `g${point.gen} \xB7 ${point.value.toFixed(4)}`)))), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC5F0\uAD6C \uBE44\uAD50\uC6A9 \xB7 score \xF7 (1 + MDD/100) \xB7 \uC131\uB2A5 \uC99D\uBA85 \uC544\uB2D8"));
+    const best = points.reduce((a, b) => b.value > a.value ? b : a, points[0]);
+    const lblStep = Math.max(1, Math.ceil(points.length / 10));
+    return /* @__PURE__ */ React.createElement("div", { className: "ea-efficiency-chart" }, /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "\uC138\uB300\uBCC4 \uC810\uC218 \uB300\uBE44 MDD \uD6A8\uC728 \uCD94\uC774" }, [0, 0.25, 0.5, 0.75, 1].map((t) => /* @__PURE__ */ React.createElement("g", { key: t }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + ih - t * ih, y2: padT + ih - t * ih, stroke: "rgba(255,255,255,0.07)" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 6, y: padT + ih - t * ih + 3, textAnchor: "end" }, (max * t).toFixed(2)))), /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + ih, y2: padT + ih, stroke: "var(--line-2)" }), /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + ih, stroke: "var(--line-2)" }), /* @__PURE__ */ React.createElement("path", { d: path, fill: "none", stroke: "var(--blue)", strokeWidth: "2" }), points.map((point, index2) => /* @__PURE__ */ React.createElement("g", { key: point.gen }, /* @__PURE__ */ React.createElement(
+      "circle",
+      {
+        cx: x(index2),
+        cy: y(point.value),
+        r: point.gen === best.gen ? 5 : 3.5,
+        fill: point.gen === best.gen ? "var(--teal)" : "var(--blue)"
+      },
+      /* @__PURE__ */ React.createElement("title", null, `Gen ${point.gen} \xB7 \uD6A8\uC728 ${point.value.toFixed(4)}`)
+    ), index2 % lblStep === 0 && /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: x(index2), y: H - 8, textAnchor: "middle" }, "Gen ", point.gen))), /* @__PURE__ */ React.createElement(
+      "text",
+      {
+        className: "chart-axis-text",
+        x: Math.max(padL + 30, Math.min(W - padR - 30, x(points.indexOf(best)))),
+        y: Math.max(padT + 10, y(best.value) - 9),
+        textAnchor: "middle",
+        fill: "var(--teal)"
+      },
+      "\uCD5C\uACE0 Gen ",
+      best.gen,
+      " \xB7 ",
+      best.value.toFixed(3)
+    )), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "y = score \xF7 (1 + MDD/100) \u2014 \uAC19\uC740 \uC810\uC218\uB77C\uBA74 \uB099\uD3ED\uC774 \uC595\uC744\uC218\uB85D \uB192\uB2E4 \xB7 \uC5F0\uAD6C \uBE44\uAD50\uC6A9(\uC131\uB2A5 \uC99D\uBA85 \uC544\uB2D8)"));
   }
   function EaTopTable({ runId, gens, topN, onOpenWorkbench }) {
     const canOpenWorkbench = typeof onOpenWorkbench === "function";
@@ -32726,7 +33021,7 @@ ${sellCode}` : code);
         value: summary ? _fMoney(summary.bestProfit.profit) : "\u2014",
         sub: summary ? `gen_${summary.bestProfit.gen_no}` : ""
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "v54-ea-grid" }, /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 0 8px", flexWrap: "wrap", gap: 6 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" } }, EA_SERIES.map((s) => /* @__PURE__ */ React.createElement(LegendDot, { key: s.key, color: s.color, label: s.label }))), /* @__PURE__ */ React.createElement("label", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: normalize, onChange: (e) => setNormalize(e.target.checked) }), "\uC815\uADDC\uD654(0~1)")), /* @__PURE__ */ React.createElement(EaMultiMetricChart, { gens, normalize }), !normalize && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginTop: 4 } }, "\uC815\uADDC\uD654 OFF \u2014 \uC2A4\uCF00\uC77C\uC774 \uB2E4\uB978 \uACC4\uC5F4\uC740 \uACB9\uCCD0 \uBE44\uAD50\uAC00 \uC5B4\uB824\uC6CC score \uB9CC \uC6D0\uCD95\uC73C\uB85C \uD45C\uC2DC\uD569\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center", margin: "0 0 8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" } }, "\uC138\uB300 \uC0B0\uC810\uB3C4 \u2014 MDD \xD7 \uC190\uC775(\uB2C8\uCE58 \uC9C0\uB3C4)"), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uAC8C\uC774\uD2B8 \uD1B5\uACFC", filled: "ring" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--ink-3)", label: "\uAC8C\uC774\uD2B8 \uD0C8\uB77D(\uD750\uB9B0 \uC810)" })), /* @__PURE__ */ React.createElement(EaScatterChart, { gens })), /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell compact" }, /* @__PURE__ */ React.createElement("div", { className: "ea-cell-heading" }, "\uAC8C\uC774\uD2B8 \uD1B5\uACFC \uD750\uB984 \xB7 \uB204\uC801 \uD1B5\uACFC\uC728"), /* @__PURE__ */ React.createElement(EaGateTrendChart, { gens })), /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell compact" }, /* @__PURE__ */ React.createElement("div", { className: "ea-cell-heading" }, "\uC810\uC218\xB7\uC704\uD5D8 \uD6A8\uC728 \xB7 \uBC18\uBCF5 \uAC1C\uC120 \uBC29\uD5A5"), /* @__PURE__ */ React.createElement(EaEfficiencyChart, { gens })), /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell wide" }, /* @__PURE__ */ React.createElement("div", { style: { margin: "0 0 8px" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" } }, "\uC0C1\uC704 \uC138\uB300 \u2014 score \uB0B4\uB9BC\uCC28\uC21C(\uC6CC\uD06C\uBCA4\uCE58 \uBD84\uC11D\uC73C\uB85C \uBC31\uD14C \uD0ED \uC5F0\uB3D9)")), /* @__PURE__ */ React.createElement(EaTopTable, { runId: effRun, gens, topN: 8, onOpenWorkbench }))), loading && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginTop: 8 } }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"))));
+    )), /* @__PURE__ */ React.createElement("div", { className: "v54-ea-grid" }, /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 0 8px", flexWrap: "wrap", gap: 6 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" } }, EA_SERIES.map((s) => /* @__PURE__ */ React.createElement(LegendDot, { key: s.key, color: s.color, label: s.label }))), /* @__PURE__ */ React.createElement("label", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: normalize, onChange: (e) => setNormalize(e.target.checked) }), "\uC815\uADDC\uD654(0~1)")), /* @__PURE__ */ React.createElement(EaMultiMetricChart, { gens, normalize }), !normalize && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginTop: 4 } }, "\uC815\uADDC\uD654 OFF \u2014 \uC2A4\uCF00\uC77C\uC774 \uB2E4\uB978 \uACC4\uC5F4\uC740 \uACB9\uCCD0 \uBE44\uAD50\uAC00 \uC5B4\uB824\uC6CC score \uB9CC \uC6D0\uCD95\uC73C\uB85C \uD45C\uC2DC\uD569\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, alignItems: "center", margin: "0 0 8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" } }, "\uC138\uB300 \uC0B0\uC810\uB3C4 \u2014 MDD \xD7 \uC190\uC775(\uB2C8\uCE58 \uC9C0\uB3C4)"), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--chart-profit)", label: "\uC774\uC775 \uC138\uB300" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--chart-loss)", label: "\uC190\uC2E4 \uC138\uB300" }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "\uB9C1 = \uAC8C\uC774\uD2B8 \uD1B5\uACFC", filled: "ring" }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC810 \uD06C\uAE30 = \uAC70\uB798\uC218")), /* @__PURE__ */ React.createElement(EaScatterChart, { gens })), /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell compact" }, /* @__PURE__ */ React.createElement("div", { className: "ea-cell-heading" }, "\uAC8C\uC774\uD2B8 \uD1B5\uACFC \uD750\uB984 \xB7 \uB204\uC801 \uD1B5\uACFC\uC728"), /* @__PURE__ */ React.createElement(EaGateTrendChart, { gens })), /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell compact" }, /* @__PURE__ */ React.createElement("div", { className: "ea-cell-heading" }, "\uC810\uC218\xB7\uC704\uD5D8 \uD6A8\uC728 \xB7 \uBC18\uBCF5 \uAC1C\uC120 \uBC29\uD5A5"), /* @__PURE__ */ React.createElement(EaEfficiencyChart, { gens })), /* @__PURE__ */ React.createElement("section", { className: "v54-ea-cell wide" }, /* @__PURE__ */ React.createElement("div", { style: { margin: "0 0 8px" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-2)", letterSpacing: ".08em" } }, "\uC0C1\uC704 \uC138\uB300 \u2014 score \uB0B4\uB9BC\uCC28\uC21C(\uC6CC\uD06C\uBCA4\uCE58 \uBD84\uC11D\uC73C\uB85C \uBC31\uD14C \uD0ED \uC5F0\uB3D9)")), /* @__PURE__ */ React.createElement(EaTopTable, { runId: effRun, gens, topN: 8, onOpenWorkbench }))), loading && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginTop: 8 } }, "\uBD88\uB7EC\uC624\uB294 \uC911\u2026"))));
   }
   Object.assign(window, { EvolutionAnalysisPanel });
 
@@ -35809,7 +36104,14 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         mddCap,
         minDailyTrades,
         onViewCode: (g) => setCodeViewGen(g),
-        onSelectDetail: (genNo) => setSelectedDetailGen(genNo)
+        onSelectDetail: (genNo) => {
+          setSelectedDetailGen(genNo);
+          try {
+            const el = document.getElementById("backtest-detail-chart");
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+          } catch (e) {
+          }
+        }
       }
     )), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_historynav", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "History / Compare" }) }, /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { textAlign: "left" } }, "Compare\uC640 run/gen ResultDetail\uC740 \uD788\uC2A4\uD1A0\uB9AC \uD0ED\uC5D0\uC11C\uB9CC \uB80C\uB354\uB9C1\uD569\uB2C8\uB2E4.", /* @__PURE__ */ React.createElement("div", { style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => onEvolutionSubtabSelect("records") }, "\uD788\uC2A4\uD1A0\uB9AC\uC5D0\uC11C Compare \uC5F4\uAE30")))), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_genanalytics", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "Generation Analytics" }) }, /* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId: state.run_id || "", onOpenWorkbench: () => onEvolutionSubtabSelect("workbench") })))), /* @__PURE__ */ React.createElement("aside", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_analysis", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uC9C4\uD654 \uBD84\uC11D \xB7 P1~P5" }) }, /* @__PURE__ */ React.createElement(HypothesisPanel, { state }), /* @__PURE__ */ React.createElement(ConditionDiscoveryPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(AutopsyPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(PopulationPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(LineagePanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(MetaPanel, { state, wsStatus }), /* @__PURE__ */ React.createElement(HoldoutPanel, { state, wsStatus })), /* @__PURE__ */ React.createElement(_EvoSection, { storageKey: "stom_evo_verdict", label: /* @__PURE__ */ React.createElement(SectionLabel, { text: "\uD310\uC815 \xB7 Best / Winner" }) }, state.best && state.winner && state.best.gen === state.winner.gen ? /* @__PURE__ */ React.createElement(
       MergedBestWinnerCard,
@@ -36277,6 +36579,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       /* @__PURE__ */ React.createElement("line", { x1: padL, y1: padT + ih, x2: padL + iw, y2: padT + ih, stroke: "var(--line)" }),
       /* @__PURE__ */ React.createElement("line", { x1: padL, y1: padT, x2: padL, y2: padT + ih, stroke: "var(--line)" }),
       zeroY != null && /* @__PURE__ */ React.createElement("line", { x1: padL, y1: zeroY, x2: padL + iw, y2: zeroY, stroke: "var(--chart-grid)", strokeDasharray: "4 4" }),
+      [0.25, 0.5, 0.75].map((t) => {
+        const v = lo + span * t;
+        return /* @__PURE__ */ React.createElement("g", { key: t }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL + iw, y1: y(v), y2: y(v), stroke: "rgba(255,255,255,0.06)" }), /* @__PURE__ */ React.createElement("text", { x: padL - 6, y: y(v) + 4, textAnchor: "end", fontSize: "11", fill: "var(--chart-axis)" }, v.toFixed(1), "%"));
+      }),
       /* @__PURE__ */ React.createElement("path", { d: path("bestPct"), fill: "none", stroke: "var(--chart-profit)", strokeWidth: "3" }),
       /* @__PURE__ */ React.createElement("path", { d: path("pct"), fill: "none", stroke: "var(--chart-accent)", strokeWidth: "1.6", strokeDasharray: "5 3" }),
       pts.map((p, i) => /* @__PURE__ */ React.createElement(
@@ -36287,12 +36593,30 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           cy: y(p.pct),
           r: p.isRecord ? 4.2 : 2.6,
           fill: p.isRecord ? "var(--teal)" : "var(--ink-3)"
-        }
+        },
+        /* @__PURE__ */ React.createElement("title", null, `Gen ${p.gen} \xB7 ${p.pct.toFixed(2)}%${p.isRecord ? " \xB7 \uC2E0\uAE30\uB85D" : ""}${p.gatePassed ? " \xB7 \uAC8C\uC774\uD2B8 \uD1B5\uACFC" : ""}`)
       )),
       /* @__PURE__ */ React.createElement("text", { x: padL - 6, y: y(hi) + 4, textAnchor: "end", fontSize: "11", fill: "var(--chart-axis)" }, hi.toFixed(1), "%"),
       /* @__PURE__ */ React.createElement("text", { x: padL - 6, y: y(lo) + 4, textAnchor: "end", fontSize: "11", fill: "var(--chart-axis)" }, lo.toFixed(1), "%"),
-      /* @__PURE__ */ React.createElement("text", { x: padL, y: H - 8, fontSize: "11", fill: "var(--chart-axis)" }, "g", pts[0].gen),
-      /* @__PURE__ */ React.createElement("text", { x: padL + iw, y: H - 8, textAnchor: "end", fontSize: "11", fill: "var(--chart-axis)" }, "g", pts[pts.length - 1].gen)
+      (() => {
+        const step = Math.max(1, Math.ceil(pts.length / 10));
+        const idx = [];
+        for (let i = 0; i < pts.length; i += step) idx.push(i);
+        if (idx[idx.length - 1] !== pts.length - 1) idx.push(pts.length - 1);
+        return idx.map((i) => /* @__PURE__ */ React.createElement(
+          "text",
+          {
+            key: `gx${i}`,
+            x: x(i),
+            y: H - 8,
+            fontSize: "11",
+            fill: "var(--chart-axis)",
+            textAnchor: i === 0 ? "start" : i === pts.length - 1 ? "end" : "middle"
+          },
+          "Gen ",
+          pts[i].gen
+        ));
+      })()
     ));
   }
   function ResearchImprovementCard({ state, baseUrl, runId }) {

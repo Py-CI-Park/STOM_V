@@ -8,6 +8,8 @@
    destructure 한다(단일 번들 dup-globals 가드).
 */
 const { useState: useState_pcf, useEffect: useEffect_pcf, useMemo: useMemo_pcf } = React;
+// Track Z — dual-safe ESM import (concat 경로에서는 strip 후 window 전역으로 해소). KEEP on ONE physical line.
+import { CvCodeBlock } from "./code-viewer.jsx";
 const CONDITION_FETCH_TIMEOUT_MS = 10000;
 
 // ---- Current generation panel ----
@@ -219,13 +221,14 @@ function ActiveStrategyPanel({ state, baseUrl, onViewCode }) {
         {codeFetchError && <div className="active-strategy-fetch-error mono">조건식 코드 조회 실패: {codeFetchError} · 10초 후 중단됨</div>}
         {!codeFetchError && diffFetchError && <div className="active-strategy-diff-warning mono">조건식 코드는 표시됨 · 조건식 변경 비교 지연: {diffFetchError}</div>}
         <div className={"active-strategy-code-columns" + (wrapCode ? " is-wrapped" : "")}>
+          {/* v5.13.0 — 라이브 탭 코드 상자에도 파이썬 문법 강조 적용(A2). */}
           <div className="active-strategy-code-viewport buy">
             <div className="cap">매수 로직 · 전체 코드</div>
-            <pre className="code-block">{buyCode || `대기: ${codeStatus}`}</pre>
+            <CvCodeBlock code={buyCode} emptyLabel={`대기: ${codeStatus}`} />
           </div>
           <div className="active-strategy-code-viewport sell">
             <div className="cap">매도 로직 · 전체 코드</div>
-            <pre className="code-block">{sellCode || `대기: ${codeStatus}`}</pre>
+            <CvCodeBlock code={sellCode} emptyLabel={`대기: ${codeStatus}`} />
           </div>
         </div>
         <div className="active-strategy-actions">

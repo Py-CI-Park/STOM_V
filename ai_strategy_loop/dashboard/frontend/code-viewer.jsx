@@ -137,8 +137,16 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
   // v5.11.2 — 조건식은 "읽고 비교하는" 대상이다. 한쪽씩만 크게 보는 것으로는 부족해서
   //   매수·매도 나란히 보기, 글자 크기, 검색 하이라이트, 전체화면을 팝업에 넣는다.
   const [splitView, setSplitView] = useState_cv(false);
-  const [fontIdx, setFontIdx] = useState_cv(1);
+  // v5.13.0 — 기본 글자 14px(한 단계 확대).
+  const [fontIdx, setFontIdx] = useState_cv(2);
   const [query, setQuery] = useState_cv("");
+  // v5.13.0 — 검색 디바운스(A3): 키 입력마다 전체 코드 재하이라이트하면 큰 조건식에서
+  //   타이핑이 밀린다. 150ms 지연 후에만 하이라이트를 다시 계산한다.
+  const [debouncedQuery, setDebouncedQuery] = useState_cv("");
+  useEffect_cv(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 150);
+    return () => clearTimeout(t);
+  }, [query]);
   // P10 — 세대 행(GenView)에는 코드가 없다. 인라인 코드(데모 소스)가 없으면
   //   /strategy_code?run=&gen= 로 fetch 해 채운다. {buy_code, sell_code} 또는 null.
   const [fetched, setFetched] = useState_cv(null);
@@ -177,12 +185,13 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
   const modalClass = "modal code-viewer-modal"
     + (expandedCodeView ? " code-viewer-expanded" : "")
     + (splitView ? " code-viewer-split" : "");
+  // v5.13.0 — 기본 폭 확대(A1): 조건식은 줄이 길다. 960px 은 좁아 좌우 스크롤이 잦았다.
   const modalStyle = {
-    width: expandedCodeView ? "calc(100vw - 20px)" : (splitView ? "min(1720px, calc(100vw - 32px))" : "min(960px, calc(100vw - 32px))"),
+    width: expandedCodeView ? "calc(100vw - 20px)" : (splitView ? "min(1720px, calc(100vw - 32px))" : "min(1400px, calc(100vw - 32px))"),
     maxHeight: expandedCodeView ? "calc(100vh - 18px)" : undefined,
   };
   const countHits = (text) => {
-    const needle = String(query || "").trim().toLowerCase();
+    const needle = String(debouncedQuery || "").trim().toLowerCase();
     if (!needle) return 0;
     return String(text || "").toLowerCase().split(needle).length - 1;
   };
@@ -274,7 +283,7 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
                   <small className="mono">{(buyCode || "").split("\n").length} lines</small>
                   <button className="btn ghost sm" onClick={() => copyText(buyCode)}>복사</button>
                 </header>
-                <CvCodeBlock code={buyCode} query={query} emptyLabel="이 세대의 매수 조건식 코드를 찾지 못했습니다." />
+                <CvCodeBlock code={buyCode} query={debouncedQuery} emptyLabel="이 세대의 매수 조건식 코드를 찾지 못했습니다." />
               </section>
               <section className="cv-pane">
                 <header>
@@ -282,11 +291,11 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
                   <small className="mono">{(sellCode || "").split("\n").length} lines</small>
                   <button className="btn ghost sm" onClick={() => copyText(sellCode)}>복사</button>
                 </header>
-                <CvCodeBlock code={sellCode} query={query} emptyLabel="이 세대의 매도 조건식 코드를 찾지 못했습니다." />
+                <CvCodeBlock code={sellCode} query={debouncedQuery} emptyLabel="이 세대의 매도 조건식 코드를 찾지 못했습니다." />
               </section>
             </>
           ) : (
-            <CvCodeBlock code={code} query={query}
+            <CvCodeBlock code={code} query={debouncedQuery}
                          emptyLabel={`이 세대의 ${tab === "buy" ? "매수" : "매도"} 조건식 코드를 찾지 못했습니다.`} />
           )}
         </div>
@@ -321,4 +330,4 @@ function CodeViewer({ generation, onClose, runId, baseUrl }) {
 Object.assign(window, { CodeViewer, CvCodeBlock, highlightPython });
 
 // Track Z (PR-3) — dual-safe ESM export (stripped by build-app.mjs `_stripTopLevelEsm` in the concat path; kept by the flagged bundle for real module scope). KEEP on ONE physical line.
-export { CodeViewer };
+export { CodeViewer, CvCodeBlock };

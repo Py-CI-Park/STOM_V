@@ -321,10 +321,11 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
                        ? "연구용 생성 허용"
                        : (modeAuthority.generation_allowed === false ? "생성 금지 · 검토 전용" : "권한 확인 중")}
                      hint={`${modeAuthority.process || discovery.current_process?.code || "process"} · ${modeAuthority.preset || discovery.preset}`} />
-            <_CdFact ko="최대 낙폭 한도" en="MDD" value={`${mddGate.cap ?? "—"}%`}
-                     hint={`기본 ${mddGate.preset_cap ?? "—"} · 현재 설정 ${mddGate.configured_cap ?? "—"}`} />
-            <_CdFact ko="하루 최소 거래 수" en="minimum daily trades" value={`${tradeGate.value ?? "—"}건 / 일`}
-                     hint="이 한도는 점수로 상쇄되지 않는 통과 조건입니다." />
+            {/* v5.13.0 — 낙폭 한도·최소 거래는 상단 카드와 중복이라 문장 하나로 줄였다(B1). */}
+            <div className="condition-discovery-note">
+              낙폭 한도 <b>{mddGate.cap ?? "—"}%</b> · 하루 최소 거래 <b>{tradeGate.value ?? "—"}건</b> —
+              위 카드의 값이 정본이며, 이 두 한도는 점수로 상쇄되지 않습니다.
+            </div>
           </section>
 
           <section className="condition-discovery-block" aria-label={_CD_SECTIONS[1].label}>
@@ -333,9 +334,15 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
             <_CdFact ko="연구 자료 묶음 상태" en="context pack"
                      value={contextPackHealth.status || "확인 중"}
                      hint={`읽는 자료 토큰 상한 ${(contextPackHealth.fail_closed_budget_tokens || 250000).toLocaleString()} — 넘으면 생성을 멈춥니다.`} />
-            <div className="condition-discovery-pillrow">
-              {contextFields.map(field => <_CdPill key={field} label={field} tone="info" title="생성 전에 반드시 채워져야 하는 자료 항목" />)}
-            </div>
+            {/* v5.13.0 — 원어 필드명 나열은 접어 둔다(B1: 글자 과다). 필요할 때만 펼쳐 본다. */}
+            {contextFields.length > 0 && (
+              <details className="condition-discovery-fields">
+                <summary>생성 전 필수 자료 {contextFields.length}개 펼쳐 보기</summary>
+                <div className="condition-discovery-pillrow">
+                  {contextFields.map(field => <_CdPill key={field} label={field} tone="info" title="생성 전에 반드시 채워져야 하는 자료 항목" />)}
+                </div>
+              </details>
+            )}
             {branchTree.length > 0 && (
               <ol className="condition-discovery-note condition-discovery-branch-tree">
                 {branchTree.map(step => <li key={step.step}><b>{step.step}</b> → {step.output}</li>)}
@@ -343,9 +350,14 @@ function ConditionDiscoveryPanel({ state, wsStatus }) {
             )}
             <_CdFact ko="후보 묶음" en="candidate pack" value={`${candidatePack.recommended_candidates || "2-3+"}개 권장`}
                      hint={`최소 ${candidatePack.min_candidates || 2}개 · 부족하면 ${candidatePack.fallback_source || "진단용 대체 후보"}`} />
-            <div className="condition-discovery-pillrow">
-              {candidateFields.map(field => <_CdPill key={field} label={field} tone="success" title="후보마다 채워져야 하는 항목" />)}
-            </div>
+            {candidateFields.length > 0 && (
+              <details className="condition-discovery-fields">
+                <summary>후보별 필수 항목 {candidateFields.length}개 펼쳐 보기</summary>
+                <div className="condition-discovery-pillrow">
+                  {candidateFields.map(field => <_CdPill key={field} label={field} tone="success" title="후보마다 채워져야 하는 항목" />)}
+                </div>
+              </details>
+            )}
             <_CdFact ko="분석 카드 형식" en="analysis cards" value={analysisCards.schema || "analysis_card_v2"}
                      hint={analysisFields.join(" · ") || "원인 · 구간 기여 · 인사이트 점수"} />
             <_CdFact ko="프롬프트 기록" en="prompt receipts"

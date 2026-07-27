@@ -359,6 +359,18 @@ if (metricsOnly) {
   );
 }
 
+// v5.13.0 — 돈 축 차트 공용 컨텍스트(C8): 종목당 배팅·연평균 수익률을 차트 위에 병기한다.
+//   배팅은 고정배팅 모델(수익금 = 배팅 × 수익률합 ÷ 100)에서 역산한 파생값으로 정직하게 표기.
+const _mxPct = metricVal("total_profit_pct");
+const _mxKrw = metricVal("total_profit_krw");
+const _mxCagr = metricVal("cagr");
+const moneyCtx = {
+  betting: (typeof _mxPct === "number" && Math.abs(_mxPct) > 0.01 && typeof _mxKrw === "number" && Number.isFinite(_mxKrw))
+    ? Math.round((_mxKrw / _mxPct) * 100) : null,
+  bettingDerived: true,
+  cagr: typeof _mxCagr === "number" && Number.isFinite(_mxCagr) ? _mxCagr : null,
+};
+
 const distribution = analysis.distribution || {};
 const insights = analysis.insights || [];
 const topC = distribution.top_contributors || [];
@@ -506,11 +518,12 @@ return (
       {compareView && <BtCompareView cmp={compareView} onClose={onCloseCompare} />}
       <div className="bt-analysis-matrix">
         <BtEquityChart equity={analysis.equity} onBrush={capabilities.range ? onBrush : undefined}
-                       brushActive={capabilities.range && !!range} onBrushClear={onBrushClear} />
+                       brushActive={capabilities.range && !!range} onBrushClear={onBrushClear}
+                       moneyCtx={moneyCtx} />
         <BtDistributionChart distribution={distribution} />
         <BtUnderwaterChart underwater={analysis.underwater} />
         {capabilities.monteCarlo ? (
-          <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
+          <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} moneyCtx={moneyCtx} />
         ) : (
           <div className="panel bt-equal-card bt-analysis-unavailable" role="status">
             <div className="panel-hd"><div className="panel-hd-title"><span className="dot"></span>몬테카를로</div></div>
@@ -526,7 +539,7 @@ return (
         <BtRollingChart rolling={analysis.rolling} />
         <BtMonthlyCalendar monthly={analysis.monthly} />
         <BtGuiParitySection guiParity={analysis.gui_parity} />
-        <BtCumulativeTradesChart data={analysis.cumulative_trades} />
+        <BtCumulativeTradesChart data={analysis.cumulative_trades} moneyCtx={moneyCtx} />
       </div>
     </section>
 
@@ -556,7 +569,7 @@ return (
         analysis={analysis} distribution={distribution} orderflow={orderflow}
         stats={stats} insights={insights} mc={mc} mcLoading={mcLoading} onRunMc={onRunMc}
         range={range} onBrush={onBrush} onBrushClear={onBrushClear}
-        onClose={onCloseFullscreen}
+        onClose={onCloseFullscreen} moneyCtx={moneyCtx}
       />
     )}
   </div>
@@ -568,7 +581,7 @@ return (
 //   인라인 스타일 풀스크린(position:fixed). 닫기: ✕ 버튼 또는 Esc(상위에서 처리).
 function _BtFullscreenAnalysis({
   analysis, distribution, orderflow, stats, insights,
-  mc, mcLoading, onRunMc, range, onBrush, onBrushClear, onClose,
+  mc, mcLoading, onRunMc, range, onBrush, onBrushClear, onClose, moneyCtx,
 }) {
   return (
     <div style={{
@@ -607,10 +620,10 @@ function _BtFullscreenAnalysis({
 
       <div className="bt-analysis-matrix bt-analysis-matrix-fullscreen">
         <BtEquityChart equity={analysis.equity} onBrush={onBrush}
-                       brushActive={!!range} onBrushClear={onBrushClear} />
+                       brushActive={!!range} onBrushClear={onBrushClear} moneyCtx={moneyCtx} />
         <BtDistributionChart distribution={distribution} />
         <BtUnderwaterChart underwater={analysis.underwater} />
-        <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} />
+        <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} moneyCtx={moneyCtx} />
         <BtHeatmap heatmap={analysis.heatmap} />
         <BtMaeMfeScatter points={analysis.mae_mfe} />
         <BtQuantPanel analysis={analysis} />
@@ -620,7 +633,7 @@ function _BtFullscreenAnalysis({
         <BtRollingChart rolling={analysis.rolling} />
         <BtMonthlyCalendar monthly={analysis.monthly} />
         <BtGuiParitySection guiParity={analysis.gui_parity} />
-        <BtCumulativeTradesChart data={analysis.cumulative_trades} />
+        <BtCumulativeTradesChart data={analysis.cumulative_trades} moneyCtx={moneyCtx} />
       </div>
     </div>
   );

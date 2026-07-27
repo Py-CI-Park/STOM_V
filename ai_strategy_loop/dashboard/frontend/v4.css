@@ -836,14 +836,17 @@
 .v54-quant-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 @media (max-width: 1500px) { .v54-quant-grid { grid-template-columns: 1fr; } }
 .v54-quant-grid section { min-width: 0; border: 1px solid var(--line-1); border-radius: 8px; padding: 8px 10px; }
-.v54-beta-row { display: grid; grid-template-columns: 110px 1fr 130px; gap: 8px; align-items: center; padding: 3px 0; }
-.v54-beta-row .k { font-size: 12px; color: var(--ink-2); }
-.v54-beta-row .bar { height: 12px; background: var(--bg-2); border-radius: 6px; overflow: hidden; display: block; }
-.v54-beta-row .bar i { display: block; height: 100%; border-radius: 6px; }
+/* v5.13.0 — 막대·글자 한 단계 확대(C7): 카드 박스를 최대한 채운다. */
+.v54-beta-row { display: grid; grid-template-columns: 120px 1fr 150px; gap: 10px; align-items: center; padding: 6px 0; }
+.v54-beta-row .k { font-size: 13px; color: var(--ink-2); }
+.v54-beta-row .bar { height: 18px; background: var(--bg-2); border-radius: 9px; overflow: hidden; display: block; }
+.v54-beta-row .bar i { display: block; height: 100%; border-radius: 9px; }
 .v54-beta-row .bar i.pos { background: var(--teal); }
 .v54-beta-row .bar i.neg { background: #e05561; }
-.v54-beta-row .v { font-size: 12px; text-align: right; }
-.v54-quant-note { font-size: 11.5px; color: var(--ink-3); line-height: 1.55; margin: 6px 0 0; }
+.v54-beta-row .v { font-size: 13px; text-align: right; }
+.v54-quant-note { font-size: 12.5px; color: var(--ink-3); line-height: 1.6; margin: 8px 0 0; }
+/* 막대 행 카드(다차원 회귀·요일 구조)는 본문을 세로로 고르게 펼쳐 빈 공간을 없앤다. */
+.bt-quant-card .panel-bd > div:first-child { display: flex; flex-direction: column; justify-content: center; flex: 1 1 auto; }
 
 /* v5.4 R2 — 결과 리포트 그룹(자동 생성) 강조 구분 */
 .v6-report-group.run { color: var(--teal); border-color: rgba(76,214,179,.35); background: rgba(76,214,179,.07); }
@@ -1040,7 +1043,7 @@
   --v59-radius: 12px;
   --v4-height-chart-primary: clamp(420px, 38vw, 560px);
   --v4-height-chart-live: clamp(320px, 26vw, 460px);
-  --v4-height-viewport-code: clamp(420px, 52vh, 620px);
+  --v4-height-viewport-code: clamp(480px, 62vh, 780px); /* v5.13.0 — 코드 상자 확대(A1). */
   --v4-height-viewport-table: clamp(360px, 58vh, 720px);
   --v4-height-viewport-stage: clamp(520px, 62vh, 720px);
   --v4-height-viewport-report: calc(100vh - 190px);
@@ -1205,6 +1208,24 @@
 .condition-score-card.authority.blocked b { color: var(--amber); }
 @media (max-width: 1500px) { .condition-discovery-board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 1000px) { .condition-discovery-board { grid-template-columns: minmax(0, 1fr); } }
+/* v5.13.0 — 거버넌스 전체 글자 한 단계 확대(B2). 겹침 없는 flow 레이아웃이라 안전하다. */
+.condition-discovery-lede { font-size: 13.5px; }
+.condition-discovery-block > h4 { font-size: 14.5px; }
+.condition-discovery-block .condition-discovery-row > span { font-size: 13px; }
+.condition-discovery-block .condition-discovery-row > b { font-size: 13.5px; }
+.condition-discovery-block .condition-discovery-row > small { font-size: 11.5px; line-height: 1.55; }
+.condition-discovery-panel .condition-discovery-tab-intro { font-size: 13px; }
+.condition-discovery-panel .condition-discovery-note { font-size: 12.5px; line-height: 1.6; }
+.condition-discovery-panel .condition-discovery-pill { font-size: 11.5px; }
+.condition-discovery-subhead { font-size: 13px; }
+.condition-discovery-hero small { font-size: 11.5px; line-height: 1.5; }
+.condition-score-card > span { font-size: 12.5px; }
+.condition-score-card > small { font-size: 11.5px; }
+/* 원어 필드명 나열 접기(B1) — 펼치기 전에는 한 줄 요약만 차지한다. */
+.condition-discovery-fields { margin: 2px 0 4px; }
+.condition-discovery-fields > summary { cursor: pointer; color: var(--ink-2); font-size: 12px; padding: 3px 0; }
+.condition-discovery-fields > summary:hover { color: var(--teal); }
+.condition-discovery-fields[open] > summary { color: var(--teal); }
 
 /* Backtest/Live/History share one 12-column result rhythm. */
 .bt-result-flow {
@@ -1646,7 +1667,7 @@
 .ea-gate-column > span { display: block; min-height: 4px; background: var(--ink-3); border-radius: 4px 4px 0 0; }
 .ea-gate-column.passed > span { background: linear-gradient(180deg, var(--teal), var(--blue)); }
 .ea-gate-column b { margin-top: 5px; color: var(--ink-3); font: 9px/1 var(--mono); text-align: center; writing-mode: vertical-rl; }
-.ea-efficiency-chart svg { display: block; width: 100%; height: 190px; }
+.ea-efficiency-chart svg { display: block; width: 100%; height: 240px; } /* v5.13.0 — 납작함 해소(D4/D5). */
 .ea-efficiency-chart p { margin: 6px 0 0; color: var(--ink-2); font-size: 11.5px; }
 
 /* Backtest and History: explicit 2/3/4-column modes and equal visual rows. */
@@ -1698,8 +1719,9 @@
 
 /* v5.11.2 — one chart is one evidence unit across Live, Backtest, and History. */
 :root {
-  --bt-analysis-card-height: 520px;
-  --bt-analysis-plot-height: 300px;
+  /* v5.13.0 — 카드 겉높이는 "최소값"으로만 쓴다(내부 스크롤 폐지). 플롯은 340px 로 확대. */
+  --bt-analysis-card-height: 540px;
+  --bt-analysis-plot-height: 340px;
   --dashboard-utility-card-height: 460px;
   /* v5.11.3 — 차트 색은 '무슨 색'이 아니라 '무슨 뜻'으로 고른다. 역할 토큰을 한 곳에 둬야
      새 차트가 추가돼도 같은 규칙으로 읽힌다(수익=teal, 손실=red, 보조선=violet). */
@@ -1709,7 +1731,7 @@
   --chart-neutral: var(--blue);
   --chart-axis: var(--ink-3);
   --chart-grid: var(--line-2);
-  --chart-axis-font-size: 10.5px;
+  --chart-axis-font-size: 12px; /* v5.13.0 — 축 글자 한 단계 확대(가독성). */
 }
 /* 축·눈금 글자는 카드마다 다른 크기로 들어와 있었다. 매트릭스 안에서는 한 값으로 고정한다.
    (CSS 는 SVG presentation attribute 를 이긴다 — 컴포넌트 수정 없이 통일된다.) */
@@ -1724,13 +1746,16 @@
   gap: var(--v59-gap);
   align-items: stretch;
 }
+/* v5.13.0 — 카드 내부 스크롤 폐지(C2). 고정높이+overflow:auto 는 "커서가 카드 위에 있을 때
+   페이지 스크롤이 카드 안으로 삼켜져 차트가 밀려 올라가는" 오동작을 만들었다.
+   겉높이는 최소값으로만 유지하고 내용은 그대로 펼친다(같은 grid 행끼리는 stretch 로 정렬). */
 .bt-analysis-matrix > * {
   min-width: 0;
-  height: var(--bt-analysis-card-height);
-  max-height: var(--bt-analysis-card-height);
+  min-height: var(--bt-analysis-card-height);
+  height: auto;
+  max-height: none;
   margin: 0;
-  overflow: auto;
-  scrollbar-gutter: stable;
+  overflow: visible;
 }
 .bt-analysis-matrix > :where(.panel, .chart-frame) {
   display: flex;
@@ -1764,7 +1789,7 @@
 .bt-analysis-unavailable { justify-content: stretch; }
 .bt-monthly-calendar-scroll { min-height: 310px; padding: 8px 0; }
 .bt-monthly-calendar-table { width: 100%; min-width: 830px; }
-.bt-quant-card .panel-bd { overflow: auto; }
+.bt-quant-card .panel-bd { overflow: visible; display: flex; flex-direction: column; }
 
 /* v5.11.3 — 우리말 제목 옆의 원어 보조 표기(설정·용어 공통). */
 .panel-hd-title .v4s-en, .v4s-en { margin-left: 6px; color: var(--ink-3); font: 9.5px var(--mono); font-weight: 400; letter-spacing: 0; text-transform: none; }
@@ -1857,6 +1882,22 @@
 .code-viewer-modal.code-viewer-expanded .cv-pane > .code-block { max-height: none; }
 .code-block .cv-hit { padding: 0 1px; border-radius: 3px; background: rgba(240,179,90,.35); color: inherit; }
 .code-block .cv-hit-line { background: rgba(240,179,90,.07); }
+/* v5.13.0 — 큰 조건식 렌더 속도(A3): 화면 밖 코드 줄은 레이아웃/페인트를 건너뛴다. */
+.cv-body .code-block > div,
+.active-strategy-code-viewport .code-block > div {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 21px;
+}
+/* v5.13.0(D1) — 세대표 '백테 상세' 클릭 피드백: 갱신된 차트 카드를 잠깐 강조한다. */
+@keyframes bt-detail-flash-kf {
+  0% { box-shadow: 0 0 0 3px rgba(76, 214, 179, 0.75); }
+  100% { box-shadow: 0 0 0 3px rgba(76, 214, 179, 0); }
+}
+.bt-detail-flash { animation: bt-detail-flash-kf 1.5s ease-out 1; }
+
+/* v5.13.0 — 인스펙터 탭 한국어 라벨 + 원어 병기, 탭 의미 설명 줄(A4). */
+.strategy-inspector-tabs button small { margin-left: 5px; color: var(--ink-3); font-size: 9.5px; font-weight: 400; }
+.strategy-tab-explain { margin: 8px 12px 0; padding: 8px 10px; border: 1px solid var(--line-1); border-left: 3px solid var(--chart-accent); border-radius: 8px; background: var(--bg-0); color: var(--ink-2); font-size: 11.5px; line-height: 1.6; }
 
 /* Autopsy: "어디서 잃었나"는 숫자 나열이 아니라 길이 비교로 읽혀야 한다. */
 .autopsy-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
