@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 
@@ -27,7 +28,11 @@ def test_settings_logs_are_manual_bounded_read_only_and_exportable() -> None:
     assert "redact" in settings.lower()
     assert "navigator.clipboard" in settings
     assert "Blob" in settings
-    assert 'method: "POST"' not in settings
+    # v5.13.2 — 설정 탭은 원칙적으로 읽기 전용이나, 사용자 지시로 GPT 로그인(POST) 이
+    #   추가됐다. 허용 POST 는 gpt_auth 계열 2개뿐이며 그 외 POST 는 여전히 금지한다.
+    post_targets = re.findall(r'fetch\(\(baseUrl \|\| ""\) \+ "([^"]+)",\s*\{ method: "POST"', settings)
+    assert set(post_targets) <= {"/gpt_auth/login_start", "/gpt_auth/test"}, post_targets
+    assert settings.count('method: "POST"') == len(post_targets)
     assert "new WebSocket" not in settings
     assert "localStorage.setItem" not in settings
 def test_settings_probes_query_filter_and_scoped_layout_reset_are_source_bound() -> None:

@@ -232,6 +232,43 @@ function V4ThemeToggle({ theme, onChange }) {
   );
 }
 
+/* v5.13.2 — GPT 인증 상시 칩: 60초 폴링으로 토큰 상태·잔여 시간을 톱바에 노출.
+   만료/부재는 색으로 즉시 보이고, 클릭하면 설정 탭(로그인 카드)으로 이동한다. */
+function _GptAuthChip({ baseUrl, onOpen }) {
+  const [auth, setAuth] = useState_v4(null);
+  const [fetchedAt, setFetchedAt] = useState_v4(0);
+  const [, setTick] = useState_v4(0);
+  useEffect_v4(() => {
+    let alive = true;
+    const load = () => {
+      fetch((baseUrl || "") + "/gpt_auth/status", { credentials: "same-origin", cache: "no-store", signal: AbortSignal.timeout(8000) })
+        .then(r => (r.ok ? r.json() : null))
+        .then(j => { if (alive && j) { setAuth(j); setFetchedAt(Date.now()); } })
+        .catch(() => {});
+    };
+    load();
+    const id = setInterval(load, 60000);
+    return () => { alive = false; clearInterval(id); };
+  }, [baseUrl]);
+  useEffect_v4(() => { const id = setInterval(() => setTick(t => t + 1), 30000); return () => clearInterval(id); }, []);
+  const token = (auth && auth.token) || {};
+  const drift = fetchedAt ? Math.floor((Date.now() - fetchedAt) / 1000) : 0;
+  const remain = token.loaded ? Math.max(0, (Number(token.expires_in_seconds) || 0) - drift) : 0;
+  const ok = token.loaded && !token.expired && remain > 0;
+  const label = !auth ? "GPT ?"
+    : ok ? "GPT " + (remain >= 3600 ? Math.floor(remain / 3600) + "h" : Math.max(1, Math.floor(remain / 60)) + "m")
+      : token.loaded && token.has_refresh_token ? "GPT 갱신필요" : "GPT 만료";
+  const color = !auth ? "var(--ink-3)" : ok ? (remain < 600 ? "var(--amber)" : "var(--teal)") : "var(--red)";
+  return (
+    <button type="button" className="v4-sfx v4-gpt-chip mono" onClick={onOpen}
+            title={ok ? `GPT 인증 정상 · 만료까지 ${Math.floor(remain / 60)}분 — 클릭하면 설정에서 상세 확인`
+                     : "GPT 인증 만료/없음 — 클릭하면 설정에서 로그인"}
+            style={{ color, borderColor: color, cursor: "pointer", background: "transparent" }}>
+      🔑 {label}
+    </button>
+  );
+}
+
 function V4BaseControl({ value, onChange, onApply, onReconnect }) {
   return (
     <div className="v4-base">
@@ -505,6 +542,8 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
           <div className="v4-grow"></div>
           <V4BaseControl value={pendingBase} onChange={setPendingBase}
                          onApply={() => setBaseUrl(pendingBase)} onReconnect={reconnect} />
+          {/* v5.13.2 — GPT 인증 상시 칩(수시 확인 요구): 클릭 시 설정 탭으로. */}
+          <_GptAuthChip baseUrl={baseUrl} onOpen={() => selectTab("settings")} />
           <ConnBadge health={health} wsStatus={wsStatus} />
           <StatusBadge status={state.status} />
           <V4ThemeToggle theme={theme} onChange={setTheme} />

@@ -33,6 +33,93 @@ function _v4sCapabilityRows(manifest, health) {
   if (capabilities && typeof capabilities === "object") return Object.entries(capabilities).map(([label, value]) => ({ label, value: _v4sProbeValue(value) }));
   return [];
 }
+/* v5.13.2 — GPT 로그인 상태·만료·로그인 시작(사용자 지시: 수시 확인 + 설정에서 로그인). */
+function _v4sFmtRemain(sec) {
+  const s = Math.max(0, Math.floor(Number(sec) || 0));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+  return h > 0 ? `${h}시간 ${m}분` : m > 0 ? `${m}분 ${r}초` : `${r}초`;
+}
+function _V4sGptAuthCard({ baseUrl }) {
+  const [auth, setAuth] = useState_v4s(null);          // /gpt_auth/status 응답
+  const [fetchedAt, setFetchedAt] = useState_v4s(0);   // 클라이언트 카운트다운 기준
+  const [tick, setTick] = useState_v4s(0);
+  const [loginBusy, setLoginBusy] = useState_v4s(false);
+  const [loginMsg, setLoginMsg] = useState_v4s("");
+  const [probeMsg, setProbeMsg] = useState_v4s("");
+  const refresh = () => {
+    fetch((baseUrl || "") + "/gpt_auth/status", { credentials: "same-origin", cache: "no-store", signal: AbortSignal.timeout(8000) })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => { if (j) { setAuth(j); setFetchedAt(Date.now()); } })
+      .catch(() => {});
+  };
+  useEffect_v4s(() => { refresh(); const id = setInterval(refresh, 30000); return () => clearInterval(id); }, [baseUrl]);
+  useEffect_v4s(() => { const id = setInterval(() => setTick(t => t + 1), 1000); return () => clearInterval(id); }, []);
+  const token = (auth && auth.token) || {};
+  const drift = fetchedAt ? Math.floor((Date.now() - fetchedAt) / 1000) : 0;
+  const remain = token.loaded ? Math.max(0, (Number(token.expires_in_seconds) || 0) - drift) : 0;
+  const state = !auth ? "unknown"
+    : !token.loaded ? "none"
+      : (token.expired || remain <= 0) ? (token.has_refresh_token ? "refreshable" : "expired")
+        : remain < 600 ? "expiring" : "ok";
+  const badge = {
+    unknown: ["확인 중…", "var(--ink-3)"],
+    none: ["로그인 없음", "var(--red)"],
+    expired: ["만료됨 — 재로그인 필요", "var(--red)"],
+    refreshable: ["만료됨 — 자동 갱신 가능(갱신 토큰 보유)", "var(--amber)"],
+    expiring: ["만료 임박", "var(--amber)"],
+    ok: ["정상", "var(--teal)"],
+  }[state];
+  const startLogin = () => {
+    setLoginBusy(true); setLoginMsg("로그인 창을 여는 중…");
+    fetch((baseUrl || "") + "/gpt_auth/login_start", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(8000) })
+      .then(r => r.json())
+      .then(j => {
+        setLoginMsg(j.message || (j.already_running ? "이미 로그인 진행 중입니다." : "로그인 시작"));
+        // 완료까지 폴링(최대 5분 + 여유) — 끝나면 상태 재조회.
+        const t0 = Date.now();
+        const poll = () => {
+          fetch((baseUrl || "") + "/gpt_auth/login_state", { credentials: "same-origin", cache: "no-store", signal: AbortSignal.timeout(8000) })
+            .then(r => r.json())
+            .then(s => {
+              if (s.running && Date.now() - t0 < 330000) { setTimeout(poll, 2000); return; }
+              setLoginBusy(false);
+              setLoginMsg(s.result === true ? "✅ 로그인 성공 — 토큰이 저장되었습니다."
+                : s.error ? "로그인 실패: " + s.error
+                  : s.result === false ? "로그인이 완료되지 않았습니다(취소/타임아웃)." : "상태 확인 종료");
+              refresh();
+            })
+            .catch(() => { setLoginBusy(false); setLoginMsg("로그인 상태 확인 실패"); });
+        };
+        setTimeout(poll, 2000);
+      })
+      .catch(e => { setLoginBusy(false); setLoginMsg("로그인 시작 실패: " + e); });
+  };
+  const probe = () => {
+    setProbeMsg("연결 테스트 중…");
+    fetch((baseUrl || "") + "/gpt_auth/test", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(10000) })
+      .then(r => r.json())
+      .then(j => setProbeMsg((j.status === "ok" ? "✅ " : "⚠ ") + (j.message || j.status)))
+      .catch(e => setProbeMsg("테스트 실패: " + e));
+  };
+  return <div className="panel"><div className="panel-hd"><div className="panel-hd-title"><span className="dot" style={{ background: badge[1] }} />AI 공급자 · GPT 로그인 <small className="v4s-en">ChatGPT OAuth</small></div>
+      <span className="mono" style={{ fontSize: 11.5, color: badge[1] }}>● {badge[0]}</span></div>
+    <div className="panel-bd">
+      <p className="v4s-note">조건식 생성(LLM)에 쓰는 ChatGPT 계정 인증 상태입니다. 만료되면 AI 루프의 생성 단계가 멈춥니다. 로그인 버튼을 누르면 이 PC 브라우저에 ChatGPT 로그인 창이 열리고, 완료하면 자동으로 반영됩니다.</p>
+      <div className="v4s-probe-grid">
+        <div className="v4s-probe-card"><b>토큰 상태</b><span className="mono" style={{ color: badge[1] }}>{badge[0]}</span></div>
+        <div className="v4s-probe-card"><b>만료까지</b><span className="mono">{token.loaded && remain > 0 ? _v4sFmtRemain(remain) : "—"}</span></div>
+        <div className="v4s-probe-card"><b>자동 갱신 토큰</b><span className="mono">{auth ? (token.has_refresh_token ? "있음" : "없음") : "—"}</span></div>
+        <div className="v4s-probe-card"><b>로컬 프록시</b><span className="mono">{auth ? (auth.proxy_running ? "실행 중" : "정지") : "—"}</span></div>
+      </div>
+      <div className="v4s-log-controls" style={{ marginTop: 10 }}>
+        <button className="btn primary sm" type="button" onClick={startLogin} disabled={loginBusy}>{loginBusy ? "로그인 진행 중…" : "ChatGPT 로그인 시작"}</button>
+        <button className="btn ghost sm" type="button" onClick={refresh}>상태 새로고침</button>
+        <button className="btn ghost sm" type="button" onClick={probe}>연결 테스트</button>
+      </div>
+      {(loginMsg || probeMsg) && <p className="v4s-note mono" role="status" aria-live="polite">{loginMsg}{loginMsg && probeMsg ? " · " : ""}{probeMsg}</p>}
+    </div></div>;
+}
+
 function V4SettingsTab({ baseUrl, dashVersion }) {
   const [manifest, setManifest] = useState_v4s(null); const [health, setHealth] = useState_v4s(null);
   const [pendingReset, setPendingReset] = useState_v4s(""); const [storageMessage, setStorageMessage] = useState_v4s("");
@@ -57,6 +144,8 @@ function V4SettingsTab({ baseUrl, dashVersion }) {
   const bundleVersion = manifest && manifest.bundles && manifest.bundles["app.js"] ? String(manifest.bundles["app.js"].v || "—") : "—";
   const healthStatus = health && health.status !== undefined ? _v4sProbeValue(health.status) : "—";
   return <section className="v4-settings" aria-labelledby="v4-settings-heading"><h2 id="v4-settings-heading" className="panel-hd-title">설정 · 대시보드 관리</h2>
+    {/* v5.13.2 — AI 공급자 인증을 설정 최상단에(수시 확인 요구). */}
+    <_V4sGptAuthCard baseUrl={baseUrl} />
     <div className="panel"><div className="panel-hd"><div className="panel-hd-title"><span className="dot" />화면 모양 · 배치 <small className="v4s-en">Appearance / Layout</small></div></div><div className="panel-bd">
       <_V4sRow label="공통 레이아웃" hint="뷰는 반응형 패널과 의미 있는 차트 프레임(상태·출처·원본값)을 사용합니다. 높이와 열 수는 콘텐츠·화면 폭별 계약입니다."><span className="mono">responsive panels · semantic chart frames</span></_V4sRow>
       <_V4sRow label="테마" hint="상단 테마 버튼에서 변경하며 브라우저에만 저장됩니다."><span className="mono">{_v4sGet("stom_theme", "dark")}</span></_V4sRow>

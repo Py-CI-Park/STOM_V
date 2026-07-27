@@ -1871,6 +1871,13 @@
 .hof-shot-strip { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 8px; margin-bottom: 6px; align-items: center; }
 .hof-shot-strip img { height: 96px; border: 1px solid var(--line-2); border-radius: 6px; cursor: zoom-in; flex-shrink: 0; }
 .hof-shot-strip img:hover { border-color: var(--teal); }
+/* v5.13.2 — TOP10 카드 클릭 = 결과 상세 이동. */
+.hof-top10-card.clickable { cursor: pointer; }
+.hof-top10-card.clickable:hover { border-color: var(--teal); }
+.hof-top10-card.clickable:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.hof-top10-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+/* v5.13.2 — 톱바 GPT 인증 칩. */
+.v4-gpt-chip { border: 1px solid; border-radius: 999px; padding: 3px 10px; font-size: 11px; }
 .hof-cond-link { background: none; border: none; padding: 0; color: var(--teal); font: inherit; cursor: pointer; text-decoration: underline dotted; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hof-cond-link.sell { color: var(--amber); }
 .hof-cond-link:hover { text-decoration: underline; }

@@ -82,6 +82,23 @@ def main() -> int:
     st = LoopState()
     rid = st.start_run(config, run_id=args.run_id)
     print(f"[BATCH] run_id={rid} pairs={len(pairs)}", flush=True)
+
+    # v5.13.2(결함 C) — 설정 창과 유효 창이 다르면(거버넌스 프리셋 클램프) 조용히 지나가지
+    #   않고 시작 로그에 명시한다. 2026-07-27 R0 에서 93000 설정이 92800 으로 무음 강제돼
+    #   두 쌍이 바이트 동일 결과를 낼 때까지 발각되지 않았다.
+    _warm_cfg_preview = _build_warm_btconfig(config)
+    _configured_end = getattr(config, "bt_universe_end_time", None)
+    print(f"[BATCH] effective window {_warm_cfg_preview.start_time}-{_warm_cfg_preview.end_time}"
+          f" (preset={getattr(config, 'condition_discovery_preset', 'fast')}"
+          f", configured_end={_configured_end})", flush=True)
+    if _configured_end is not None and int(_configured_end) != int(_warm_cfg_preview.end_time):
+        print(f"[BATCH] WARNING: 설정 end_time {_configured_end} 이 거버넌스에 의해 "
+              f"{_warm_cfg_preview.end_time} 으로 강제되었습니다 — research 프리셋 + "
+              f"condition_discovery_tick_window_end 로만 확장 가능합니다.", flush=True)
+
+    # v5.13.2(결함 A/B) — 사전 검증: 구문 오류·미정의 변수 조건식은 엔진에 넣지 않고
+    #   즉시 error 세대로 기록한다(종전에는 per-run 타임아웃(600초)까지 정지했다).
+    from ai_strategy_loop.controller.strategy_preflight import preflight_pair  # noqa: PLC0415
     # CL-R04 todo10 — fixed_batch는 canonical passport lineage를 절대 진전시키지
     #   않는다(EvidenceStore.append_passport/append_manifest를 이 스크립트가
     #   호출하지 않는다). canonical_phase_owner_ok(fixed_batch)==False로 그
@@ -106,6 +123,17 @@ def main() -> int:
         for i, pair in enumerate(pairs):
             label = pair.get("label", f"pair{i}")
             buy, sell = pair["buy"], pair["sell"]
+            # v5.13.2(결함 A/B) — 불량 조건식 fail-fast: 엔진 정지(600초) 대신 즉시 기록.
+            gate = preflight_pair(buy, sell)
+            if not gate.ok:
+                print(f"[BATCH] gen{i} {label} PREFLIGHT-FAIL {gate.reason}", flush=True)
+                st.record_generation(
+                    rid, i, buy_name=buy, sell_name=sell,
+                    status="error", score=0.0, gate_passed=False,
+                    reason=f"[{label}] preflight: {gate.reason}",
+                    csv_path=None, strategy_gist=label,
+                )
+                continue
             # E3(2026-06-11) — 배치도 라이브 상태 발행(대시보드 상단 표시, 실패 흡수).
             publish_batch_state(rid, i, len(pairs), label=label,
                                 message=f"배치 {i + 1}/{len(pairs)} 평가 중: {label}",

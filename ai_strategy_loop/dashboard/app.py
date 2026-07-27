@@ -3938,6 +3938,61 @@ def create_app(
     @app.get("/config/spec")
     def config_spec() -> Dict[str, Any]:
         return {"contract_version": C.CONTRACT_VERSION, "fields": config_field_specs()}
+    # v5.13.2 — 설정 탭 GPT 로그인 고도화(사용자 지시): 브라우저 PKCE 로그인을 대시보드
+    #   버튼으로 시작하고, 진행/결과를 폴링으로 확인한다. 로그인 자체는 로컬 브라우저에서
+    #   사용자가 완료한다(자격증명은 서버가 다루지 않음 — oauth_login 이 토큰 파일만 저장).
+    _gpt_login_state: Dict[str, Any] = {
+        "running": False, "result": None, "error": None,
+        "started_at": None, "finished_at": None,
+    }
+    _gpt_login_lock = threading.Lock()
+
+    def _gpt_login_snapshot() -> Dict[str, Any]:
+        with _gpt_login_lock:
+            return {"status": "ok", "mode": "gpt_auth", "safe": True,
+                    "starts_evolution": False, **dict(_gpt_login_state)}
+
+    @app.post("/gpt_auth/login_start")
+    def gpt_auth_login_start() -> Dict[str, Any]:
+        """ChatGPT OAuth 브라우저 로그인 시작(비동기, 5분 타임아웃은 oauth_login 소유)."""
+        with _gpt_login_lock:
+            if _gpt_login_state["running"]:
+                return {**_gpt_login_snapshot(), "already_running": True}
+            _gpt_login_state.update(running=True, result=None, error=None,
+                                    started_at=time.time(), finished_at=None)
+
+        def _worker() -> None:
+            try:
+                from ai_strategy_loop.provider.chatgpt_oauth.oauth_login import login  # noqa: PLC0415
+
+                ok = asyncio.run(login())
+                if ok:
+                    # 새 토큰 파일을 현재 프로세스 토큰 매니저에 즉시 반영.
+                    try:
+                        from ai_strategy_loop.provider.chatgpt_oauth.token_manager import (  # noqa: PLC0415
+                            get_token_manager,
+                        )
+
+                        get_token_manager()._load_from_file()  # noqa: SLF001 - 동일 패키지 재적재 관례
+                    except Exception:  # noqa: BLE001
+                        pass
+                with _gpt_login_lock:
+                    _gpt_login_state.update(running=False, result=bool(ok),
+                                            finished_at=time.time())
+            except Exception as exc:  # noqa: BLE001 - 로그인 실패는 상태로만 보고.
+                with _gpt_login_lock:
+                    _gpt_login_state.update(running=False, result=False,
+                                            error=str(exc), finished_at=time.time())
+
+        threading.Thread(target=_worker, name="gpt-auth-login", daemon=True).start()
+        return {**_gpt_login_snapshot(), "started": True,
+                "message": "브라우저에서 ChatGPT 로그인 창이 열립니다. 5분 내에 완료하세요."}
+
+    @app.get("/gpt_auth/login_state")
+    def gpt_auth_login_state() -> Dict[str, Any]:
+        """로그인 진행 상태 스냅샷(읽기 전용)."""
+        return _gpt_login_snapshot()
+
     @app.get("/gpt_auth/status")
     async def gpt_auth_status() -> Dict[str, Any]:
         """Read-only ChatGPT OAuth status for the dashboard settings panel."""

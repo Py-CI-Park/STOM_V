@@ -209,31 +209,52 @@ function HallOfFamePanel({ baseUrl, wsStatus }) {
               <>
                 <div style={{ margin: "16px 0 8px", fontWeight: 700 }}>⭐ 바로 쓸 만한 TOP {top10.length} — 게이트 통과 · score 순</div>
                 <div className="hof-top10-grid">
-                  {top10.map((row, i) => (
-                    <div key={`${row.run_id}/${row.gen_no}`} className={"hof-top10-card" + (i < 3 ? " podium" : "")}>
-                      <div className="hof-top10-rank">{i + 1}</div>
-                      <div className="hof-top10-body">
-                        <div className="hof-top10-name mono" title={row.buy_name || "—"}>
-                          <span className="k">매수</span> {row.buy_name || "—"}
+                  {top10.map((row, i) => {
+                    // v5.13.2 — 카드 클릭 = 백테스트 탭 결과 상세로 이동(기존 stom_bt_evo_pending
+                    //   핸드오프 재사용). "TOP10 눌러도 결과가 안 보인다" 지적 반영.
+                    const openResult = () => {
+                      try {
+                        window.localStorage.setItem("stom_bt_evo_pending",
+                          JSON.stringify({ run_id: row.run_id, gen_no: row.gen_no }));
+                      } catch (e) {}
+                      window.location.href = "/?tab=backtest";
+                    };
+                    return (
+                      <div key={`${row.run_id}/${row.gen_no}`}
+                           className={"hof-top10-card clickable" + (i < 3 ? " podium" : "")}
+                           role="button" tabIndex={0}
+                           title="클릭하면 백테스트 탭에서 이 세대의 전체 결과 분석을 엽니다"
+                           onClick={openResult}
+                           onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openResult(); } }}>
+                        <div className="hof-top10-rank">{i + 1}</div>
+                        <div className="hof-top10-body">
+                          <div className="hof-top10-name mono" title={row.buy_name || "—"}>
+                            <span className="k">매수</span> {row.buy_name || "—"}
+                          </div>
+                          <div className="hof-top10-name mono sell" title={row.sell_name || "—"}>
+                            <span className="k">매도</span> {row.sell_name || "—"}
+                          </div>
+                          <div className="hof-top10-metrics mono">
+                            <span>score <b>{fmtNumber(row.score)}</b></span>
+                            <span className={typeof row.return_pct === "number" && row.return_pct > 0 ? "num-pos" : "num-neg"}>
+                              수익률 <b>{fmtPct(row.return_pct)}</b>
+                            </span>
+                            <span style={{ color: "var(--red)" }}>MDD <b>{typeof row.mdd_pct === "number" ? Math.abs(row.mdd_pct).toFixed(1) + "%" : "—"}</b></span>
+                            <span>{row.label || `${row.run_id}/g${row.gen_no}`}</span>
+                          </div>
                         </div>
-                        <div className="hof-top10-name mono sell" title={row.sell_name || "—"}>
-                          <span className="k">매도</span> {row.sell_name || "—"}
-                        </div>
-                        <div className="hof-top10-metrics mono">
-                          <span>score <b>{fmtNumber(row.score)}</b></span>
-                          <span className={typeof row.return_pct === "number" && row.return_pct > 0 ? "num-pos" : "num-neg"}>
-                            수익률 <b>{fmtPct(row.return_pct)}</b>
-                          </span>
-                          <span style={{ color: "var(--red)" }}>MDD <b>{typeof row.mdd_pct === "number" ? Math.abs(row.mdd_pct).toFixed(1) + "%" : "—"}</b></span>
-                          <span>{row.label || `${row.run_id}/g${row.gen_no}`}</span>
+                        <div className="hof-top10-actions" onClick={e => e.stopPropagation()}>
+                          <button className="btn primary sm" title="백테스트 탭에서 전체 결과 분석 열기" onClick={openResult}>
+                            📊 결과 보기
+                          </button>
+                          <button className="btn ghost sm" title="이 세대의 매수·매도 조건식 전체 코드를 바로 봅니다"
+                                  onClick={() => setCodeView({ run_id: row.run_id, gen_no: row.gen_no, buy_name: row.buy_name, sell_name: row.sell_name })}>
+                            &lt;/&gt; 조건식
+                          </button>
                         </div>
                       </div>
-                      <button className="btn ghost sm" title="이 세대의 매수·매도 조건식 전체 코드를 바로 봅니다"
-                              onClick={() => setCodeView({ run_id: row.run_id, gen_no: row.gen_no, buy_name: row.buy_name, sell_name: row.sell_name })}>
-                        &lt;/&gt; 조건식 보기
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </>
             )}

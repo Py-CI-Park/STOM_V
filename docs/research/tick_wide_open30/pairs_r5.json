@@ -1,0 +1,47 @@
+[
+  {
+    "label": "r5_base",
+    "buy": "CLW30_CT9020_B",
+    "sell": "CLW30_CT9020_S"
+  },
+  {
+    "label": "r5_band1",
+    "buy": "CLW30_CT9020_B_band1",
+    "sell": "CLW30_CT9020_S"
+  },
+  {
+    "label": "r5_band2",
+    "buy": "CLW30_CT9020_B_band2",
+    "sell": "CLW30_CT9020_S"
+  },
+  {
+    "label": "r5_band3",
+    "buy": "CLW30_CT9020_B_band3",
+    "sell": "CLW30_CT9020_S"
+  },
+  {
+    "label": "r5_band4",
+    "buy": "CLW30_CT9020_B_band4",
+    "sell": "CLW30_CT9020_S"
+  },
+  {
+    "label": "r5_smallcap",
+    "buy": "CLW30_CT9020_B_small",
+    "sell": "CLW30_CT9020_S"
+  },
+  {
+    "label": "r5_anchorS",
+    "buy": "CLW30_CT9020_B",
+    "sell": "GATE_r8_4_strength_max_250_S"
+  },
+  {
+    "label": "r5_combo1",
+    "buy": "CLW30_CT9020_B_small",
+    "sell": "GATE_r8_4_strength_max_250_S"
+  },
+  {
+    "label": "r5_combo2",
+    "buy": "CLW30_CT9020_B_small",
+    "sell": "CLW30_CT9020_S_trail55"
+  }
+]
