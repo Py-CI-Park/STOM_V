@@ -1,0 +1,22 @@
+[
+  {
+    "label": "r3_base_w30",
+    "buy": "CLW30_B_w2900",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r3_L6_full",
+    "buy": "CLW30_B_r2_L6_full",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "r3_champ_wide",
+    "buy": "CLW30_B_r2_L6_full",
+    "sell": "AILOOP_abmain0716f_p5_typed_g11_sell"
+  },
+  {
+    "label": "r3_champ_orig",
+    "buy": "AILOOP_abmain0716f_p5_typed_g11_buy",
+    "sell": "AILOOP_abmain0716f_p5_typed_g11_sell"
+  }
+]
