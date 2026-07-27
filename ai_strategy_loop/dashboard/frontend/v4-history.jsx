@@ -206,12 +206,10 @@ function _HistoryDirectPicker({ baseUrl, onSelectAnalysis }) {
   return (
     <div className="history-direct-picker">
       <p className="v4-history-feature-copy">연구(run)와 세대를 고르면 결과 비교를 거치지 않고 바로 상세를 엽니다.</p>
-      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 10 }}>
-        <label className="mono" style={{ fontSize: 12, color: "var(--ink-2)" }}>연구(run)</label>
-        <select className="mono" value={runId} onChange={e => setRunId(e.target.value)}
-                aria-label="상세를 볼 연구 run 선택"
-                style={{ fontSize: 12, background: "var(--bg-1)", color: "var(--ink-0)",
-                         border: "1px solid var(--line-2)", borderRadius: 5, padding: "4px 8px", maxWidth: 320 }}>
+      <div className="hdp-row">
+        <label className="mono hdp-label">연구(run)</label>
+        <select className="mono hdp-select" value={runId} onChange={e => setRunId(e.target.value)}
+                aria-label="상세를 볼 연구 run 선택">
           {!runs.length && <option value="">기록된 run 없음</option>}
           {runs.map(r => (
             <option key={r.run_id} value={r.run_id}>
@@ -219,33 +217,33 @@ function _HistoryDirectPicker({ baseUrl, onSelectAnalysis }) {
             </option>
           ))}
         </select>
-        {loading && <span className="mono" style={{ fontSize: 11, color: "var(--ink-3)" }}>세대 불러오는 중…</span>}
+        {loading && <span className="mono hdp-loading">세대 불러오는 중…</span>}
       </div>
       {top.length > 0 && (
-        <table className="mono" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+        <table className="mono hdp-table">
           <thead>
-            <tr style={{ color: "var(--ink-2)", textAlign: "right" }}>
-              <th style={{ textAlign: "left", padding: "5px 8px" }}>세대</th>
-              <th style={{ padding: "5px 8px" }}>score</th>
-              <th style={{ padding: "5px 8px" }}>손익</th>
-              <th style={{ padding: "5px 8px" }}>MDD</th>
-              <th style={{ textAlign: "center", padding: "5px 8px" }}>게이트</th>
-              <th style={{ padding: "5px 8px" }}></th>
+            <tr>
+              <th className="left">세대</th>
+              <th>score</th>
+              <th>손익</th>
+              <th>MDD</th>
+              <th className="center">게이트</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             {top.map(g => (
-              <tr key={g.gen_no} style={{ borderTop: "1px solid var(--line-1)", textAlign: "right" }}>
-                <td style={{ textAlign: "left", padding: "5px 8px" }}>Gen {g.gen_no}</td>
-                <td style={{ padding: "5px 8px", color: "var(--teal)" }}>{typeof g.score === "number" ? g.score.toFixed(3) : "—"}</td>
-                <td style={{ padding: "5px 8px" }} className={g.profit > 0 ? "num-pos" : g.profit < 0 ? "num-neg" : ""}>
+              <tr key={g.gen_no}>
+                <td className="left">Gen {g.gen_no}</td>
+                <td className="hdp-score">{typeof g.score === "number" ? g.score.toFixed(3) : "—"}</td>
+                <td className={g.profit > 0 ? "num-pos" : g.profit < 0 ? "num-neg" : ""}>
                   {typeof g.profit === "number" ? g.profit.toLocaleString("ko-KR") + "원" : "—"}
                 </td>
-                <td style={{ padding: "5px 8px", color: "var(--red)" }}>{typeof g.mdd === "number" ? g.mdd.toFixed(2) + "%" : "—"}</td>
-                <td style={{ textAlign: "center", padding: "5px 8px", color: g.gate_passed ? "var(--teal)" : "var(--ink-3)" }}>
+                <td className="hdp-mdd">{typeof g.mdd === "number" ? g.mdd.toFixed(2) + "%" : "—"}</td>
+                <td className={"center " + (g.gate_passed ? "hdp-gate-pass" : "hdp-gate-none")}>
                   {g.gate_passed ? "✓" : "—"}
                 </td>
-                <td style={{ padding: "5px 8px", textAlign: "center" }}>
+                <td className="center">
                   <button className="btn primary sm" onClick={() => onSelectAnalysis({ run_id: runId, gen_no: g.gen_no })}>
                     상세 열기
                   </button>
@@ -412,7 +410,7 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
             <header className="panel-hd"><h2 className="stom-section-label">결과 상세 · 연구/세대 직접 선택</h2></header>
             <div className="panel-bd">
               <_HistoryDirectPicker baseUrl={baseUrl} onSelectAnalysis={onSelectAnalysis} />
-              <p className="v4-history-feature-copy" style={{ marginTop: 10 }}>
+              <p className="v4-history-feature-copy hdp-compare-hint">
                 여러 run 을 나란히 비교하려면 <button className="btn ghost sm" onClick={() => setHistoryStage("results")}>결과 비교</button> 단계를 사용하세요.
               </p>
             </div>

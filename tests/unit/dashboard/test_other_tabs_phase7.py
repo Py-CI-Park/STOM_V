@@ -136,8 +136,10 @@ class TestBacktest:
 class TestEvolutionAnalysis:
     def test_gate_failed_scatter_legend_label(self) -> None:
         src = _read("evolution-analysis.jsx")
-        # 흐린(게이트 탈락) 점 범례 라벨이 명시적이다.
-        assert "게이트 탈락(흐린 점)" in src
+        # v5.13.0(D3) — 산점도 색 = 손익 부호, 링 = 게이트 통과, 크기 = 거래수 로 재정의.
+        assert "이익 세대" in src and "손실 세대" in src
+        assert "링 = 게이트 통과" in src
+        assert "점 크기 = 거래수" in src
         # 통과 범례와 짝.
         assert 'label="게이트 통과"' in src
 

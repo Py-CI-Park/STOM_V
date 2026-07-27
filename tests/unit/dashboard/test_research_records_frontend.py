@@ -65,7 +65,9 @@ def test_history_master_detail_propagates_typed_research_context() -> None:
     index = _front("research-index.jsx")
 
     assert '"campaign:" + name' in history
-    assert history.count("preferredResearchId={selResearch && selResearch.researchId}") >= 4
+    # v5.13.0(E5) — CellHeatmap·HoldoutFunnel 이 History 에서 제거돼 전파 지점은 3곳
+    #   (RunComparePanel · HistoryConditionTreePanel · ResearchIndexPage)이다.
+    assert history.count("preferredResearchId={selResearch && selResearch.researchId}") >= 3
     assert "function HistoryConditionTreePanel({ baseUrl, wsStatus, preferredResearchId" in tree
     assert "selectionGeneration" in tree and "selectionController" in tree and "AbortController" in tree
     assert 'preferredResearchId.startsWith("campaign:")' in viz

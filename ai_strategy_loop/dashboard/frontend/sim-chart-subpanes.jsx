@@ -573,7 +573,7 @@ function SimOrderBook({ lastBar, compact }) {
   const bidBg = flash.bid ? "rgba(255,93,108,0.22)" : "rgba(255,93,108,0.06)";
 
   return (
-    <div style={{ marginTop: 6 }}>
+    <div className="sim-orderbook" style={{ marginTop: 6 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3, gap: 6 }}>
         <span className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}
               title="일일 DB는 최우선호가·총잔량만 제공(레벨2~10 없음)">호가창 (레벨1 + 총잔량)</span>

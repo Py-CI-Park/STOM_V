@@ -49,6 +49,11 @@ _LEGACY_ONLY_WHITELIST = {
     "BacktestDetailChart": "V4는 공통 BtResultArea가 백테스트 상세 결과를 상위호환하며 중복 fetch를 제거",
     "EvolutionGuiParityPanel": "V4는 공통 BtResultArea의 GUI parity 진단이 상위호환하며 중복 렌더를 제거",
     "VerdictPanel": "History의 결정 추적 원장을 제거하고 연구 선택·비교·상세·근거 흐름으로 대체",
+    # v5.13.0(E5) 육안 검토 — History 근거 화면에서 불필요 잔재로 판정돼 의도적으로 제거.
+    #   정본 시각화는 legacy records 화면에만 남긴다(재배선 금지 가드는 아래 개별 테스트).
+    "AbPairCompareView": "v5.13.0 육안 검토 — V4 History 에서 의도 제거(legacy records 전용)",
+    "CellHeatmap": "v5.13.0 육안 검토 — V4 History 에서 의도 제거(legacy records 전용)",
+    "HoldoutFunnel": "v5.13.0 육안 검토 — V4 History 에서 의도 제거(legacy records 전용)",
 }
 
 
@@ -125,7 +130,12 @@ def test_whitelist_stays_minimal_and_has_no_stale_entries() -> None:
 
 
 def test_v4_history_tab_mounts_ported_research_visualizations() -> None:
-    # 이번 전수검사에서 실제 누락됐던 4개 패널이 V4 History 탭에 배선돼 있는지 직접 단정.
+    # v5.13.0(E5) — 육안 검토에서 A/B 쌍대비교·셀 히트맵·홀드아웃 퍼널은 "불필요 잔재"로
+    #   판정돼 History 근거 화면에서 제거됐다(정본은 레거시 records 화면에만 남는다).
+    #   조건식 트리는 계속 배선돼야 하고, 제거된 3종은 다시 늘어나면 안 된다.
     v4_history = (FRONTEND / "v4-history.jsx").read_text(encoding="utf-8")
-    for panel in ("HistoryConditionTreePanel", "AbPairCompareView", "CellHeatmap", "HoldoutFunnel"):
-        assert f"<{panel} " in v4_history, f"V4 History 탭에 {panel} 미배선"
+    assert "<HistoryConditionTreePanel " in v4_history, "V4 History 탭에 HistoryConditionTreePanel 미배선"
+    for removed in ("AbPairCompareView", "CellHeatmap", "HoldoutFunnel"):
+        assert f"<{removed} " not in v4_history, (
+            f"V4 History 탭에 {removed} 가 다시 배선됨 — v5.13.0 에서 의도적으로 제거된 잔재다"
+        )

@@ -88,7 +88,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 #   서빙한다(REST/WS API와 동일 출처 → CORS 우회 + 단일 진입점).
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 _REMODEL_FRONTEND_DIR = os.path.join(_FRONTEND_DIR, "remodel")
-_DASHBOARD_RELEASE = "v5.12.0"
+_DASHBOARD_RELEASE = "v5.13.0"
 _DASHBOARD_SHELL = "v4-ops"
 _DASHBOARD_BUILD_RE = re.compile(r"^[0-9A-Za-z._-]{1,64}$")
 _DASHBOARD_PROCESS_STARTED_AT = int(time.time())

@@ -417,36 +417,53 @@ return (
           <div><span className="k">매도 조건식</span><b className="mono">{sell}</b></div>
           <div><span className="k">기간·출처</span><b className="mono">{period}{jobId ? " · " + jobId : ""}</b></div>
           {/* v5.3.5(U6): 결과→리플레이 직행 동선(딥링크). 파라미터 prefill 은 운영검사 후. */}
-          {/* v5.11.3 — 탭만 열던 링크를 "가장 크게 잃은 날·종목" 프리필로 바꿨다.
-              리플레이의 존재 이유는 "왜 여기서 샀나"를 보는 것이므로 맥락 없이 열면 쓸모가 없다. */}
-          <button className="btn ghost sm" title="이 결과에서 손실이 가장 컸던 거래일·종목으로 리플레이를 연다"
-                  onClick={() => {
-                    try {
-                      const daily = ((analysis.equity || {}).daily) || [];
-                      let worstDay = null;
-                      for (const d of daily) {
-                        const pnl = Number(d && d.pnl);
-                        if (!Number.isFinite(pnl)) continue;
-                        if (!worstDay || pnl < worstDay.pnl) worstDay = { date: d.date, pnl };
-                      }
-                      let worstTrade = null;
-                      for (const t of (analysis.mae_mfe || [])) {
-                        const v = Number(t && t.pnl_pct);
-                        if (!Number.isFinite(v)) continue;
-                        if (!worstTrade || v < worstTrade.pnl_pct) worstTrade = { code: t.code, pnl_pct: v };
-                      }
-                      if (worstDay && worstDay.date) {
-                        window.localStorage.setItem("stom_replay_prefill", JSON.stringify({
-                          date: String(worstDay.date).replace(/-/g, ""),
-                          code: worstTrade ? worstTrade.code : "",
-                          reason: `손실이 가장 컸던 거래일(${worstDay.date})`,
-                        }));
-                      }
-                    } catch (e) {}
-                    window.location.href = "/?tab=replay";
-                  }}>
-            ▶ 최악 거래일 리플레이
-          </button>
+          {/* v5.13.0(I1/I2) — 최악뿐 아니라 최고 거래일도 연다. 프리필에 타임프레임(src)과
+              매수/매도 조건식을 함께 실어, 리플레이 탭이 DB·신호까지 그대로 이어받게 한다
+              ("눌러도 아무 일 없음"의 실체는 min/tick DB 불일치 + 조건식 미지정이었다). */}
+          {(() => {
+            const openReplay = (mode) => {
+              try {
+                const daily = ((analysis.equity || {}).daily) || [];
+                let day = null;
+                for (const d of daily) {
+                  const pnl = Number(d && d.pnl);
+                  if (!Number.isFinite(pnl)) continue;
+                  if (!day || (mode === "worst" ? pnl < day.pnl : pnl > day.pnl)) day = { date: d.date, pnl };
+                }
+                let trade = null;
+                for (const t of (analysis.mae_mfe || [])) {
+                  const v = Number(t && t.pnl_pct);
+                  if (!Number.isFinite(v)) continue;
+                  if (!trade || (mode === "worst" ? v < trade.pnl_pct : v > trade.pnl_pct)) trade = { code: t.code, pnl_pct: v };
+                }
+                if (day && day.date) {
+                  window.localStorage.setItem("stom_replay_prefill", JSON.stringify({
+                    date: String(day.date).replace(/-/g, ""),
+                    code: trade ? trade.code : "",
+                    src: (spec.timeframe === "tick" || spec.timeframe === "min") ? spec.timeframe : "",
+                    buy: spec.buy || result.buy || "",
+                    sell: spec.sell || result.sell || "",
+                    reason: mode === "worst"
+                      ? `손실이 가장 컸던 거래일(${day.date})`
+                      : `수익이 가장 컸던 거래일(${day.date})`,
+                  }));
+                }
+              } catch (e) {}
+              window.location.href = "/?tab=replay";
+            };
+            return (
+              <>
+                <button className="btn ghost sm" title="이 결과에서 손실이 가장 컸던 거래일·종목으로 리플레이를 연다"
+                        onClick={() => openReplay("worst")}>
+                  ▶ 최악 거래일 리플레이
+                </button>
+                <button className="btn ghost sm" title="이 결과에서 수익이 가장 컸던 거래일·종목으로 리플레이를 연다"
+                        onClick={() => openReplay("best")}>
+                  ▶ 최고 거래일 리플레이
+                </button>
+              </>
+            );
+          })()}
         </div>
       );
     })()}

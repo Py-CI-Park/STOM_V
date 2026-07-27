@@ -1888,6 +1888,26 @@
 .v4-report-step.active b { color: var(--teal); }
 .v4-report-step-arrow { color: var(--ink-3); }
 
+/* v5.13.0(E4) — History 결과 상세 직접 선택기(인라인 스타일 금지 계약 준수). */
+.history-direct-picker .hdp-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.history-direct-picker .hdp-label { font-size: 12px; color: var(--ink-2); }
+.history-direct-picker .hdp-select { font-size: 12px; background: var(--bg-1); color: var(--ink-0); border: 1px solid var(--line-2); border-radius: 5px; padding: 4px 8px; max-width: 320px; }
+.history-direct-picker .hdp-loading { font-size: 11px; color: var(--ink-3); }
+.hdp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.hdp-table th, .hdp-table td { padding: 5px 8px; text-align: right; }
+.hdp-table th { color: var(--ink-2); }
+.hdp-table th.left, .hdp-table td.left { text-align: left; }
+.hdp-table th.center, .hdp-table td.center { text-align: center; }
+.hdp-table tbody tr { border-top: 1px solid var(--line-1); }
+.hdp-table .hdp-score { color: var(--teal); }
+.hdp-table .hdp-mdd { color: var(--red); }
+.hdp-table .hdp-gate-pass { color: var(--teal); }
+.hdp-table .hdp-gate-none { color: var(--ink-3); }
+.hdp-compare-hint { margin-top: 10px; }
+
+/* v5.13.0(I4) — 리플레이 호가창 토글(H 단축키). 클래스 하나로 전체 차트의 호가창을 껐다 켠다. */
+.sim-hoga-hidden .sim-orderbook { display: none; }
+
 /* v5.13.0(H1) — 진화 세대 결과와 잡 결과를 2열로 나란히(상하 반반 폐지). */
 .bt-source-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
 .bt-source-columns.single { grid-template-columns: minmax(0, 1fr); }

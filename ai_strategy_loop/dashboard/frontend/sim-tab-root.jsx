@@ -61,6 +61,8 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
   const [engineMode, setEngineMode] = useState_sim(_loadEngineMode);
   const [viewportTick, setViewportTick] = useState_sim(0);
 
+  // v5.13.0(I4) — 호가창 표시 토글(STOM GUI Alt+H 상당 — 여기서는 H 단축키·버튼).
+  const [showHoga, setShowHoga] = useState_sim(true);
   // 학습 모드 — 신호 자동 일시정지 토글 + 하이라이트 신호 키.
   const [autoPause, setAutoPause] = useState_sim(false);
   const [highlightSig, setHighlightSig] = useState_sim(null);  // "code@buy_hms" 형태.
@@ -99,16 +101,21 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
         const wanted = pendingPrefillDateRef.current;
         if (wanted) {
           pendingPrefillDateRef.current = "";
-          const has = list.some(d => String(d) === wanted || String(d).replace(/-/g, "") === wanted);
-          if (!has) {
+          // v5.13.0(I1) — 표기 형식이 달라도(예: 2025-04-07 vs 20250407) DB 에 실제로 있는
+          //   항목으로 날짜를 정규화한다. 문자열 불일치로 셀렉트가 빈 값이 되던 문제 수정.
+          const hit = list.find(d => String(d) === wanted || String(d).replace(/-/g, "") === wanted);
+          if (hit != null) {
+            setDate(String(hit));
+          } else {
             prefillRef.current = null;
             setPrefillNote(`리플레이 ${src === "tick" ? "틱" : "분"} DB 에 ${wanted} 일자가 없습니다. 아래에서 보유한 거래일을 고르세요.`);
           }
+          prefillKeepRef.current = false;
         }
       })
       .catch(() => setDays([]));
-    // src 변경 시 선택/리플레이 리셋(프리셋/데모 자동재생 대기 중이면 보존).
-    if (!pendingAutoplayRef.current) {
+    // src 변경 시 선택/리플레이 리셋(프리셋/데모 자동재생·프리필 적용 대기 중이면 보존).
+    if (!pendingAutoplayRef.current && !prefillKeepRef.current) {
       _stopReplay();
       setDate(""); setStocks([]); setSelected([]);
     }
@@ -119,6 +126,8 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
   //   로드되면 해당 종목을 골라 준다. 없는 종목이면 이유를 알려주고 날짜만 유지한다.
   const prefillRef = useRef_sim(null);
   const pendingPrefillDateRef = useRef_sim("");
+  // v5.13.0(I1) — src 변경이 프리필 날짜를 지우지 않도록 1회 보존 플래그.
+  const prefillKeepRef = useRef_sim(false);
   const [prefillNote, setPrefillNote] = useState_sim("");
   const [sessionReady, setSessionReady] = useState_sim(false);
   useEffect_sim(() => {
@@ -129,6 +138,13 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
       const detail = JSON.parse(raw);
       if (!detail || !detail.date) return;
       prefillRef.current = detail;
+      prefillKeepRef.current = true;
+      // v5.13.0(I1) — 결과의 타임프레임(min/tick)과 조건식까지 이어받는다. 종전에는 결과가
+      //   tick 인데 리플레이 기본이 min 이라 날짜가 없고, 조건식 미지정으로 신호도 안 떠서
+      //   "작동 안 함"으로 보였다.
+      if (detail.src === "tick" || detail.src === "min") setSrc(detail.src);
+      if (detail.buy) setBuy(String(detail.buy));
+      if (detail.sell) setSell(String(detail.sell));
       setDate(String(detail.date));
       setPrefillNote(detail.reason ? `결과 분석에서 이동 — ${detail.reason}` : "결과 분석에서 이동");
       pendingPrefillDateRef.current = String(detail.date);
@@ -538,6 +554,10 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
         changeSpeed(_SIM_SPEEDS[Math.max(0, (i < 0 ? 0 : i) - 1)]);
       } else if (e.key === "Escape") {
         if (status === "playing" || status === "paused") stopReplay();
+      } else if (e.key === "h" || e.key === "H") {
+        // v5.13.0(I4) — H = 호가창 표시 토글(STOM GUI 습관 이식).
+        e.preventDefault();
+        setShowHoga(v => !v);
       }
     };
     return _bindReplayKeydown(active, window, onKey);
@@ -581,7 +601,8 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
   }, [stocks]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <div className={showHoga ? undefined : "sim-hoga-hidden"}
+         style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {/* 탭 헤더 배지 */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 14px",
                     background: "var(--bg-1)", border: "1px solid var(--line-1)", borderRadius: 8 }}>
@@ -591,6 +612,13 @@ function SimulationTab({ baseUrl, wsStatus, active = true }) {
         <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginLeft: 12 }}>
           일일 {src === "tick" ? "tick" : "min"} DB 리플레이 · 엔진 정합 신호 오버레이
         </span>
+        {/* v5.13.0(I4) — 호가창 토글(H): STOM GUI 의 Alt+H 습관을 대시보드로 이식. */}
+        <button className="btn ghost sm" aria-pressed={showHoga}
+                title="각 차트 아래 HTS형 호가창(레벨1+총잔량)을 표시/숨김 — 단축키 H"
+                onClick={() => setShowHoga(v => !v)}
+                style={showHoga ? { color: "var(--teal)", borderColor: "var(--teal)" } : undefined}>
+          호가창 {showHoga ? "ON" : "OFF"} (H)
+        </button>
         <span className="mono" style={{ fontSize: 10.5, color: badge.color, letterSpacing: ".06em", marginLeft: "auto" }}>
           ● {badge.label}
         </span>

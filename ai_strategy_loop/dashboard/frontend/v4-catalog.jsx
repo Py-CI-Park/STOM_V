@@ -13,13 +13,20 @@ function _catVerdictCls(v) {
   return "warn";
 }
 
+// v5.13.0(J1) — 각 뷰가 무엇인지 쉬운 말 설명(explain)을 함께 둔다(용어만 있던 문제).
 const _CAT_VIEWS = [
-  { key: "chronicle", label: "연혁실", desc: "판정 원장·시리즈 연혁(SELECT-only)" },
-  { key: "trapmap", label: "함정지도", desc: "실패/기각 판정 패턴 지도" },
-  { key: "clauselab", label: "절실험실", desc: "조건 절(clause) 실험 카탈로그" },
-  { key: "exitbank", label: "출구은행", desc: "표본·셀·출구 프로파일 은행" },
-  { key: "alpha", label: "진행 관찰", desc: "알파랩 진행 관찰(사전등록·원장·퍼널, 비-P4 영수증)" },
-  { key: "scorecard", label: "B1 scorecard", desc: "표본 외 성적표(운용 개시 선행)" },
+  { key: "chronicle", label: "연혁실", desc: "판정 원장·시리즈 연혁(SELECT-only)",
+    explain: "지금까지 연구한 시리즈(연구 묶음)마다 최종 판정(살릴 것/버릴 것)이 어떻게 났는지 모아 놓은 기록실입니다. 같은 실험을 반복하지 않으려면 여기부터 봅니다." },
+  { key: "trapmap", label: "함정지도", desc: "실패/기각 판정 패턴 지도",
+    explain: "이미 해봤는데 실패·기각으로 끝난 아이디어 목록입니다. 새 가설을 세우기 전에 이 함정 목록과 겹치는지 확인하는 용도입니다." },
+  { key: "clauselab", label: "절실험실", desc: "조건 절(clause) 실험 카탈로그",
+    explain: "조건식을 문장 단위(절)로 쪼개 '이 절이 성과에 기여하는가'를 실험한 기록입니다. 어떤 절이 밥값을 하는지(load-bearing) 여기서 봅니다." },
+  { key: "exitbank", label: "출구은행", desc: "표본·셀·출구 프로파일 은행",
+    explain: "언제 파는 게 좋았는지(청산 타이밍)를 시간대·조건 셀별로 쌓아 둔 저장소입니다. 매도식 개선 재료를 여기서 꺼냅니다." },
+  { key: "alpha", label: "진행 관찰", desc: "알파랩 진행 관찰(사전등록·원장·퍼널, 비-P4 영수증)",
+    explain: "알파 연구 프로그램이 사전등록 → 실험 → 판정 퍼널을 규칙대로 밟았는지 관찰하는 화면입니다." },
+  { key: "scorecard", label: "B1 scorecard", desc: "표본 외 성적표(운용 개시 선행)",
+    explain: "B1 후보가 표본 밖(실전에 가까운 구간)에서 어떤 성적을 냈는지 보는 성적표입니다. 운용 개시 결정에 선행하는 증거입니다." },
 ];
 
 function _CatSkeleton({ title, reason }) {
@@ -31,10 +38,21 @@ function _CatSkeleton({ title, reason }) {
   );
 }
 
-function _catRows(rows) {
-  return rows.slice(0, 200).map((c, i) => (
-    <tr key={i}>{Object.values(c).slice(0, 6).map((val, k) => <td key={k}>{String(val)}</td>)}</tr>
-  ));
+// v5.13.0(J1) — 머리글 없는 값 나열 표를 컬럼명 있는 표로(어느 열이 무엇인지 안 보이던 문제).
+function _CatTable({ rows }) {
+  const list = (rows || []).slice(0, 200);
+  if (!list.length) return null;
+  const cols = Object.keys(list[0]).slice(0, 6);
+  return (
+    <table className="mono v4-catalog-table">
+      <thead><tr>{cols.map(c => <th key={c}>{c}</th>)}</tr></thead>
+      <tbody>
+        {list.map((row, i) => (
+          <tr key={i}>{cols.map(c => <td key={c}>{String(row[c] == null ? "—" : row[c])}</td>)}</tr>
+        ))}
+      </tbody>
+    </table>
+  );
 }
 
 function V4Catalog({ baseUrl, wsStatus }) {
@@ -78,11 +96,16 @@ function V4Catalog({ baseUrl, wsStatus }) {
                   onClick={() => setView(v.key)} title={v.desc}>{v.label}</button>
         ))}
       </div>
-      <div className="v4-cat-viewdesc" role="status">
-        <b>{(_CAT_VIEWS.find(item => item.key === view) || _CAT_VIEWS[0]).label}</b>
-        <span>{(_CAT_VIEWS.find(item => item.key === view) || _CAT_VIEWS[0]).desc}</span>
-        <i>표본 내 연구 자산 · 읽기 전용 · 성능 증명 아님</i>
-      </div>
+      {(() => {
+        const cur = _CAT_VIEWS.find(item => item.key === view) || _CAT_VIEWS[0];
+        return (
+          <div className="v4-cat-viewdesc" role="status">
+            <b>{cur.label}</b>
+            <span>{cur.explain || cur.desc}</span>
+            <i>{cur.desc} · 읽기 전용 · 성능 증명 아님</i>
+          </div>
+        );
+      })()}
 
       {view === "chronicle" && (
         <section aria-label="연혁실">
@@ -132,7 +155,7 @@ function V4Catalog({ baseUrl, wsStatus }) {
           {clauses && clauses.available && clauses.count > 0 ? (
             <div className="v4-catalog-assets-scroll" data-region="scroll" tabIndex={0}>
               <p className="mono">절(clause) {clauses.count}건 (읽기 전용)</p>
-              <table className="mono v4-catalog-table"><tbody>{_catRows(clauses.clauses)}</tbody></table>
+              <_CatTable rows={clauses.clauses} />
             </div>
           ) : <_CatSkeleton title="절실험실" reason={NO_DATA} />}
         </section>
@@ -143,7 +166,7 @@ function V4Catalog({ baseUrl, wsStatus }) {
           {cells && cells.available && cells.count > 0 ? (
             <div className="v4-catalog-assets-scroll" data-region="scroll" tabIndex={0}>
               <p className="mono">표본·셀 {cells.count}건 (읽기 전용)</p>
-              <table className="mono v4-catalog-table"><tbody>{_catRows(cells.cells)}</tbody></table>
+              <_CatTable rows={cells.cells} />
             </div>
           ) : <_CatSkeleton title="출구은행" reason={NO_DATA} />}
         </section>

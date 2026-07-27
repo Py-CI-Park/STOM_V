@@ -46,8 +46,10 @@ def test_backtest_result_can_open_latest_valid_evolution_generation() -> None:
     assert "autoPickedRunRef" in selector
     assert "items.findLast" in selector
     assert "최신 유효 세대 자동 선택" in selector
-    assert 'title="진화 세대 결과 라이브러리"' in root
-    assert "defaultOpen={true}" in root
+    # v5.13.0(H1) — 진화/잡 라이브러리는 접이식 상하 배치가 아니라 2열 소스 그리드에 상시 마운트.
+    assert 'className={"bt-source-columns"' in root
+    assert "<BtEvoSelector " in root
+    assert "<BtResultLibrary " in root
 
 
 def test_backtest_defaults_are_quarter_cpu_and_editors_show_more_code() -> None:
@@ -110,10 +112,13 @@ def test_history_is_a_research_first_drilldown_without_decision_ledger() -> None
     assert "VerdictPanel" not in source
     assert "historyStage" in source
     assert "data-history-stage={stage}" in source
+    # v5.13.0(E1) — 상세가 본류, 비교는 선택 단계: 선택→상세→비교(선택)→근거.
     assert '["research", "1"' in source
-    assert '["results", "2"' in source
-    assert '["detail", "3"' in source
+    assert '["detail", "2"' in source
+    assert '["results", "3"' in source
     assert '["evidence", "4"' in source
+    # v5.13.0(E4) — 결과 상세는 비교를 거치지 않는 직접 선택기를 가진다.
+    assert "_HistoryDirectPicker" in source
     assert 'onNavigate("reports")' in source
 
 
@@ -232,7 +237,12 @@ def test_replay_receives_result_context_and_shows_session_state() -> None:
     # 결과에서 최악 거래일·종목을 프리필로 넘긴다.
     assert "stom_replay_prefill" in result_area
     assert "최악 거래일 리플레이" in result_area
-    assert "worstDay" in result_area and "worstTrade" in result_area
+    # v5.13.0(I2) — 최고 거래일 리플레이도 함께 제공한다.
+    assert "최고 거래일 리플레이" in result_area
+    assert "openReplay" in result_area
+    # v5.13.0(I1) — 프리필은 날짜·종목뿐 아니라 타임프레임(src)·조건식(buy/sell)까지 실어 보낸다.
+    assert "src: (spec.timeframe" in result_area
+    assert "buy: spec.buy" in result_area and "sell: spec.sell" in result_area
 
     # 리플레이는 프리필을 1회 소비하고, 못 맞추면 이유를 밝힌다.
     assert "stom_replay_prefill" in replay

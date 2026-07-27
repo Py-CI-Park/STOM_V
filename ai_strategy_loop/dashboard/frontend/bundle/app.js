@@ -27056,40 +27056,54 @@ ${sellCode}` : code);
         const buy = spec.buy || result.buy || "\u2014";
         const sell = spec.sell || result.sell || "\u2014";
         const period = spec.start && spec.end ? `${spec.start}~${spec.end}` : result.period || "\u2014";
-        return /* @__PURE__ */ React.createElement("div", { className: "bt-condition-band", "aria-label": "\uD14C\uC2A4\uD2B8 \uC870\uAC74\uC2DD\uACFC \uAE30\uAC04" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, buy)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, sell)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uAE30\uAC04\xB7\uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, period, jobId ? " \xB7 " + jobId : "")), /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            className: "btn ghost sm",
-            title: "\uC774 \uACB0\uACFC\uC5D0\uC11C \uC190\uC2E4\uC774 \uAC00\uC7A5 \uCEF8\uB358 \uAC70\uB798\uC77C\xB7\uC885\uBAA9\uC73C\uB85C \uB9AC\uD50C\uB808\uC774\uB97C \uC5F0\uB2E4",
-            onClick: () => {
-              try {
-                const daily = (analysis.equity || {}).daily || [];
-                let worstDay = null;
-                for (const d of daily) {
-                  const pnl = Number(d && d.pnl);
-                  if (!Number.isFinite(pnl)) continue;
-                  if (!worstDay || pnl < worstDay.pnl) worstDay = { date: d.date, pnl };
-                }
-                let worstTrade = null;
-                for (const t of analysis.mae_mfe || []) {
-                  const v = Number(t && t.pnl_pct);
-                  if (!Number.isFinite(v)) continue;
-                  if (!worstTrade || v < worstTrade.pnl_pct) worstTrade = { code: t.code, pnl_pct: v };
-                }
-                if (worstDay && worstDay.date) {
-                  window.localStorage.setItem("stom_replay_prefill", JSON.stringify({
-                    date: String(worstDay.date).replace(/-/g, ""),
-                    code: worstTrade ? worstTrade.code : "",
-                    reason: `\uC190\uC2E4\uC774 \uAC00\uC7A5 \uCEF8\uB358 \uAC70\uB798\uC77C(${worstDay.date})`
-                  }));
-                }
-              } catch (e) {
+        return /* @__PURE__ */ React.createElement("div", { className: "bt-condition-band", "aria-label": "\uD14C\uC2A4\uD2B8 \uC870\uAC74\uC2DD\uACFC \uAE30\uAC04" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, buy)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uB9E4\uB3C4 \uC870\uAC74\uC2DD"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, sell)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "k" }, "\uAE30\uAC04\xB7\uCD9C\uCC98"), /* @__PURE__ */ React.createElement("b", { className: "mono" }, period, jobId ? " \xB7 " + jobId : "")), /* @__PURE__ */ (() => {
+          const openReplay = (mode) => {
+            try {
+              const daily = (analysis.equity || {}).daily || [];
+              let day = null;
+              for (const d of daily) {
+                const pnl = Number(d && d.pnl);
+                if (!Number.isFinite(pnl)) continue;
+                if (!day || (mode === "worst" ? pnl < day.pnl : pnl > day.pnl)) day = { date: d.date, pnl };
               }
-              window.location.href = "/?tab=replay";
+              let trade = null;
+              for (const t of analysis.mae_mfe || []) {
+                const v = Number(t && t.pnl_pct);
+                if (!Number.isFinite(v)) continue;
+                if (!trade || (mode === "worst" ? v < trade.pnl_pct : v > trade.pnl_pct)) trade = { code: t.code, pnl_pct: v };
+              }
+              if (day && day.date) {
+                window.localStorage.setItem("stom_replay_prefill", JSON.stringify({
+                  date: String(day.date).replace(/-/g, ""),
+                  code: trade ? trade.code : "",
+                  src: spec.timeframe === "tick" || spec.timeframe === "min" ? spec.timeframe : "",
+                  buy: spec.buy || result.buy || "",
+                  sell: spec.sell || result.sell || "",
+                  reason: mode === "worst" ? `\uC190\uC2E4\uC774 \uAC00\uC7A5 \uCEF8\uB358 \uAC70\uB798\uC77C(${day.date})` : `\uC218\uC775\uC774 \uAC00\uC7A5 \uCEF8\uB358 \uAC70\uB798\uC77C(${day.date})`
+                }));
+              }
+            } catch (e) {
             }
-          },
-          "\u25B6 \uCD5C\uC545 \uAC70\uB798\uC77C \uB9AC\uD50C\uB808\uC774"
-        ));
+            window.location.href = "/?tab=replay";
+          };
+          return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              className: "btn ghost sm",
+              title: "\uC774 \uACB0\uACFC\uC5D0\uC11C \uC190\uC2E4\uC774 \uAC00\uC7A5 \uCEF8\uB358 \uAC70\uB798\uC77C\xB7\uC885\uBAA9\uC73C\uB85C \uB9AC\uD50C\uB808\uC774\uB97C \uC5F0\uB2E4",
+              onClick: () => openReplay("worst")
+            },
+            "\u25B6 \uCD5C\uC545 \uAC70\uB798\uC77C \uB9AC\uD50C\uB808\uC774"
+          ), /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              className: "btn ghost sm",
+              title: "\uC774 \uACB0\uACFC\uC5D0\uC11C \uC218\uC775\uC774 \uAC00\uC7A5 \uCEF8\uB358 \uAC70\uB798\uC77C\xB7\uC885\uBAA9\uC73C\uB85C \uB9AC\uD50C\uB808\uC774\uB97C \uC5F0\uB2E4",
+              onClick: () => openReplay("best")
+            },
+            "\u25B6 \uCD5C\uACE0 \uAC70\uB798\uC77C \uB9AC\uD50C\uB808\uC774"
+          ));
+        })());
       })(), range && /* @__PURE__ */ React.createElement("div", { className: "bt-range-bar" }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--teal)" } }, "\u25E7 \uAD6C\uAC04 \uBD84\uC11D \uC801\uC6A9 \uC911 \u2014 ", _btDateLabel(Math.floor(range.t_start / 1e6)), "~", _btDateLabel(Math.floor(range.t_end / 1e6)), result.ranged && analysis.trade_count != null ? ` \xB7 ${analysis.trade_count}\uAC70\uB798` : ""), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onBrushClear, style: { marginLeft: "auto" } }, "\uC804\uCCB4\uB85C \uBCF5\uADC0")), /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: isEvo ? "var(--violet)" : "var(--teal)" } }), isEvo ? "\uD575\uC2EC \uBA54\uD2B8\uB9AD \xB7 \uC9C4\uD654 \uC138\uB300" : "\uD575\uC2EC \uBA54\uD2B8\uB9AD", isEvo && /* @__PURE__ */ React.createElement(
         "span",
         {
@@ -30157,7 +30171,7 @@ ${sellCode}` : code);
     const rowH = compact ? 20 : 24;
     const askBg = flash.ask ? "rgba(56,140,255,0.22)" : "rgba(56,140,255,0.06)";
     const bidBg = flash.bid ? "rgba(255,93,108,0.22)" : "rgba(255,93,108,0.06)";
-    return /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3, gap: 6 } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "sim-orderbook", style: { marginTop: 6 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3, gap: 6 } }, /* @__PURE__ */ React.createElement(
       "span",
       {
         className: "mono",
@@ -32011,6 +32025,7 @@ ${sellCode}` : code);
     const [splitRows, setSplitRows] = useState_sim(_loadSplitRows);
     const [engineMode, setEngineMode] = useState_sim(_loadEngineMode);
     const [viewportTick, setViewportTick] = useState_sim(0);
+    const [showHoga, setShowHoga] = useState_sim(true);
     const [autoPause, setAutoPause] = useState_sim(false);
     const [highlightSig, setHighlightSig] = useState_sim(null);
     const autoPausedRef = useRef_sim(/* @__PURE__ */ new Set());
@@ -32044,14 +32059,17 @@ ${sellCode}` : code);
         const wanted = pendingPrefillDateRef.current;
         if (wanted) {
           pendingPrefillDateRef.current = "";
-          const has = list.some((d) => String(d) === wanted || String(d).replace(/-/g, "") === wanted);
-          if (!has) {
+          const hit = list.find((d) => String(d) === wanted || String(d).replace(/-/g, "") === wanted);
+          if (hit != null) {
+            setDate(String(hit));
+          } else {
             prefillRef.current = null;
             setPrefillNote(`\uB9AC\uD50C\uB808\uC774 ${src === "tick" ? "\uD2F1" : "\uBD84"} DB \uC5D0 ${wanted} \uC77C\uC790\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. \uC544\uB798\uC5D0\uC11C \uBCF4\uC720\uD55C \uAC70\uB798\uC77C\uC744 \uACE0\uB974\uC138\uC694.`);
           }
+          prefillKeepRef.current = false;
         }
       }).catch(() => setDays([]));
-      if (!pendingAutoplayRef.current) {
+      if (!pendingAutoplayRef.current && !prefillKeepRef.current) {
         _stopReplay();
         setDate("");
         setStocks([]);
@@ -32060,6 +32078,7 @@ ${sellCode}` : code);
     }, [baseUrl, isDemo, src]);
     const prefillRef = useRef_sim(null);
     const pendingPrefillDateRef = useRef_sim("");
+    const prefillKeepRef = useRef_sim(false);
     const [prefillNote, setPrefillNote] = useState_sim("");
     const [sessionReady, setSessionReady] = useState_sim(false);
     useEffect_sim(() => {
@@ -32070,6 +32089,10 @@ ${sellCode}` : code);
         const detail = JSON.parse(raw);
         if (!detail || !detail.date) return;
         prefillRef.current = detail;
+        prefillKeepRef.current = true;
+        if (detail.src === "tick" || detail.src === "min") setSrc(detail.src);
+        if (detail.buy) setBuy(String(detail.buy));
+        if (detail.sell) setSell(String(detail.sell));
         setDate(String(detail.date));
         setPrefillNote(detail.reason ? `\uACB0\uACFC \uBD84\uC11D\uC5D0\uC11C \uC774\uB3D9 \u2014 ${detail.reason}` : "\uACB0\uACFC \uBD84\uC11D\uC5D0\uC11C \uC774\uB3D9");
         pendingPrefillDateRef.current = String(detail.date);
@@ -32489,6 +32512,9 @@ ${sellCode}` : code);
           changeSpeed(_SIM_SPEEDS[Math.max(0, (i < 0 ? 0 : i) - 1)]);
         } else if (e.key === "Escape") {
           if (status === "playing" || status === "paused") stopReplay();
+        } else if (e.key === "h" || e.key === "H") {
+          e.preventDefault();
+          setShowHoga((v) => !v);
         }
       };
       return _bindReplayKeydown(active, window, onKey);
@@ -32523,153 +32549,173 @@ ${sellCode}` : code);
       });
       return m;
     }, [stocks]);
-    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      padding: "8px 14px",
-      background: "var(--bg-1)",
-      border: "1px solid var(--line-1)",
-      borderRadius: 8
-    } }, /* @__PURE__ */ React.createElement("span", { className: "panel-hd-title", style: { border: 0 } }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uCC28\uD2B8 \uC2DC\uBBAC\uB808\uC774\uC158"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginLeft: 12 } }, "\uC77C\uC77C ", src === "tick" ? "tick" : "min", " DB \uB9AC\uD50C\uB808\uC774 \xB7 \uC5D4\uC9C4 \uC815\uD569 \uC2E0\uD638 \uC624\uBC84\uB808\uC774"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: badge.color, letterSpacing: ".06em", marginLeft: "auto" } }, "\u25CF ", badge.label)), /* @__PURE__ */ React.createElement("div", { className: "grid-main", style: { gridTemplateColumns: "minmax(0, 380px) minmax(0, 1fr)" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { className: "sim-session-strip mono", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "sim-session-dot " + (sessionReady ? "ok" : "wait"), "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, sessionReady ? "\uC11C\uBC84 \uC138\uC158 \uC900\uBE44\uB428 \u2014 \uC7AC\uC0DD \uC2DC \uC989\uC2DC \uC5F0\uACB0\uB429\uB2C8\uB2E4." : "\uC11C\uBC84 \uC138\uC158 \uBBF8\uD655\uC778 \u2014 \uC7AC\uC0DD\uC744 \uB204\uB974\uBA74 \uBA3C\uC800 \uC138\uC158\uC744 \uC0C8\uB85C \uC900\uBE44\uD569\uB2C8\uB2E4.")), prefillNote && /* @__PURE__ */ React.createElement("div", { className: "sim-prefill-note mono", role: "status" }, prefillNote, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setPrefillNote("") }, "\uB2EB\uAE30")), /* @__PURE__ */ React.createElement(SimPresetBar, { isDemo, busy: presetBusy, onPreset }), /* @__PURE__ */ React.createElement(
-      SimControlBar,
+    return /* @__PURE__ */ React.createElement(
+      "div",
       {
-        baseUrl,
-        isDemo,
-        src,
-        onSrc: setSrc,
-        date,
-        onDate: setDate,
-        days,
-        stocks,
-        selected: selected2,
-        onToggleStock: toggleStock,
-        stockQuery,
-        onStockQuery: setStockQuery,
-        loadingStocks,
-        buy,
-        onBuy: setBuy,
-        sell,
-        onSell: setSell,
-        strategies,
-        aggSec,
-        onAggSec: setAggSec
-      }
-    ), /* @__PURE__ */ React.createElement(
-      SimMarketMinimap,
-      {
-        stocks,
-        selected: selected2,
-        onToggleStock: toggleStock,
-        query: stockQuery,
-        isDemo,
-        date,
-        loading: loadingStocks
-      }
-    ), codes.length > 0 && (status !== "idle" || cursor > 0) && /* @__PURE__ */ React.createElement(SimIndicatorTable, { codes, barsByCode, nameByCode }), codes.length > 0 && (status !== "idle" || cursor > 0) && /* @__PURE__ */ React.createElement(SimVariableWatch, { codes, barsByCode, nameByCode }), buy && sell && /* @__PURE__ */ React.createElement(
-      SimLearningPanel,
-      {
-        autoPause,
-        onToggleAutoPause: () => setAutoPause((v) => !v),
-        signals: flatSignals,
-        curT,
-        highlightSig,
-        onSeek: seekToTime
-      }
-    ), buy && sell && /* @__PURE__ */ React.createElement(SimSignalLog, { signals: flatSignals, curT })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, minWidth: 0 } }, demoActive && /* @__PURE__ */ React.createElement("div", { style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      padding: "8px 12px",
-      background: "rgba(124,108,240,0.10)",
-      border: "1px solid var(--violet)",
-      borderRadius: 8
-    } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: {
-      fontSize: 10.5,
-      color: "var(--violet)",
-      letterSpacing: ".04em",
-      fontWeight: 600,
-      display: "flex",
-      alignItems: "center",
-      gap: 6
-    } }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uC608\uC2DC \uCD94\uCC9C \uC900\uBE44"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC608\uC2DC \uC790\uB3D9 \uC7AC\uC0DD \uC900\uBE44 \xB7 \uC7AC\uC0DD\uC740 \uC0AC\uC6A9\uC790 \uAC8C\uC774\uD2B8 \uD6C4 \uC2DC\uC791"), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: exitDemo,
-        style: { marginLeft: "auto", fontSize: 10.5, padding: "3px 10px" }
+        className: showHoga ? void 0 : "sim-hoga-hidden",
+        style: { display: "flex", flexDirection: "column", gap: 14 }
       },
-      "\uB0B4\uAC00 \uC120\uD0DD\uD558\uAE30"
-    )), /* @__PURE__ */ React.createElement(
-      SimPlaybackBar,
-      {
-        status,
-        onPlay: startReplay,
-        onPause: pauseReplay,
-        onResume: resumeReplay,
-        onStop: stopReplay,
-        speed,
-        onSpeed: changeSpeed,
-        cursor,
-        total: meta ? meta.bars_total : 0,
-        curT,
-        sessionRange: meta ? meta.session_range : [0, 0],
-        onSeek: seekByIndex,
-        canPlay
-      }
-    ), /* @__PURE__ */ React.createElement("div", { className: "mono", role: "status", style: { fontSize: 10, color: "var(--ink-3)", padding: "0 4px" } }, "\uC0C1\uD0DC: ", status, " \xB7 \uC5D4\uC9C4: ", engineMode === "live" ? "Canvas (\uACE0\uAE09/\uC2E4\uD5D8\uC801)" : engineMode.toUpperCase(), " \xB7 \uC18C\uC2A4: ", src, " \xB7 ", "\uC218\uC2E0 \uBD09: ", receivedBarCountRef.current, "/", meta ? meta.bars_total : "?", (() => {
-      const visible = Object.values(barsByCode).flat();
-      if (!visible.length) return " \xB7 OHLC: \u2014";
-      const hi = Math.max(...visible.map((b) => Number(b.h) || Number(b.c) || 0));
-      const lo = Math.min(...visible.map((b) => Number(b.l) || Number(b.c) || Infinity));
-      return " \xB7 OHLC: " + lo.toLocaleString("ko-KR") + "\u2013" + hi.toLocaleString("ko-KR");
-    })()), meta && meta.replay_metadata && meta.replay_metadata.truncated && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uB9AC\uD50C\uB808\uC774 \uC6D0\uBCF8\uC774 \uC548\uC804 \uC0C1\uD55C\uC73C\uB85C \uC798\uB838\uC2B5\uB2C8\uB2E4", meta.replay_metadata.row_capped_codes && meta.replay_metadata.row_capped_codes.length ? ": " + meta.replay_metadata.row_capped_codes.join(", ") : "."), selected2.length > 0 && /* @__PURE__ */ React.createElement(
-      SimViewBar,
-      {
-        indicators,
-        onToggleIndicator: toggleIndicator,
-        chartMode,
-        onChartMode: setChartMode,
-        splitCols,
-        onSplitCols: setSplitColsPersist,
-        splitRows,
-        onSplitRows: setSplitRowsPersist,
-        colCap,
-        codeCount: codes.length,
-        engineMode,
-        onEngineMode: setEngineModePersist,
-        multi: codes.length > 1
-      }
-    ), wsErr && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--red)" } }, "\uB9AC\uD50C\uB808\uC774 \uC624\uB958: ", wsErr, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: startReplay, disabled: !canPlay && status !== "error" }, "\uC7AC\uC2DC\uB3C4"))))), signalErr && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--amber)" } }, signalErr))), selected2.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC67C\uCABD\uC5D0\uC11C \uB0A0\uC9DC\xB7\uC885\uBAA9(\uCD5C\uB300 ", _SIM_MAX_CODES, ")\uC744 \uC120\uD0DD\uD558\uACE0 \u25B6 \uC7AC\uC0DD\uC744 \uB204\uB974\uBA74 \uCE94\uB4E4 \uCC28\uD2B8\uAC00 \uC2E4\uC2DC\uAC04\uC73C\uB85C \uB9AC\uD50C\uB808\uC774\uB429\uB2C8\uB2E4."))) : chartMode === "overlay" && codes.length > 1 ? (
-      // 오버레이 모드 — 정규화(시작=100) 한 차트 겹침 비교.
-      /* @__PURE__ */ React.createElement(
-        SimOverlayChart,
+      /* @__PURE__ */ React.createElement("div", { style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "8px 14px",
+        background: "var(--bg-1)",
+        border: "1px solid var(--line-1)",
+        borderRadius: 8
+      } }, /* @__PURE__ */ React.createElement("span", { className: "panel-hd-title", style: { border: 0 } }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uCC28\uD2B8 \uC2DC\uBBAC\uB808\uC774\uC158"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", marginLeft: 12 } }, "\uC77C\uC77C ", src === "tick" ? "tick" : "min", " DB \uB9AC\uD50C\uB808\uC774 \xB7 \uC5D4\uC9C4 \uC815\uD569 \uC2E0\uD638 \uC624\uBC84\uB808\uC774"), /* @__PURE__ */ React.createElement(
+        "button",
         {
-          codes,
-          barsByCode: renderBarsByCode,
-          nameByCode,
-          curT
+          className: "btn ghost sm",
+          "aria-pressed": showHoga,
+          title: "\uAC01 \uCC28\uD2B8 \uC544\uB798 HTS\uD615 \uD638\uAC00\uCC3D(\uB808\uBCA81+\uCD1D\uC794\uB7C9)\uC744 \uD45C\uC2DC/\uC228\uAE40 \u2014 \uB2E8\uCD95\uD0A4 H",
+          onClick: () => setShowHoga((v) => !v),
+          style: showHoga ? { color: "var(--teal)", borderColor: "var(--teal)" } : void 0
+        },
+        "\uD638\uAC00\uCC3D ",
+        showHoga ? "ON" : "OFF",
+        " (H)"
+      ), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: badge.color, letterSpacing: ".06em", marginLeft: "auto" } }, "\u25CF ", badge.label)),
+      /* @__PURE__ */ React.createElement("div", { className: "grid-main", style: { gridTemplateColumns: "minmax(0, 380px) minmax(0, 1fr)" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { className: "sim-session-strip mono", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "sim-session-dot " + (sessionReady ? "ok" : "wait"), "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, sessionReady ? "\uC11C\uBC84 \uC138\uC158 \uC900\uBE44\uB428 \u2014 \uC7AC\uC0DD \uC2DC \uC989\uC2DC \uC5F0\uACB0\uB429\uB2C8\uB2E4." : "\uC11C\uBC84 \uC138\uC158 \uBBF8\uD655\uC778 \u2014 \uC7AC\uC0DD\uC744 \uB204\uB974\uBA74 \uBA3C\uC800 \uC138\uC158\uC744 \uC0C8\uB85C \uC900\uBE44\uD569\uB2C8\uB2E4.")), prefillNote && /* @__PURE__ */ React.createElement("div", { className: "sim-prefill-note mono", role: "status" }, prefillNote, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setPrefillNote("") }, "\uB2EB\uAE30")), /* @__PURE__ */ React.createElement(SimPresetBar, { isDemo, busy: presetBusy, onPreset }), /* @__PURE__ */ React.createElement(
+        SimControlBar,
+        {
+          baseUrl,
+          isDemo,
+          src,
+          onSrc: setSrc,
+          date,
+          onDate: setDate,
+          days,
+          stocks,
+          selected: selected2,
+          onToggleStock: toggleStock,
+          stockQuery,
+          onStockQuery: setStockQuery,
+          loadingStocks,
+          buy,
+          onBuy: setBuy,
+          sell,
+          onSell: setSell,
+          strategies,
+          aggSec,
+          onAggSec: setAggSec
         }
-      )
-    ) : (
-      // 분할 모드 — 종목별 차트 그리드(반응형 열). 엔진 모드(라이브/LWC/SVG)로 컴포넌트 선택.
-      /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: gridCols, gap: dense ? 10 : 14, ...gridExtra } }, codes.map((code) => {
-        const fullBars = barsByCode[code] || [];
-        const renderedBars = renderBarsByCode[code] || [];
-        const chartProps = {
-          code,
-          name: nameByCode[code],
-          bars: renderedBars,
-          fullBarCount: fullBars.length,
-          renderBudget,
-          signals: signals[code] || [],
+      ), /* @__PURE__ */ React.createElement(
+        SimMarketMinimap,
+        {
+          stocks,
+          selected: selected2,
+          onToggleStock: toggleStock,
+          query: stockQuery,
+          isDemo,
+          date,
+          loading: loadingStocks
+        }
+      ), codes.length > 0 && (status !== "idle" || cursor > 0) && /* @__PURE__ */ React.createElement(SimIndicatorTable, { codes, barsByCode, nameByCode }), codes.length > 0 && (status !== "idle" || cursor > 0) && /* @__PURE__ */ React.createElement(SimVariableWatch, { codes, barsByCode, nameByCode }), buy && sell && /* @__PURE__ */ React.createElement(
+        SimLearningPanel,
+        {
+          autoPause,
+          onToggleAutoPause: () => setAutoPause((v) => !v),
+          signals: flatSignals,
           curT,
-          compact: codes.length > 1 && effCols > 1 || dense,
-          indicators
-        };
-        return /* @__PURE__ */ React.createElement(SimChartByEngine, { key: code, engineMode, ...chartProps });
-      }))
-    ))));
+          highlightSig,
+          onSeek: seekToTime
+        }
+      ), buy && sell && /* @__PURE__ */ React.createElement(SimSignalLog, { signals: flatSignals, curT })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14, minWidth: 0 } }, demoActive && /* @__PURE__ */ React.createElement("div", { style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "8px 12px",
+        background: "rgba(124,108,240,0.10)",
+        border: "1px solid var(--violet)",
+        borderRadius: 8
+      } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: {
+        fontSize: 10.5,
+        color: "var(--violet)",
+        letterSpacing: ".04em",
+        fontWeight: 600,
+        display: "flex",
+        alignItems: "center",
+        gap: 6
+      } }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--violet)" } }), "\uC608\uC2DC \uCD94\uCC9C \uC900\uBE44"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC608\uC2DC \uC790\uB3D9 \uC7AC\uC0DD \uC900\uBE44 \xB7 \uC7AC\uC0DD\uC740 \uC0AC\uC6A9\uC790 \uAC8C\uC774\uD2B8 \uD6C4 \uC2DC\uC791"), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          className: "btn ghost sm",
+          onClick: exitDemo,
+          style: { marginLeft: "auto", fontSize: 10.5, padding: "3px 10px" }
+        },
+        "\uB0B4\uAC00 \uC120\uD0DD\uD558\uAE30"
+      )), /* @__PURE__ */ React.createElement(
+        SimPlaybackBar,
+        {
+          status,
+          onPlay: startReplay,
+          onPause: pauseReplay,
+          onResume: resumeReplay,
+          onStop: stopReplay,
+          speed,
+          onSpeed: changeSpeed,
+          cursor,
+          total: meta ? meta.bars_total : 0,
+          curT,
+          sessionRange: meta ? meta.session_range : [0, 0],
+          onSeek: seekByIndex,
+          canPlay
+        }
+      ), /* @__PURE__ */ React.createElement("div", { className: "mono", role: "status", style: { fontSize: 10, color: "var(--ink-3)", padding: "0 4px" } }, "\uC0C1\uD0DC: ", status, " \xB7 \uC5D4\uC9C4: ", engineMode === "live" ? "Canvas (\uACE0\uAE09/\uC2E4\uD5D8\uC801)" : engineMode.toUpperCase(), " \xB7 \uC18C\uC2A4: ", src, " \xB7 ", "\uC218\uC2E0 \uBD09: ", receivedBarCountRef.current, "/", meta ? meta.bars_total : "?", (() => {
+        const visible = Object.values(barsByCode).flat();
+        if (!visible.length) return " \xB7 OHLC: \u2014";
+        const hi = Math.max(...visible.map((b) => Number(b.h) || Number(b.c) || 0));
+        const lo = Math.min(...visible.map((b) => Number(b.l) || Number(b.c) || Infinity));
+        return " \xB7 OHLC: " + lo.toLocaleString("ko-KR") + "\u2013" + hi.toLocaleString("ko-KR");
+      })()), meta && meta.replay_metadata && meta.replay_metadata.truncated && /* @__PURE__ */ React.createElement("div", { className: "research-empty", role: "status" }, "\uB9AC\uD50C\uB808\uC774 \uC6D0\uBCF8\uC774 \uC548\uC804 \uC0C1\uD55C\uC73C\uB85C \uC798\uB838\uC2B5\uB2C8\uB2E4", meta.replay_metadata.row_capped_codes && meta.replay_metadata.row_capped_codes.length ? ": " + meta.replay_metadata.row_capped_codes.join(", ") : "."), selected2.length > 0 && /* @__PURE__ */ React.createElement(
+        SimViewBar,
+        {
+          indicators,
+          onToggleIndicator: toggleIndicator,
+          chartMode,
+          onChartMode: setChartMode,
+          splitCols,
+          onSplitCols: setSplitColsPersist,
+          splitRows,
+          onSplitRows: setSplitRowsPersist,
+          colCap,
+          codeCount: codes.length,
+          engineMode,
+          onEngineMode: setEngineModePersist,
+          multi: codes.length > 1
+        }
+      ), wsErr && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--red)" } }, "\uB9AC\uD50C\uB808\uC774 \uC624\uB958: ", wsErr, /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: startReplay, disabled: !canPlay && status !== "error" }, "\uC7AC\uC2DC\uB3C4"))))), signalErr && /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { color: "var(--amber)" } }, signalErr))), selected2.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC67C\uCABD\uC5D0\uC11C \uB0A0\uC9DC\xB7\uC885\uBAA9(\uCD5C\uB300 ", _SIM_MAX_CODES, ")\uC744 \uC120\uD0DD\uD558\uACE0 \u25B6 \uC7AC\uC0DD\uC744 \uB204\uB974\uBA74 \uCE94\uB4E4 \uCC28\uD2B8\uAC00 \uC2E4\uC2DC\uAC04\uC73C\uB85C \uB9AC\uD50C\uB808\uC774\uB429\uB2C8\uB2E4."))) : chartMode === "overlay" && codes.length > 1 ? (
+        // 오버레이 모드 — 정규화(시작=100) 한 차트 겹침 비교.
+        /* @__PURE__ */ React.createElement(
+          SimOverlayChart,
+          {
+            codes,
+            barsByCode: renderBarsByCode,
+            nameByCode,
+            curT
+          }
+        )
+      ) : (
+        // 분할 모드 — 종목별 차트 그리드(반응형 열). 엔진 모드(라이브/LWC/SVG)로 컴포넌트 선택.
+        /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: gridCols, gap: dense ? 10 : 14, ...gridExtra } }, codes.map((code) => {
+          const fullBars = barsByCode[code] || [];
+          const renderedBars = renderBarsByCode[code] || [];
+          const chartProps = {
+            code,
+            name: nameByCode[code],
+            bars: renderedBars,
+            fullBarCount: fullBars.length,
+            renderBudget,
+            signals: signals[code] || [],
+            curT,
+            compact: codes.length > 1 && effCols > 1 || dense,
+            indicators
+          };
+          return /* @__PURE__ */ React.createElement(SimChartByEngine, { key: code, engineMode, ...chartProps });
+        }))
+      )))
+    );
   }
 
   // ai_strategy_loop/dashboard/frontend/simulation.jsx
@@ -37738,26 +37784,17 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       return () => controller.abort();
     }, [baseUrl, runId]);
     const top = gens.filter((g) => g.gen_no >= 0).slice().sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 10);
-    return /* @__PURE__ */ React.createElement("div", { className: "history-direct-picker" }, /* @__PURE__ */ React.createElement("p", { className: "v4-history-feature-copy" }, "\uC5F0\uAD6C(run)\uC640 \uC138\uB300\uB97C \uACE0\uB974\uBA74 \uACB0\uACFC \uBE44\uAD50\uB97C \uAC70\uCE58\uC9C0 \uC54A\uACE0 \uBC14\uB85C \uC0C1\uC138\uB97C \uC5FD\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 10 } }, /* @__PURE__ */ React.createElement("label", { className: "mono", style: { fontSize: 12, color: "var(--ink-2)" } }, "\uC5F0\uAD6C(run)"), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "history-direct-picker" }, /* @__PURE__ */ React.createElement("p", { className: "v4-history-feature-copy" }, "\uC5F0\uAD6C(run)\uC640 \uC138\uB300\uB97C \uACE0\uB974\uBA74 \uACB0\uACFC \uBE44\uAD50\uB97C \uAC70\uCE58\uC9C0 \uC54A\uACE0 \uBC14\uB85C \uC0C1\uC138\uB97C \uC5FD\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "hdp-row" }, /* @__PURE__ */ React.createElement("label", { className: "mono hdp-label" }, "\uC5F0\uAD6C(run)"), /* @__PURE__ */ React.createElement(
       "select",
       {
-        className: "mono",
+        className: "mono hdp-select",
         value: runId,
         onChange: (e) => setRunId(e.target.value),
-        "aria-label": "\uC0C1\uC138\uB97C \uBCFC \uC5F0\uAD6C run \uC120\uD0DD",
-        style: {
-          fontSize: 12,
-          background: "var(--bg-1)",
-          color: "var(--ink-0)",
-          border: "1px solid var(--line-2)",
-          borderRadius: 5,
-          padding: "4px 8px",
-          maxWidth: 320
-        }
+        "aria-label": "\uC0C1\uC138\uB97C \uBCFC \uC5F0\uAD6C run \uC120\uD0DD"
       },
       !runs.length && /* @__PURE__ */ React.createElement("option", { value: "" }, "\uAE30\uB85D\uB41C run \uC5C6\uC74C"),
       runs.map((r) => /* @__PURE__ */ React.createElement("option", { key: r.run_id, value: r.run_id }, r.run_id, r.gate_passed_count > 0 ? " \u2713" : ""))
-    ), loading && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-3)" } }, "\uC138\uB300 \uBD88\uB7EC\uC624\uB294 \uC911\u2026")), top.length > 0 && /* @__PURE__ */ React.createElement("table", { className: "mono", style: { width: "100%", borderCollapse: "collapse", fontSize: 12 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-2)", textAlign: "right" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "5px 8px" } }, "\uC138\uB300"), /* @__PURE__ */ React.createElement("th", { style: { padding: "5px 8px" } }, "score"), /* @__PURE__ */ React.createElement("th", { style: { padding: "5px 8px" } }, "\uC190\uC775"), /* @__PURE__ */ React.createElement("th", { style: { padding: "5px 8px" } }, "MDD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "center", padding: "5px 8px" } }, "\uAC8C\uC774\uD2B8"), /* @__PURE__ */ React.createElement("th", { style: { padding: "5px 8px" } }))), /* @__PURE__ */ React.createElement("tbody", null, top.map((g) => /* @__PURE__ */ React.createElement("tr", { key: g.gen_no, style: { borderTop: "1px solid var(--line-1)", textAlign: "right" } }, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "left", padding: "5px 8px" } }, "Gen ", g.gen_no), /* @__PURE__ */ React.createElement("td", { style: { padding: "5px 8px", color: "var(--teal)" } }, typeof g.score === "number" ? g.score.toFixed(3) : "\u2014"), /* @__PURE__ */ React.createElement("td", { style: { padding: "5px 8px" }, className: g.profit > 0 ? "num-pos" : g.profit < 0 ? "num-neg" : "" }, typeof g.profit === "number" ? g.profit.toLocaleString("ko-KR") + "\uC6D0" : "\u2014"), /* @__PURE__ */ React.createElement("td", { style: { padding: "5px 8px", color: "var(--red)" } }, typeof g.mdd === "number" ? g.mdd.toFixed(2) + "%" : "\u2014"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "center", padding: "5px 8px", color: g.gate_passed ? "var(--teal)" : "var(--ink-3)" } }, g.gate_passed ? "\u2713" : "\u2014"), /* @__PURE__ */ React.createElement("td", { style: { padding: "5px 8px", textAlign: "center" } }, /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: () => onSelectAnalysis({ run_id: runId, gen_no: g.gen_no }) }, "\uC0C1\uC138 \uC5F4\uAE30")))))), runId && !loading && top.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC774 run \uC5D0\uB294 \uD45C\uC2DC\uD560 \uC138\uB300\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."));
+    ), loading && /* @__PURE__ */ React.createElement("span", { className: "mono hdp-loading" }, "\uC138\uB300 \uBD88\uB7EC\uC624\uB294 \uC911\u2026")), top.length > 0 && /* @__PURE__ */ React.createElement("table", { className: "mono hdp-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { className: "left" }, "\uC138\uB300"), /* @__PURE__ */ React.createElement("th", null, "score"), /* @__PURE__ */ React.createElement("th", null, "\uC190\uC775"), /* @__PURE__ */ React.createElement("th", null, "MDD"), /* @__PURE__ */ React.createElement("th", { className: "center" }, "\uAC8C\uC774\uD2B8"), /* @__PURE__ */ React.createElement("th", null))), /* @__PURE__ */ React.createElement("tbody", null, top.map((g) => /* @__PURE__ */ React.createElement("tr", { key: g.gen_no }, /* @__PURE__ */ React.createElement("td", { className: "left" }, "Gen ", g.gen_no), /* @__PURE__ */ React.createElement("td", { className: "hdp-score" }, typeof g.score === "number" ? g.score.toFixed(3) : "\u2014"), /* @__PURE__ */ React.createElement("td", { className: g.profit > 0 ? "num-pos" : g.profit < 0 ? "num-neg" : "" }, typeof g.profit === "number" ? g.profit.toLocaleString("ko-KR") + "\uC6D0" : "\u2014"), /* @__PURE__ */ React.createElement("td", { className: "hdp-mdd" }, typeof g.mdd === "number" ? g.mdd.toFixed(2) + "%" : "\u2014"), /* @__PURE__ */ React.createElement("td", { className: "center " + (g.gate_passed ? "hdp-gate-pass" : "hdp-gate-none") }, g.gate_passed ? "\u2713" : "\u2014"), /* @__PURE__ */ React.createElement("td", { className: "center" }, /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: () => onSelectAnalysis({ run_id: runId, gen_no: g.gen_no }) }, "\uC0C1\uC138 \uC5F4\uAE30")))))), runId && !loading && top.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC774 run \uC5D0\uB294 \uD45C\uC2DC\uD560 \uC138\uB300\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."));
   }
   function V4History({ baseUrl, wsStatus, onNavigate }) {
     var _a;
@@ -37861,7 +37898,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         }
       },
       "\uC0C9\uC778\uC5D0\uC11C \uAD00\uB828 \uAE30\uB85D"
-    ), /* @__PURE__ */ React.createElement("span", { className: "v6-selres-note" }, "\uD638\uD658 \uC139\uC158\uB9CC \uC774 \uC5F0\uAD6C ID\uB97C \uC0AC\uC6A9\uD569\uB2C8\uB2E4. \uB2E4\uB978 \uC720\uD615\uC758 \uBD84\uC11D\uC740 \uB3C5\uB9BD \uC120\uD0DD \uC0C1\uD0DC\uB85C \uC720\uC9C0\uB429\uB2C8\uB2E4.")), historyStage === "research" && /* @__PURE__ */ React.createElement("section", { className: "panel v4-history-stage-panel", "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D"), /* @__PURE__ */ React.createElement("p", { className: "v4-history-feature-copy" }, /* @__PURE__ */ React.createElement("b", null, "\uCEA0\uD398\uC778 = \uD558\uB098\uC758 \uC5F0\uAD6C \uBB36\uC74C"), "\uC785\uB2C8\uB2E4. AI \uAC00 \uC870\uAC74\uC2DD\uC744 \uBC1C\uAD74\uD55C \uD55C \uBC88\uC758 \uC5F0\uAD6C \uB2E8\uC704(\uAE30\uAC04\xB7\uC2DC\uAC04\uB300\xB7\uAC00\uC124\uC774 \uAC19\uC740 \uC138\uB300\uB4E4\uC758 \uBAA8\uC74C)\uB97C \uCEA0\uD398\uC778\uC774\uB77C\uACE0 \uBD80\uB985\uB2C8\uB2E4. \uC544\uB798\uC5D0\uC11C \uCEA0\uD398\uC778\uC744 \uACE0\uB974\uBA74 \uADF8 \uC5F0\uAD6C\uC758 \uD6C4\uBCF4\xB7\uAE30\uB85D\uC774 \uACE0\uC815\uB418\uACE0, \uC774\uD6C4 \uC0C1\uC138\xB7\uBE44\uAD50\uB294 \uC774 \uC120\uD0DD\uC744 \uAE30\uC900\uC73C\uB85C \uB3D9\uC791\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, onSelectCampaign }))), historyStage === "results" && /* @__PURE__ */ React.createElement("section", { className: "panel v4-history-stage-panel", "aria-labelledby": "v4-history-compare-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-history-compare-title", className: "stom-section-label" }, "Run Compare \xB7 A/B \uBE44\uAD50")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", "data-region": "scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "v4-history-feature-copy" }, "\uBAA9\uC801: run\uC758 \uC131\uACFC\uC640 winner \uC138\uB300\uB97C \uAC19\uC740 \uAE30\uC900\uC73C\uB85C \uBE44\uAD50\uD569\uB2C8\uB2E4. \uBC29\uBC95: \uCD5C\uB300 6\uAC1C run\uC744 \uC120\uD0DD\uD558\uACE0 \u2018\uBD84\uC11D \uBCF4\uAE30\u2019\uB97C \uB204\uB974\uC138\uC694. \uD544\uC694\uC131: ", /* @__PURE__ */ React.createElement("b", null, "campaign \uC5F0\uAD6C ID\uB294 \uD638\uD658\uB418\uC9C0 \uC54A\uC73C\uBA70"), " Run Compare\uB294 loop_run\uB9CC \uC0AC\uC6A9\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus, preferredResearchId: selResearch && selResearch.researchId, onSelectAnalysis }))), historyStage === "detail" && (selectedAnalysis ? /* @__PURE__ */ React.createElement("section", { className: "v4-history-analysis v4-history-stage-panel", "aria-label": "\uC120\uD0DD\uD55C run winner \uBD84\uC11D" }, /* @__PURE__ */ React.createElement("div", { className: "v4-history-analysis-head" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, selectedAnalysis.run_id, " / gen ", selectedAnalysis.gen_no), /* @__PURE__ */ React.createElement("div", { className: "v4-history-detail-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => onNavigate("reports") }, "\uC5F0\uACB0 \uB9AC\uD3EC\uD2B8 \uBCF4\uAE30"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setHistoryStage("results") }, "\uB2E4\uC2DC \uBE44\uAD50"))), /* @__PURE__ */ React.createElement(_HistoryStrategyCode, { baseUrl, selection: selectedAnalysis }), /* @__PURE__ */ React.createElement(_HistoryIterationAnalysis, { selection: selectedAnalysis, layout: resultLayout, onLayoutChange: setHistoryLayout }), /* @__PURE__ */ React.createElement(BtResultArea, { key: `${selectedAnalysis.run_id}:${selectedAnalysis.gen_no}`, baseUrl, isDemo: wsStatus === "demo", jobId: null, evoSource: selectedAnalysis })) : /* @__PURE__ */ React.createElement("section", { className: "panel v4-history-stage-panel", "aria-label": "\uACB0\uACFC \uC0C1\uC138 \uC9C1\uC811 \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label" }, "\uACB0\uACFC \uC0C1\uC138 \xB7 \uC5F0\uAD6C/\uC138\uB300 \uC9C1\uC811 \uC120\uD0DD")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(_HistoryDirectPicker, { baseUrl, onSelectAnalysis }), /* @__PURE__ */ React.createElement("p", { className: "v4-history-feature-copy", style: { marginTop: 10 } }, "\uC5EC\uB7EC run \uC744 \uB098\uB780\uD788 \uBE44\uAD50\uD558\uB824\uBA74 ", /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setHistoryStage("results") }, "\uACB0\uACFC \uBE44\uAD50"), " \uB2E8\uACC4\uB97C \uC0AC\uC6A9\uD558\uC138\uC694.")))), historyStage === "evidence" && /* @__PURE__ */ React.createElement("div", { className: "v4-history-evidence-stack" }, /* @__PURE__ */ React.createElement("details", { className: "evo-group", open: true }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC \uC601\uC5ED" }, /* @__PURE__ */ React.createElement("p", { className: "v4-history-feature-copy" }, "\uBAA9\uC801: \uC870\uAC74\uC2DD \uACC4\uBCF4\uC640 \uD3C9\uAC00 \uD754\uC801\uC744 \uD0D0\uC0C9\uD569\uB2C8\uB2E4. \uBC29\uBC95: research ID\uB97C \uC120\uD0DD\uD574 \uB2E8\uACC4\uC640 \uC870\uAC74\uC744 \uD3BC\uCE58\uC138\uC694. \uD544\uC694\uC131: ", /* @__PURE__ */ React.createElement("b", null, "loop_run\uACFC campaign ID\uB294 \uC11C\uB85C \uD638\uD658\uB418\uC9C0 \uC54A\uB294 \uACBD\uC6B0\uAC00 \uC788\uC5B4"), " \uC11C\uBC84\uAC00 \uD5C8\uC6A9\uD55C \uAE30\uB85D\uB9CC \uD45C\uC2DC\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus, preferredResearchId: selResearch && selResearch.researchId }))), /* @__PURE__ */ React.createElement("details", { className: "evo-group", open: true, "aria-labelledby": "v4-history-index-title" }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70 (\uD074\uB9AD \uC2DC \uB85C\uB4DC)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("p", { className: "v4-history-feature-copy" }, "\uBAA9\uC801: \uB300\uB7C9 \uC5F0\uAD6C \uAE30\uB85D\uC758 \uC0C1\uC138 \uADFC\uAC70\uB97C \uCC3E\uC2B5\uB2C8\uB2E4. \uBC29\uBC95: \uD544\uC694\uD560 \uB54C\uB9CC \uD3BC\uCCD0 \uAC80\uC0C9\uD558\uC138\uC694. \uD544\uC694\uC131: \uC0C9\uC778\uC740 \uBB34\uAC81\uACE0, \uD638\uD658\uB418\uC9C0 \uC54A\uB294 research ID\uB294 \uB3C5\uB9BD \uC870\uD68C\uB85C \uB0A8\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate, initialQuery: selResearch ? selResearch.researchId : "", preferredResearchId: selResearch && selResearch.researchId })))));
+    ), /* @__PURE__ */ React.createElement("span", { className: "v6-selres-note" }, "\uD638\uD658 \uC139\uC158\uB9CC \uC774 \uC5F0\uAD6C ID\uB97C \uC0AC\uC6A9\uD569\uB2C8\uB2E4. \uB2E4\uB978 \uC720\uD615\uC758 \uBD84\uC11D\uC740 \uB3C5\uB9BD \uC120\uD0DD \uC0C1\uD0DC\uB85C \uC720\uC9C0\uB429\uB2C8\uB2E4.")), historyStage === "research" && /* @__PURE__ */ React.createElement("section", { className: "panel v4-history-stage-panel", "aria-labelledby": "v4-history-archive-title", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-archive-title" }, "\uC544\uCE74\uC774\uBE0C \uC120\uD0DD \xB7 \uC694\uC57D"), /* @__PURE__ */ React.createElement("p", { className: "v4-history-feature-copy" }, /* @__PURE__ */ React.createElement("b", null, "\uCEA0\uD398\uC778 = \uD558\uB098\uC758 \uC5F0\uAD6C \uBB36\uC74C"), "\uC785\uB2C8\uB2E4. AI \uAC00 \uC870\uAC74\uC2DD\uC744 \uBC1C\uAD74\uD55C \uD55C \uBC88\uC758 \uC5F0\uAD6C \uB2E8\uC704(\uAE30\uAC04\xB7\uC2DC\uAC04\uB300\xB7\uAC00\uC124\uC774 \uAC19\uC740 \uC138\uB300\uB4E4\uC758 \uBAA8\uC74C)\uB97C \uCEA0\uD398\uC778\uC774\uB77C\uACE0 \uBD80\uB985\uB2C8\uB2E4. \uC544\uB798\uC5D0\uC11C \uCEA0\uD398\uC778\uC744 \uACE0\uB974\uBA74 \uADF8 \uC5F0\uAD6C\uC758 \uD6C4\uBCF4\xB7\uAE30\uB85D\uC774 \uACE0\uC815\uB418\uACE0, \uC774\uD6C4 \uC0C1\uC138\xB7\uBE44\uAD50\uB294 \uC774 \uC120\uD0DD\uC744 \uAE30\uC900\uC73C\uB85C \uB3D9\uC791\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4-history-archive-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uACFC\uAC70 run\uACFC \uC138\uB300 \uBE44\uAD50 \uB370\uC774\uD130 \uC601\uC5ED" }, /* @__PURE__ */ React.createElement(ResearchRecordsPanel, { baseUrl, wsStatus, onSelectCampaign }))), historyStage === "results" && /* @__PURE__ */ React.createElement("section", { className: "panel v4-history-stage-panel", "aria-labelledby": "v4-history-compare-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-history-compare-title", className: "stom-section-label" }, "Run Compare \xB7 A/B \uBE44\uAD50")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", "data-region": "scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "v4-history-feature-copy" }, "\uBAA9\uC801: run\uC758 \uC131\uACFC\uC640 winner \uC138\uB300\uB97C \uAC19\uC740 \uAE30\uC900\uC73C\uB85C \uBE44\uAD50\uD569\uB2C8\uB2E4. \uBC29\uBC95: \uCD5C\uB300 6\uAC1C run\uC744 \uC120\uD0DD\uD558\uACE0 \u2018\uBD84\uC11D \uBCF4\uAE30\u2019\uB97C \uB204\uB974\uC138\uC694. \uD544\uC694\uC131: ", /* @__PURE__ */ React.createElement("b", null, "campaign \uC5F0\uAD6C ID\uB294 \uD638\uD658\uB418\uC9C0 \uC54A\uC73C\uBA70"), " Run Compare\uB294 loop_run\uB9CC \uC0AC\uC6A9\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(RunComparePanel, { baseUrl, wsStatus, preferredResearchId: selResearch && selResearch.researchId, onSelectAnalysis }))), historyStage === "detail" && (selectedAnalysis ? /* @__PURE__ */ React.createElement("section", { className: "v4-history-analysis v4-history-stage-panel", "aria-label": "\uC120\uD0DD\uD55C run winner \uBD84\uC11D" }, /* @__PURE__ */ React.createElement("div", { className: "v4-history-analysis-head" }, /* @__PURE__ */ React.createElement("span", { className: "mono" }, selectedAnalysis.run_id, " / gen ", selectedAnalysis.gen_no), /* @__PURE__ */ React.createElement("div", { className: "v4-history-detail-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => onNavigate("reports") }, "\uC5F0\uACB0 \uB9AC\uD3EC\uD2B8 \uBCF4\uAE30"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setHistoryStage("results") }, "\uB2E4\uC2DC \uBE44\uAD50"))), /* @__PURE__ */ React.createElement(_HistoryStrategyCode, { baseUrl, selection: selectedAnalysis }), /* @__PURE__ */ React.createElement(_HistoryIterationAnalysis, { selection: selectedAnalysis, layout: resultLayout, onLayoutChange: setHistoryLayout }), /* @__PURE__ */ React.createElement(BtResultArea, { key: `${selectedAnalysis.run_id}:${selectedAnalysis.gen_no}`, baseUrl, isDemo: wsStatus === "demo", jobId: null, evoSource: selectedAnalysis })) : /* @__PURE__ */ React.createElement("section", { className: "panel v4-history-stage-panel", "aria-label": "\uACB0\uACFC \uC0C1\uC138 \uC9C1\uC811 \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label" }, "\uACB0\uACFC \uC0C1\uC138 \xB7 \uC5F0\uAD6C/\uC138\uB300 \uC9C1\uC811 \uC120\uD0DD")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(_HistoryDirectPicker, { baseUrl, onSelectAnalysis }), /* @__PURE__ */ React.createElement("p", { className: "v4-history-feature-copy hdp-compare-hint" }, "\uC5EC\uB7EC run \uC744 \uB098\uB780\uD788 \uBE44\uAD50\uD558\uB824\uBA74 ", /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setHistoryStage("results") }, "\uACB0\uACFC \uBE44\uAD50"), " \uB2E8\uACC4\uB97C \uC0AC\uC6A9\uD558\uC138\uC694.")))), historyStage === "evidence" && /* @__PURE__ */ React.createElement("div", { className: "v4-history-evidence-stack" }, /* @__PURE__ */ React.createElement("details", { className: "evo-group", open: true }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-lineage-title" }, "\uC870\uAC74\uC2DD History \uD2B8\uB9AC")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC870\uAC74\uC2DD \uACC4\uBCF4 \uD2B8\uB9AC \uC601\uC5ED" }, /* @__PURE__ */ React.createElement("p", { className: "v4-history-feature-copy" }, "\uBAA9\uC801: \uC870\uAC74\uC2DD \uACC4\uBCF4\uC640 \uD3C9\uAC00 \uD754\uC801\uC744 \uD0D0\uC0C9\uD569\uB2C8\uB2E4. \uBC29\uBC95: research ID\uB97C \uC120\uD0DD\uD574 \uB2E8\uACC4\uC640 \uC870\uAC74\uC744 \uD3BC\uCE58\uC138\uC694. \uD544\uC694\uC131: ", /* @__PURE__ */ React.createElement("b", null, "loop_run\uACFC campaign ID\uB294 \uC11C\uB85C \uD638\uD658\uB418\uC9C0 \uC54A\uB294 \uACBD\uC6B0\uAC00 \uC788\uC5B4"), " \uC11C\uBC84\uAC00 \uD5C8\uC6A9\uD55C \uAE30\uB85D\uB9CC \uD45C\uC2DC\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(HistoryConditionTreePanel, { baseUrl, wsStatus, preferredResearchId: selResearch && selResearch.researchId }))), /* @__PURE__ */ React.createElement("details", { className: "evo-group", open: true, "aria-labelledby": "v4-history-index-title" }, /* @__PURE__ */ React.createElement("summary", { className: "evo-group-summary" }, /* @__PURE__ */ React.createElement("h2", { className: "stom-section-label", id: "v4-history-index-title" }, "\uC5F0\uAD6C \uAE30\uB85D \uC0C9\uC778 \xB7 \uC0C1\uC138 \uADFC\uAC70 (\uD074\uB9AD \uC2DC \uB85C\uB4DC)")), /* @__PURE__ */ React.createElement("div", { className: "evo-group-body", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uAE30\uB85D \uD45C\uC640 \uC0C1\uC138 \uB370\uC774\uD130 \uC601\uC5ED", "aria-busy": historyLoading }, /* @__PURE__ */ React.createElement("p", { className: "v4-history-feature-copy" }, "\uBAA9\uC801: \uB300\uB7C9 \uC5F0\uAD6C \uAE30\uB85D\uC758 \uC0C1\uC138 \uADFC\uAC70\uB97C \uCC3E\uC2B5\uB2C8\uB2E4. \uBC29\uBC95: \uD544\uC694\uD560 \uB54C\uB9CC \uD3BC\uCCD0 \uAC80\uC0C9\uD558\uC138\uC694. \uD544\uC694\uC131: \uC0C9\uC778\uC740 \uBB34\uAC81\uACE0, \uD638\uD658\uB418\uC9C0 \uC54A\uB294 research ID\uB294 \uB3C5\uB9BD \uC870\uD68C\uB85C \uB0A8\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(ResearchIndexPage, { baseUrl, onNavigate, initialQuery: selResearch ? selResearch.researchId : "", preferredResearchId: selResearch && selResearch.researchId })))));
   }
   Object.assign(window, { V4History });
 
@@ -38339,18 +38376,51 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     return "warn";
   }
   var _CAT_VIEWS = [
-    { key: "chronicle", label: "\uC5F0\uD601\uC2E4", desc: "\uD310\uC815 \uC6D0\uC7A5\xB7\uC2DC\uB9AC\uC988 \uC5F0\uD601(SELECT-only)" },
-    { key: "trapmap", label: "\uD568\uC815\uC9C0\uB3C4", desc: "\uC2E4\uD328/\uAE30\uAC01 \uD310\uC815 \uD328\uD134 \uC9C0\uB3C4" },
-    { key: "clauselab", label: "\uC808\uC2E4\uD5D8\uC2E4", desc: "\uC870\uAC74 \uC808(clause) \uC2E4\uD5D8 \uCE74\uD0C8\uB85C\uADF8" },
-    { key: "exitbank", label: "\uCD9C\uAD6C\uC740\uD589", desc: "\uD45C\uBCF8\xB7\uC140\xB7\uCD9C\uAD6C \uD504\uB85C\uD30C\uC77C \uC740\uD589" },
-    { key: "alpha", label: "\uC9C4\uD589 \uAD00\uCC30", desc: "\uC54C\uD30C\uB7A9 \uC9C4\uD589 \uAD00\uCC30(\uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110, \uBE44-P4 \uC601\uC218\uC99D)" },
-    { key: "scorecard", label: "B1 scorecard", desc: "\uD45C\uBCF8 \uC678 \uC131\uC801\uD45C(\uC6B4\uC6A9 \uAC1C\uC2DC \uC120\uD589)" }
+    {
+      key: "chronicle",
+      label: "\uC5F0\uD601\uC2E4",
+      desc: "\uD310\uC815 \uC6D0\uC7A5\xB7\uC2DC\uB9AC\uC988 \uC5F0\uD601(SELECT-only)",
+      explain: "\uC9C0\uAE08\uAE4C\uC9C0 \uC5F0\uAD6C\uD55C \uC2DC\uB9AC\uC988(\uC5F0\uAD6C \uBB36\uC74C)\uB9C8\uB2E4 \uCD5C\uC885 \uD310\uC815(\uC0B4\uB9B4 \uAC83/\uBC84\uB9B4 \uAC83)\uC774 \uC5B4\uB5BB\uAC8C \uB0AC\uB294\uC9C0 \uBAA8\uC544 \uB193\uC740 \uAE30\uB85D\uC2E4\uC785\uB2C8\uB2E4. \uAC19\uC740 \uC2E4\uD5D8\uC744 \uBC18\uBCF5\uD558\uC9C0 \uC54A\uC73C\uB824\uBA74 \uC5EC\uAE30\uBD80\uD130 \uBD05\uB2C8\uB2E4."
+    },
+    {
+      key: "trapmap",
+      label: "\uD568\uC815\uC9C0\uB3C4",
+      desc: "\uC2E4\uD328/\uAE30\uAC01 \uD310\uC815 \uD328\uD134 \uC9C0\uB3C4",
+      explain: "\uC774\uBBF8 \uD574\uBD24\uB294\uB370 \uC2E4\uD328\xB7\uAE30\uAC01\uC73C\uB85C \uB05D\uB09C \uC544\uC774\uB514\uC5B4 \uBAA9\uB85D\uC785\uB2C8\uB2E4. \uC0C8 \uAC00\uC124\uC744 \uC138\uC6B0\uAE30 \uC804\uC5D0 \uC774 \uD568\uC815 \uBAA9\uB85D\uACFC \uACB9\uCE58\uB294\uC9C0 \uD655\uC778\uD558\uB294 \uC6A9\uB3C4\uC785\uB2C8\uB2E4."
+    },
+    {
+      key: "clauselab",
+      label: "\uC808\uC2E4\uD5D8\uC2E4",
+      desc: "\uC870\uAC74 \uC808(clause) \uC2E4\uD5D8 \uCE74\uD0C8\uB85C\uADF8",
+      explain: "\uC870\uAC74\uC2DD\uC744 \uBB38\uC7A5 \uB2E8\uC704(\uC808)\uB85C \uCABC\uAC1C '\uC774 \uC808\uC774 \uC131\uACFC\uC5D0 \uAE30\uC5EC\uD558\uB294\uAC00'\uB97C \uC2E4\uD5D8\uD55C \uAE30\uB85D\uC785\uB2C8\uB2E4. \uC5B4\uB5A4 \uC808\uC774 \uBC25\uAC12\uC744 \uD558\uB294\uC9C0(load-bearing) \uC5EC\uAE30\uC11C \uBD05\uB2C8\uB2E4."
+    },
+    {
+      key: "exitbank",
+      label: "\uCD9C\uAD6C\uC740\uD589",
+      desc: "\uD45C\uBCF8\xB7\uC140\xB7\uCD9C\uAD6C \uD504\uB85C\uD30C\uC77C \uC740\uD589",
+      explain: "\uC5B8\uC81C \uD30C\uB294 \uAC8C \uC88B\uC558\uB294\uC9C0(\uCCAD\uC0B0 \uD0C0\uC774\uBC0D)\uB97C \uC2DC\uAC04\uB300\xB7\uC870\uAC74 \uC140\uBCC4\uB85C \uC313\uC544 \uB454 \uC800\uC7A5\uC18C\uC785\uB2C8\uB2E4. \uB9E4\uB3C4\uC2DD \uAC1C\uC120 \uC7AC\uB8CC\uB97C \uC5EC\uAE30\uC11C \uAEBC\uB0C5\uB2C8\uB2E4."
+    },
+    {
+      key: "alpha",
+      label: "\uC9C4\uD589 \uAD00\uCC30",
+      desc: "\uC54C\uD30C\uB7A9 \uC9C4\uD589 \uAD00\uCC30(\uC0AC\uC804\uB4F1\uB85D\xB7\uC6D0\uC7A5\xB7\uD37C\uB110, \uBE44-P4 \uC601\uC218\uC99D)",
+      explain: "\uC54C\uD30C \uC5F0\uAD6C \uD504\uB85C\uADF8\uB7A8\uC774 \uC0AC\uC804\uB4F1\uB85D \u2192 \uC2E4\uD5D8 \u2192 \uD310\uC815 \uD37C\uB110\uC744 \uADDC\uCE59\uB300\uB85C \uBC1F\uC558\uB294\uC9C0 \uAD00\uCC30\uD558\uB294 \uD654\uBA74\uC785\uB2C8\uB2E4."
+    },
+    {
+      key: "scorecard",
+      label: "B1 scorecard",
+      desc: "\uD45C\uBCF8 \uC678 \uC131\uC801\uD45C(\uC6B4\uC6A9 \uAC1C\uC2DC \uC120\uD589)",
+      explain: "B1 \uD6C4\uBCF4\uAC00 \uD45C\uBCF8 \uBC16(\uC2E4\uC804\uC5D0 \uAC00\uAE4C\uC6B4 \uAD6C\uAC04)\uC5D0\uC11C \uC5B4\uB5A4 \uC131\uC801\uC744 \uB0C8\uB294\uC9C0 \uBCF4\uB294 \uC131\uC801\uD45C\uC785\uB2C8\uB2E4. \uC6B4\uC6A9 \uAC1C\uC2DC \uACB0\uC815\uC5D0 \uC120\uD589\uD558\uB294 \uC99D\uAC70\uC785\uB2C8\uB2E4."
+    }
   ];
   function _CatSkeleton({ title, reason }) {
     return /* @__PURE__ */ React.createElement("div", { className: "v4-cat-skeleton research-empty", role: "note" }, /* @__PURE__ */ React.createElement("b", null, title), /* @__PURE__ */ React.createElement("p", { className: "mono" }, reason));
   }
-  function _catRows(rows) {
-    return rows.slice(0, 200).map((c, i) => /* @__PURE__ */ React.createElement("tr", { key: i }, Object.values(c).slice(0, 6).map((val, k) => /* @__PURE__ */ React.createElement("td", { key: k }, String(val)))));
+  function _CatTable({ rows }) {
+    const list = (rows || []).slice(0, 200);
+    if (!list.length) return null;
+    const cols = Object.keys(list[0]).slice(0, 6);
+    return /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, cols.map((c) => /* @__PURE__ */ React.createElement("th", { key: c }, c)))), /* @__PURE__ */ React.createElement("tbody", null, list.map((row, i) => /* @__PURE__ */ React.createElement("tr", { key: i }, cols.map((c) => /* @__PURE__ */ React.createElement("td", { key: c }, String(row[c] == null ? "\u2014" : row[c])))))));
   }
   function V4Catalog({ baseUrl, wsStatus }) {
     const [summary, setSummary] = useState_cat(null);
@@ -38400,7 +38470,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         title: v.desc
       },
       v.label
-    ))), /* @__PURE__ */ React.createElement("div", { className: "v4-cat-viewdesc", role: "status" }, /* @__PURE__ */ React.createElement("b", null, (_CAT_VIEWS.find((item) => item.key === view) || _CAT_VIEWS[0]).label), /* @__PURE__ */ React.createElement("span", null, (_CAT_VIEWS.find((item) => item.key === view) || _CAT_VIEWS[0]).desc), /* @__PURE__ */ React.createElement("i", null, "\uD45C\uBCF8 \uB0B4 \uC5F0\uAD6C \uC790\uC0B0 \xB7 \uC77D\uAE30 \uC804\uC6A9 \xB7 \uC131\uB2A5 \uC99D\uBA85 \uC544\uB2D8")), view === "chronicle" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC5F0\uD601\uC2E4" }, summary && summary.available && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-counts" }, Object.entries(summary.counts).map(([k, v]) => /* @__PURE__ */ React.createElement("div", { key: k, className: "v4-catalog-count" }, /* @__PURE__ */ React.createElement("b", null, v == null ? "\u2014" : v), /* @__PURE__ */ React.createElement("span", null, k)))), judgments && judgments.available ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-judgments" }, judgments.judgments.map((j) => /* @__PURE__ */ React.createElement("div", { key: j.series, className: "v4-catalog-jcard" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-jhead" }, /* @__PURE__ */ React.createElement("b", null, j.series), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + _catVerdictCls(j.verdict) }, j.verdict)), /* @__PURE__ */ React.createElement("div", { className: "mono v4-catalog-jmeta" }, "\uC6D0\uC7A5 ", j.n_ledger_rows, "\uD589", j.report_path ? " \xB7 " + j.report_path : "")))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uC5F0\uD601\uC2E4", reason: NO_DATA }), assets && assets.available && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uC790\uC0B0 \uD45C" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC790\uC0B0 \xB7 ", assets.count, "\uAC74"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "asset"), /* @__PURE__ */ React.createElement("th", null, "kind"), /* @__PURE__ */ React.createElement("th", null, "status"), /* @__PURE__ */ React.createElement("th", null, "window"), /* @__PURE__ */ React.createElement("th", null, "summary"))), /* @__PURE__ */ React.createElement("tbody", null, assets.assets.map((a) => /* @__PURE__ */ React.createElement("tr", { key: a.asset_id }, /* @__PURE__ */ React.createElement("td", null, a.asset_id), /* @__PURE__ */ React.createElement("td", null, a.kind), /* @__PURE__ */ React.createElement("td", null, a.status_tag), /* @__PURE__ */ React.createElement("td", null, a.window), /* @__PURE__ */ React.createElement("td", { className: "v4-catalog-sum" }, a.summary))))))), view === "trapmap" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uD568\uC815\uC9C0\uB3C4" }, traps.length > 0 ? /* @__PURE__ */ React.createElement("ul", { className: "v4-cat-traplist mono" }, traps.map((j) => /* @__PURE__ */ React.createElement("li", { key: j.series }, /* @__PURE__ */ React.createElement("b", null, j.series), " \u2014 ", j.verdict, j.note ? " \xB7 " + j.note : ""))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uD568\uC815\uC9C0\uB3C4", reason: NO_DATA })), view === "clauselab" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC808\uC2E4\uD5D8\uC2E4" }, clauses && clauses.available && clauses.count > 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC808(clause) ", clauses.count, "\uAC74 (\uC77D\uAE30 \uC804\uC6A9)"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("tbody", null, _catRows(clauses.clauses)))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uC808\uC2E4\uD5D8\uC2E4", reason: NO_DATA })), view === "exitbank" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uCD9C\uAD6C\uC740\uD589" }, cells && cells.available && cells.count > 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uD45C\uBCF8\xB7\uC140 ", cells.count, "\uAC74 (\uC77D\uAE30 \uC804\uC6A9)"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("tbody", null, _catRows(cells.cells)))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uCD9C\uAD6C\uC740\uD589", reason: NO_DATA })), view === "alpha" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC9C4\uD589 \uAD00\uCC30 (\uAD6C Alpha Lab)" }, /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus })), view === "scorecard" && /* @__PURE__ */ React.createElement("section", { "aria-label": "B1 scorecard" }, /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "B1 scorecard (\uD45C\uBCF8 \uC678 \uC131\uC801\uD45C)", reason: NO_DATA })));
+    ))), (() => {
+      const cur = _CAT_VIEWS.find((item) => item.key === view) || _CAT_VIEWS[0];
+      return /* @__PURE__ */ React.createElement("div", { className: "v4-cat-viewdesc", role: "status" }, /* @__PURE__ */ React.createElement("b", null, cur.label), /* @__PURE__ */ React.createElement("span", null, cur.explain || cur.desc), /* @__PURE__ */ React.createElement("i", null, cur.desc, " \xB7 \uC77D\uAE30 \uC804\uC6A9 \xB7 \uC131\uB2A5 \uC99D\uBA85 \uC544\uB2D8"));
+    })(), view === "chronicle" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC5F0\uD601\uC2E4" }, summary && summary.available && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-counts" }, Object.entries(summary.counts).map(([k, v]) => /* @__PURE__ */ React.createElement("div", { key: k, className: "v4-catalog-count" }, /* @__PURE__ */ React.createElement("b", null, v == null ? "\u2014" : v), /* @__PURE__ */ React.createElement("span", null, k)))), judgments && judgments.available ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-judgments" }, judgments.judgments.map((j) => /* @__PURE__ */ React.createElement("div", { key: j.series, className: "v4-catalog-jcard" }, /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-jhead" }, /* @__PURE__ */ React.createElement("b", null, j.series), /* @__PURE__ */ React.createElement("span", { className: "v4-chip " + _catVerdictCls(j.verdict) }, j.verdict)), /* @__PURE__ */ React.createElement("div", { className: "mono v4-catalog-jmeta" }, "\uC6D0\uC7A5 ", j.n_ledger_rows, "\uD589", j.report_path ? " \xB7 " + j.report_path : "")))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uC5F0\uD601\uC2E4", reason: NO_DATA }), assets && assets.available && /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0, "aria-label": "\uC5F0\uAD6C \uC790\uC0B0 \uD45C" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC790\uC0B0 \xB7 ", assets.count, "\uAC74"), /* @__PURE__ */ React.createElement("table", { className: "mono v4-catalog-table" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "asset"), /* @__PURE__ */ React.createElement("th", null, "kind"), /* @__PURE__ */ React.createElement("th", null, "status"), /* @__PURE__ */ React.createElement("th", null, "window"), /* @__PURE__ */ React.createElement("th", null, "summary"))), /* @__PURE__ */ React.createElement("tbody", null, assets.assets.map((a) => /* @__PURE__ */ React.createElement("tr", { key: a.asset_id }, /* @__PURE__ */ React.createElement("td", null, a.asset_id), /* @__PURE__ */ React.createElement("td", null, a.kind), /* @__PURE__ */ React.createElement("td", null, a.status_tag), /* @__PURE__ */ React.createElement("td", null, a.window), /* @__PURE__ */ React.createElement("td", { className: "v4-catalog-sum" }, a.summary))))))), view === "trapmap" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uD568\uC815\uC9C0\uB3C4" }, traps.length > 0 ? /* @__PURE__ */ React.createElement("ul", { className: "v4-cat-traplist mono" }, traps.map((j) => /* @__PURE__ */ React.createElement("li", { key: j.series }, /* @__PURE__ */ React.createElement("b", null, j.series), " \u2014 ", j.verdict, j.note ? " \xB7 " + j.note : ""))) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uD568\uC815\uC9C0\uB3C4", reason: NO_DATA })), view === "clauselab" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC808\uC2E4\uD5D8\uC2E4" }, clauses && clauses.available && clauses.count > 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC808(clause) ", clauses.count, "\uAC74 (\uC77D\uAE30 \uC804\uC6A9)"), /* @__PURE__ */ React.createElement(_CatTable, { rows: clauses.clauses })) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uC808\uC2E4\uD5D8\uC2E4", reason: NO_DATA })), view === "exitbank" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uCD9C\uAD6C\uC740\uD589" }, cells && cells.available && cells.count > 0 ? /* @__PURE__ */ React.createElement("div", { className: "v4-catalog-assets-scroll", "data-region": "scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uD45C\uBCF8\xB7\uC140 ", cells.count, "\uAC74 (\uC77D\uAE30 \uC804\uC6A9)"), /* @__PURE__ */ React.createElement(_CatTable, { rows: cells.cells })) : /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "\uCD9C\uAD6C\uC740\uD589", reason: NO_DATA })), view === "alpha" && /* @__PURE__ */ React.createElement("section", { "aria-label": "\uC9C4\uD589 \uAD00\uCC30 (\uAD6C Alpha Lab)" }, /* @__PURE__ */ React.createElement(V4Alpha, { baseUrl, wsStatus })), view === "scorecard" && /* @__PURE__ */ React.createElement("section", { "aria-label": "B1 scorecard" }, /* @__PURE__ */ React.createElement(_CatSkeleton, { title: "B1 scorecard (\uD45C\uBCF8 \uC678 \uC131\uC801\uD45C)", reason: NO_DATA })));
   }
   Object.assign(window, { V4Catalog });
 
@@ -38592,7 +38665,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
-  var V4_DASH_VERSION = "v5.12.0";
+  var V4_DASH_VERSION = "v5.13.0";
   (function _initFeLogBuffer() {
     const capacity = 200;
     const redact = (value) => {
