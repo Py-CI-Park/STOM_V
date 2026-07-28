@@ -76,9 +76,25 @@ def validate_strategy_code(code: str, *, ssot: Optional[Set[str]] = None) -> Pre
     vocab = _ssot_vocabulary() if ssot is None else ssot
     stores: Set[str] = set()
     loads: Set[str] = set()
+    gui_calls: List[str] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Name):
             (stores if isinstance(node.ctx, ast.Store) else loads).add(node.id)
+        # v5.13.2(결함 F) — GUI식 다인자 self.Buy/Sell 호출 검출. 백테 엔진 시그니처는
+        #   Buy(buy_long=False)/Sell(sell_long=False)(위치 인자 최대 1개)라서, GUI식
+        #   7-인자 호출은 체결 성립 틱마다 TypeError 를 던져 무한 정지로 나타난다
+        #   (2026-07-28 실측: C_T_900_920_U2 매수식 — 조건 성립 순간부터 600초 정지).
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                and isinstance(node.func.value, ast.Name) and node.func.value.id == "self"
+                and node.func.attr in ("Buy", "Sell")):
+            n_args = len(node.args) + len(node.keywords)
+            if n_args > 1:
+                gui_calls.append(f"self.{node.func.attr}({n_args}개 인자)")
+    if gui_calls:
+        return PreflightResult(False, [PreflightIssue(
+            "gui_signature",
+            "백테 엔진 시그니처 위반(최대 1인자) — GUI식 호출: " + ", ".join(sorted(set(gui_calls)))
+            + " → self.Buy()/self.Sell() 로 바꿔야 합니다")])
     undefined = sorted(
         name for name in loads
         if name not in stores

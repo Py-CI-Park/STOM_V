@@ -102,3 +102,26 @@ def test_preflight_pair_reports_missing_strategy(tmp_path):
 def test_result_reason_is_human_readable():
     result = PreflightResult(False, [])
     assert isinstance(result.reason, str)
+
+
+def test_gui_signature_call_fails_fast_defect_f():
+    # 실측 결함 F 재현: GUI식 7-인자 self.Buy 호출 — 백테 엔진(Buy(buy_long=False))에서
+    #   체결 성립 틱마다 TypeError → 600초 정지. preflight 가 즉시 잡아야 한다.
+    code = (
+        "매수 = True\n"
+        "if not (관심종목 == 1):\n"
+        "    매수 = False\n"
+        "if 매수:\n"
+        "    self.Buy(종목코드, 종목명, 매수수량, 현재가, 매도호가1, 매수호가1, 데이터길이)\n"
+    )
+    ssot = _SSOT | {"종목코드", "종목명", "매수수량", "매도호가1", "매수호가1", "데이터길이"}
+    result = validate_strategy_code(code, ssot=ssot)
+    assert not result.ok
+    assert result.issues[0].kind == "gui_signature"
+
+
+def test_single_flag_buy_call_is_allowed():
+    # Buy(buy_long=False) 시그니처 내 1인자 호출은 허용.
+    code = "매수 = True\nif 매수:\n    self.Buy(True)\n"
+    result = validate_strategy_code(code, ssot=_SSOT)
+    assert result.ok, result.reason
