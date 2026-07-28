@@ -99,15 +99,22 @@ def main() -> int:
     # v5.13.2(결함 C) — 설정 창과 유효 창이 다르면(거버넌스 프리셋 클램프) 조용히 지나가지
     #   않고 시작 로그에 명시한다. 2026-07-27 R0 에서 93000 설정이 92800 으로 무음 강제돼
     #   두 쌍이 바이트 동일 결과를 낼 때까지 발각되지 않았다.
-    _warm_cfg_preview = _build_warm_btconfig(config)
-    _configured_end = getattr(config, "bt_universe_end_time", None)
-    print(f"[BATCH] effective window {_warm_cfg_preview.start_time}-{_warm_cfg_preview.end_time}"
-          f" (preset={getattr(config, 'condition_discovery_preset', 'fast')}"
-          f", configured_end={_configured_end})", flush=True)
-    if _configured_end is not None and int(_configured_end) != int(_warm_cfg_preview.end_time):
-        print(f"[BATCH] WARNING: 설정 end_time {_configured_end} 이 거버넌스에 의해 "
-              f"{_warm_cfg_preview.end_time} 으로 강제되었습니다 — research 프리셋 + "
-              f"condition_discovery_tick_window_end 로만 확장 가능합니다.", flush=True)
+    #   관측용 한 줄이므로 절대 실행을 막지 않는다 — 진단 출력이 배치를 죽이면
+    #   그 자체가 더 큰 결함이다(스텁 config 로 호출되는 단위테스트에서 실측).
+    try:
+        _warm_cfg_preview = _build_warm_btconfig(config)
+        _configured_end = getattr(config, "bt_universe_end_time", None)
+        _eff_end = getattr(_warm_cfg_preview, "end_time", None)
+        print(f"[BATCH] effective window {getattr(_warm_cfg_preview, 'start_time', '?')}-{_eff_end}"
+              f" (preset={getattr(config, 'condition_discovery_preset', 'fast')}"
+              f", configured_end={_configured_end})", flush=True)
+        if (_configured_end is not None and _eff_end is not None
+                and int(_configured_end) != int(_eff_end)):
+            print(f"[BATCH] WARNING: 설정 end_time {_configured_end} 이 거버넌스에 의해 "
+                  f"{_eff_end} 으로 강제되었습니다 — research 프리셋 + "
+                  f"condition_discovery_tick_window_end 로만 확장 가능합니다.", flush=True)
+    except Exception as _exc:  # noqa: BLE001 - 진단 출력 실패는 배치를 막지 않는다.
+        print(f"[BATCH] effective window 확인 생략(진단 전용): {_exc}", flush=True)
 
     # v5.13.2(결함 A/B) — 사전 검증: 구문 오류·미정의 변수 조건식은 엔진에 넣지 않고
     #   즉시 error 세대로 기록한다(종전에는 per-run 타임아웃(600초)까지 정지했다).

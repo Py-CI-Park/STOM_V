@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import csv
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -493,7 +494,11 @@ class TestFrontendContract:
     def test_index_html_cache_bumped(self):
         src = (FRONTEND / "index.html").read_text(encoding="utf-8")
         # index.html 에 직접 존재하는 자산(벤더/스타일/빌드 번들).
-        assert "styles.css?v=20260624u002" in src   # Process research CSS cache bust.
+        # v5.13.2 — styles.css 도 content-hash 로 편입됐다(build-app.mjs). 리터럴을 못박으면
+        #   토큰을 고칠 때마다 테스트가 깨지고, 무엇보다 손핀 시절엔 아무도 안 올려서
+        #   브라우저가 구 CSS 를 계속 썼다(테마 추가가 화면에 반영되지 않던 실제 원인).
+        #   번들과 같은 규칙 — 값은 검사하지 않고 '자동 버전이 붙어 있는지'만 본다.
+        assert re.search(r"styles\.css\?v=[0-9a-f]{8}", src), "styles.css 에 content-hash ?v= 없음"
         assert "vendor-lightweight-charts.js?v=20260612a" in src
         # Phase14.4/14.5: 운영 컴포넌트는 단일 번들 bundle/app.js(+stom-ui.js)로 로드.
         #   ?v= 는 content-hash(자동) — 값은 하드코딩하지 않는다(일관성은 test_p14 가 검증).

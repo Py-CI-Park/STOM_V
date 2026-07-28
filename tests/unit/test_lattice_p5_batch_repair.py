@@ -91,6 +91,14 @@ def test_batch_eval_fail_fast_timeout_records_row_and_aborts(monkeypatch):
     monkeypatch.setattr(batch_eval, "_load_json", _load_json)
     monkeypatch.setattr(batch_eval, "config_from_dict", lambda data: _Cfg())
     monkeypatch.setattr(batch_eval, "_build_warm_btconfig", lambda config: object())
+    # v5.13.2 — 이 테스트가 지키는 계약은 "타임아웃이 나면 1건 기록하고 즉시 중단"이다.
+    #   배치에 사전 검증(preflight) 게이트가 생기면서, 실재하지 않는 합성 전략명은
+    #   엔진에 닿기 전에 걸러져 타임아웃 경로를 아예 밟지 못한다. 검증 대상이 다르므로
+    #   여기서는 preflight 를 통과시켜 타임아웃 경로만 시험한다(게이트 자체는
+    #   test_strategy_preflight 가 검증).
+    import ai_strategy_loop.controller.strategy_preflight as _preflight
+    monkeypatch.setattr(_preflight, "preflight_pair",
+                        lambda buy, sell, **kw: _preflight.PreflightResult(True))
     monkeypatch.setattr(batch_eval.bootstrap, "ensure_loop_db_engine_compat", lambda: None)
     monkeypatch.setattr(batch_eval, "LoopState", _State)
     monkeypatch.setattr(batch_eval, "WarmBacktestSession", _Warm)
