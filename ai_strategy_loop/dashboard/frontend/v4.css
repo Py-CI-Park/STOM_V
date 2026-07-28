@@ -2086,3 +2086,62 @@
 .hof-performance-kpis b { color: var(--ink-0); font-size: 20px; }
 .v4-settings > .panel:nth-of-type(4) { grid-column: auto; }
 @media (max-width: 1300px) { .hof-performance-overview { grid-template-columns: minmax(0, 1fr); } .hof-performance-overview > .panel { height: 320px; } }
+
+/* ==========================================================================
+   v5.13.2 — 결과 신뢰도 UI: 실행 맥락 밴드 · tick/min 배지 · 지표 힌트 · MC 방식.
+   ========================================================================== */
+/* 실행 맥락 밴드 — "이 숫자가 언제·무엇을 돌린 결과인지"를 요약 맨 위에 고정한다. */
+.bt-runctx-band { margin: 0 0 12px; padding: 11px 13px; border: 1px solid var(--line-1);
+  border-left: 3px solid var(--violet); border-radius: 9px; background: var(--bg-1); }
+.bt-runctx-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 9px; }
+.bt-runctx-run { font-size: 12.5px; color: var(--ink-0); }
+.bt-runctx-gist { font-size: 11px; color: var(--ink-2); padding: 2px 7px; border-radius: 6px;
+  background: var(--bg-2); max-width: 46ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bt-runctx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 7px 14px; }
+.bt-runctx-grid > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bt-runctx-grid .k { color: var(--ink-3); font-size: 10.5px; }
+.bt-runctx-grid b { color: var(--ink-0); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bt-runctx-note { margin: 9px 0 0; color: var(--ink-2); font-size: 11px; line-height: 1.55; }
+.bt-runctx-note b { color: var(--ink-0); }
+
+/* tick / min 배지 — 결과가 어느 타임프레임인지 한눈에(엔진 CSV 시각 자릿수로 판별). */
+.bt-tf-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .02em; border: 1px solid transparent; }
+.bt-tf-badge.tick { color: #7ee3c6; background: rgba(76,214,179,0.13); border-color: rgba(76,214,179,0.4); }
+.bt-tf-badge.min { color: #9db8ff; background: rgba(110,150,255,0.13); border-color: rgba(110,150,255,0.4); }
+.bt-tf-badge.unknown { color: var(--ink-3); background: var(--bg-2); border-color: var(--line-1); }
+/* 목록/표 안에서 쓰는 소형 변형. */
+.bt-tf-badge.xs { padding: 1px 6px; font-size: 9.5px; }
+
+/* 메트릭 카드 힌트 — 지표가 무슨 기준인지 카드 안에서 바로 읽히게. */
+.bt-metric-help { margin-left: 4px; color: var(--ink-3); font-size: 9.5px; cursor: help; }
+.bt-metric-hint { display: block; margin-top: 5px; color: var(--ink-3); font-size: 10px; line-height: 1.45; }
+
+/* 몬테카를로 방식 토글 + 방식 설명. */
+.bt-mc-method { display: inline-flex; gap: 4px; }
+.bt-mc-method .btn.active { border-color: var(--violet); color: var(--ink-0); background: rgba(155,135,245,0.16); }
+.bt-mc-note { margin: 0 0 10px; padding: 7px 10px; border: 1px solid var(--line-1); border-left: 3px solid var(--violet);
+  border-radius: 7px; color: var(--ink-2); font-size: 11px; line-height: 1.55; }
+
+/* v5.13.2 — 보고서 필터 칩(콤보 대체) · 설정 테마 선택 · GPT 인증 링크. */
+.v4-report-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.v4-report-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px;
+  border: 1px solid var(--line-1); background: var(--bg-0); color: var(--ink-2);
+  font-size: 11px; font-family: var(--mono); cursor: pointer; line-height: 1.5; }
+.v4-report-chip:hover { border-color: var(--line-2); color: var(--ink-0); }
+.v4-report-chip.active { border-color: var(--teal); color: var(--ink-0); background: var(--teal-bg); font-weight: 600; }
+.v4-report-chip em { font-style: normal; font-size: 9.5px; color: var(--ink-3); }
+.v4-report-chip.active em { color: var(--teal); }
+
+.v4s-theme-picker { display: flex; flex-wrap: wrap; gap: 5px; }
+.v4s-theme-picker .btn.active { border-color: var(--teal); color: var(--ink-0); background: var(--teal-bg); }
+
+.v4s-authlink { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--line-1);
+  border-left: 3px solid var(--amber); border-radius: 8px; background: var(--bg-0); }
+.v4s-authlink > b { color: var(--ink-0); font-size: 12px; }
+.v4s-authlink-row { display: flex; gap: 7px; margin: 7px 0; flex-wrap: wrap; }
+.v4s-authlink-url { display: block; padding: 6px 8px; border-radius: 6px; background: var(--bg-2);
+  color: var(--ink-3); font-size: 10px; word-break: break-all; line-height: 1.5; }
+
+/* v5.13.2 — 퀀트 카드 헤더 메타(표본·단위). 다른 차트 카드의 우측 메타와 같은 위치·톤. */
+.bt-quant-meta { font-size: 10.5px; color: var(--ink-3); white-space: nowrap; }

@@ -29,7 +29,7 @@ import { _resolveReplayDisplayState } from "./replay-lifecycle.jsx";
 const { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
 // v5.3.9: 대시보드 버전(릴리스 태그와 동기 수동 갱신) — 브랜드/탭 타이틀에 명시.
 // v5.5 F9 — 대시보드 버전은 STOM 본체와 분리(태그 V2UC-Dashboard-v*). 릴리스마다 수동 갱신.
-const V4_DASH_VERSION = "v5.13.0";
+const V4_DASH_VERSION = "v5.13.2";
 // v5.10 P2 — process-local browser diagnostic ring. Entries are redacted before
 // they enter the ring; no diagnostic data is persisted by this frontend.
 (function _initFeLogBuffer() {
@@ -223,11 +223,24 @@ function V4RailIcon({ name }) {
   return (<svg {...p}><rect x="3" y="3" width="12" height="12" rx="2" /><path d="M6 7 h6 M6 10 h4" /></svg>);
 }
 
+/* v5.13.2 — 테마 5종(사용자 요청: 다크/라이트 말고 더). 정의는 styles.css 토큰뿐이라
+   컴포넌트는 data-theme 값만 바꾼다. V4_THEMES 는 설정 탭도 공유한다. */
+const V4_THEMES = [
+  { id: "dark", label: "Dark", tip: "기본 다크 — 터미널 톤" },
+  { id: "midnight", label: "Midnight", tip: "딥 네이비 — 장시간 야간 관찰용(순흑보다 눈부심 적음)" },
+  { id: "light", label: "Light", tip: "밝은 화면" },
+  { id: "sepia", label: "Sepia", tip: "종이톤 — 밝은 환경에서 오래 읽기" },
+  { id: "contrast", label: "High", tip: "고대비 — 저시력·발표용" },
+];
 function V4ThemeToggle({ theme, onChange }) {
   return (
     <div className="theme-toggle" role="group" aria-label="테마">
-      <button type="button" className={theme === "dark" ? "active" : ""} aria-pressed={theme === "dark"} onClick={() => onChange("dark")} data-tip="다크 모드">Dark</button>
-      <button type="button" className={theme === "light" ? "active" : ""} aria-pressed={theme === "light"} onClick={() => onChange("light")} data-tip="라이트 모드">Light</button>
+      {V4_THEMES.map(t => (
+        <button key={t.id} type="button" className={theme === t.id ? "active" : ""}
+                aria-pressed={theme === t.id} onClick={() => onChange(t.id)} data-tip={t.tip}>
+          {t.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -323,6 +336,15 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
     // v5.3.9: 브라우저 탭 제목에 대시보드 버전 명시(V4 잔존 표기 제거).
     document.title = "STOM AI · 조건식 자율 진화 대시보드 " + V4_DASH_VERSION;
   }, [theme]);
+  // v5.13.2 — 저장된 차트 높이 취향을 부팅 시 1회 복원(설정 탭에서 저장한 값).
+  useEffect_v4(() => {
+    try {
+      const pref = localStorage.getItem("stom_chart_height");
+      const px = pref === "compact" ? "clamp(320px, 28vw, 420px)"
+        : pref === "tall" ? "clamp(500px, 46vw, 680px)" : "";
+      if (px) document.documentElement.style.setProperty("--v4-height-chart-primary", px);
+    } catch (e) {}
+  }, []);
   useEffect_v4(() => {
     // 구 딥링크(/ui/…, /ui/v4/)로 들어와도 주소창은 정본 루트 + ?tab= 으로 정규화한다.
     //   탭 상태는 그대로 유지되므로 사용자는 화면을 잃지 않는다.
@@ -648,4 +670,4 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
 
 Object.assign(window, { DashboardV4Shell });
 // dual-safe ESM export. KEEP on ONE physical line.
-export { DashboardV4Shell, _nextV4TabKey, v4TabFromPathname };
+export { DashboardV4Shell, _nextV4TabKey, v4TabFromPathname, V4_THEMES };

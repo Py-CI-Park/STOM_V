@@ -363,6 +363,7 @@ function _BtMonteCarloChartContent({ mc, loading, onRun, moneyCtx }) {
   const fan = (mc && mc.fan) || [];
   const observed = mc && mc.observed;
   const n = fan.length;
+  const method = (mc && mc.method) || "shuffle";
 
   const W = 880, H = 300;
   const padL = 58, padR = 24, padT = 18, padB = 30;
@@ -406,24 +407,39 @@ function _BtMonteCarloChartContent({ mc, loading, onRun, moneyCtx }) {
           몬테카를로 — 누적손익 팬
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          {/* v5.13.2 — 방식 전환. 셔플은 "순서 운", 부트스트랩은 "다시 돌리면?"을 답한다.
+              셔플만 있던 시절에는 최종손익 분포가 늘 한 점이라 팬이 끝에서 닫혀
+              "일직선/신뢰 없음"으로 읽혔다. 두 질문을 분리해 정직하게 보여준다. */}
+          <span className="bt-mc-method" role="group" aria-label="몬테카를로 방식">
+            <button type="button" className={"btn ghost sm" + (method !== "bootstrap" ? " active" : "")}
+                    disabled={loading} onClick={() => onRun("shuffle")}
+                    title="같은 날들을 순서만 바꿉니다 — '운 나쁜 순서였다면 낙폭이 얼마였을까'">순서 섞기</button>
+            <button type="button" className={"btn ghost sm" + (method === "bootstrap" ? " active" : "")}
+                    disabled={loading} onClick={() => onRun("bootstrap")}
+                    title="같은 성향의 날에서 새 기간을 다시 뽑습니다 — '다시 돌리면 얼마나 흔들릴까'">복원추출</button>
+          </span>
           <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
             {mc && mc.n ? `${mc.n.toLocaleString("ko-KR")}회 · ${mc.days}일` : "미실행"}
           </span>
-          <button className="btn ghost sm" onClick={onRun} disabled={loading}>{loading ? "계산중…" : "↻ 재계산"}</button>
+          <button className="btn ghost sm" onClick={() => onRun(method)} disabled={loading}>{loading ? "계산중…" : "↻ 재계산"}</button>
         </div>
       </div>
       <div className="panel-bd">
         <MetricHelpStrip items={[
-          "일별 손익을 무작위 재배열한 분포",
+          method === "bootstrap" ? "같은 성향의 날을 복원추출해 다시 만든 분포" : "같은 날들을 순서만 바꾼 분포",
           "밴드 = p5~p95 / 진한선 = 중앙값(p50)",
-          "거래 순서가 결과에 준 영향(운) 진단",
+          method === "bootstrap" ? "표본이 달랐다면? — 결과의 흔들림 진단" : "순서가 달랐다면? — 낙폭 위험 진단",
         ]} />
+        {mc && mc.method_note && (
+          <p className="bt-mc-note">{mc.method_note}</p>
+        )}
         {/* 분포 카드 행 */}
         <div style={{ display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" }}>
           <Mini label="기대 MDD p95" value={fmtPct(mddPct.p95)} color="var(--red)" />
           <Mini label="MDD 중앙값" value={fmtPct(mddPct.p50)} />
           <Mini label="최종손익 p50" value={fmtMoney(finalQ.p50)}
-                color={finalQ.p50 > 0 ? "var(--teal)" : finalQ.p50 < 0 ? "var(--red)" : undefined} />
+                color={finalQ.p50 > 0 ? "var(--teal)" : finalQ.p50 < 0 ? "var(--red)" : undefined}
+                sub={mc && mc.final_degenerate ? "순서만 바꿔 항상 동일" : (n > 0 ? `p5 ${fmtMoney(finalQ.p5)} ~ p95 ${fmtMoney(finalQ.p95)}` : undefined)} />
           <Mini label="파산확률" value={ruin != null ? fmtPct(ruin * 100) : "—"}
                 color={ruin != null && ruin >= 0.2 ? "var(--red)" : ruin != null && ruin >= 0.05 ? "var(--amber)" : undefined}
                 sub={mc && mc.ruin_pct ? `자본 -${Math.round(mc.ruin_pct)}%` : undefined} />

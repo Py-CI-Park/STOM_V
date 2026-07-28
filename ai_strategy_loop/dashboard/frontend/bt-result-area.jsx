@@ -30,13 +30,39 @@ import { BtQuantPanel } from "./bt-quant.jsx";
 // 결과·분석 영역 — 메트릭 카드 + 4차트 + 기여 테이블 + 인사이트.
 //   /bt/result 를 로드해 위 차트들을 합성한다. backtest.jsx 의 BacktestTab 이 소비.
 // ===========================================================================
+/* v5.13.2 — 보유시간 표기 헬퍼. 엔진 CSV 의 보유시간 컬럼은 tick=초 / min=분 이라
+   서버가 초로 정규화해 내려준다(summary.avg_hold_sec / median_hold_sec).
+   화면은 크기에 맞춰 초/분/시간으로 읽어준다("1726분" 같은 허수 방지). */
+export function btFmtHold(sec) {
+  const v = Number(sec);
+  if (!Number.isFinite(v) || v <= 0) return "—";
+  if (v < 60) return `${Math.round(v)}초`;
+  if (v < 3600) return `${(v / 60).toFixed(1)}분`;
+  return `${(v / 3600).toFixed(1)}시간`;
+}
+
+// v5.13.2 — 카드 구성 개편(사용자 지적: "핵심 메트릭 정보 부족 / 65.36%가 무슨 기준인지 모름").
+//   ① 자본 대비 수익률을 1급 지표로 올리고 ② 거래수익률 합은 참고치로 이름을 바꾸고
+//   ③ 늘 비어 있던 CAGR 을 context.annual_return_pct 로 실제로 채우고
+//   ④ 보유시간(중앙값)을 추가해 tick/min 감각을 준다.
 const _BT_METRIC_CARDS = [
   { key: "trade_count",      label: "거래수",     fmt: (v) => fmtInt(v) },
   { key: "win_rate",         label: "승률",       fmt: (v) => fmtPct(v) },
-  { key: "total_profit_pct", label: "수익률합계", fmt: (v) => fmtPct(v), signed: true },
+  { key: "return_on_capital_pct", label: "자본대비 수익률", fmt: (v) => fmtPct(v), signed: true,
+    hint: "운용자본 대비 실제 수익률(연구 채점기 기준). 아래 '거래수익률 합'과 다른 값입니다." },
   { key: "total_profit_krw", label: "수익금",     fmt: (v) => fmtMoney(v), signed: true },
-  { key: "mdd_pct",          label: "MDD",        fmt: (v) => fmtPct(v), risk: true },
-  { key: "cagr",             label: "CAGR",       fmt: (v) => fmtPct(v), signed: true },
+  // v5.13.2 — MDD 두 정의 분리. 같은 세대가 2.16%(자본대비)와 47.53%(수익 반납률)로
+  //   동시에 표시되던 혼선을 이름으로 끝낸다. 자본대비가 없으면 반납률만 보인다.
+  { key: "mdd_on_capital_pct", label: "MDD (자본대비)", fmt: (v) => fmtPct(v), risk: true,
+    hint: "운용자본 대비 최대 낙폭(연구 채점기·명예의 전당과 같은 정의)." },
+  { key: "mdd_pct",          label: "수익 반납률", fmt: (v) => fmtPct(v), risk: true,
+    hint: "누적 실현손익 고점 대비 되돌린 비율. 자본 대비 낙폭과 다른 질문입니다." },
+  { key: "cagr",             label: "연평균(CAGR)", fmt: (v) => fmtPct(v), signed: true,
+    hint: "자본대비 수익률을 기간 길이로 연환산한 값. 기간이 20일 미만이면 계산하지 않습니다." },
+  { key: "median_hold_sec",  label: "보유시간(중앙)", fmt: (v) => btFmtHold(v),
+    hint: "청산까지 걸린 시간의 중앙값. tick 백테는 초 단위로 기록됩니다." },
+  { key: "sum_trade_return_pct", label: "거래수익률 합(참고)", fmt: (v) => fmtPct(v), signed: true,
+    hint: "거래별 수익률을 그냥 더한 값입니다. 같은 자본이 여러 번 회전하므로 자본 대비 수익률이 아닙니다 — 비교용 참고치로만 보세요." },
 ];
 const _BT_RESULT_CAPABILITIES = {
   job: { label: "완료 잡", range: true, monteCarlo: true, compare: true,
@@ -161,7 +187,8 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
   }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
 
   // 몬테카를로 재계산(현재 구간 반영). 완료 잡과 결과 CSV 가 있는 진화 세대 모두 지원. 무예외.
-  const loadMc = useCallback_btc(() => {
+  //   v5.13.2 — method 인자 추가: "shuffle"(순서 위험) / "bootstrap"(표본 위험).
+  const loadMc = useCallback_btc((method) => {
     const requestState = mcRequestRef.current;
     if (requestState.controller) requestState.controller.abort();
     if (isDemo || !baseUrl || (!jobId && !isEvo)) {
@@ -181,6 +208,7 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
                 : "run_id=" + encodeURIComponent(evoSource.run_id)
                   + "&gen_no=" + encodeURIComponent(evoSource.gen_no));
     if (range) { url += "&t_start=" + range.t_start + "&t_end=" + range.t_end; }
+    url += "&method=" + (method === "bootstrap" ? "bootstrap" : "shuffle");
     _btFetchJson(url, 12000, controller.signal)
       .then(j => {
         if (!btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) return;
@@ -332,7 +360,16 @@ const analysis = result.analysis || {};
 // 메트릭 우선순위: CLI metrics(브리핑 필드) → 없으면 analysis.summary 매핑.
 const metrics = result.metrics || {};
 const summary = analysis.summary || {};
-const metricVal = (key) => btMetricValue(metrics, summary, key);
+// v5.13.2 — 실행 맥락(/bt/result 의 context): 언제·어떤 연구·몇 세대·어느 기간·tick/min.
+//   자본대비 수익률·연평균은 여기에만 있으므로 summary 에 합쳐 카드가 집어 쓰게 한다.
+const runCtx = result.context || {};
+const summaryPlus = {
+  ...summary,
+  return_on_capital_pct: runCtx.return_on_capital_pct,
+  cagr: runCtx.annual_return_pct,
+  mdd_on_capital_pct: runCtx.mdd_on_capital_pct,
+};
+const metricVal = (key) => btMetricValue(metrics, summaryPlus, key);
 const metricsOnly = result.has_csv === false || result.artifact_state === "metrics_only_csv_missing";
 if (metricsOnly) {
   return (
@@ -343,7 +380,7 @@ if (metricsOnly) {
       </div>
       <div className="panel-bd">
         <p className="bt-section-purpose">{result.message || "결과 CSV가 없어 저장된 세대 메트릭만 표시합니다. 차트와 상세 분석은 제공하지 않습니다."}</p>
-        <div className="bt-summary-row" style={{ gridTemplateColumns: "repeat(6, minmax(0, 1fr))" }}>
+        <div className="bt-summary-row" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
           {_BT_METRIC_CARDS.map(meta => {
             const value = metricVal(meta.key);
             const num = typeof value === "number" && Number.isFinite(value) ? value : null;
@@ -405,6 +442,9 @@ return (
           <p className="bt-section-purpose">조건식, 기간, 표본 내 advisory와 핵심 지표를 한 곳에서 확인합니다.</p>
         </div>
       </div>
+    {/* v5.13.2 — 이 결과가 "무엇인지" 한 줄로: 언제 실행 · 어떤 연구 · 몇 세대 ·
+        어느 기간 · tick/min · 게이트. 사용자 지적("결과 요약에 상세 설명이 있었으면") 반영. */}
+    <_BtRunContextBand ctx={runCtx} summary={summary} />
     {/* V5.3(gap-only): 결과가 어떤 조건식·기간을 테스트했는지 상단 명시(job spec 소비, 재계산 없음) */}
     {(() => {
       const spec = result.spec || {};
@@ -515,7 +555,7 @@ return (
           <button className="btn ghost sm" onClick={onReload} disabled={loading}>{loading ? "로딩…" : "↻"}</button>
         </div>
       </div>
-      <div className="bt-summary-row" style={{ gridTemplateColumns: "repeat(6, 1fr)" }}>
+      <div className="bt-summary-row" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
         {_BT_METRIC_CARDS.map(m => {
           const v = metricVal(m.key);
           const num = typeof v === "number" ? v : null;
@@ -665,8 +705,8 @@ function _BtMetricCard({ meta, num, dailyPnl }) {
   else if (meta.signed && num != null) color = num > 0 ? "var(--teal)" : num < 0 ? "var(--red)" : undefined;
 
   // 승률·MDD 는 반원 게이지(0~100%).
-  if ((meta.key === "win_rate" || meta.key === "mdd_pct") && num != null) {
-    const gaugeColor = meta.key === "mdd_pct" ? "var(--red)" : "var(--teal)";
+  if ((meta.key === "win_rate" || meta.key === "mdd_pct" || meta.key === "mdd_on_capital_pct") && num != null) {
+    const gaugeColor = meta.key === "win_rate" ? "var(--teal)" : "var(--red)";
     return (
       <div className="bt-metric-card">
         <span className="summary-lbl">{meta.label}</span>
@@ -686,9 +726,58 @@ function _BtMetricCard({ meta, num, dailyPnl }) {
     );
   }
   return (
-    <div className="bt-metric-card">
-      <span className="summary-lbl">{meta.label}</span>
+    <div className="bt-metric-card" title={meta.hint || undefined}>
+      <span className="summary-lbl">{meta.label}{meta.hint ? <span className="bt-metric-help" aria-hidden="true">ⓘ</span> : null}</span>
       <span className="summary-val" style={{ color }}>{shown != null ? meta.fmt(shown) : "—"}</span>
+      {meta.hint && <span className="bt-metric-hint">{meta.hint}</span>}
+    </div>
+  );
+}
+
+/* v5.13.2 — 실행 맥락 밴드. "이 숫자가 언제·무엇을 돌린 결과인지"를 요약 맨 위에 둔다.
+   tick/min 배지를 여기서 처음 제시한다(엔진 CSV 시각 자릿수로 판별 — 추측 아님). */
+const _BT_TF_LABEL = {
+  tick: { text: "TICK (틱 단위)", cls: "tick", tip: "틱 백테 — 초 단위 체결. 보유시간이 초로 기록됩니다." },
+  min: { text: "MIN (분 단위)", cls: "min", tip: "분봉 백테 — 분 단위 체결. 보유시간이 분으로 기록됩니다." },
+  unknown: { text: "타임프레임 미상", cls: "unknown", tip: "결과 CSV 에서 타임프레임을 판별하지 못했습니다." },
+};
+function _btCtxDate(ymd) {
+  const s = String(ymd || "");
+  return s.length === 8 ? `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}` : (s || "—");
+}
+function _BtRunContextBand({ ctx, summary }) {
+  if (!ctx || !ctx.run_id) return null;
+  const tf = _BT_TF_LABEL[ctx.timeframe] || _BT_TF_LABEL.unknown;
+  const executed = ctx.executed_at ? String(ctx.executed_at).replace("T", " ") : "기록 없음";
+  const period = (ctx.period_start || ctx.period_end)
+    ? `${_btCtxDate(ctx.period_start)} ~ ${_btCtxDate(ctx.period_end)}`
+    : "—";
+  const span = ctx.calendar_days
+    ? `${ctx.calendar_days}일(거래일 ${ctx.trading_days || 0}일)` : "—";
+  // 운용 자본은 손익이 아니므로 부호(+)를 붙이지 않는다(fmtMoney 는 signed 표기).
+  const capital = typeof ctx.capital_krw === "number" && Number.isFinite(ctx.capital_krw)
+    ? Math.round(ctx.capital_krw).toLocaleString("ko-KR") + "원" : "—";
+  return (
+    <div className="bt-runctx-band" aria-label="이 결과의 실행 맥락">
+      <div className="bt-runctx-head">
+        <span className={"bt-tf-badge " + tf.cls} title={tf.tip}>{tf.text}</span>
+        <b className="mono bt-runctx-run" title="연구 run · 세대">{ctx.run_id} · {ctx.gen_no}세대</b>
+        {ctx.research_label && <span className="bt-runctx-gist mono" title="연구 라벨(strategy_gist)">{ctx.research_label}</span>}
+        <span className={"badge " + (ctx.gate_passed ? "ok" : "warn")}
+              title="연구 게이트(품질 기준) 통과 여부">{ctx.gate_passed ? "게이트 통과" : "게이트 미통과"}</span>
+      </div>
+      <div className="bt-runctx-grid mono">
+        <div><span className="k">실행 시각</span><b>{executed}</b></div>
+        <div><span className="k">대상 기간</span><b>{period}</b></div>
+        <div><span className="k">기간 길이</span><b>{span}</b></div>
+        <div><span className="k">운용 자본</span><b>{capital}</b></div>
+        <div><span className="k">보유시간(중앙)</span><b>{btFmtHold(summary && summary.median_hold_sec)}</b></div>
+        <div><span className="k">최장 보유</span><b>{btFmtHold(summary && summary.max_hold_sec)}</b></div>
+      </div>
+      <p className="bt-runctx-note">
+        아래 <b>자본대비 수익률</b>은 운용자본 기준 실제 수익률이고,
+        <b> 거래수익률 합</b>은 거래별 수익률을 그냥 더한 참고치입니다 — 두 값이 다른 것이 정상입니다.
+      </p>
     </div>
   );
 }

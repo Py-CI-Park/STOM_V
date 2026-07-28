@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import ast
+import datetime as _dt_module
 import hashlib
 import os
 import re
@@ -1468,6 +1469,77 @@ def _opt_metric(value: Any) -> Optional[float]:
         return None
 
 
+def _annualize_pct(return_pct: Optional[float], calendar_days: Optional[int]) -> Optional[float]:
+    """기간 수익률(%) → 연환산 수익률(%). 기간/입력이 부실하면 None(추정 금지).
+
+    복리 환산: (1+r)^(365/days) - 1. days<20 이면 표본이 짧아 연환산이 과장되므로
+    계산하지 않는다(대시보드가 '기간 짧음'으로 표시).
+    """
+    if return_pct is None or not calendar_days or int(calendar_days) < 20:
+        return None
+    try:
+        growth = 1.0 + float(return_pct) / 100.0
+        if growth <= 0.0:  # 원금 전손 이상 — 연환산 정의 불가.
+            return None
+        return (growth ** (365.0 / float(calendar_days)) - 1.0) * 100.0
+    except (ValueError, TypeError, OverflowError, ZeroDivisionError):
+        return None
+
+
+def _result_context(row: Dict[str, Any], run_id: str, gen_no: int,
+                    summary: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """결과 요약 상단에 붙는 '이 결과가 무엇인지' 블록(v5.13.2).
+
+    "언제 실행했고 어떤 연구의 몇 세대이며 어느 기간을 어떤 타임프레임으로 돌렸는지"를
+    한 곳에 모은다. 수익률은 의미가 다른 두 값을 분리해 싣는다:
+      - return_on_capital_pct : 운용자본 대비 수익률(loop 채점기 기준, 진짜 수익률)
+      - sum_trade_return_pct  : 거래별 수익률 단순 합(참고치 — 자본 대비가 아님)
+    이 둘이 같은 이름(total_profit_pct)으로 섞여 65.36% vs 32.71% 처럼 보이던 혼선을 끝낸다.
+    """
+    summary = summary or {}
+    created = row.get("created_at")
+    executed_at_iso: Optional[str] = None
+    try:
+        if created:
+            executed_at_iso = _dt_module.datetime.fromtimestamp(float(created)).isoformat(timespec="seconds")
+    except (ValueError, TypeError, OSError):
+        executed_at_iso = None
+
+    return_krw = _opt_metric(row.get("profit"))
+    return_on_capital = _opt_metric(row.get("total_profit_pct"))
+    capital_krw: Optional[float] = None
+    if return_krw is not None and return_on_capital not in (None, 0):
+        capital_krw = return_krw / return_on_capital * 100.0
+    calendar_days = summary.get("calendar_days") or 0
+    return {
+        "run_id": run_id,
+        "gen_no": int(gen_no),
+        "research_label": row.get("strategy_gist") or "",
+        "buy_name": row.get("buy_name") or "",
+        "sell_name": row.get("sell_name") or "",
+        "executed_at": executed_at_iso,
+        "executed_at_unix": float(created) if created else None,
+        "timeframe": summary.get("timeframe") or "unknown",
+        "period_start": summary.get("period_start"),
+        "period_end": summary.get("period_end"),
+        "calendar_days": calendar_days,
+        "trading_days": summary.get("trading_days") or 0,
+        "capital_krw": capital_krw,
+        "return_krw": return_krw,
+        "return_on_capital_pct": return_on_capital,
+        # v5.13.2 — MDD 도 두 정의가 같은 이름으로 섞여 있었다(같은 세대에서 2.16% vs 47.53%).
+        #   generations.mdd  : 자본 대비 낙폭(엔진/채점기 정의) ← 명예의 전당이 쓰는 값
+        #   summary.max_drawdown_pct : 누적 실현손익 '고점 대비 반납률'(CSV 파생)
+        #   둘 다 유효하지만 묻는 질문이 다르므로 이름을 갈라 함께 싣는다.
+        "mdd_on_capital_pct": _opt_metric(row.get("mdd")),
+        "sum_trade_return_pct": summary.get("sum_trade_return_pct"),
+        "annual_return_pct": _annualize_pct(return_on_capital, calendar_days),
+        "gate_passed": bool(row.get("gate_passed")),
+        "score": _opt_metric(row.get("score")),
+        "status": row.get("status"),
+    }
+
+
 def _resolve_gen_csv(row: Dict[str, Any]) -> Optional[str]:
     """세대 행의 csv_path 를 절대경로로 정규화한다(상대경로는 REPO_ROOT 기준). 없으면 None."""
     raw_csv = row.get("csv_path")
@@ -1505,6 +1577,7 @@ def evo_generations(run_id: str = "") -> Dict[str, Any]:
     items: List[Dict[str, Any]] = []
     for r in rows:
         raw_gen = r.get("gen_no")
+        gen_csv = _resolve_gen_csv(r)
         items.append({
             # gen 0 은 falsy 라 `or -1` 로 합치면 -1 로 뭉개진다 — is None 가드로 보존.
             "gen_no": -1 if raw_gen is None else int(raw_gen),
@@ -1516,8 +1589,11 @@ def evo_generations(run_id: str = "") -> Dict[str, Any]:
             "score": float(r.get("score", 0.0) or 0.0),
             "profit": float(r.get("profit", 0.0) or 0.0),
             "mdd": float(r.get("mdd", 0.0) or 0.0),
-            "has_csv": _resolve_gen_csv(r) is not None,
+            "has_csv": gen_csv is not None,
             "strategy_gist": r.get("strategy_gist") or "",
+            # v5.13.2 — tick/min 배지용. 첫 행만 읽어 판별한다(전체 파싱 없음).
+            "timeframe": analysis.peek_timeframe_csv(gen_csv),
+            "created_at": float(r.get("created_at") or 0.0) or None,
         })
     return {"items": items, "count": len(items), "run_id": run_id}
 
@@ -1556,6 +1632,8 @@ def _result_for_run(
             "metrics": bundle["summary"],
             "analysis": bundle,
             "has_csv": True,
+            # v5.13.2 — "언제·어떤 연구·몇 세대·어느 기간·tick/min" 실행 맥락(결과 요약 상단).
+            "context": _result_context(row, run_id, gen_no, bundle.get("summary")),
         }
     # CSV 부재 — generations 행 메트릭 요약 + 빈 분석 구조(무예외).
     #   None(미측정)은 모든 저장 메트릭에서 그대로 전파해 실제 0과 구분한다.
@@ -1583,6 +1661,7 @@ def _result_for_run(
         "metrics": fallback_metrics,
         "analysis": analysis.full_analysis(None),
         "has_csv": False,
+        "context": _result_context(row, run_id, gen_no, None),
         "message": "결과 CSV 가 없어 세대 메트릭 요약만 표시합니다(차트/분석 생략).",
     }
 
@@ -1642,7 +1721,10 @@ def _demo_trades_rows() -> List[Dict[str, Any]]:
             analysis.COL_NAME: rng.choice(names),
             analysis.COL_BUY_TIME: buy_t,
             analysis.COL_SELL_TIME: sell_t,
-            analysis.COL_HOLD_MIN: hold_min,
+            # 데모 시각은 14자리(YYYYMMDDHHMMSS) = tick 규약이므로 보유시간도 **초**로
+            #   적는다(엔진 규약과 동일 — backengine_base.py:909). 분으로 적으면 데모만
+            #   60배 부풀어 보인다.
+            analysis.COL_HOLD_MIN: round(hold_min * 60.0),
             analysis.COL_PROFIT_PCT: pct,
             analysis.COL_PROFIT_KRW: krw,
             analysis.COL_BUY_AMOUNT: buy_amount,
@@ -1771,11 +1853,13 @@ def analysis_montecarlo(
     t_end: Optional[int] = None,
     run_id: str = "",
     gen_no: Optional[int] = None,
+    method: str = "shuffle",
 ) -> Dict[str, Any]:
-    """몬테카를로 — 일별 손익 셔플 재배열로 MDD/최종손익 분포·파산확률·팬차트.
+    """몬테카를로 — 일별 손익 재구성으로 MDD/최종손익 분포·파산확률·팬차트.
 
     입력 경로는 /bt/result 와 같다: job_id(완료 잡) 또는 run_id+gen_no(진화 세대).
     세대도 같은 거래 CSV 를 남기므로 동일한 표본으로 계산한다.
+    method="shuffle"(순서 위험) | "bootstrap"(표본 위험) — 의미는 analysis.monte_carlo 참조.
     """
     n = max(0, min(int(n), _MC_MAX_N))
     if not job_id and run_id and gen_no is not None:
@@ -1786,7 +1870,8 @@ def analysis_montecarlo(
         "job_id": job_id,
         "run_id": run_id,
         "gen_no": gen_no,
-        "montecarlo": analysis.monte_carlo(trades, n=n, seed=seed, ruin_pct=ruin_pct),
+        "montecarlo": analysis.monte_carlo(trades, n=n, seed=seed, ruin_pct=ruin_pct,
+                                           method=method),
     }
 
 
@@ -2125,6 +2210,8 @@ def _report_payload_for_run(run_id: str, gen_no: int) -> Optional[Dict[str, Any]
             "metrics": bundle["summary"],
             "analysis": bundle,
             "montecarlo": mc,
+            # v5.13.2 — 리포트도 대시보드와 같은 실행 맥락을 싣는다(사람용 표 + AI용 JSON).
+            "context": _result_context(row, run_id, gen_no, bundle.get("summary")),
         }
     # CSV 부재 — generations 행 메트릭으로 축약 리포트(메트릭 카드만).
     fallback_metrics = {
@@ -2143,6 +2230,7 @@ def _report_payload_for_run(run_id: str, gen_no: int) -> Optional[Dict[str, Any]
         "metrics": fallback_metrics,
         "analysis": {},
         "montecarlo": None,
+        "context": _result_context(row, run_id, gen_no, None),
     }
 
 

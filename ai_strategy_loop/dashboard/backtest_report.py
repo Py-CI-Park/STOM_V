@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import html
+import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -538,6 +539,12 @@ def _styles() -> str:
         f"background:linear-gradient(180deg,{_C_TEAL},{_C_VIOLET})}}"
         f".sec-bd{{background:{_C_PANEL};border:1px solid {_C_LINE};border-radius:12px;padding:16px}}"
         "table.tbl{width:100%;border-collapse:collapse;font-size:12.5px}"
+        # v5.13.2 — 실행 맥락 표(라벨 열 고정 폭) + 지표 의미 주석.
+        f"table.ctx-tbl th{{width:150px;color:{_C_INK2}}}"
+        f"table.ctx-tbl td{{color:{_C_INK0}}}"
+        f".ctx-note{{margin:12px 0 0;padding:9px 11px;border-left:3px solid {_C_VIOLET};"
+        f"background:{_C_BG};border-radius:7px;color:{_C_INK1};font-size:12px;line-height:1.6}}"
+        f".ctx-note b{{color:{_C_INK0}}}"
         f"table.tbl th{{text-align:left;color:{_C_INK2};font-family:monospace;font-weight:500;"
         f"padding:7px 9px;border-bottom:1px solid {_C_LINE}}}"
         f"table.tbl td{{padding:7px 9px;border-bottom:1px solid {_C_LINE};color:{_C_INK1};"
@@ -597,9 +604,15 @@ def _header(meta: Dict[str, Any]) -> str:
     )
 
 
-def _hero_block(metrics: Optional[Dict[str, Any]], summary: Dict[str, Any]) -> str:
-    """히어로 손익 배너 — 총수익금·총수익률·MDD 를 가장 크게(F2/F4)."""
+def _hero_block(metrics: Optional[Dict[str, Any]], summary: Dict[str, Any],
+                ctx: Optional[Dict[str, Any]] = None) -> str:
+    """히어로 손익 배너 — 총수익금·수익률·MDD 를 가장 크게(F2/F4).
+
+    v5.13.2 — 수익률은 **자본 대비**를 우선한다. 이전에는 거래별 수익률의 단순 합
+    (total_profit_pct)이 '총수익률' 자리에 올라 명예의 전당 값과 2배 가까이 어긋났다.
+    """
     m = metrics or {}
+    ctx = ctx or {}
 
     def pick(*keys: str) -> Any:
         for k in keys:
@@ -610,7 +623,9 @@ def _hero_block(metrics: Optional[Dict[str, Any]], summary: Dict[str, Any]) -> s
         return None
 
     profit = pick("total_profit_krw", "profit")
-    pct = pick("total_profit_pct", "return_pct")
+    on_capital = ctx.get("return_on_capital_pct")
+    pct = on_capital if on_capital is not None else pick("total_profit_pct", "return_pct")
+    pct_label = "자본대비 수익률" if on_capital is not None else "거래수익률 합(참고)"
     mdd = pick("mdd_pct", "max_drawdown_pct")
     try:
         profit_cls = "pos" if float(profit) > 0 else ("neg" if float(profit) < 0 else "mid")
@@ -624,13 +639,108 @@ def _hero_block(metrics: Optional[Dict[str, Any]], summary: Dict[str, Any]) -> s
         '<div class="hero">'
         f'<div><div class="hl">총수익금</div><div class="hv {profit_cls}">'
         f'{_num(profit)}{"원" if profit is not None else ""}</div></div>'
-        f'<div class="rate"><div class="hl">총수익률</div><div class="hv {pct_cls}">{_pct(pct)}</div></div>'
+        f'<div class="rate"><div class="hl">{_esc(pct_label)}</div><div class="hv {pct_cls}">{_pct(pct)}</div></div>'
         f'<div class="risk"><div class="hl">MDD (최대 낙폭)</div><div class="hv neg">{_pct_plain(mdd)}</div></div>'
         '</div>'
     )
 
 
+_TF_LABEL = {"tick": "TICK (틱 · 초 단위 체결)", "min": "MIN (분봉 · 분 단위 체결)"}
+
+
+def _ymd(value: Any) -> str:
+    s = str(value or "")
+    return f"{s[:4]}-{s[4:6]}-{s[6:8]}" if len(s) == 8 and s.isdigit() else (s or "—")
+
+
+def _context_block(ctx: Optional[Dict[str, Any]], summary: Dict[str, Any]) -> str:
+    """v5.13.2 — 실행 맥락 블록: 언제·어떤 연구·몇 세대·어느 기간·tick/min·운용자본.
+
+    사람은 이 표만 보고 "무엇을 돌린 결과인지" 판단하고, AI 는 아래 JSON 블록을 읽는다.
+    """
+    ctx = ctx or {}
+    if not ctx.get("run_id"):
+        return ""
+    tf = str(ctx.get("timeframe") or summary.get("timeframe") or "unknown")
+    rows = [
+        ("연구 · 세대", f"{ctx.get('run_id')} · {ctx.get('gen_no')}세대"),
+        ("연구 라벨", ctx.get("research_label") or "—"),
+        ("실행 시각", str(ctx.get("executed_at") or "—").replace("T", " ")),
+        ("타임프레임", _TF_LABEL.get(tf, "판별 불가")),
+        ("대상 기간", f"{_ymd(summary.get('period_start'))} ~ {_ymd(summary.get('period_end'))}"),
+        ("기간 길이", f"{summary.get('calendar_days') or 0}일 (거래일 {summary.get('trading_days') or 0}일)"),
+        ("운용 자본", (f"{float(ctx['capital_krw']):,.0f}원"
+                    if isinstance(ctx.get("capital_krw"), (int, float)) else "—")),
+        ("게이트", "통과" if ctx.get("gate_passed") else "미통과"),
+        ("매수 조건식", ctx.get("buy_name") or "—"),
+        ("매도 조건식", ctx.get("sell_name") or "—"),
+    ]
+    body = "".join(
+        f"<tr><th>{_esc(k)}</th><td>{_esc(v)}</td></tr>" for k, v in rows
+    )
+    note = (
+        '<p class="ctx-note">이 보고서의 <b>자본대비 수익률</b>은 운용자본 기준 실제 수익률이고, '
+        '<b>거래수익률 합</b>은 거래별 수익률을 단순히 더한 참고치입니다 — 두 값이 다른 것이 정상입니다.</p>'
+    )
+    return _section("이 결과가 무엇인지 (실행 맥락)",
+                    f'<table class="tbl ctx-tbl"><tbody>{body}</tbody></table>{note}', "sec-context")
+
+
+def _machine_meta_block(meta: Dict[str, Any], ctx: Optional[Dict[str, Any]],
+                        summary: Dict[str, Any], metrics: Optional[Dict[str, Any]]) -> str:
+    """AI/스크립트가 파싱하는 구조화 메타(사용자 요청: "ai 및 사람이 더 연구를 이해하고 찾을 수 있도록").
+
+    화면에는 보이지 않는 application/json 블록 + 검색용 <meta> 태그를 함께 낸다.
+    값은 이미 계산된 것만 싣는다(리포트가 새 수치를 만들지 않는다 — 무예외).
+    """
+    ctx = ctx or {}
+    doc = {
+        "schema": "stom.backtest.report/1",
+        "title": meta.get("title"),
+        "generated_at": meta.get("generated_at"),
+        "run_id": ctx.get("run_id"),
+        "gen_no": ctx.get("gen_no"),
+        "research_label": ctx.get("research_label"),
+        "executed_at": ctx.get("executed_at"),
+        "timeframe": ctx.get("timeframe") or summary.get("timeframe"),
+        "period": {
+            "start": summary.get("period_start"), "end": summary.get("period_end"),
+            "calendar_days": summary.get("calendar_days"), "trading_days": summary.get("trading_days"),
+        },
+        "conditions": {"buy": ctx.get("buy_name") or meta.get("buy"),
+                       "sell": ctx.get("sell_name") or meta.get("sell")},
+        "metrics": {
+            "trade_count": summary.get("trade_count"),
+            "win_rate": summary.get("win_rate"),
+            "total_profit_krw": summary.get("total_profit_krw"),
+            "return_on_capital_pct": ctx.get("return_on_capital_pct"),
+            "sum_trade_return_pct": summary.get("sum_trade_return_pct"),
+            "annual_return_pct": ctx.get("annual_return_pct"),
+            "max_drawdown_pct": summary.get("max_drawdown_pct"),
+            "payoff_ratio": summary.get("payoff_ratio"),
+            "median_hold_sec": summary.get("median_hold_sec"),
+            "capital_krw": ctx.get("capital_krw"),
+        },
+        "gate_passed": ctx.get("gate_passed"),
+        "units": {"hold": "seconds", "money": "KRW", "return": "percent"},
+    }
+    try:
+        payload = json.dumps(doc, ensure_ascii=False, default=str)
+    except (TypeError, ValueError):  # 직렬화 불가 값이 섞여도 리포트는 나와야 한다.
+        payload = "{}"
+    # </script> 조기 종료 방지(자급자족 HTML 안전 규약).
+    payload = payload.replace("</", "<\\/")
+    tags = "".join(
+        f'<meta name="stom:{_esc(k)}" content="{_esc(v)}">'
+        for k, v in (("run_id", ctx.get("run_id")), ("gen_no", ctx.get("gen_no")),
+                     ("timeframe", doc["timeframe"]), ("executed_at", ctx.get("executed_at")))
+        if v is not None
+    )
+    return tags + f'<script type="application/json" id="stom-report-meta">{payload}</script>'
+
+
 _TOC_ITEMS = [
+    ("sec-context", "실행 맥락"),
     ("sec-equity", "수익곡선"),
     ("sec-underwater", "언더워터"),
     ("sec-dist", "손익 분포"),
@@ -675,12 +785,19 @@ def render_report(payload: Dict[str, Any]) -> str:
     note = meta.get("note")
     note_html = f'<div class="note">{_esc(note)}</div>' if note else ""
 
+    # v5.13.2 — 실행 맥락(context)이 있으면 히어로 바로 아래에 싣고, 히어로 수익률도
+    #   자본 대비 값을 우선한다(거래수익률 합이 '총수익률' 자리에 오던 혼선 제거).
+    ctx = payload.get("context") if isinstance(payload.get("context"), dict) else None
     body_parts = [
         _header(meta),
+        _machine_meta_block(meta, ctx, summary, metrics),
         note_html,
-        _hero_block(metrics, summary),
+        _hero_block(metrics, summary, ctx),
         _toc_block(),
-        _metric_cards(metrics, summary),
+        _context_block(ctx, summary),
+        _metric_cards(metrics, {**summary, **{k: v for k, v in (ctx or {}).items()
+                                              if k in ("return_on_capital_pct", "annual_return_pct")
+                                              and v is not None}}),
         _section("수익곡선 · 일별손익", _equity_svg(_get(analysis, "equity")), "sec-equity"),
         _section("언더워터(고점 대비 반납)", _underwater_svg(_get(analysis, "underwater")), "sec-underwater"),
         _section("손익 분포", _histogram_svg(_get(analysis, "distribution")), "sec-dist"),

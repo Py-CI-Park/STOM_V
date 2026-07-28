@@ -85,6 +85,11 @@ function runPostBuild(manifestModelFields) {
   const stomV = hash8(stomPath);  // stom-ui.js 는 선행 `vite build` 산출물(분리·불변).
   const v4CssPath = resolve(FRONTEND, "v4.css");
   const v4CssV = hash8(v4CssPath);
+  // v5.13.2 — styles.css(디자인 토큰 원본)도 content-hash 로 버전을 매긴다.
+  //   지금까지 ?v= 가 손으로 핀된 문자열(20260624u002 / 20260723v510)이라, 토큰을
+  //   고쳐도 브라우저가 캐시된 구 파일을 계속 썼다(테마 추가가 화면에 반영되지 않던 원인).
+  const stylesCssPath = resolve(FRONTEND, "styles.css");
+  const stylesCssV = hash8(stylesCssPath);
 
   // ---------- HTML ?v= 자동 갱신(수동 핀 폐지) ----------
   //   대상: bundle/app.js + bundle/stom-ui.js (번들을 로드하는 모든 엔트리).
@@ -116,6 +121,7 @@ function runPostBuild(manifestModelFields) {
     if (out.includes("bundle/app.js")) out = setV(out, "app.js", appV);
     if (out.includes("bundle/stom-ui.js")) out = setV(out, "stom-ui.js", stomV);
     if (out.includes("v4.css")) out = setCssV(out, "v4.css", v4CssV);
+    if (out.includes("styles.css")) out = setCssV(out, "styles.css", stylesCssV);
     if (out !== s) { writeFileSync(p, out, "utf8"); touched.push(h); }
   }
 
@@ -123,11 +129,11 @@ function runPostBuild(manifestModelFields) {
   const manifest = {
     note: "Track Z PR-6 build manifest — content-hash 캐시 버전(수동 ?v= 폐지). 빌드 산출.",
     bundles: { "app.js": { v: appV }, "stom-ui.js": { v: stomV } },
-    styles: { "v4.css": { v: v4CssV } },
+    styles: { "v4.css": { v: v4CssV }, "styles.css": { v: stylesCssV } },
     ...manifestModelFields,
   };
   writeFileSync(resolve(BUNDLE, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n", "utf8");
-  return { appV, stomV, v4CssV, touched };
+  return { appV, stomV, v4CssV, stylesCssV, touched };
 }
 
 // ============================================================================
@@ -135,10 +141,10 @@ function runPostBuild(manifestModelFields) {
 // ============================================================================
 mkdirSync(BUNDLE, { recursive: true });
 await buildServedBundle(resolve(BUNDLE, "app.js"));
-const { appV, stomV, v4CssV, touched } = runPostBuild({
+const { appV, stomV, v4CssV, stylesCssV, touched } = runPostBuild({
   model: "bundle",
   entry: ENTRY_REL,
   externalizedGlobals: EXTERNALIZED_GLOBALS,
 });
-console.log(`[build-app][bundle] app.js v=${appV} (entry=${ENTRY_REL}, react via alias-to-shim) · stom-ui.js v=${stomV} · v4.css v=${v4CssV}`);
+console.log(`[build-app][bundle] app.js v=${appV} (entry=${ENTRY_REL}, react via alias-to-shim) · stom-ui.js v=${stomV} · v4.css v=${v4CssV} · styles.css v=${stylesCssV}`);
 console.log(`[build-app][bundle] html ?v= 갱신: ${touched.join(", ") || "(변경 없음)"}`);

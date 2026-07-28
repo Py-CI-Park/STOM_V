@@ -88,7 +88,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 #   서빙한다(REST/WS API와 동일 출처 → CORS 우회 + 단일 진입점).
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 _REMODEL_FRONTEND_DIR = os.path.join(_FRONTEND_DIR, "remodel")
-_DASHBOARD_RELEASE = "v5.13.0"
+_DASHBOARD_RELEASE = "v5.13.2"
 _DASHBOARD_SHELL = "v4-ops"
 _DASHBOARD_BUILD_RE = re.compile(r"^[0-9A-Za-z._-]{1,64}$")
 _DASHBOARD_PROCESS_STARTED_AT = int(time.time())
@@ -646,6 +646,16 @@ def _runs_slim_payload() -> Dict[str, Any]:
             if labels:
                 summary["label"] = labels[0]
                 summary["labels"] = labels[:8]
+            # v5.13.2 — 사람이 읽는 이름 조각(날짜·시각·타임프레임·목적). 구 run_id 도
+            #   runs.started_at 으로 시각을 채워 "언제 시작했는지"가 항상 나온다.
+            try:
+                from ai_strategy_loop.controller.run_naming import describe_run_id  # noqa: PLC0415
+
+                summary["naming"] = describe_run_id(
+                    run_id, started_at=run.get("started_at"),
+                    timeframe=summary.get("timeframe"))
+            except Exception:  # noqa: BLE001 - 표기 보조값 실패가 목록을 막지 않는다.
+                pass
             summaries.append(summary)
         result: Dict[str, Any] = {
             "runs": summaries,
@@ -3944,6 +3954,10 @@ def create_app(
     _gpt_login_state: Dict[str, Any] = {
         "running": False, "result": None, "error": None,
         "started_at": None, "finished_at": None,
+        # v5.13.2 — 인증 URL 을 상태에 실어 화면이 클릭 가능한 링크로 보여준다.
+        #   서버가 창 없이(Hidden) 기동되면 webbrowser.open 이 조용히 실패할 수 있어,
+        #   URL 이 화면에 없으면 사용자가 진행할 방법이 아예 사라진다.
+        "auth_url": None,
     }
     _gpt_login_lock = threading.Lock()
 
@@ -3959,13 +3973,18 @@ def create_app(
             if _gpt_login_state["running"]:
                 return {**_gpt_login_snapshot(), "already_running": True}
             _gpt_login_state.update(running=True, result=None, error=None,
-                                    started_at=time.time(), finished_at=None)
+                                    started_at=time.time(), finished_at=None,
+                                    auth_url=None)
+
+        def _publish_auth_url(url: str) -> None:
+            with _gpt_login_lock:
+                _gpt_login_state["auth_url"] = str(url)
 
         def _worker() -> None:
             try:
                 from ai_strategy_loop.provider.chatgpt_oauth.oauth_login import login  # noqa: PLC0415
 
-                ok = asyncio.run(login())
+                ok = asyncio.run(login(on_auth_url=_publish_auth_url))
                 if ok:
                     # 새 토큰 파일을 현재 프로세스 토큰 매니저에 즉시 반영.
                     try:
@@ -3986,7 +4005,8 @@ def create_app(
 
         threading.Thread(target=_worker, name="gpt-auth-login", daemon=True).start()
         return {**_gpt_login_snapshot(), "started": True,
-                "message": "브라우저에서 ChatGPT 로그인 창이 열립니다. 5분 내에 완료하세요."}
+                "message": "브라우저에서 ChatGPT 로그인 창이 열립니다. 창이 뜨지 않으면 "
+                           "아래 인증 링크를 직접 여세요(5분 내 완료)."}
 
     @app.get("/gpt_auth/login_state")
     def gpt_auth_login_state() -> Dict[str, Any]:
@@ -4145,7 +4165,7 @@ def create_app(
             # This summary path deliberately never calls compare_runs(): that function
             # emits every generation row before callers can project it away.
             payload = _runs_slim_payload()
-            keep = ("run_id", "label", "status", "started_at", "finished_at", "elapsed_sec",
+            keep = ("run_id", "label", "naming", "status", "started_at", "finished_at", "elapsed_sec",
                     "period", "timeframe", "gen_count", "gate_passed_count", "best_gen", "best_score",
                     "has_csv", "final_profit", "total_profit_pct", "max_hold_count", "trade_count",
                     "years", "start_year", "end_year", "bt_universe_start_time", "bt_universe_end_time")

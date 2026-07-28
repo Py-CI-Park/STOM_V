@@ -27,6 +27,11 @@ def _trade(
         "buy_time": buy,
         "sell_time": sell,
         "day": int(sell[:8]),
+        # v5.13.2 — 실제 load_trades_csv 산출 형태와 동일하게 초/분을 함께 채운다.
+        #   보유시간의 정본 단위는 초다(엔진 CSV 는 tick=초/min=분이라 로더가 환산한다).
+        #   여기 hold 인자는 '분' 이므로 12자리(min) 시각과 짝이 맞는다.
+        "timeframe": "min" if len(str(sell)) == 12 else "tick",
+        "hold_sec": float(hold) * 60.0,
         "hold_min": float(hold),
         "profit_pct": float(pct),
         "profit_krw": float(krw),

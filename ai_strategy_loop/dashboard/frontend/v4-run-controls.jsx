@@ -50,13 +50,21 @@ function V4RunControls({
           <option value="">● LIVE (현재 진행)</option>
           {(runList || []).map(r => {
             // v5.5 F6 — 가독 라벨: 날짜 · run_id · 세대수 · 게이트(제목 잘림은 폭 확장 CSS 로 해소).
-            const d = typeof r.started_at === "number" && r.started_at > 1e9
-              ? new Date(r.started_at * 1000).toISOString().slice(0, 10) : "";
+            // v5.13.2 — 시각과 tick/min 을 앞에 붙인다. 같은 날 여러 번 돌린 run 이
+            //   날짜만으로는 구분되지 않았고, 타임프레임은 열어봐야 알 수 있었다.
+            //   서버가 주는 naming(정본 규칙 파서)을 우선 쓰고, 없으면 started_at 으로 만든다.
+            const nm = r.naming || {};
+            const stamp = nm.date
+              ? nm.date + (nm.time ? " " + nm.time : "")
+              : (typeof r.started_at === "number" && r.started_at > 1e9
+                  ? new Date(r.started_at * 1000).toISOString().slice(0, 16).replace("T", " ") : "");
+            const tf = nm.timeframe || r.timeframe;
+            const tfTag = (tf === "tick" || tf === "min") ? ` [${tf}]` : "";
             const gens = r.gen_count != null ? ` · ${r.gen_count}세대` : "";
             const gate = r.gate_passed_count > 0 ? ` · ✓${r.gate_passed_count}` : "";
             return (
               <option key={r.run_id} value={r.run_id}>
-                {(d ? d + " · " : "")}{r.run_id}{gens}{gate}{r.label ? " · " + r.label : ""}
+                {(stamp ? stamp + " · " : "")}{tfTag ? tfTag.trim() + " " : ""}{r.run_id}{gens}{gate}{r.label ? " · " + r.label : ""}
               </option>
             );
           })}

@@ -4,6 +4,8 @@
  *     - analysis.mae_mfe : [{mae, mfe, pnl_pct, hold_sec, code}]
  *     - analysis.equity.daily : [{date, pnl, ...}]
  */
+// dual-safe ESM import. KEEP on ONE physical line.
+import { MetricHelpStrip } from "./chart-primitives.jsx";
 const { useMemo: useMemo_btq } = React;
 
 // ---- 통계 유틸(닫힌형 OLS — 표시용) ----
@@ -142,6 +144,7 @@ function _BtqScatter({ pts, xLab, yLab, ols, colorFn }) {
 
 const _BTQ_DOW = ["일", "월", "화", "수", "목", "금", "토"];
 
+
 function BtQuantPanel({ analysis }) {
   const a = analysis || {};
   const trades = Array.isArray(a.mae_mfe) ? a.mae_mfe.filter(p => p && Number.isFinite(Number(p.pnl_pct))) : [];
@@ -155,9 +158,16 @@ function BtQuantPanel({ analysis }) {
           [ok.map(p => Number(p.mae)), ok.map(p => Number(p.mfe)), ok.map(p => Number(p.hold_sec) || 0)],
           ok.map(p => Number(p.pnl_pct)))
       : null;
-    // ② 보유시간 vs 수익 산점도 + 회귀
+    // ② 보유시간 vs 수익 산점도 + 회귀.
+    //   v5.13.2 — tick 결과는 보유시간이 수 분 단위라 '분' 축이 0.x 로 뭉갠다.
+    //   표본 중앙값이 10분 미만이면 축을 초로 잡는다(사용자가 읽을 수 있는 눈금 우선).
+    const holdSecs = ok.filter(p => Number(p.hold_sec) > 0).map(p => Number(p.hold_sec));
+    const sortedSecs = holdSecs.slice().sort((x, y) => x - y);
+    const medSec = sortedSecs.length ? sortedSecs[Math.floor(sortedSecs.length / 2)] : 0;
+    const holdUnit = (medSec > 0 && medSec < 600) ? "초" : "분";
+    const holdDiv = holdUnit === "초" ? 1 : 60;
     const holdPts = ok.filter(p => Number(p.hold_sec) > 0)
-      .map(p => ({ x: Number(p.hold_sec) / 60, y: Number(p.pnl_pct) }));
+      .map(p => ({ x: Number(p.hold_sec) / holdDiv, y: Number(p.pnl_pct) }));
     const holdOls = holdPts.length >= 3 ? _btqOls(holdPts.map(p => p.x), holdPts.map(p => p.y)) : null;
     // ③ 일별 수익 자기상관(lag-1)
     const pnl = daily.map(d => Number(d.pnl) || 0);
@@ -174,10 +184,10 @@ function BtQuantPanel({ analysis }) {
       cur.sum += v; cur.n += 1; if (v > 0) cur.win += 1;
       dow.set(w, cur);
     }
-    return { multi, holdPts, holdOls, lagPts, lagOls, dow, nTrades: ok.length };
+    return { multi, holdPts, holdOls, holdUnit, lagPts, lagOls, dow, nTrades: ok.length };
   }, [a]);
 
-  const { multi, holdPts, holdOls, lagPts, lagOls, dow } = model;
+  const { multi, holdPts, holdOls, holdUnit, lagPts, lagOls, dow } = model;
   if (!trades.length && !daily.length) return null;
 
   const betaRows = multi ? [
@@ -194,8 +204,18 @@ function BtQuantPanel({ analysis }) {
   return (
     <>
       <section className="panel bt-equal-card bt-quant-card" aria-label="다차원 회귀">
-        <div className="panel-hd"><div className="panel-hd-title"><span className="dot" style={{ background: "var(--violet)" }}></span>다차원 회귀 · 수익률 설명력</div></div>
+        {/* v5.13.2 전수검사 — 이 4개 카드만 공통 포맷(제목 좌 · 표본 우 · 설명 하)을
+            따르지 않았다. 헤더 우측 표본 배지와 도움말 스트립을 다른 차트와 맞춘다. */}
+        <div className="panel-hd">
+          <div className="panel-hd-title"><span className="dot" style={{ background: "var(--violet)" }}></span>다차원 회귀 · 수익률 설명력</div>
+          <span className="bt-quant-meta mono">{multi ? `표본 ${multi.n}건 · 단위 표준화 β` : "표본 부족"}</span>
+        </div>
         <div className="panel-bd">
+          <MetricHelpStrip items={[
+            "MAE·MFE·보유시간이 수익률을 각각 얼마나 끌었는지",
+            "막대가 길수록 영향 큼 / 부호는 방향",
+            "가장 긴 막대가 먼저 고칠 지점",
+          ]} />
           {multi ? (
             <div>
               {betaRows.map(r => (
@@ -217,30 +237,55 @@ function BtQuantPanel({ analysis }) {
         </div>
       </section>
       <section className="panel bt-equal-card bt-quant-card" aria-label="보유시간 수익률 회귀">
-        <div className="panel-hd"><div className="panel-hd-title"><span className="dot" style={{ background: "var(--blue)" }}></span>보유시간 → 수익률</div></div>
+        <div className="panel-hd">
+          <div className="panel-hd-title"><span className="dot" style={{ background: "var(--blue)" }}></span>보유시간 → 수익률</div>
+          <span className="bt-quant-meta mono">{holdPts.length ? `표본 ${holdPts.length}건 · x축 ${holdUnit}` : "표본 부족"}</span>
+        </div>
         <div className="panel-bd">
+          <MetricHelpStrip items={[
+            "점 하나 = 거래 하나(보유시간 대 수익률)",
+            "점선 = 추세선 · 기울기 부호가 방향",
+            "우하향이면 오래 들수록 불리 → 시간 손절 검토",
+          ]} />
           {holdPts.length >= 3 ? (
             <div>
-              <_BtqScatter pts={holdPts} xLab="보유시간(분)" yLab="수익률(%)" ols={holdOls} />
-              {holdOls && <p className="v54-quant-note">기울기 {holdOls.b >= 0 ? "+" : ""}{holdOls.b.toFixed(3)}%/분 · R² {(holdOls.r2 * 100).toFixed(0)}% — {holdOls.b < 0 ? "오래 들고 있을수록 불리: 시간 손절 검토." : "보유 시간이 길수록 유리: 조기 청산 완화 검토."}</p>}
+              <_BtqScatter pts={holdPts} xLab={"보유시간(" + (holdUnit || "분") + ")"} yLab="수익률(%)" ols={holdOls} />
+              {/* v5.13.2 — 기울기 단위를 실제 x축 단위에 맞춘다(초 축인데 "%/분"으로 찍히던 오표기 교정). */}
+              {holdOls && <p className="v54-quant-note">기울기 {holdOls.b >= 0 ? "+" : ""}{holdOls.b.toFixed(4)}%/{holdUnit} · R² {(holdOls.r2 * 100).toFixed(0)}% — {holdOls.b < 0 ? "오래 들고 있을수록 불리: 시간 손절 검토." : "보유 시간이 길수록 유리: 조기 청산 완화 검토."}</p>}
             </div>
-          ) : <p className="v54-quant-note">보유시간 표본 부족.</p>}
+          ) : <p className="v54-quant-note">보유시간 표본이 3건 미만이라 회귀를 생략합니다.</p>}
         </div>
       </section>
       <section className="panel bt-equal-card bt-quant-card" aria-label="일별 수익 자기상관">
-        <div className="panel-hd"><div className="panel-hd-title"><span className="dot" style={{ background: "var(--amber)" }}></span>일별 수익 자기상관 · lag-1</div></div>
+        <div className="panel-hd">
+          <div className="panel-hd-title"><span className="dot" style={{ background: "var(--amber)" }}></span>일별 수익 자기상관 · lag-1</div>
+          <span className="bt-quant-meta mono">{lagPts.length ? `표본 ${lagPts.length}일 · 단위 원` : "표본 부족"}</span>
+        </div>
         <div className="panel-bd">
+          <MetricHelpStrip items={[
+            "어제 손익(x) 대 오늘 손익(y)",
+            "우상향 = 흐름이 이어짐 / 우하향 = 되돌림",
+            "이어지면 연속 손실 위험이 커진다",
+          ]} />
           {lagPts.length >= 3 ? (
             <div>
               <_BtqScatter pts={lagPts} xLab="전일 수익(원)" yLab="당일 수익(원)" ols={lagOls} />
               {lagOls && <p className="v54-quant-note">β {lagOls.b >= 0 ? "+" : ""}{lagOls.b.toFixed(2)} · R² {(lagOls.r2 * 100).toFixed(0)}% — {lagWord}.</p>}
             </div>
-          ) : <p className="v54-quant-note">일별 수익 표본 부족.</p>}
+          ) : <p className="v54-quant-note">거래일이 3일 미만이라 자기상관을 생략합니다.</p>}
         </div>
       </section>
       <section className="panel bt-equal-card bt-quant-card" aria-label="요일별 평균 수익과 승일률">
-        <div className="panel-hd"><div className="panel-hd-title"><span className="dot" style={{ background: "var(--teal)" }}></span>요일 구조 · 평균 수익·승일률</div></div>
+        <div className="panel-hd">
+          <div className="panel-hd-title"><span className="dot" style={{ background: "var(--teal)" }}></span>요일 구조 · 평균 수익·승일률</div>
+          <span className="bt-quant-meta mono">단위 원 · 승일률 %</span>
+        </div>
         <div className="panel-bd">
+          <MetricHelpStrip items={[
+            "요일마다 하루 평균 손익과 수익난 날 비율",
+            "막대 길이 = 평균 손익 크기 / 색 = 부호",
+            "특정 요일만 계속 지면 요일 필터 후보",
+          ]} />
           {dowRows.some(r => r.n > 0) ? (
             <div>
               {dowRows.map(r => {

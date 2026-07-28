@@ -363,6 +363,14 @@ function BtEvoSelector({ baseUrl, isDemo, onPickGen, activeEvo, compareA, onSetC
                         <span className={"badge " + (g.gate_passed ? "done" : "idle")} style={{ flexShrink: 0 }}>
                           {g.gate_passed ? "gate" : "—"}
                         </span>
+                        {/* v5.13.2 — tick/min 배지. 결과 CSV 시각 자릿수로 판별한 사실값이다
+                            (사용자 지적: "백테스트 결과에서 tick 인지 min 인지 알 수 없다"). */}
+                        {g.timeframe && g.timeframe !== "unknown" && (
+                          <span className={"bt-tf-badge xs " + g.timeframe} style={{ flexShrink: 0 }}
+                                title={g.timeframe === "tick" ? "틱 백테 — 초 단위 체결" : "분봉 백테 — 분 단위 체결"}>
+                            {g.timeframe === "tick" ? "TICK" : "MIN"}
+                          </span>
+                        )}
                         {/* v5.13.0(H3) — 조건식 이름을 우선 표시(어느 조건식인지 즉시 식별). */}
                         <span className="mono" title={(g.buy_name || "") + (g.sell_name ? " / " + g.sell_name : "")}
                               style={{ fontSize: 10, color: "var(--ink-2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>

@@ -12,8 +12,17 @@
   - 시계열은 다운샘플 상한(max 500pt)을 둔다(브라우저 렌더 부하 방지).
 
 per-trade CSV 컬럼(backtest/back_static.py 결과 헤더, utf-8-sig):
-  종목명, 시가총액, 매수시간, 매도시간(YYYYMMDDHHMM), 보유시간(분), 매수가, 매도가,
+  종목명, 시가총액, 매수시간, 매도시간, 보유시간, 매수가, 매도가,
   매수금액, 매도금액, 수익률(%), 수익금(원), 수익금합계, 매도조건, ...
+
+⚠ 보유시간 단위는 타임프레임마다 다르다(v5.13.2 실측 교정).
+  backtest/backengine_base.py:909-911 이 진실이다:
+    tick: 보유시간 = int((dt_ymdhms(index) - 매수시간).total_seconds())        → **초**
+    min : 보유시간 = int((dt_ymdhm(index)  - 매수시간).total_seconds() / 60)   → **분**
+  같은 컬럼명이 타임프레임에 따라 초/분을 오간다. 이 모듈이 항상 '분'으로 읽던 탓에
+  tick 결과의 보유시간이 60배 부풀어(예: 1726 → "1726분", 실제 28.8분) 보고됐다.
+  타임프레임은 시각 문자열 자릿수로 판별한다(14=YYYYMMDDHHMMSS=tick, 12=YYYYMMDDHHMM=min).
+  결과 CSV 400개 전수 확인: 14자리 242개·12자리 158개, 예외 0.
 """
 
 from __future__ import annotations
@@ -73,6 +82,14 @@ _TRADING_DAYS_PER_YEAR = 252.0
 _MC_DEFAULT_N = 2000
 _MC_FAN_MAX = 200
 _MC_RUIN_PCT = 30.0
+# 몬테카를로 방식별 한 줄 설명 — 차트가 그대로 표시한다(수렴을 버그로 오해하지 않도록).
+_MC_METHOD_NOTE = {
+    "shuffle": ("순서 섞기 — 같은 날들을 순서만 바꿉니다. '운 나쁜 순서였다면 낙폭이 "
+                "얼마였을까'를 봅니다. 날의 집합이 같으므로 최종손익은 항상 실측과 같고, "
+                "팬이 마지막 날 한 점으로 모이는 것이 정상입니다."),
+    "bootstrap": ("복원추출 — 같은 성향의 날에서 새 기간을 다시 뽑습니다. '이 전략을 다시 "
+                  "돌리면 결과가 얼마나 흔들릴까'를 봅니다. 최종손익도 분포를 가집니다."),
+}
 # 통계 검정 유의수준·최소 표본(과신 방지).
 _STAT_ALPHA = 0.05
 _STAT_MIN_N = 30
@@ -84,15 +101,84 @@ _BT_WEEKDAY_KO = ["월", "화", "수", "목", "금", "토", "일"]
 # ---------------------------------------------------------------------------
 # Trade row container — DataFrame 의존 없이 dict 리스트로 다룬다(경량·테스트 용이).
 # ---------------------------------------------------------------------------
+def detect_timeframe(sell_time: Any, buy_time: Any = None) -> str:
+    """시각 문자열 자릿수로 백테 타임프레임을 판별한다 — "tick" | "min" | "unknown".
+
+    엔진이 tick 이면 YYYYMMDDHHMMSS(14), min 이면 YYYYMMDDHHMM(12) 으로 기록한다.
+    이 한 가지 신호가 보유시간 단위(초/분)까지 결정한다(모듈 docstring 참조).
+    """
+    for raw in (sell_time, buy_time):
+        text = str(raw or "").strip()
+        if len(text) == 14 and text.isdigit():
+            return "tick"
+        if len(text) == 12 and text.isdigit():
+            return "min"
+    return "unknown"
+
+
+def hold_unit_for(timeframe: str) -> str:
+    """타임프레임 → CSV 보유시간 컬럼의 단위("sec" | "min")."""
+    return "sec" if str(timeframe) == "tick" else "min"
+
+
+def _hold_seconds(trade: Dict[str, Any]) -> float:
+    """trade dict → 보유시간(초). hold_sec 가 정본이고, 없으면 hold_min 에서 환산한다.
+
+    load_trades_csv 는 항상 hold_sec 를 채우지만, 손으로 조립한 trade dict(테스트·외부
+    호출)도 조용히 0 이 되지 않도록 폴백을 둔다.
+    """
+    value = trade.get("hold_sec")
+    if value is None:
+        minutes = trade.get("hold_min")
+        value = (float(minutes) * 60.0) if minutes is not None else 0.0
+    try:
+        return float(value or 0.0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def format_hold(seconds: Any, unit: Optional[str] = None) -> str:
+    """보유시간(초)을 사람이 읽는 문자열로. unit="sec" 이면 초 우선(tick 결과)."""
+    try:
+        sec = float(seconds or 0.0)
+    except (ValueError, TypeError):
+        return "—"
+    if unit == "sec" and sec < 3600.0:
+        return f"{sec:.0f}초" if sec < 60.0 else f"{sec / 60.0:.1f}분"
+    if sec < 60.0:
+        return f"{sec:.0f}초"
+    if sec < 3600.0:
+        return f"{sec / 60.0:.1f}분"
+    return f"{sec / 3600.0:.1f}시간"
+
+
+# CSV 파싱 캐시 — 같은 결과를 한 화면에서 10개 넘는 분석 엔드포인트가 각각 재파싱하던
+#   비용을 없앤다(조건식 조회가 스레드풀 대기로 10초 타임아웃 나던 원인). 키는
+#   (경로, mtime_ns, size) 라 파일이 바뀌면 자동 무효화된다 — stale 결과가 나올 수 없다.
+_TRADES_CACHE: Dict[Tuple[str, int, int], List[Dict[str, Any]]] = {}
+_TRADES_CACHE_MAX = 16
+
+
 def load_trades_csv(csv_path: Optional[str]) -> List[Dict[str, Any]]:
     """per-trade 결과 CSV를 정규화된 trade dict 리스트로 읽는다(무예외).
 
     각 trade dict: {name, buy_time(str), sell_time(str), day(int YYYYMMDD),
-                    hold_min(float), profit_pct(float), profit_krw(float)}.
+                    timeframe("tick"|"min"), hold_sec(float), hold_min(float),
+                    profit_pct(float), profit_krw(float), ...}.
+    hold_sec/hold_min 은 CSV 원값을 타임프레임에 맞춰 환산한 **실단위**다.
     파싱 불가/빈 행은 건너뛴다. CSV 없음/컬럼 누락/IO 실패는 [] 로 흡수한다.
     """
     if not csv_path:
         return []
+    cache_key: Optional[Tuple[str, int, int]] = None
+    try:
+        stat = os.stat(csv_path)
+        cache_key = (str(csv_path), int(stat.st_mtime_ns), int(stat.st_size))
+        cached = _TRADES_CACHE.get(cache_key)
+        if cached is not None:
+            return cached
+    except OSError:  # 파일 없음/접근 불가 — 아래 open 에서 [] 로 흡수된다.
+        cache_key = None
     trades: List[Dict[str, Any]] = []
     try:
         with open(csv_path, encoding="utf-8-sig", newline="") as fh:
@@ -106,7 +192,33 @@ def load_trades_csv(csv_path: Optional[str]) -> List[Dict[str, Any]]:
                     trades.append(trade)
     except Exception:  # noqa: BLE001 - CSV 없음/IO/파싱 실패는 빈 리스트로 흡수.
         return []
+    if cache_key is not None:
+        if len(_TRADES_CACHE) >= _TRADES_CACHE_MAX:
+            _TRADES_CACHE.pop(next(iter(_TRADES_CACHE)), None)
+        _TRADES_CACHE[cache_key] = trades
     return trades
+
+
+def peek_timeframe_csv(csv_path: Optional[str]) -> str:
+    """CSV 첫 데이터 행만 읽어 타임프레임을 판별한다 — "tick"|"min"|"unknown" (무예외).
+
+    세대 목록처럼 여러 결과의 tick/min 배지만 필요할 때 전체 파싱을 피한다.
+    """
+    if not csv_path:
+        return "unknown"
+    try:
+        with open(csv_path, encoding="utf-8-sig", newline="") as fh:
+            reader = csv.DictReader(fh)
+            if not reader.fieldnames or COL_SELL_TIME not in reader.fieldnames:
+                return "unknown"
+            for row in reader:
+                tf = detect_timeframe(row.get(COL_SELL_TIME), row.get(COL_BUY_TIME))
+                if tf != "unknown":
+                    return tf
+                break
+    except Exception:  # noqa: BLE001 - 파일 없음/IO 실패는 unknown 으로 흡수.
+        return "unknown"
+    return "unknown"
 
 
 def _normalize_row(row: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -120,12 +232,19 @@ def _normalize_row(row: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         profit_krw = float(raw_profit)
     except (ValueError, TypeError):
         return None
+    raw_buy = str(row.get(COL_BUY_TIME, "") or "").strip()
+    timeframe = detect_timeframe(raw_sell, raw_buy)
+    # CSV 원값 → 실단위 환산. tick 은 초, min 은 분으로 기록돼 있다.
+    raw_hold = _safe_float(row.get(COL_HOLD_MIN))
+    hold_sec = raw_hold if timeframe == "tick" else raw_hold * 60.0
     return {
         "name": str(row.get(COL_NAME, "") or "").strip(),
-        "buy_time": str(row.get(COL_BUY_TIME, "") or "").strip(),
+        "buy_time": raw_buy,
         "sell_time": raw_sell,
         "day": day,
-        "hold_min": _safe_float(row.get(COL_HOLD_MIN)),
+        "timeframe": timeframe,
+        "hold_sec": hold_sec,
+        "hold_min": hold_sec / 60.0,
         "profit_pct": _safe_float(row.get(COL_PROFIT_PCT)),
         "profit_krw": profit_krw,
         # 진입/청산 체결금액(원) — 보유금액 곡선용. 결측이면 None(소비측이 결측 행 제외).
@@ -220,6 +339,15 @@ def _empty_summary() -> Dict[str, Any]:
         "max_consecutive_losses": 0,
         "avg_hold_min": 0.0,
         "median_hold_min": 0.0,
+        "avg_hold_sec": 0.0,
+        "median_hold_sec": 0.0,
+        "max_hold_sec": 0.0,
+        "timeframe": "unknown",
+        "hold_unit": "min",
+        "sum_trade_return_pct": 0.0,
+        "period_start": None,
+        "period_end": None,
+        "calendar_days": 0,
         "trading_days": 0,
         "avg_trades_per_day": 0.0,
         "sharpe": 0.0,
@@ -242,7 +370,10 @@ def summary_metrics(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
 
     profits_krw = [t["profit_krw"] for t in trades]
     profits_pct = [t["profit_pct"] for t in trades]
-    holds = [t["hold_min"] for t in trades]
+    # v5.13.2 — 보유시간은 초를 정본으로 다룬다(CSV 원단위는 타임프레임마다 다름).
+    holds_sec = [_hold_seconds(t) for t in trades]
+    timeframe = next((str(t.get("timeframe")) for t in trades
+                      if t.get("timeframe") in ("tick", "min")), "unknown")
 
     wins = [p for p in profits_krw if p > 0.0]
     losses = [p for p in profits_krw if p < 0.0]
@@ -287,13 +418,38 @@ def summary_metrics(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
         "max_drawdown_pct": float(dd_pct),
         "max_consecutive_wins": int(max_win_streak),
         "max_consecutive_losses": int(max_loss_streak),
-        "avg_hold_min": float(sum(holds) / trade_count) if trade_count else 0.0,
-        "median_hold_min": float(_median(holds)),
+        # 보유시간 — 초가 정본, 분은 파생. tick 결과가 "1726분"으로 부풀던 결함 교정.
+        "avg_hold_sec": float(sum(holds_sec) / trade_count) if trade_count else 0.0,
+        "median_hold_sec": float(_median(holds_sec)),
+        "max_hold_sec": float(max(holds_sec)) if holds_sec else 0.0,
+        "avg_hold_min": float(sum(holds_sec) / trade_count / 60.0) if trade_count else 0.0,
+        "median_hold_min": float(_median(holds_sec)) / 60.0,
+        # 타임프레임 — 화면이 tick/min 을 구분해 표기하기 위한 근거(CSV 자릿수 판별).
+        "timeframe": timeframe,
+        "hold_unit": "sec" if timeframe == "tick" else "min",
+        # 거래별 수익률의 단순 합. 자본 대비 수익률이 **아니다**(같은 자본이 회전하므로
+        #   합산은 산술적 참고치일 뿐). 화면은 이 이름 그대로 "거래수익률 합"으로 쓴다.
+        "sum_trade_return_pct": float(total_pct),
+        "period_start": min(days_map) if days_map else None,
+        "period_end": max(days_map) if days_map else None,
+        "calendar_days": _calendar_span_days(days_map),
         "trading_days": int(trading_days),
         "avg_trades_per_day": float(avg_trades_per_day),
         "sharpe": float(sharpe),
         "calmar": float(calmar),
     }
+
+
+def _calendar_span_days(days_map: Dict[int, float]) -> int:
+    """첫 거래일~마지막 거래일의 달력 일수(연환산 분모용). 실패/빈 입력은 0."""
+    if not days_map:
+        return 0
+    try:
+        first = datetime.strptime(str(min(days_map)), "%Y%m%d")
+        last = datetime.strptime(str(max(days_map)), "%Y%m%d")
+        return int((last - first).days) + 1
+    except (ValueError, TypeError):
+        return 0
 
 
 def _drawdown_from_profits(profits: List[float]) -> tuple[float, float]:
@@ -424,7 +580,14 @@ def pnl_distribution(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
         }
 
     pnl_hist = _histogram([t["profit_pct"] for t in trades], _HIST_BINS, unit="%")
-    hold_hist = _histogram([t["hold_min"] for t in trades], _HIST_BINS, unit="min")
+    # 보유시간 히스토그램 — tick 은 초, min 은 분 축이 자연스럽다(1726초를 "1726분"으로
+    #   찍던 결함 교정). 단위는 unit 으로 함께 내려 화면이 축 라벨을 맞춘다.
+    _tf = next((str(t.get("timeframe")) for t in trades
+                if t.get("timeframe") in ("tick", "min")), "unknown")
+    _hold_unit = "sec" if _tf == "tick" else "min"
+    _hold_values = ([_hold_seconds(t) for t in trades] if _hold_unit == "sec"
+                    else [_hold_seconds(t) / 60.0 for t in trades])
+    hold_hist = _histogram(_hold_values, _HIST_BINS, unit=_hold_unit)
 
     by_name: Dict[str, Dict[str, Any]] = {}
     for t in trades:
@@ -441,6 +604,8 @@ def pnl_distribution(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
     return {
         "pnl_histogram": pnl_hist,
         "hold_histogram": hold_hist,
+        "hold_unit": _hold_unit,
+        "timeframe": _tf,
         "top_contributors": top,
         "bottom_contributors": bottom,
     }
@@ -709,14 +874,16 @@ def generate_insights(
             "detail": f"누적수익 고점 대비 최대 {dd_pct:.0f}% 반납({summary['max_drawdown_krw']:,.0f}원) — 변동성 큼.",
         })
 
-    # 규칙 8: 보유시간 분포 편향.
-    median_hold = summary["median_hold_min"]
-    avg_hold = summary["avg_hold_min"]
-    if median_hold > 0.0 and avg_hold >= median_hold * 2.0:
+    # 규칙 8: 보유시간 분포 편향. tick 결과는 초, min 결과는 분으로 말한다.
+    median_sec = summary.get("median_hold_sec", 0.0)
+    avg_sec = summary.get("avg_hold_sec", 0.0)
+    if median_sec > 0.0 and avg_sec >= median_sec * 2.0:
         insights.append({
             "severity": "info",
             "title": "보유시간 우편향",
-            "detail": f"평균 보유 {avg_hold:.0f}분 vs 중앙값 {median_hold:.0f}분 — 일부 장기 보유가 평균을 끌어올림.",
+            "detail": (f"평균 보유 {format_hold(avg_sec, summary.get('hold_unit'))} vs "
+                       f"중앙값 {format_hold(median_sec, summary.get('hold_unit'))} — "
+                       "일부 장기 보유가 평균을 끌어올림."),
         })
 
     # 규칙 9: 거래 빈도(과매매 점검).
@@ -830,7 +997,7 @@ def mae_mfe(trades: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
     각 포인트: {mae, mfe, pnl_pct, hold_sec, code}. R_MAE/R_MFE 둘 다 있는 행만
     쓴다(결측 제외). 1000pt 초과면 균등 다운샘플(브라우저 렌더 부하 방지).
-    hold_sec 은 보유시간(분)→초 환산(차트 점 크기/색 보조용).
+    hold_sec 은 정규화된 보유시간(초) — 타임프레임 환산은 load_trades_csv 가 이미 끝냈다.
     """
     points: List[Dict[str, Any]] = []
     for t in trades:
@@ -842,7 +1009,7 @@ def mae_mfe(trades: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             "mae": float(mae),
             "mfe": float(mfe),
             "pnl_pct": float(t.get("profit_pct", 0.0) or 0.0),
-            "hold_sec": float(t.get("hold_min", 0.0) or 0.0) * 60.0,
+            "hold_sec": _hold_seconds(t),
             "code": str(t.get("name", "") or ""),
         })
     return _downsample(points, _SCATTER_MAX)
@@ -936,18 +1103,28 @@ def monte_carlo(
     n: int = _MC_DEFAULT_N,
     seed: Optional[int] = None,
     ruin_pct: float = _MC_RUIN_PCT,
+    method: str = "shuffle",
 ) -> Dict[str, Any]:
-    """일별 손익 시퀀스를 무작위 재배열(복원 없이 셔플)해 MDD/최종손익 분포를 만든다.
+    """일별 손익을 무작위 재구성해 MDD/최종손익 분포를 만든다.
 
-    각 시행: 일별 손익을 셔플 → 누적곡선 → MDD/최종손익 계산.
-    반환: {mdd_pct, mdd_krw, final, ruin_prob, n, fan, observed, days}.
-      - mdd_pct/mdd_krw/final: {p5,p25,p50,p75,p95} 백분위.
+    두 가지 방식이 있고 **묻는 질문이 다르다**(v5.13.2 — 신뢰도 지적 반영):
+      - method="shuffle"   : 같은 날들을 순서만 바꾼다(복원 없는 순열).
+        → "운 나쁜 순서였다면 낙폭이 얼마였을까"를 답한다. 날의 집합이 그대로라
+          **최종손익은 항상 실측과 같다**(p5=p95). 팬이 마지막 날에 한 점으로 닫히는
+          것은 버그가 아니라 이 방식의 수학적 성질이다.
+      - method="bootstrap" : 같은 날 분포에서 복원추출로 새 기간을 만든다.
+        → "같은 성향의 전략을 다시 돌리면 결과가 얼마나 흔들릴까"를 답한다.
+          최종손익도 실제 분포를 갖는다(수렴하지 않는다).
+
+    반환: {mdd_pct, mdd_krw, final, ruin_prob, n, fan, observed, days, method,
+           final_degenerate(bool), method_note(str)}.
       - ruin_prob: 누적 저점이 시작자본 대비 -ruin_pct% 도달한 시행 비율.
-        자본 기준은 |일별 손익 합|+총이익으로 근사(별도 자본 입력 없음 → 보수적).
+        자본 기준은 총이익 규모로 근사(별도 자본 입력 없음 → 보수적).
       - fan: 일자 인덱스별 누적 손익 분포 밴드(p5/p25/p50/p75/p95) 다운샘플 ≤200pt.
-      - observed: 실측(셔플 없는 원래 순서) MDD/최종손익.
+      - observed: 실측(재배열 없는 원래 순서) MDD/최종손익.
     seed 를 주면 재현 가능(테스트). 빈/단일 거래일 입력도 무예외(빈 구조).
     """
+    method = "bootstrap" if str(method) == "bootstrap" else "shuffle"
     days_map = _daily_pnl_map(trades)
     daily = list(days_map.values())
     days = len(daily)
@@ -957,6 +1134,8 @@ def monte_carlo(
         return {
             "mdd_pct": dict(empty_q), "mdd_krw": dict(empty_q), "final": dict(empty_q),
             "ruin_prob": 0.0, "n": 0, "days": days, "fan": [], "observed": None,
+            "method": method, "final_degenerate": method == "shuffle",
+            "method_note": _MC_METHOD_NOTE[method],
         }
 
     total = sum(daily)
@@ -975,7 +1154,14 @@ def monte_carlo(
     per_day_cum: List[List[float]] = [[] for _ in range(days)]
 
     for _ in range(n_runs):
-        if backend == "numpy":
+        if method == "bootstrap":
+            # 복원추출 — 같은 날 분포에서 days 개를 다시 뽑는다(최종손익도 분포를 갖는다).
+            if backend == "numpy":
+                idx = rng.integers(0, days, size=days)
+                shuffled = [daily[int(i)] for i in idx]
+            else:
+                shuffled = [daily[rng.randrange(days)] for _ in range(days)]
+        elif backend == "numpy":
             order = rng.permutation(days)
             shuffled = [daily[i] for i in order]
         else:
@@ -1031,6 +1217,10 @@ def monte_carlo(
         "days": days,
         "fan": fan,
         "observed": observed,
+        "method": method,
+        # shuffle 은 날의 집합이 보존되므로 최종손익이 항상 한 점이다(차트가 이 사실을 표기).
+        "final_degenerate": method == "shuffle",
+        "method_note": _MC_METHOD_NOTE[method],
     }
 
 

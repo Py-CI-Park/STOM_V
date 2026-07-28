@@ -86,6 +86,106 @@
   --mesa-gold:#b8860b;
 }
 
+/* ==========================================================================
+   v5.13.2 — 테마 확장(사용자 요청: 다크/라이트 외 선택지 추가).
+   토큰만 재정의하므로 어떤 컴포넌트도 수정하지 않는다. 각 테마의 목적:
+     midnight — 장시간 야간 관찰용 딥 네이비(순흑보다 눈부심·번짐이 적다)
+     sepia    — 밝은 환경에서 오래 읽기 위한 종이톤(라이트보다 대비가 부드럽다)
+     contrast — 저시력/발표용 고대비(라인·본문 대비를 최대로)
+   ========================================================================== */
+[data-theme="midnight"] {
+  --bg-0: #0a0f1e;
+  --bg-1: #101728;
+  --bg-2: #161f33;
+  --bg-3: #1d2740;
+  --line-1: #223052;
+  --line-2: #31426b;
+
+  --ink-0: #e6ecf8;
+  --ink-1: #aab8d4;
+  --ink-2: #93a3c2;
+  --ink-3: #93a3c2;
+
+  --teal:    #52dcc0;
+  --teal-dim:#1d6b62;
+  --green:   #74ecb2;
+  --amber:   #ffc266;
+  --amber-dim:#7d5a24;
+  --red:     #ff7b8a;
+  --red-dim: #6d2733;
+  --violet:  #b0a0ff;
+  --blue:    #74b0ff;
+
+  --bg-radial-a: rgba(82,220,192,0.05);
+  --bg-radial-b: rgba(176,160,255,0.05);
+  --teal-bg:  rgba(82,220,192,0.13);
+  --amber-bg: rgba(255,194,102,0.13);
+  --red-bg:   rgba(255,123,138,0.11);
+  --mesa-gold:#e0bb4b;
+}
+
+[data-theme="sepia"] {
+  --bg-0: #f4ece0;
+  --bg-1: #fbf6ee;
+  --bg-2: #efe6d7;
+  --bg-3: #e5d9c6;
+  --line-1: #ddd0bb;
+  --line-2: #c3b096;
+
+  --ink-0: #2a2118;
+  --ink-1: #4b3e30;
+  --ink-2: #5e5041;
+  --ink-3: #5e5041;
+
+  --teal:    #0a6d53;
+  --teal-dim:#b6ddcd;
+  --green:   #157a4c;
+  --amber:   #8a5000;
+  --amber-dim:#eccf9e;
+  --red:     #a8291f;
+  --red-dim: #eebfb8;
+  --violet:  #59409f;
+  --blue:    #23608f;
+
+  --bg-radial-a: rgba(10,109,83,0.05);
+  --bg-radial-b: rgba(89,64,159,0.045);
+  --teal-bg:  rgba(10,109,83,0.12);
+  --amber-bg: rgba(138,80,0,0.13);
+  --red-bg:   rgba(168,41,31,0.10);
+  --mesa-gold:#9c7318;
+}
+
+[data-theme="contrast"] {
+  --bg-0: #000000;
+  --bg-1: #0a0a0a;
+  --bg-2: #141414;
+  --bg-3: #1f1f1f;
+  --line-1: #4a4a4a;
+  --line-2: #7a7a7a;
+
+  --ink-0: #ffffff;
+  --ink-1: #e6e6e6;
+  --ink-2: #d0d0d0;
+  --ink-3: #d0d0d0;
+
+  --teal:    #23f5c0;
+  --teal-dim:#0d6b53;
+  --green:   #4dff9b;
+  --amber:   #ffc93c;
+  --amber-dim:#8a6510;
+  --red:     #ff5c5c;
+  --red-dim: #7a1d1d;
+  --violet:  #c4b0ff;
+  --blue:    #63b3ff;
+
+  --bg-radial-a: rgba(0,0,0,0);
+  --bg-radial-b: rgba(0,0,0,0);
+  --teal-bg:  rgba(35,245,192,0.16);
+  --amber-bg: rgba(255,201,60,0.16);
+  --red-bg:   rgba(255,92,92,0.14);
+  --mesa-gold:#ffd54a;
+}
+
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; }
 body {

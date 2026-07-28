@@ -351,10 +351,12 @@ class LoopState:
     def start_run(self, config: Any, run_id: Optional[str] = None) -> str:
         """새 run을 시작하고 run_id를 반환한다.
 
-        run_id 미지정 시 타임스탬프 기반으로 생성한다. config는 to_dict()가
-        있으면 그것을, 없으면 dict로 직렬화한다.
+        run_id 미지정 시 정본 이름 규칙(run_naming.make_run_id)으로 생성한다 —
+        `YYYYMMDD-HHMM_<tf>_<목적>`. 기존 `run_<epoch>` 는 언제·무엇인지 둘 다
+        읽을 수 없었다(v5.13.2 개선). config는 to_dict()가 있으면 그것을,
+        없으면 dict로 직렬화한다.
         """
-        rid = run_id or f"run_{int(_now())}"
+        rid = run_id or _default_run_id(config)
         config_json = json.dumps(_config_to_dict(config), ensure_ascii=False)
         self._con.execute(
             "INSERT OR REPLACE INTO runs "
@@ -774,6 +776,18 @@ class LoopState:
             self._con.close()
         except sqlite3.Error:
             pass
+
+
+def _default_run_id(config: Any) -> str:
+    """run_id 미지정 시 쓸 정본 이름. 실패하면 기존 epoch 이름으로 안전 폴백(무예외)."""
+    try:
+        from ai_strategy_loop.controller.run_naming import make_run_id  # noqa: PLC0415
+
+        timeframe = str(getattr(config, "bt_timeframe", "") or "tick")
+        purpose = str(getattr(config, "research_purpose", "") or "research")
+        return make_run_id(purpose, timeframe=timeframe)
+    except Exception:  # noqa: BLE001 - 이름 생성 실패가 run 시작을 막아선 안 된다.
+        return f"run_{int(_now())}"
 
 
 def _config_to_dict(config: Any) -> Dict[str, Any]:

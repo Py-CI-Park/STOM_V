@@ -21,7 +21,7 @@ import sys
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Event, Thread
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import aiohttp
@@ -224,8 +224,16 @@ def _save_tokens(token_data: Dict[str, Any]) -> None:
     )
 
 
-async def login() -> bool:
-    """브라우저 기반 OAuth PKCE 로그인 실행."""
+async def login(on_auth_url: Optional[Callable[[str], None]] = None,
+                open_browser: bool = True) -> bool:
+    """브라우저 기반 OAuth PKCE 로그인 실행.
+
+    on_auth_url: 인증 URL 이 만들어지는 즉시 호출되는 콜백(대시보드가 화면에 링크를
+      띄우기 위해 쓴다). 이 콜백이 없으면 URL 은 stdout 에만 남고, 서버가 창 없이
+      기동된 환경에서는 webbrowser.open 이 조용히 실패해 사용자가 진행할 방법이
+      사라진다(2026-07-28 실측 — "로그인 시작해도 아무 일도 안 남").
+    open_browser: False 면 자동 열기를 생략한다(사용자가 링크로 직접 진행).
+    """
     code_verifier, code_challenge = _generate_pkce_pair()
     state_token = secrets.token_urlsafe(32)
 
@@ -260,7 +268,17 @@ async def login() -> bool:
         print("자동으로 열리지 않으면 아래 URL을 복사하여 브라우저에 입력하세요:\n")
         print(f"  {auth_url}\n")
 
-        webbrowser.open(auth_url)
+        if on_auth_url is not None:
+            try:
+                on_auth_url(auth_url)
+            except Exception:  # noqa: BLE001 - 통지 실패가 로그인을 막아선 안 된다.
+                pass
+
+        if open_browser:
+            try:
+                webbrowser.open(auth_url)
+            except Exception:  # noqa: BLE001 - 자동 열기 실패는 무해(사용자가 링크로 진행).
+                logger.warning("브라우저 자동 열기 실패 — 화면의 인증 링크로 진행하세요.")
 
         if not received.wait(timeout=300):
             print("타임아웃: 5분 내에 로그인을 완료하지 못했습니다.")

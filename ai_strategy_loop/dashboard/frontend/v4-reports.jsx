@@ -57,6 +57,35 @@ function _reportClassificationLabel(value) {
 
 
 
+/* v5.13.2 — 필터 칩 그룹. 콤보(select)를 대체한다: 값이 전부 보이고 한 번에 눌린다.
+   options=[[value,label],…]. counts 를 주면 칩에 건수를 함께 찍는다.
+   선택지가 9개 이상이면 칩이 목록 영역을 잡아먹으므로 그때만 콤보로 자동 후퇴한다. */
+function _RptChips({ step, title, value, onPick, options, counts }) {
+  const opts = (options || []).filter(o => Array.isArray(o) && o[0] != null);
+  if (opts.length <= 1) return null;
+  const wide = opts.length >= 9;
+  return (
+    <div className={"v4-report-filter-step" + (wide ? " wide" : "")}>
+      <b><i>{step}</i> {title}</b>
+      {wide ? (
+        <select value={value} onChange={e => onPick(e.target.value)} aria-label={title}>
+          {opts.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
+        </select>
+      ) : (
+        <div className="v4-report-chips" role="radiogroup" aria-label={title}>
+          {opts.map(([v, label]) => (
+            <button key={v} type="button" role="radio" aria-checked={value === v}
+                    className={"v4-report-chip" + (value === v ? " active" : "")}
+                    onClick={() => onPick(v)} title={title + ": " + label}>
+              {label}{counts && counts[v] != null ? <em>{counts[v]}</em> : null}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function V4Reports({ baseUrl }) {
   const [mode, setMode] = useState_rp7("reports"); // reports | wiki
   const [list, setList] = useState_rp7(null);
@@ -295,9 +324,22 @@ function V4Reports({ baseUrl }) {
             <aside className="v4-reports-list" aria-label="리포트 목록">
               <div className="v4-reports-filters" aria-label="리포트 필터">
                 <div className="v4-report-filter-step wide"><b><i>1</i> 검색</b><input className="toolbar-input" type="search" placeholder="제목 · 연구 · run 검색" value={reportQuery} onChange={e => setReportQuery(e.target.value)} aria-label="리포트 검색" /></div>
-                <div className="v4-report-filter-step"><b><i>2</i> 문서 범위</b><select value={reportType} onChange={e => setReportType(e.target.value)} aria-label="리포트 종류"><option value="all">모든 종류</option><option value="run">run</option><option value="step">step</option><option value="legacy">legacy</option><option value="unregistered">미등록</option></select><select value={reportStatus} onChange={e => setReportStatus(e.target.value)} aria-label="리포트 상태"><option value="all">모든 상태</option>{reportStatuses.map(value => <option key={value} value={value}>{value}</option>)}</select></div>
-                <div className="v4-report-filter-step"><b><i>3</i> 정본·검증</b><select value={reportClassification} onChange={e => setReportClassification(e.target.value)} aria-label="리포트 분류"><option value="all">모든 분류</option>{reportClassifications.map(value => <option key={value} value={value}>{_reportClassificationLabel(value)}</option>)}</select><select value={reportIntegrity} onChange={e => setReportIntegrity(e.target.value)} aria-label="리포트 검증 상태"><option value="all">모든 검증 상태</option>{reportIntegrities.map(value => <option key={value} value={value}>{value}</option>)}</select></div>
-                <div className="v4-report-filter-step wide"><b><i>4</i> 표현 형식</b><select value={reportTemplate} onChange={e => setReportTemplate(e.target.value)} aria-label="리포트 템플릿"><option value="all">모든 템플릿</option>{reportTemplates.map(value => <option key={value} value={value}>{value}</option>)}</select><select value={reportTheme} onChange={e => setReportTheme(e.target.value)} aria-label="리포트 테마"><option value="all">모든 테마</option>{reportThemes.map(value => <option key={value} value={value}>{value}</option>)}</select></div>
+                {/* v5.13.2 — 콤보(select) 전량을 버튼 칩으로 교체(이전 요청 미반영분).
+                    콤보는 "열고 → 훑고 → 고르는" 3동작이지만 칩은 한 번에 눌린다.
+                    선택지가 8개를 넘으면 칩이 목록을 밀어내므로 그때만 콤보로 남긴다. */}
+                <_RptChips step="2" title="문서 종류" value={reportType} onPick={setReportType}
+                           options={[["all", "전체"], ["run", "run"], ["step", "step"], ["legacy", "legacy"], ["unregistered", "미등록"]]} />
+                <_RptChips step="3" title="상태" value={reportStatus} onPick={setReportStatus}
+                           options={[["all", "전체"], ...reportStatuses.map(v => [v, v])]} />
+                <_RptChips step="4" title="정본 분류" value={reportClassification} onPick={setReportClassification}
+                           options={[["all", "전체"], ...reportClassifications.map(v => [v, _reportClassificationLabel(v)])]}
+                           counts={reportCounts} />
+                <_RptChips step="5" title="검증" value={reportIntegrity} onPick={setReportIntegrity}
+                           options={[["all", "전체"], ...reportIntegrities.map(v => [v, v])]} />
+                <_RptChips step="6" title="템플릿" value={reportTemplate} onPick={setReportTemplate}
+                           options={[["all", "전체"], ...reportTemplates.map(v => [v, v])]} />
+                <_RptChips step="7" title="문서 테마" value={reportTheme} onPick={setReportTheme}
+                           options={[["all", "전체"], ...reportThemes.map(v => [v, v])]} />
               </div>
               {list === null && <div className="v4-reports-empty mono">불러오는 중…</div>}
               {list !== null && list.length === 0 && <div className="v4-reports-empty mono">리포트 없음{err ? " · " + err : ""}<div className="v4-reports-hint">docs/ 하위 *.html 생성 시 자동 표시</div></div>}

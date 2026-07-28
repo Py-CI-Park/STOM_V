@@ -2,7 +2,7 @@
 const { useState: useState_v4s, useEffect: useEffect_v4s } = React;
 
 const V4S_PREFERENCES = {
-  appearance: ["stom_theme"],
+  appearance: ["stom_theme", "stom_chart_height"],
   navigation: ["stom_active_tab", "stom_active_evolution_tab", "bt_subtab"],
   result_layout: ["stom_v511_result_layout", "stom_v511_live_stage_density"],
 };
@@ -46,6 +46,9 @@ function _V4sGptAuthCard({ baseUrl }) {
   const [loginBusy, setLoginBusy] = useState_v4s(false);
   const [loginMsg, setLoginMsg] = useState_v4s("");
   const [probeMsg, setProbeMsg] = useState_v4s("");
+  // v5.13.2 — 서버가 만든 인증 URL. 서버가 창 없이 기동되면 webbrowser.open 이 조용히
+  //   실패할 수 있어, URL 을 화면에 띄우지 않으면 사용자가 진행할 방법이 없다.
+  const [authUrl, setAuthUrl] = useState_v4s("");
   const refresh = () => {
     fetch((baseUrl || "") + "/gpt_auth/status", { credentials: "same-origin", cache: "no-store", signal: AbortSignal.timeout(8000) })
       .then(r => (r.ok ? r.json() : null))
@@ -70,29 +73,38 @@ function _V4sGptAuthCard({ baseUrl }) {
     ok: ["정상", "var(--teal)"],
   }[state];
   const startLogin = () => {
-    setLoginBusy(true); setLoginMsg("로그인 창을 여는 중…");
+    setLoginBusy(true); setLoginMsg("로그인 창을 여는 중…"); setAuthUrl("");
     fetch((baseUrl || "") + "/gpt_auth/login_start", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(8000) })
-      .then(r => r.json())
+      // v5.13.2 — 403(권한/분류) 같은 실패를 조용히 삼키면 "눌러도 아무 일 없음"이 된다.
+      //   실제로 login_start 가 보안 분류표에 없어 늘 403 이었다. 이제 본문을 읽어 표시한다.
+      .then(async r => {
+        const body = await r.json().catch(() => null);
+        if (!r.ok) throw new Error((body && (body.message || body.code)) || ("HTTP " + r.status));
+        return body || {};
+      })
       .then(j => {
         setLoginMsg(j.message || (j.already_running ? "이미 로그인 진행 중입니다." : "로그인 시작"));
+        if (j.auth_url) setAuthUrl(j.auth_url);
         // 완료까지 폴링(최대 5분 + 여유) — 끝나면 상태 재조회.
         const t0 = Date.now();
         const poll = () => {
           fetch((baseUrl || "") + "/gpt_auth/login_state", { credentials: "same-origin", cache: "no-store", signal: AbortSignal.timeout(8000) })
             .then(r => r.json())
             .then(s => {
+              if (s && s.auth_url) setAuthUrl(s.auth_url);
               if (s.running && Date.now() - t0 < 330000) { setTimeout(poll, 2000); return; }
               setLoginBusy(false);
               setLoginMsg(s.result === true ? "✅ 로그인 성공 — 토큰이 저장되었습니다."
                 : s.error ? "로그인 실패: " + s.error
                   : s.result === false ? "로그인이 완료되지 않았습니다(취소/타임아웃)." : "상태 확인 종료");
+              if (s.result === true) setAuthUrl("");
               refresh();
             })
             .catch(() => { setLoginBusy(false); setLoginMsg("로그인 상태 확인 실패"); });
         };
-        setTimeout(poll, 2000);
+        setTimeout(poll, 1200);
       })
-      .catch(e => { setLoginBusy(false); setLoginMsg("로그인 시작 실패: " + e); });
+      .catch(e => { setLoginBusy(false); setLoginMsg("로그인 시작 실패: " + (e && e.message ? e.message : e)); });
   };
   const probe = () => {
     setProbeMsg("연결 테스트 중…");
@@ -117,7 +129,76 @@ function _V4sGptAuthCard({ baseUrl }) {
         <button className="btn ghost sm" type="button" onClick={probe}>연결 테스트</button>
       </div>
       {(loginMsg || probeMsg) && <p className="v4s-note mono" role="status" aria-live="polite">{loginMsg}{loginMsg && probeMsg ? " · " : ""}{probeMsg}</p>}
+      {/* v5.13.2 — 인증 링크 상시 노출. 브라우저가 자동으로 열리지 않아도 여기서 진행할 수 있다. */}
+      {authUrl && <div className="v4s-authlink" role="group" aria-label="ChatGPT 인증 링크">
+        <b>인증 링크</b>
+        <p className="v4s-note">브라우저 창이 자동으로 열리지 않았다면 아래 링크로 직접 로그인하세요(5분 내).</p>
+        <div className="v4s-authlink-row">
+          <a className="btn primary sm" href={authUrl} target="_blank" rel="noopener noreferrer">🔗 브라우저에서 열기</a>
+          <button className="btn ghost sm" type="button" onClick={() => {
+            try { navigator.clipboard.writeText(authUrl); setLoginMsg("인증 링크를 클립보드에 복사했습니다."); } catch (e) {}
+          }}>링크 복사</button>
+        </div>
+        <code className="mono v4s-authlink-url">{authUrl}</code>
+      </div>}
     </div></div>;
+}
+
+/* v5.13.2 — 설정 탭 테마 선택. 셸의 상단 토글과 같은 localStorage 키(stom_theme)와
+   같은 data-theme 속성을 쓰므로 어느 쪽에서 바꿔도 즉시 일치한다. */
+const _V4S_THEMES = [
+  { id: "dark", label: "Dark", desc: "기본 다크 — 터미널 톤" },
+  { id: "midnight", label: "Midnight", desc: "딥 네이비 — 장시간 야간 관찰(순흑보다 눈부심 적음)" },
+  { id: "light", label: "Light", desc: "밝은 화면" },
+  { id: "sepia", label: "Sepia", desc: "종이톤 — 밝은 환경에서 오래 읽기" },
+  { id: "contrast", label: "High Contrast", desc: "고대비 — 저시력·발표용" },
+];
+function _V4sThemeRow() {
+  const [theme, setTheme] = useState_v4s(() => _v4sGet("stom_theme", "dark"));
+  const apply = (id) => {
+    try {
+      window.localStorage.setItem("stom_theme", id);
+      document.documentElement.setAttribute("data-theme", id);
+    } catch (e) {}
+    setTheme(id);
+  };
+  return <_V4sRow label="테마" hint="브라우저에만 저장됩니다. 상단 테마 버튼과 동일한 설정입니다.">
+    <div className="v4s-theme-picker" role="radiogroup" aria-label="화면 테마">
+      {_V4S_THEMES.map(t => (
+        <button key={t.id} type="button" role="radio" aria-checked={theme === t.id} title={t.desc}
+                className={"btn ghost sm" + (theme === t.id ? " active" : "")}
+                onClick={() => apply(t.id)}>{t.label}</button>
+      ))}
+    </div>
+  </_V4sRow>;
+}
+
+/* v5.13.2 — 차트 높이 취향(설정 기능 강화). CSS 변수만 덮어써서 전 차트에 즉시 반영된다. */
+const _V4S_CHART_HEIGHTS = [
+  { id: "compact", label: "낮게", px: "clamp(320px, 28vw, 420px)" },
+  { id: "default", label: "기본", px: "" },
+  { id: "tall", label: "높게", px: "clamp(500px, 46vw, 680px)" },
+];
+function _V4sChartHeightRow() {
+  const [size, setSize] = useState_v4s(() => _v4sGet("stom_chart_height", "default"));
+  const apply = (id) => {
+    const found = _V4S_CHART_HEIGHTS.find(h => h.id === id) || _V4S_CHART_HEIGHTS[1];
+    try {
+      window.localStorage.setItem("stom_chart_height", id);
+      if (found.px) document.documentElement.style.setProperty("--v4-height-chart-primary", found.px);
+      else document.documentElement.style.removeProperty("--v4-height-chart-primary");
+    } catch (e) {}
+    setSize(id);
+  };
+  return <_V4sRow label="차트 높이" hint="분석 차트의 기본 높이를 바꿉니다. 브라우저에만 저장됩니다.">
+    <div className="v4s-theme-picker" role="radiogroup" aria-label="차트 높이">
+      {_V4S_CHART_HEIGHTS.map(h => (
+        <button key={h.id} type="button" role="radio" aria-checked={size === h.id}
+                className={"btn ghost sm" + (size === h.id ? " active" : "")}
+                onClick={() => apply(h.id)}>{h.label}</button>
+      ))}
+    </div>
+  </_V4sRow>;
 }
 
 function V4SettingsTab({ baseUrl, dashVersion }) {
@@ -148,7 +229,9 @@ function V4SettingsTab({ baseUrl, dashVersion }) {
     <_V4sGptAuthCard baseUrl={baseUrl} />
     <div className="panel"><div className="panel-hd"><div className="panel-hd-title"><span className="dot" />화면 모양 · 배치 <small className="v4s-en">Appearance / Layout</small></div></div><div className="panel-bd">
       <_V4sRow label="공통 레이아웃" hint="뷰는 반응형 패널과 의미 있는 차트 프레임(상태·출처·원본값)을 사용합니다. 높이와 열 수는 콘텐츠·화면 폭별 계약입니다."><span className="mono">responsive panels · semantic chart frames</span></_V4sRow>
-      <_V4sRow label="테마" hint="상단 테마 버튼에서 변경하며 브라우저에만 저장됩니다."><span className="mono">{_v4sGet("stom_theme", "dark")}</span></_V4sRow>
+      {/* v5.13.2 — 테마를 설정에서도 직접 고른다(상단 버튼과 같은 저장소를 씁니다). */}
+      <_V4sThemeRow />
+      <_V4sChartHeightRow />
       <_V4sRow label="결과 분석 레이아웃" hint="History, Backtest와 Live가 공유합니다. 기본 3열이며 2열·3열·4열을 직접 선택할 수 있습니다."><span className="mono">{_v4sGet("stom_v511_result_layout", "3")}열</span></_V4sRow>
     </div></div>
     <div className="panel"><div className="panel-hd"><div className="panel-hd-title"><span className="dot" />버전 · 기능 확인 <small className="v4s-en">Release / Capability</small></div></div><div className="panel-bd"><p className="v4s-note">번들 manifest와 읽기 전용 /health 응답에서 받은 값만 표시합니다. 응답에 없는 기능은 지원으로 추정하지 않습니다.</p><div className="v4s-probe-grid"><div className="v4s-probe-card"><b>대시보드 릴리스</b><span className="mono">{dashVersion || "—"}</span></div><div className="v4s-probe-card"><b>번들 빌드</b><span className="mono">{bundleVersion}</span></div><div className="v4s-probe-card"><b>/health 상태</b><span className="mono">{healthStatus}</span></div>{capabilityRows.map(row => <div className="v4s-probe-card" key={row.label}><b>{row.label}</b><span className="mono">{row.value}</span></div>)}</div>{!capabilityRows.length && <p className="v4s-note" role="status">기능 확인 불가 — /health 또는 번들 manifest 에 capability 필드가 없습니다.</p>}</div></div>
