@@ -82,3 +82,18 @@ anchor 가계 (GATE_r8_4_strength_max_250, tick 90000–93000, 진입은 09:07�
 - run: clw30_r0(6쌍)·r1(7)·r2/r2b(8)·r3a/r3b(4×2)·r4(1) — loop_runs.db, 대시보드에서 열람
 - 입력: docs/research/tick_wide_open30/{pairs,config}_*.json · 실행: claude_candidate_batch_eval
 - 라운드 노트: round_notes/R0~R3 · 원장 조회·CSV 부검 스크립트는 노트에 인라인
+
+
+---
+
+# 후속 아크 (R5~R7, 2026-07-28) — 요약
+
+- **결함 E**(배치 강제종료 → 엔진 고아 105개·prepare 무한 지연)와 **결함 F**(GUI식 다인자
+  self.Buy/Sell 호출 → 체결 틱마다 TypeError → 600초 정지)를 격리 실험으로 기전 확정·수정
+  (kill-on-close 잡 자기부착 + preflight gui_signature 검사). **CSS_V7·C_T 계열이 백테에서
+  멈추던 총체적 원인 = GUI 문법 ↔ 백테 문법 괴리**로 통합.
+- 사용자 지정 시간×시총 다밴드(C_T_900_920_U2) 정정본으로 분해→복합 3라운드:
+  밴드 온도(09:05-10 최선) × 소형주 × 트레일 재적합 → **설계 구간 게이트 통과 +78.8만 출현**,
+  그러나 **완전 OOS 2구간 전패로 과최적 기각**(R7). 상세: round_notes/R5~R7.
+- 시스템 결론: 분해→조합 루프는 유효하나, **OOS/워크포워드 게이트를 채점 파이프라인에
+  내장**하는 것이 '좋은 조건식을 만드는 시스템'의 다음 필수 부품.
