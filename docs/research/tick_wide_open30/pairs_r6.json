@@ -1,0 +1,27 @@
+[
+  {
+    "label": "r6_b24",
+    "buy": "CLW30_CT9020_B_b24",
+    "sell": "CLW30_CT9020_S"
+  },
+  {
+    "label": "r6_b24_small",
+    "buy": "CLW30_CT9020_B_b24_small",
+    "sell": "CLW30_CT9020_S"
+  },
+  {
+    "label": "r6_b24_small_trail",
+    "buy": "CLW30_CT9020_B_b24_small",
+    "sell": "CLW30_CT9020_S_trail55"
+  },
+  {
+    "label": "r6_b2_small_trail",
+    "buy": "CLW30_CT9020_B_b2_small",
+    "sell": "CLW30_CT9020_S_trail55"
+  },
+  {
+    "label": "r6_b4_small_trail",
+    "buy": "CLW30_CT9020_B_b4_small",
+    "sell": "CLW30_CT9020_S_trail55"
+  }
+]
