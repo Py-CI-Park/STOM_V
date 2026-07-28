@@ -195,7 +195,15 @@ def test_reports_catalog_and_settings_use_readable_full_width_contracts() -> Non
     catalog = _read("v4-catalog.jsx")
     css = _read("v4.css")
 
-    assert 'className="v4-report-filter-step"' in reports
+    # v5.13.2 — 단계 필터가 select 콤보에서 버튼 칩으로 바뀌면서 클래스가 공용
+    #   컴포넌트(_RptChips) 안으로 들어갔다. 지키려는 계약은 "단계 구획이 있고 값을
+    #   한 번에 고를 수 있다"이므로 마크업 리터럴 대신 그 계약을 검사한다.
+    assert "v4-report-filter-step" in reports
+    assert "function _RptChips(" in reports
+    assert 'className="v4-report-chips"' in reports
+    assert ".v4-report-chip" in css
+    # 선택지가 많을 때만 콤보로 후퇴한다(칩이 목록을 밀어내지 않도록).
+    assert "opts.length >= 9" in reports
     assert 'className="v4-report-details"' in reports
     assert "프로필" in reports and "제약·주의" in reports
     assert 'className="v4-cat-viewdesc"' in catalog

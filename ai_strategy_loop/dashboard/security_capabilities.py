@@ -50,6 +50,7 @@ HTTP_CAPABILITIES: Final = {
     ("POST", "/record_decision"): Capability.DECISION_WRITE,
     ("POST", "/gpt_auth/test"): Capability.PROVIDER_TEST,
     # 미분류였던 탓에 mutation_unclassified 로 항상 403 이었다(로그인 버튼 무반응 원인).
+    #   실재하는 라우트만 싣는다 — 없는 경로를 적어 두면 분류표가 라우트 목록과
+    #   어긋나고, 그 어긋남을 test_security_mutations 가 정확히 잡아낸다.
     ("POST", "/gpt_auth/login_start"): Capability.PROVIDER_LOGIN,
-    ("POST", "/gpt_auth/login_cancel"): Capability.PROVIDER_LOGIN,
 }

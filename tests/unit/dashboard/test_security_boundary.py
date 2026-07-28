@@ -72,7 +72,7 @@ def test_health_exposes_bounded_dashboard_process_identity_without_bootstrap(mon
     assert response.status_code == 200
     assert response.headers.get("set-cookie") is None
     assert shell["name"] == "v4-ops"
-    assert shell["release"] == "v5.13.0"
+    assert shell["release"] == "v5.13.2"  # v5.13.2 — 결과 신뢰도 교정 릴리스.
     assert dashboard["release"] == shell["release"] == backend["release"]
     assert dashboard["build"] == shell["build"] == backend["build"]
     assert 1 <= len(shell["build"]) <= 64
