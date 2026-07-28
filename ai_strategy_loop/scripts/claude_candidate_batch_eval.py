@@ -75,6 +75,19 @@ def main() -> int:
     )
     args = ap.parse_args()
 
+    # v5.13.2(결함 E) — 자기부착 kill-on-close 잡: 이 러너가 어떤 형태로 죽든
+    #   (Stop-Process 포함) warm 엔진 자식 수십 개가 고아로 남지 않는다.
+    #   (2026-07-28 실측: 강제 종료 2회 → 고아 105개 · 다음 prepare 무한 지연)
+    _job = None
+    try:
+        import os as _os  # noqa: PLC0415
+        from ai_strategy_loop.dashboard._windows_process_job import attach_process_job  # noqa: PLC0415
+
+        _job = attach_process_job(_os.getpid(), kill_on_close=True)
+        print(f"[BATCH] process-job attach: {'ok' if _job else 'unavailable'}", flush=True)
+    except Exception as exc:  # noqa: BLE001 - 잡 부착 실패가 배치를 막으면 안 된다.
+        print(f"[BATCH] process-job attach failed: {exc}", flush=True)
+
     pairs = _load_json(args.pairs_json)
     config = config_from_dict(_load_json(args.config_json))
 

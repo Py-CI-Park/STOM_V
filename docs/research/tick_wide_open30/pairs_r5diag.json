@@ -1,0 +1,12 @@
+[
+  {
+    "label": "diag_buyside",
+    "buy": "CLW30_CT9020_B",
+    "sell": "CLW30_S_notime"
+  },
+  {
+    "label": "diag_sellside",
+    "buy": "CLW30_B_w2900",
+    "sell": "CLW30_CT9020_S"
+  }
+]
