@@ -125,3 +125,27 @@ def test_single_flag_buy_call_is_allowed():
     code = "매수 = True\nif 매수:\n    self.Buy(True)\n"
     result = validate_strategy_code(code, ssot=_SSOT)
     assert result.ok, result.reason
+
+
+def test_ssot_vocabulary_expands_range_notation():
+    # v5.13.3 실측 오탐 회귀: SSOT 의 "매도잔량1~5" 범위 표기가 전개되지 않아
+    #   실제 엔진 변수(매도잔량2~5)를 쓰는 정상 조건식(SMOKE_V5COMP_B)이
+    #   preflight FAIL 을 받았다. 레벨 2~5 가 어휘에 있어야 한다.
+    from ai_strategy_loop.dashboard.backtest_api import _load_ssot_vocabulary
+
+    vocab = _load_ssot_vocabulary()
+    if not vocab:  # SSOT 파일 부재 환경(빈 어휘)에선 검사 자체가 무의미.
+        return
+    for name in ("매도잔량2", "매도잔량5", "매수잔량3", "매도호가4", "매수호가5"):
+        assert name in vocab, name
+
+    code = (
+        "상단잔량 = 매도잔량1 + 매도잔량2 + 매도잔량3 + 매도잔량4 + 매도잔량5\n"
+        "매수 = True\n"
+        "if not (상단잔량 > 0):\n"
+        "    매수 = False\n"
+        "if 매수:\n"
+        "    self.Buy()\n"
+    )
+    result = validate_strategy_code(code, ssot=vocab)
+    assert result.ok, result.reason

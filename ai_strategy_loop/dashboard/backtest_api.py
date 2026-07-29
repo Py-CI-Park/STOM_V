@@ -632,6 +632,11 @@ _INLINE_CODE_TOKEN = re.compile(r"`([0-9A-Za-z_가-힣]+)`")
 _HANGUL_IDENT = re.compile(r"[0-9A-Za-z_가-힣]*[가-힣][0-9A-Za-z_가-힣]*")
 # variables_reference.md 의 "- 변수명 — 설명" / "- 변수명, 변수명 ..." 줄에서 스칼라 변수명 추출.
 _SCALAR_BULLET = re.compile(r"^\s*-\s+(.+)$")
+# v5.13.3 — SSOT 의 범위 표기("매도호가1~5, 매도잔량1~5") 전개. _HANGUL_IDENT 는
+#   "매도잔량1~5"에서 매도잔량1 까지만 뽑아 2~5 레벨이 어휘에서 누락됐고, 실제 엔진
+#   변수(back_code_test.py:652 가 매도잔량5~매수잔량5 를 전부 주입)를 쓰는 정상
+#   조건식(SMOKE_V5COMP_B)이 preflight 오탐(FAIL)을 받았다(2026-07-29 실측).
+_RANGE_IDENT = re.compile(r"([0-9A-Za-z_가-힣]*[가-힣])(\d+)~(\d+)")
 
 _SSOT_CACHE: Optional[Set[str]] = None
 
@@ -664,6 +669,11 @@ def _load_ssot_vocabulary() -> Set[str]:
         for tok in _HANGUL_IDENT.findall(m.group(1)):
             if len(tok) >= 2:
                 vocab.add(tok)
+        # 범위 표기 전개: "매도잔량1~5" → 매도잔량1..매도잔량5 (레벨 2~5 누락 오탐 방지).
+        for base, lo, hi in _RANGE_IDENT.findall(m.group(1)):
+            lo_i, hi_i = int(lo), int(hi)
+            if 0 <= lo_i <= hi_i <= lo_i + 30:  # 폭 가드 — 오파싱으로 어휘 폭증 방지.
+                vocab.update(f"{base}{i}" for i in range(lo_i, hi_i + 1))
     _SSOT_CACHE = vocab
     return vocab
 
