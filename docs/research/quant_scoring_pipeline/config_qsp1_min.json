@@ -1,0 +1,14 @@
+{
+  "provider": "codex_proxy",
+  "bt_timeframe": "min",
+  "bt_universe_start_time": 90000,
+  "bt_universe_end_time": 92800,
+  "full_session_enabled": true,
+  "bt_min_universe_end_time": 151900,
+  "bt_full_start": 20250407,
+  "bt_full_end": 20260227,
+  "bt_warm_engine_count": 32,
+  "bt_warm_run_timeout": 1800,
+  "bt_timeout": 2400,
+  "condition_discovery_preset": "research"
+}
