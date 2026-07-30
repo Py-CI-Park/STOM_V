@@ -1885,6 +1885,62 @@ def analysis_montecarlo(
     }
 
 
+@backtest_router.get("/analysis/leaf_matrix")
+def analysis_leaf_matrix(
+    job_id: str = "", run_id: str = "", gen_no: Optional[int] = None,
+) -> Dict[str, Any]:
+    """리프(시간밴드×시총단계) 잔차 매트릭스 — QSP1 라벨셋 탐색기(P1) 데이터.
+
+    거래 CSV 를 라벨 데이터셋으로 enrich(파생 D_* 포함, 컬럼 자동 편입)한 뒤
+    리프별 n/평균/중앙값/승률/합계와 변별 상위 변수를 돌려준다. 셀 상세용으로
+    리프별 대표 거래(승/패 각 4건)도 싣는다. CSV 없음/실패는 빈 구조(무예외).
+    """
+    from ai_strategy_loop.autopsy import label_dataset as _lds  # noqa: PLC0415
+
+    csv_path: Optional[str] = None
+    if job_id:
+        csv_path = get_job_manager().result_csv_path(job_id)
+    elif run_id and gen_no is not None:
+        row = _gen_row_readonly(run_id, int(gen_no))
+        csv_path = _resolve_gen_csv(row) if row else None
+    empty = {"job_id": job_id, "run_id": run_id, "gen_no": gen_no, "available": False,
+             "timeframe": "unknown", "n": 0, "leaf_matrix": [], "features": [],
+             "leaf_samples": {}, "derived": [], "excluded": {}}
+    if not csv_path:
+        return empty
+    try:
+        ds = _lds.build(csv_path)
+    except Exception:  # noqa: BLE001 - 분석 실패는 빈 구조로 흡수(무예외 계약).
+        return empty
+    if ds.df.empty:
+        return empty
+    # 리프별 대표 거래(패 4 + 승 4) — 셀 클릭 상세.
+    samples: Dict[str, List[Dict[str, Any]]] = {}
+    try:
+        import pandas as _pd  # noqa: PLC0415
+
+        pct = _pd.to_numeric(ds.df.get("수익률"), errors="coerce")
+        for leaf, idx in ds.df.groupby("leaf").groups.items():
+            sub = ds.df.loc[idx].assign(_pct=pct.loc[idx]).dropna(subset=["_pct"])
+            picked = _pd.concat([sub.nsmallest(4, "_pct"), sub.nlargest(4, "_pct")])
+            samples[str(leaf)] = [
+                {"name": str(r.get("종목명", "")), "buy_time": str(r.get("매수시간", "")),
+                 "pct": float(r["_pct"]), "krw": float(r.get("수익금", 0) or 0)}
+                for _, r in picked.iterrows()
+            ]
+    except Exception:  # noqa: BLE001 - 샘플 실패는 매트릭스만 제공.
+        samples = {}
+    return {
+        "job_id": job_id, "run_id": run_id, "gen_no": gen_no, "available": True,
+        "timeframe": ds.timeframe, "n": int(len(ds.df)),
+        "leaf_matrix": _lds.leaf_matrix(ds),
+        "features": _lds.feature_discrimination(ds)[:12],
+        "leaf_samples": samples,
+        "derived": ds.derived,
+        "excluded": ds.excluded,
+    }
+
+
 @backtest_router.get("/analysis/orderflow")
 def analysis_orderflow(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
     """오더플로우 — 승/패 그룹별 진입 체결강도/호가불균형/전일동시간비/등락율 분포 비교."""

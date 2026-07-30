@@ -25,6 +25,7 @@ import {
 } from "./bt-stat-panels.jsx";
 import { BtGuiParitySection } from "./bt-gui-parity.jsx";
 import { BtQuantPanel } from "./bt-quant.jsx";
+import { BtLeafExplorer } from "./bt-leaf-explorer.jsx";
 
 // ===========================================================================
 // 결과·분석 영역 — 메트릭 카드 + 4차트 + 기여 테이블 + 인사이트.
@@ -588,6 +589,8 @@ return (
           </div>
         )}
         <BtHeatmap heatmap={analysis.heatmap} />
+        {/* v5.13.4(QSP1 P1) — 라벨셋 탐색기: 리프(시간×시총) 잔차 히트맵 + 변별 변수. */}
+        <BtLeafExplorer baseUrl={baseUrl} jobId={jobId} evoSource={evoSource} isDemo={false} />
         <BtMaeMfeScatter points={analysis.mae_mfe} />
         <BtQuantPanel analysis={analysis} />
         <BtExitReasonPanel rows={analysis.exit_reasons} />

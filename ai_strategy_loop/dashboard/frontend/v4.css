@@ -2145,3 +2145,35 @@
 
 /* v5.13.2 — 퀀트 카드 헤더 메타(표본·단위). 다른 차트 카드의 우측 메타와 같은 위치·톤. */
 .bt-quant-meta { font-size: 10.5px; color: var(--ink-3); white-space: nowrap; }
+
+/* v5.13.4(QSP1 P1) — 라벨셋 탐색기: 리프 잔차 히트맵 + 상세 + 변별 바. */
+.bt-leaf-grid { display: grid; gap: 4px; margin-top: 4px; }
+.bt-leaf-corner, .bt-leaf-colhead, .bt-leaf-rowhead { font-size: 10px; color: var(--ink-3);
+  display: flex; align-items: center; justify-content: center; }
+.bt-leaf-rowhead { justify-content: flex-end; padding-right: 6px; text-align: right; }
+.bt-leaf-cell { border: 1px solid var(--line-1); border-radius: 6px; padding: 6px 4px;
+  display: flex; flex-direction: column; gap: 2px; align-items: center; cursor: pointer;
+  color: var(--ink-0); min-height: 44px; }
+.bt-leaf-cell b { font-size: 12px; }
+.bt-leaf-cell small { font-size: 9px; color: var(--ink-2); }
+.bt-leaf-cell.thin { opacity: 0.55; }               /* 표본 부족 — 흐리게(정직 표기) */
+.bt-leaf-cell.picked { outline: 2px solid var(--amber); }
+.bt-leaf-detail { margin-top: 10px; border: 1px solid var(--line-1); border-left: 3px solid var(--amber);
+  border-radius: 8px; padding: 9px 11px; background: var(--bg-0); }
+.bt-leaf-detail-hd { display: flex; gap: 10px; flex-wrap: wrap; font-size: 11px; color: var(--ink-1); }
+.bt-leaf-detail-hd b { color: var(--ink-0); }
+.bt-leaf-sample { width: 100%; margin-top: 7px; font-size: 10.5px; border-collapse: collapse; }
+.bt-leaf-sample th, .bt-leaf-sample td { padding: 3px 7px; border-bottom: 1px solid var(--line-1); text-align: left; }
+.bt-leaf-sample tr.pos td { color: var(--teal); }
+.bt-leaf-sample tr.neg td { color: var(--red); }
+.bt-leaf-feats { margin-top: 12px; }
+.bt-leaf-feats > b { font-size: 11px; color: var(--ink-1); }
+.bt-leaf-feat-bars { margin-top: 6px; display: grid; gap: 4px; }
+.bt-leaf-feat { display: grid; grid-template-columns: 170px minmax(0,1fr) 56px; gap: 8px;
+  align-items: center; font-size: 10.5px; }
+.bt-leaf-feat .k { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bt-leaf-feat .bar { height: 10px; background: var(--bg-2); border-radius: 5px; overflow: hidden; }
+.bt-leaf-feat .bar i { display: block; height: 100%; }
+.bt-leaf-feat .bar i.pos { background: var(--teal); }
+.bt-leaf-feat .bar i.neg { background: var(--red); }
+.bt-leaf-feat .v { text-align: right; color: var(--ink-0); }

@@ -223,6 +223,26 @@ def main() -> int:
                 f"gate={fit.gate_passed} reason={fit.reason} ({elapsed:.0f}s)",
                 flush=True,
             )
+            # QSP1 P1 — 리프 잔차 요약을 배치 로그에 연결(관측용, best-effort).
+            #   "어느 리프가 손실을 만드는가"가 라운드 로그만 봐도 보이게 한다.
+            #   전체 매트릭스는 대시보드 /bt/analysis/leaf_matrix 가 CSV 에서 재계산.
+            try:
+                from ai_strategy_loop.autopsy import label_dataset as _lds  # noqa: PLC0415
+
+                _ds = _lds.build(outcome.csv_path)
+                _rows = [r for r in _lds.leaf_matrix(_ds) if r["reliable"]]
+                _rows.sort(key=lambda r: r["mean_pct"])
+                worst = " · ".join(
+                    f"{r['leaf_time']}×{r['leaf_cap']}({r['mean_pct']:+.2f}%,n={r['n']})"
+                    for r in _rows[:2])
+                best = " · ".join(
+                    f"{r['leaf_time']}×{r['leaf_cap']}({r['mean_pct']:+.2f}%,n={r['n']})"
+                    for r in _rows[-2:][::-1])
+                if _rows:
+                    print(f"[BATCH] gen{i} {label} leaf worst: {worst} | best: {best}",
+                          flush=True)
+            except Exception as _leaf_exc:  # noqa: BLE001 - 진단 실패는 배치를 막지 않는다.
+                print(f"[BATCH] gen{i} leaf 요약 생략: {_leaf_exc}", flush=True)
     finally:
         sess.close()
 

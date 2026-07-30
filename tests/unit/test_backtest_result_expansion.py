@@ -53,7 +53,10 @@ def test_get_result_dataframe_preserves_trade_result_extra_columns():
 
     assert list(df_tsg.columns[-len(TRADE_RESULT_EXTRA_COLUMNS):]) == TRADE_RESULT_EXTRA_COLUMNS
     assert df_tsg.iloc[0]['B_현재가'] == 1
-    assert df_tsg.iloc[0]['B_분봉저가'] == len(TRADE_RESULT_B_COLUMNS)
+    # v2 확장(QSP1 P1)으로 B 목록 끝이 분봉저가→RSI 로 바뀌었다. "마지막 B 컬럼의 값 =
+    #   B 컬럼 수" 라는 원 의도를 이름 하드코딩 없이 검사한다(추후 확장에도 불변).
+    assert df_tsg.iloc[0][TRADE_RESULT_B_COLUMNS[-1]] == len(TRADE_RESULT_B_COLUMNS)
+    assert df_tsg.iloc[0]['B_분봉저가'] == TRADE_RESULT_B_COLUMNS.index('B_분봉저가') + 1
     assert df_tsg.iloc[0]['S_현재가'] == len(TRADE_RESULT_B_COLUMNS) + 1
     assert df_tsg.iloc[0]['S_매도총잔량'] == len(TRADE_RESULT_B_COLUMNS) + len(TRADE_RESULT_S_COLUMNS)
     assert df_tsg.iloc[0]['R_MAE'] == len(TRADE_RESULT_EXTRA_COLUMNS)
