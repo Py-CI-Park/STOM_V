@@ -34,7 +34,20 @@ function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo }) {
   const [data, setData] = useState_btc(null);
   const [metric, setMetric] = useState_btc("mean_pct");   // mean_pct | median_pct
   const [picked, setPicked] = useState_btc(null);          // "time×cap" | null
+  // v5.13.4(P2) — 수정 제안(읽기 전용 미리보기): 버튼 클릭 시에만 계산(지연 로드).
+  const [props_, setProps_] = useState_btc(null);          // null=미요청 | {..응답..}
+  const [propsBusy, setPropsBusy] = useState_btc(false);
   const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
+
+  const loadProposals = () => {
+    if (!isEvo || propsBusy) return;
+    setPropsBusy(true);
+    _btFetchJson(baseUrl + "/bt/analysis/revision_proposals?run_id="
+                 + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no), 20000)
+      .then(j => setProps_(j || { available: false, reason: "응답 없음" }))
+      .catch(e => setProps_({ available: false, reason: String(e) }))
+      .finally(() => setPropsBusy(false));
+  };
 
   useEffect_btc(() => {
     setData(null); setPicked(null);
@@ -136,6 +149,44 @@ function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo }) {
                     </tbody>
                   </table>
                 )}
+              </div>
+            )}
+            {isEvo && (
+              <div className="bt-leaf-proposals">
+                <div className="bt-leaf-prop-hd">
+                  <b className="mono">수정 제안 (분석→조건식 번역 · 읽기 전용 미리보기)</b>
+                  <button className="btn ghost sm" onClick={loadProposals} disabled={propsBusy}
+                          title="손실 리프의 변별 변수와 승자 분위수 경계로 리프 단위 수정안을 만듭니다. 등록·적용은 하지 않습니다.">
+                    {propsBusy ? "생성 중…" : (props_ ? "↻ 다시 생성" : "제안 생성")}
+                  </button>
+                </div>
+                {props_ && !props_.available && <p className="v54-quant-note">{props_.reason}</p>}
+                {props_ && props_.available && (props_.proposals || []).length === 0 && (
+                  <p className="v54-quant-note">{props_.reason}</p>
+                )}
+                {props_ && (props_.proposals || []).map((p, i) => (
+                  <div key={i} className="bt-leaf-prop mono">
+                    <div className="bt-leaf-prop-title">
+                      <span className={"badge " + ((p.gate && p.gate.ok) ? "done" : "warn")}
+                            title="의도-일치 게이트: 골격 불변 · 명세 외 변경 0 · preflight">
+                        {(p.gate && p.gate.ok) ? "게이트 PASS" : "게이트 FAIL"}
+                      </span>
+                      <b>{p.spec.change}</b>
+                    </div>
+                    <div className="bt-leaf-prop-ev">
+                      근거: n={p.spec.evidence.n} · 중앙값 {p.spec.evidence.median_pct.toFixed(2)}%
+                      (전체 대비 {p.spec.evidence.vs_overall_median.toFixed(2)}%p) ·
+                      d={p.spec.evidence.cohen_d.toFixed(2)} · 승자분위 경계 {Number(p.spec.evidence.win_quantile_bound).toPrecision(3)}
+                    </div>
+                    {(p.diff_preview || []).map((d, k) => (
+                      <div key={k} className="bt-leaf-prop-diff">
+                        <span className="del">− {d.old.trim()}</span>
+                        <span className="add">＋ {d.new.trim()}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+                <p className="v54-quant-note">적용·재백테는 라운드 러너(P3)가 수행합니다 — 이 화면은 근거 검토 전용.</p>
               </div>
             )}
             {feats.length > 0 && (

@@ -1941,6 +1941,59 @@ def analysis_leaf_matrix(
     }
 
 
+@backtest_router.get("/analysis/revision_proposals")
+def analysis_revision_proposals(run_id: str = "", gen_no: Optional[int] = None,
+                                top_k: int = 3) -> Dict[str, Any]:
+    """리프 잔차표 → 조건식 수정 제안(읽기 전용 미리보기) — QSP1 P2.
+
+    세대의 매수식(HIER 계열)과 거래 CSV 로 revision spec 을 만들고, 각 제안을
+    실제로 적용해 본 diff 와 의도-일치 게이트 판정을 함께 돌려준다.
+    **등록/적용은 하지 않는다**(라운드 러너의 책임) — 화면 열람·검토 전용.
+    비 HIER 조건식/CSV 없음/실패는 available=False(무예외).
+    """
+    from ai_strategy_loop.autopsy import label_dataset as _lds  # noqa: PLC0415
+    from ai_strategy_loop.revision import intent_gate as _gate  # noqa: PLC0415
+    from ai_strategy_loop.revision import proposer as _prop  # noqa: PLC0415
+    from ai_strategy_loop.controller.strategy_preflight import load_loop_strategy_code  # noqa: PLC0415
+
+    empty = {"run_id": run_id, "gen_no": gen_no, "available": False,
+             "reason": "", "proposals": []}
+    if not run_id or gen_no is None:
+        return {**empty, "reason": "run_id/gen_no 필요"}
+    row = _gen_row_readonly(run_id, int(gen_no))
+    csv_path = _resolve_gen_csv(row) if row else None
+    if not row or not csv_path:
+        return {**empty, "reason": "세대/CSV 없음"}
+    buy_name = str(row.get("buy_name") or "")
+    buy_code = load_loop_strategy_code("buy", buy_name)
+    if not buy_code:
+        return {**empty, "reason": f"매수식 없음: {buy_name}"}
+    try:
+        ds = _lds.build(csv_path)
+        specs = _prop.propose(ds, buy_code, buy_name, top_k=max(1, min(int(top_k), 5)))
+    except Exception as exc:  # noqa: BLE001 - 제안 실패는 빈 목록(무예외).
+        return {**empty, "reason": f"제안 생성 실패: {exc}"}
+    if not specs:
+        return {**empty, "available": True,
+                "reason": "실효 제안 없음(HIER 아님·표본 부족·변별 부족 중 하나)"}
+    out: List[Dict[str, Any]] = []
+    for spec in specs:
+        new_code, apply_reason = _prop.apply(spec, buy_code)
+        item: Dict[str, Any] = {"spec": spec, "apply": apply_reason}
+        if new_code:
+            gres = _gate.verify(buy_code, new_code, [spec])
+            item["gate"] = {"ok": gres.ok, "reason": gres.reason, "diffs": gres.diffs}
+            # diff 미리보기 — 바뀐 줄만(원/신).
+            old_lines, new_lines = buy_code.splitlines(), new_code.splitlines()
+            item["diff_preview"] = [
+                {"line": i + 1, "old": o, "new": n}
+                for i, (o, n) in enumerate(zip(old_lines, new_lines)) if o != n
+            ][:6]
+        out.append(item)
+    return {"run_id": run_id, "gen_no": gen_no, "available": True,
+            "buy_name": buy_name, "reason": "ok", "proposals": out}
+
+
 @backtest_router.get("/analysis/orderflow")
 def analysis_orderflow(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
     """오더플로우 — 승/패 그룹별 진입 체결강도/호가불균형/전일동시간비/등락율 분포 비교."""

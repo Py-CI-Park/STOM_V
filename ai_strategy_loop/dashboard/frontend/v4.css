@@ -2177,3 +2177,16 @@
 .bt-leaf-feat .bar i.pos { background: var(--teal); }
 .bt-leaf-feat .bar i.neg { background: var(--red); }
 .bt-leaf-feat .v { text-align: right; color: var(--ink-0); }
+
+/* v5.13.4(P2) — 수정 제안 카드(분석→조건식 번역 미리보기). */
+.bt-leaf-proposals { margin-top: 14px; border-top: 1px dashed var(--line-1); padding-top: 10px; }
+.bt-leaf-prop-hd { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.bt-leaf-prop-hd b { font-size: 11px; color: var(--ink-1); }
+.bt-leaf-prop { margin-top: 8px; border: 1px solid var(--line-1); border-left: 3px solid var(--violet);
+  border-radius: 8px; padding: 8px 10px; background: var(--bg-0); }
+.bt-leaf-prop-title { display: flex; gap: 8px; align-items: center; font-size: 11px; }
+.bt-leaf-prop-title b { color: var(--ink-0); }
+.bt-leaf-prop-ev { margin-top: 4px; font-size: 10px; color: var(--ink-2); }
+.bt-leaf-prop-diff { display: grid; gap: 2px; margin-top: 6px; font-size: 10.5px; }
+.bt-leaf-prop-diff .del { color: var(--red); }
+.bt-leaf-prop-diff .add { color: var(--teal); }
