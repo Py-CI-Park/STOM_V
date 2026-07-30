@@ -1,0 +1,22 @@
+[
+  {
+    "label": "r1_base",
+    "buy": "QSP1_M_HIER_900_1500_B",
+    "sell": "QSP1_M_HIER_900_1500_S"
+  },
+  {
+    "label": "r1_c1",
+    "buy": "QSP1MINFULL_R1C1_B",
+    "sell": "QSP1_M_HIER_900_1500_S"
+  },
+  {
+    "label": "r1_c2",
+    "buy": "QSP1MINFULL_R1C2_B",
+    "sell": "QSP1_M_HIER_900_1500_S"
+  },
+  {
+    "label": "r1_c3",
+    "buy": "QSP1MINFULL_R1C3_B",
+    "sell": "QSP1_M_HIER_900_1500_S"
+  }
+]
