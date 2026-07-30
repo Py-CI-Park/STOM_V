@@ -227,3 +227,52 @@ def test_propose_respects_excluded_axes():
                       exclude_axes=[("B_전일동시간비", leaf_label)])
     assert all(not (s["feature"] == "B_전일동시간비" and s["leaf_label"] == leaf_label)
                for s in again)
+
+
+def test_feature_to_clause_has_no_unit_mismatch_mappings():
+    """감사 A1/BUG-1 — 단위가 다른 매핑(절대금액↔배수/비율)은 등재 금지."""
+    from ai_strategy_loop.revision.proposer import FEATURE_TO_CLAUSE as M
+    banned = {
+        ("D_체결강도비율", "체결강도>=?"),
+        ("B_초당거래대금", "거래대금비율>?"),
+        ("B_분당거래대금", "거래대금비율>?"),
+        ("D_누적수급비", "초당순매수금액>?"),
+        ("D_수급비", "분당순매수금액>?"),
+    }
+    listed = {(f, c) for f, cs in M.items() for c in cs}
+    assert not (listed & banned), listed & banned
+
+
+def test_propose_skips_already_tried_identical_spec():
+    """감사 BUG-4 — 동일 (변수, 리프, 상수) 제안은 재백테하지 않는다."""
+    import pandas as pd
+    from ai_strategy_loop.autopsy import label_dataset as L
+    from ai_strategy_loop.revision import proposer as P
+
+    rows = []
+    for i in range(80):
+        win = i < 20
+        rows.append({
+            "종목명": "X", "시가총액": 1000, "매수시간": f"2025040709{i % 2:02d}05",
+            "수익률": 1.0 if win else -1.0, "수익금": 1000 if win else -1000,
+            "B_현재가": 10000, "B_등락율": 5.0, "B_매수총잔량": 100, "B_매도총잔량": 100,
+            "B_당일거래대금": 100, "B_시가총액": 1000, "B_체결강도": 100,
+            "B_전일동시간비": (2.0 if win else 0.2) + i * 1e-3,
+        })
+    for i in range(80):
+        win = i < 60
+        rows.append({
+            "종목명": "Y", "시가총액": 12000, "매수시간": f"2025040709{i % 2:02d}35",
+            "수익률": 1.0 if win else -1.0, "수익금": 1000 if win else -1000,
+            "B_현재가": 50000, "B_등락율": 3.0, "B_매수총잔량": 100, "B_매도총잔량": 100,
+            "B_당일거래대금": 900, "B_시가총액": 12000, "B_체결강도": 100,
+            "B_전일동시간비": 1.0 + i * 1e-3,
+        })
+    ds = L.enrich(pd.DataFrame(rows))
+    base = P.propose(ds, CODE, "T", top_k=1)
+    assert base
+    sp = base[0]
+    tried = {(sp["feature"], sp["leaf_label"], tuple(sp["new_consts"]))}
+    again = P.propose(ds, CODE, "T", top_k=1, exclude_specs=tried)
+    assert all((a["feature"], a["leaf_label"], tuple(a["new_consts"])) not in tried
+               for a in again)

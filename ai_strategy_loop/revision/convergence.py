@@ -125,7 +125,10 @@ def judge(history: Sequence[RoundStat], seed_trades: int, *,
         tail = deltas[-converge_streak:]
         if all(d < eps_pct for d in tail):
             hold_vals = [h for h in hold if h is not None]
-            if len(hold_vals) >= 2 and _improvement_pct(hold_vals[0], hold_vals[-1]) < 0:
+            # 허용오차(OVERFIT_HOLDOUT_DOWN_PCT): 초반 하락 후 회복 궤적을 정체로
+            #   오판하지 않도록, 순악화가 유의(−5% 초과)할 때만 발산 처리(감사 B6).
+            if (len(hold_vals) >= 2
+                    and _improvement_pct(hold_vals[0], hold_vals[-1]) < OVERFIT_HOLDOUT_DOWN_PCT):
                 return Judgment(
                     "diverged",
                     f"설계 정체(개선 {['%+.2f%%' % d for d in tail]} < ε) 인데 홀드아웃은 "

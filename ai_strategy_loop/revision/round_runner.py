@@ -125,8 +125,16 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
         for lesson in rec.get("lessons", []):
             if abs(float(lesson.get("delta_vs_base") or 0.0)) < thresh:
                 exclude_axes.append((lesson.get("axis"), lesson.get("leaf")))
+    # BUG-4 교정: 이전 라운드에서 이미 평가된 (변수, 리프, 상수) 동일 제안은 재백테 금지.
+    tried_specs = set()
+    for rec in prev:
+        for m in rec.get("candidates", []):
+            sp = m.get("spec") or {}
+            if m.get("status") == "registered" and sp.get("new_consts"):
+                tried_specs.add((sp.get("feature"), sp.get("leaf_label"),
+                                 tuple(float(x) for x in sp["new_consts"])))
     specs = proposer.propose(ds, base_code, base_code_name, top_k=n_cand,
-                             exclude_axes=exclude_axes)
+                             exclude_axes=exclude_axes, exclude_specs=tried_specs)
     print(f"[ROUND{round_no}] base={base_code_name} 라벨={label_csv} 제안={len(specs)}"
           f" (무효 축 제외 {len(set(exclude_axes))})", flush=True)
 

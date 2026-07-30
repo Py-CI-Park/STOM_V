@@ -28,19 +28,20 @@ from .hier_ast import parse_leaves, skeleton_fp
 
 # 조절 변수(설명변수) → HIER 절 식별자 후보 매핑.
 #   절 식별자는 hier_ast._expr_ident 산출 형식(공백 제거·상수 ? 마스킹)과 맞춘다.
+# 불변식(BUG-1 교정): 변수의 분위수가 절 상수 자리에 그대로 기입되므로,
+#   양변의 단위가 동일한 쌍만 등재한다(동일 변수이거나 정의식이 같은 파생).
+#   제거된 오류 매핑(절대금액↔배수/비율 혼동 — 감사 A1/BUG-1, minfull_r3 C2 실피해):
+#   D_체결강도비율→체결강도 · B_초당거래대금/B_분당거래대금→거래대금비율 ·
+#   D_누적수급비→초당순매수금액 · D_수급비→분당순매수금액.
 FEATURE_TO_CLAUSE: Dict[str, List[str]] = {
-    "B_등락율": ["?<=등락율<=?"],
-    "D_시가등락율": ["-?<=시가등락율<?"],
-    "D_시가대비등락율": ["-?<=시가대비등락율<?"],
-    "B_체결강도": ["체결강도>=?"],
-    "D_체결강도비율": ["체결강도>=?"],          # 절은 체결강도 하한 — 비율 신호도 같은 손잡이.
-    "D_거래대금폭발배수": ["거래대금비율>?"],
-    "B_초당거래대금": ["거래대금비율>?"],
-    "B_분당거래대금": ["거래대금비율>?"],
-    "D_누적수급비": ["초당순매수금액>?"],
-    "D_수급비": ["분당순매수금액>?"],
-    "B_전일동시간비": ["전일동시간비>?"],
-    "D_고가근접율": ["고가근접율>?"],
+    "B_등락율": ["?<=등락율<=?"],               # % ↔ %
+    # 동일 변수 — 상수 부호에 따라 ident 가 갈리므로 두 형태 모두 등재(감사 A5 교정).
+    "D_시가등락율": ["-?<=시가등락율<?", "?<=시가등락율<?"],
+    "D_시가대비등락율": ["-?<=시가대비등락율<?", "?<=시가대비등락율<?"],
+    "B_체결강도": ["체결강도>=?"],               # 동일 변수
+    "D_거래대금폭발배수": ["거래대금비율>?"],       # 정의 동일(초당거래대금/평균) — 배수 ↔ 배수
+    "B_전일동시간비": ["전일동시간비>?"],          # 동일 변수
+    "D_고가근접율": ["고가근접율>?"],             # 정의 동일(현재가-(고가-(고가-저가)*0.3))
 }
 # 다중공선 가격축(F-R1-1) — 개별 제안 금지(공통 그물 가격대는 리프 절이 아니다).
 _PRICE_AXIS = {"B_현재가", "B_시가", "B_고가", "B_저가", "D_전일종가", "B_시분초",
@@ -109,7 +110,8 @@ def _cohen_d(win: pd.Series, loss: pd.Series) -> float:
 
 def propose(ds, buy_code: str, target: str, *,
             top_k: int = 3, min_n: int = _LEAF_MIN_N,
-            exclude_axes: Optional[List[Tuple[str, str]]] = None) -> List[Dict[str, Any]]:
+            exclude_axes: Optional[List[Tuple[str, str]]] = None,
+            exclude_specs: Optional[set] = None) -> List[Dict[str, Any]]:
     """LabelDataset + 현재 매수식 → 수정 명세 목록(손실 리프 상위 top_k).
 
     ds: autopsy.label_dataset.LabelDataset (enrich 결과)
@@ -117,8 +119,12 @@ def propose(ds, buy_code: str, target: str, *,
     target: 전략 이름(명세 표기용)
     exclude_axes: [(feature, leaf_label)] — 직전 라운드에서 무효로 판명된 축
       (P3.1 교훈 환류, F-R3-1). 같은 (변수, 리프) 조합은 다시 제안하지 않는다.
+    exclude_specs: {(feature, leaf_label, (new_consts…))} — 이미 평가된 동일 제안.
+      제안기는 결정적이라 같은 상수는 같은 결과 — 재백테는 슬롯 낭비(감사 BUG-4).
+      base 가 바뀌어 분위수가 이동하면 상수가 달라지므로 재시도는 허용된다.
     """
     excluded_axes = {(str(f), str(l)) for f, l in (exclude_axes or [])}
+    tried_specs = exclude_specs or set()
     hier = parse_leaves(buy_code)
     if not hier.ok:
         return []
@@ -150,19 +156,27 @@ def propose(ds, buy_code: str, target: str, *,
         is_win = sub_pct > 0
         # 리프 내 변별 변수 중 '조절 절이 존재하는' 것만 후보.
         best = None
+        unreachable_top = None   # 매핑 부재로 경쟁 못 한 최대 변별 변수(BUG-5 진단).
         leaf_label = f"{lt}×{lc}"
         for feat in ds.features:
             if feat in _PRICE_AXIS:
                 continue
             if (feat, leaf_label) in excluded_axes:   # P3.1 — 무효 축 재제안 금지.
                 continue
-            targets = [ci for ci in FEATURE_TO_CLAUSE.get(feat, []) if ci in clause_idents]
-            if not targets:
-                continue
             vals = pd.to_numeric(sub[feat], errors="coerce")
             d = _cohen_d(vals[is_win].dropna(), vals[~is_win].dropna())
+            targets = [ci for ci in FEATURE_TO_CLAUSE.get(feat, []) if ci in clause_idents]
+            if not targets:
+                if unreachable_top is None or abs(d) > abs(unreachable_top[1]):
+                    unreachable_top = (feat, d)
+                continue
             if best is None or abs(d) > abs(best[1]):
                 best = (feat, d, targets[0], vals)
+        if (unreachable_top is not None and abs(unreachable_top[1]) >= 0.1
+                and (best is None or abs(unreachable_top[1]) > abs(best[1]))):
+            print(f"[PROPOSER] {leaf_label}: 최대 변별 {unreachable_top[0]}"
+                  f"(d={unreachable_top[1]:+.2f}) 은 매핑 부재로 제안 불가"
+                  f" — 커버리지 구멍 진단(감사 A5)", flush=True)
         if best is None or abs(best[1]) < 0.1:
             continue  # 실효 변별 없음 — 이 리프는 이번 라운드 보류.
         feat, d, clause_ident, vals = best
@@ -181,6 +195,8 @@ def propose(ds, buy_code: str, target: str, *,
             new_consts, which = _tighten_upper(clause_ident, consts, bound)
         if new_consts is None or tuple(new_consts) == tuple(consts):
             continue
+        if (feat, leaf_label, tuple(float(x) for x in new_consts)) in tried_specs:
+            continue  # 이전 라운드에서 이미 평가된 동일 상수 — 결과가 결정적으로 같다.
         specs.append({
             "target": target,
             "leaf": list(leaf_key),

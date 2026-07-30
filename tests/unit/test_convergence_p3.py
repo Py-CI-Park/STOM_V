@@ -81,3 +81,10 @@ def test_holdout_none_entries_are_tolerated():
     h = _h(-100, -80, -70)
     j = judge(h, seed_trades=1000, holdout=[None, -55.0, -50.0])
     assert j.state == "continue"
+
+
+def test_holdout_dip_then_recovery_still_converges():
+    # 홀드아웃이 초반 하락 후 회복(순변화 -1%, 허용오차 -5% 이내) → 정체 아님, 수렴.
+    h = _h(100, 101, 101.5, 101.7)
+    j = judge(h, seed_trades=1000, holdout=[100.0, 94.0, 97.0, 99.0])
+    assert j.state == "converged", j.reason
