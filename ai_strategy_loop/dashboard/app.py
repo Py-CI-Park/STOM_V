@@ -4141,6 +4141,32 @@ def create_app(
             outcomes=filters(outcome),
         )
 
+    @app.get("/qsp/rounds")
+    def qsp_rounds(tag: str = "") -> Dict[str, Any]:
+        """QSP 다후보 라운드 기록(round_runner 산출 JSON) 목록 — 라운드 보드용.
+
+        docs/research/quant_scoring_pipeline/rounds/*.json 을 읽는다(읽기 전용,
+        무예외). tag 를 주면 해당 태그만. 라운드 오름차순.
+        """
+        from pathlib import Path as _Path  # noqa: PLC0415 - REPO_ROOT 는 str.
+
+        rounds_dir = _Path(REPO_ROOT) / "docs" / "research" / "quant_scoring_pipeline" / "rounds"
+        items: List[Dict[str, Any]] = []
+        try:
+            for p in sorted(rounds_dir.glob("*_r*.json")):
+                if p.name.endswith("_pairs.json"):
+                    continue
+                if tag and not p.name.startswith(f"{tag}_"):
+                    continue
+                try:
+                    items.append(json.loads(p.read_text(encoding="utf-8")))
+                except (OSError, ValueError):
+                    continue
+        except OSError:
+            pass
+        items.sort(key=lambda r: (str(r.get("tag")), int(r.get("round", 0) or 0)))
+        return {"rounds": items, "count": len(items)}
+
     @app.get("/reference_screenshots")
     def reference_screenshots() -> Dict[str, Any]:
         """인간 reference 결과 스크린샷 파일명 목록을 반환한다(갤러리 fetch용, 읽기 전용, 무예외).

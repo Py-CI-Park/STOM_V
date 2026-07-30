@@ -1,0 +1,186 @@
+{
+  "tag": "min1mo",
+  "round": 1,
+  "run_id": "20260730-1149_min1mo-r1",
+  "base": {
+    "buy_name": "QSP1_M_HIER_900_1500_B",
+    "objective": -41350878.0,
+    "trade_count": 1256,
+    "csv_path": "backtest/csv\\stock_bt_QSP1_M_HIER_900_1500_B_20260730115345.csv"
+  },
+  "candidates": [
+    {
+      "cand": 1,
+      "spec": {
+        "target": "QSP1_M_HIER_900_1500_B",
+        "leaf": [
+          "103000<=시분초<130000",
+          "시가총액<3000"
+        ],
+        "leaf_label": "B3_한산×S_3000미만",
+        "clause_ident": "-?<=시가대비등락율<?",
+        "action": "tighten",
+        "feature": "D_시가대비등락율",
+        "evidence": {
+          "n": 270,
+          "median_pct": -2.13,
+          "vs_overall_median": -1.15,
+          "cohen_d": 0.22210147483239762,
+          "win_quantile_bound": 6.825938566552901
+        },
+        "old_consts": [
+          1.0,
+          15.0
+        ],
+        "new_consts": [
+          0.0,
+          15.0
+        ],
+        "change": "B3_한산×S_3000미만 · -?<=시가대비등락율<? 하한(0캡) [1.0, 15.0] → [0.0, 15.0] (d=+0.22, D_시가대비등락율)"
+      },
+      "status": "registered",
+      "buy_name": "QSP1MIN1MO_R1C1_B",
+      "gate": "PASS"
+    },
+    {
+      "cand": 2,
+      "spec": {
+        "target": "QSP1_M_HIER_900_1500_B",
+        "leaf": [
+          "93000<=시분초<103000",
+          "3000<=시가총액<5000"
+        ],
+        "leaf_label": "B2_오전×M1_3000_5000",
+        "clause_ident": "전일동시간비>?",
+        "action": "tighten",
+        "feature": "B_전일동시간비",
+        "evidence": {
+          "n": 38,
+          "median_pct": -1.22,
+          "vs_overall_median": -0.24,
+          "cohen_d": 0.6308410106572816,
+          "win_quantile_bound": 106.6775
+        },
+        "old_consts": [
+          0.0
+        ],
+        "new_consts": [
+          107.0
+        ],
+        "change": "B2_오전×M1_3000_5000 · 전일동시간비>? 하한 [0.0] → [107.0] (d=+0.63, B_전일동시간비)"
+      },
+      "status": "registered",
+      "buy_name": "QSP1MIN1MO_R1C2_B",
+      "gate": "PASS"
+    },
+    {
+      "cand": 3,
+      "spec": {
+        "target": "QSP1_M_HIER_900_1500_B",
+        "leaf": [
+          "130000<=시분초<150000",
+          "시가총액<3000"
+        ],
+        "leaf_label": "B4_오후×S_3000미만",
+        "clause_ident": "?<=등락율<=?",
+        "action": "tighten",
+        "feature": "B_등락율",
+        "evidence": {
+          "n": 148,
+          "median_pct": -1.11,
+          "vs_overall_median": -0.13000000000000012,
+          "cohen_d": 0.28983687979434436,
+          "win_quantile_bound": 9.415
+        },
+        "old_consts": [
+          0.5,
+          25.0
+        ],
+        "new_consts": [
+          9.41,
+          25.0
+        ],
+        "change": "B4_오후×S_3000미만 · ?<=등락율<=? 하한 [0.5, 25.0] → [9.41, 25.0] (d=+0.29, B_등락율)"
+      },
+      "status": "registered",
+      "buy_name": "QSP1MIN1MO_R1C3_B",
+      "gate": "PASS"
+    }
+  ],
+  "results": [
+    {
+      "pair_label": "r1_base",
+      "buy_name": "QSP1_M_HIER_900_1500_B",
+      "objective": -41350878.0,
+      "score": 0.012008807564887902,
+      "profit": -41350878.0,
+      "mdd": 44.87,
+      "trade_count": 1256,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP1_M_HIER_900_1500_B_20260730115345.csv"
+    },
+    {
+      "pair_label": "r1_c1",
+      "buy_name": "QSP1MIN1MO_R1C1_B",
+      "objective": -41284168.0,
+      "score": 0.012031829529225609,
+      "profit": -41284168.0,
+      "mdd": 44.8,
+      "trade_count": 1254,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP1MIN1MO_R1C1_B_20260730115447.csv"
+    },
+    {
+      "pair_label": "r1_c2",
+      "buy_name": "QSP1MIN1MO_R1C2_B",
+      "objective": -41164848.0,
+      "score": 0.011952455176234262,
+      "profit": -41164848.0,
+      "mdd": 47.11,
+      "trade_count": 1246,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP1MIN1MO_R1C2_B_20260730115545.csv"
+    },
+    {
+      "pair_label": "r1_c3",
+      "buy_name": "QSP1MIN1MO_R1C3_B",
+      "objective": -39734832.0,
+      "score": 0.012606760710848685,
+      "profit": -39734832.0,
+      "mdd": 42.99,
+      "trade_count": 1219,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP1MIN1MO_R1C3_B_20260730115644.csv"
+    }
+  ],
+  "best": {
+    "pair_label": "r1_c3",
+    "buy_name": "QSP1MIN1MO_R1C3_B",
+    "objective": -39734832.0,
+    "score": 0.012606760710848685,
+    "profit": -39734832.0,
+    "mdd": 42.99,
+    "trade_count": 1219,
+    "csv_path": "backtest/csv\\stock_bt_QSP1MIN1MO_R1C3_B_20260730115644.csv"
+  },
+  "lessons": [
+    {
+      "axis": "D_시가대비등락율",
+      "leaf": "B3_한산×S_3000미만",
+      "objective": -41284168.0,
+      "delta_vs_base": 66710.0
+    },
+    {
+      "axis": "B_전일동시간비",
+      "leaf": "B2_오전×M1_3000_5000",
+      "objective": -41164848.0,
+      "delta_vs_base": 186030.0
+    }
+  ],
+  "judgment": {
+    "state": "continue",
+    "reason": "표본 라운드 부족(1) — 계속",
+    "improvement_pct": null
+  },
+  "seed_trades": 1256
+}

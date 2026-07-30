@@ -27,6 +27,8 @@ const _CAT_VIEWS = [
     explain: "알파 연구 프로그램이 사전등록 → 실험 → 판정 퍼널을 규칙대로 밟았는지 관찰하는 화면입니다." },
   { key: "scorecard", label: "B1 scorecard", desc: "표본 외 성적표(운용 개시 선행)",
     explain: "B1 후보가 표본 밖(실전에 가까운 구간)에서 어떤 성적을 냈는지 보는 성적표입니다. 운용 개시 결정에 선행하는 증거입니다." },
+  { key: "qsp", label: "QSP 라운드", desc: "다후보 라운드 보드(round_runner 기록, 읽기 전용)",
+    explain: "퀀트 채점 파이프라인(QSP)의 다후보 개선 라운드 기록입니다. 라운드마다 후보 N개의 성적·베스트·교훈·수렴/발산 판정을 봅니다 — 구조해석의 잔차 수렴 로그에 해당합니다." },
 ];
 
 function _CatSkeleton({ title, reason }) {
@@ -61,6 +63,7 @@ function V4Catalog({ baseUrl, wsStatus }) {
   const [assets, setAssets] = useState_cat(null);
   const [clauses, setClauses] = useState_cat(null);
   const [cells, setCells] = useState_cat(null);
+  const [qspRounds, setQspRounds] = useState_cat(null);   // v5.13.4(P3) — QSP 라운드 보드.
   const [err, setErr] = useState_cat("");
   const [view, setView] = useState_cat("chronicle");
 
@@ -74,6 +77,8 @@ function V4Catalog({ baseUrl, wsStatus }) {
       get("/research/clauses?limit=200"), get("/research/cells?limit=200"),
     ]).then(([s, j, a, c, ce]) => { if (!cancelled) { setSummary(s); setJudgments(j); setAssets(a); setClauses(c); setCells(ce); } })
       .catch(e => { if (!cancelled) setErr(String(e && e.message ? e.message : e)); });
+    // QSP 라운드는 독립 fetch(다른 카탈로그 API 실패와 무관하게 표시).
+    get("/qsp/rounds").then(j => { if (!cancelled) setQspRounds(j); }).catch(() => { if (!cancelled) setQspRounds({ rounds: [] }); });
     return () => { cancelled = true; };
   }, [baseUrl]);
 
@@ -175,6 +180,52 @@ function V4Catalog({ baseUrl, wsStatus }) {
       {view === "alpha" && (
         <section aria-label="진행 관찰 (구 Alpha Lab)">
           <V4Alpha baseUrl={baseUrl} wsStatus={wsStatus} />
+        </section>
+      )}
+
+      {view === "qsp" && (
+        <section aria-label="QSP 다후보 라운드 보드">
+          {!qspRounds && <p className="mono" style={{ color: "var(--ink-3)" }}>라운드 기록 로딩…</p>}
+          {qspRounds && (qspRounds.rounds || []).length === 0 && (
+            <div className="research-empty">라운드 기록 없음 — round_runner 실행 시 여기 쌓입니다.</div>
+          )}
+          {(qspRounds && qspRounds.rounds || []).map((r, i) => (
+            <div key={i} className="panel" style={{ marginBottom: 10 }}>
+              <div className="panel-hd">
+                <div className="panel-hd-title">
+                  <span className="dot" style={{ background: r.judgment && r.judgment.state === "diverged" ? "var(--red)" : r.judgment && r.judgment.state === "converged" ? "var(--teal)" : "var(--blue)" }}></span>
+                  {r.tag} · 라운드 {r.round}
+                  <span className={"badge " + (r.judgment && r.judgment.state === "continue" ? "idle" : r.judgment && r.judgment.state === "converged" ? "done" : "warn")} style={{ marginLeft: 8 }}>
+                    {r.judgment ? r.judgment.state : "?"}
+                  </span>
+                </div>
+                <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>run {r.run_id}</span>
+              </div>
+              <div className="panel-bd">
+                <p className="mono" style={{ fontSize: 11, color: "var(--ink-2)", margin: "0 0 8px" }}>{r.judgment && r.judgment.reason}</p>
+                <table className="mono" style={{ width: "100%", fontSize: 11 }}>
+                  <thead><tr><th style={{ textAlign: "left" }}>후보</th><th>objective</th><th>손익</th><th>MDD</th><th>거래</th><th>gate</th></tr></thead>
+                  <tbody>
+                    {(r.results || []).map((c, k) => (
+                      <tr key={k} style={{ color: r.best && c.buy_name === r.best.buy_name ? "var(--teal)" : undefined }}>
+                        <td>{c.pair_label}{r.best && c.buy_name === r.best.buy_name ? " ★" : ""}</td>
+                        <td style={{ textAlign: "right" }}>{c.objective != null ? Math.round(c.objective).toLocaleString("ko-KR") : "—"}</td>
+                        <td style={{ textAlign: "right" }}>{c.profit != null ? Math.round(c.profit).toLocaleString("ko-KR") : "—"}</td>
+                        <td style={{ textAlign: "right" }}>{c.mdd != null ? Number(c.mdd).toFixed(1) : "—"}</td>
+                        <td style={{ textAlign: "right" }}>{c.trade_count ?? "—"}</td>
+                        <td style={{ textAlign: "center" }}>{c.gate_passed ? "✓" : "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {(r.lessons || []).length > 0 && (
+                  <p className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", margin: "8px 0 0" }}>
+                    교훈: {(r.lessons || []).map(l => `${l.axis}@${l.leaf} Δ${Math.round(l.delta_vs_base).toLocaleString("ko-KR")}`).join(" · ")}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
         </section>
       )}
 
