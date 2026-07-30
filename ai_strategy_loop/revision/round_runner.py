@@ -95,6 +95,11 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
 
     ROUNDS_DIR.mkdir(parents=True, exist_ok=True)
     prev = _read_rounds(tag)
+    # 중복 라운드 가드 — 죽은 드라이버의 잔존 러너가 기록을 남긴 뒤 재기동하면
+    #   같은 round_no 가 이력으로 읽혀 base 가 뒤바뀐다(qsp2anch 실사고). exit 3.
+    if any(r.get("round") == round_no for r in prev):
+        print(f"[ROUND{round_no}] 기록이 이미 존재 — 건너뜀(드라이버는 다음 라운드로)", flush=True)
+        raise SystemExit(3)
     # 라벨 CSV: 직전 라운드 베스트의 CSV. 첫 라운드는 base 의 기준 CSV(직전 평가 run).
     if prev:
         label_csv = prev[-1]["best"]["csv_path"]
@@ -151,7 +156,7 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
             cand_meta.append({"cand": i, "spec": spec, "status": "gate_fail", "reason": gres.reason})
             print(f"[ROUND{round_no}] C{i} GATE FAIL — {gres.reason}", flush=True)
             continue
-        name = f"QSP1{tag.upper()}_R{round_no}C{i}_B"
+        name = f"{tag.upper()}_R{round_no}C{i}_B"
         _register_buy(name, new_code)
         pairs.append({"label": f"r{round_no}_c{i}", "buy": name, "sell": base_sell})
         cand_meta.append({"cand": i, "spec": spec, "status": "registered",
