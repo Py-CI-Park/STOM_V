@@ -86,7 +86,8 @@ def _objective(rows: List[Dict[str, Any]]) -> None:
 
 
 def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
-              round_no: int, n_cand: int) -> Dict[str, Any]:
+              round_no: int, n_cand: int,
+              holdout_config: Optional[str] = None) -> Dict[str, Any]:
     from ai_strategy_loop.autopsy import label_dataset as lds
     from ai_strategy_loop.revision import intent_gate as gate
     from ai_strategy_loop.revision import proposer
@@ -185,10 +186,38 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
                 "objective": v["objective"], "delta_vs_base": v["objective"] - (base_row or {}).get("objective", 0.0),
             })
 
+    # QSP2 — 홀드아웃 평가: 이 라운드 베스트를 표본외 구간에서 1회 재평가(공식 배치).
+    holdout_rec: Optional[Dict[str, Any]] = None
+    if holdout_config:
+        h_pairs = [{"label": f"r{round_no}_hold", "buy": best["buy_name"], "sell": base_sell}]
+        h_pairs_path = ROUNDS_DIR / f"{tag}_r{round_no}_hold_pairs.json"
+        h_pairs_path.write_text(json.dumps(h_pairs, ensure_ascii=False, indent=2), encoding="utf-8")
+        h_run_id = f"{time.strftime('%Y%m%d-%H%M')}_{tag}-r{round_no}-hold"
+        print(f"[ROUND{round_no}] 홀드아웃 배치 {h_run_id}…", flush=True)
+        h_proc = subprocess.run(
+            [PY, "-m", "ai_strategy_loop.scripts.claude_candidate_batch_eval",
+             "--pairs-json", str(h_pairs_path), "--config-json", holdout_config,
+             "--run-id", h_run_id],
+            cwd=str(REPO), env=env, capture_output=True, text=True, timeout=60 * 60)
+        print("\n".join((h_proc.stdout or "").splitlines()[-4:]), flush=True)
+        h_rows = _gen_rows(h_run_id)
+        _objective(h_rows)
+        h_ok = [r for r in h_rows if r.get("status") == "ok"]
+        if h_ok:
+            holdout_rec = {"run_id": h_run_id, "objective": h_ok[0]["objective"],
+                           "trade_count": int(h_ok[0].get("trade_count", 0) or 0),
+                           "profit": h_ok[0].get("profit"), "mdd": h_ok[0].get("mdd")}
+        else:
+            holdout_rec = {"run_id": h_run_id, "objective": None, "error": "no ok row"}
+
     history = [RoundStat(r["round"], r["best"]["objective"], r["best"]["trade_count"]) for r in prev]
     history.append(RoundStat(round_no, best["objective"], int(best.get("trade_count", 0) or 0)))
     seed_n = seed_trades if prev else int((base_row or {}).get("trade_count", seed_trades) or seed_trades)
-    verdict = judge(history, seed_trades=seed_n)
+    hold_hist = [((r.get("holdout") or {}).get("objective")) for r in prev]
+    hold_hist.append((holdout_rec or {}).get("objective"))
+    use_hold = any(h is not None for h in hold_hist)
+    verdict = judge(history, seed_trades=seed_n,
+                    holdout=hold_hist if use_hold else None)
 
     record = {
         "tag": tag, "round": round_no, "run_id": run_id,
@@ -205,6 +234,7 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
         "lessons": lessons,
         "judgment": {"state": verdict.state, "reason": verdict.reason,
                      "improvement_pct": verdict.improvement_pct},
+        "holdout": holdout_rec,
         "seed_trades": seed_n,
     }
     out_path = ROUNDS_DIR / f"{tag}_r{round_no}.json"
@@ -223,8 +253,11 @@ def main() -> int:
     ap.add_argument("--tag", required=True)
     ap.add_argument("--round", type=int, required=True)
     ap.add_argument("--n", type=int, default=3)
+    ap.add_argument("--holdout-config", default=None,
+                    help="표본외 config JSON — 지정 시 라운드 베스트를 재평가해 판정에 반영")
     args = ap.parse_args()
-    record = run_round(args.base_buy, args.base_sell, args.config, args.tag, args.round, args.n)
+    record = run_round(args.base_buy, args.base_sell, args.config, args.tag, args.round,
+                       args.n, holdout_config=args.holdout_config)
     # 캠페인 드라이버(bat 루프)용 종료 코드: continue=0, 수렴/발산=2(루프 중단 신호).
     return 0 if record["judgment"]["state"] == "continue" else 2
 

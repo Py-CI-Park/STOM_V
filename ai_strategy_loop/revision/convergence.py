@@ -49,13 +49,29 @@ def _improvement_pct(prev: float, cur: float) -> float:
     return (cur - prev) / base * 100.0
 
 
+# 홀드아웃(표본외) 규격 — QSP2 확장(마스터플랜 §2 "홀드아웃 동반 개선" 실장, R7 교훈):
+#   과최적 괴리: 설계가 이만큼 좋아지는데(각 +1%↑) 홀드아웃이 이만큼 나빠지는(각 −5%↓)
+#   라운드가 연속 2회면 발산 선언(설계 구간 암기 신호).
+OVERFIT_DESIGN_UP_PCT = 1.0
+OVERFIT_HOLDOUT_DOWN_PCT = -5.0
+OVERFIT_STREAK = 2
+
+
 def judge(history: Sequence[RoundStat], seed_trades: int, *,
           eps_pct: float = DEFAULT_EPS_PCT,
           converge_streak: int = DEFAULT_CONVERGE_STREAK,
           trade_collapse_ratio: float = DEFAULT_TRADE_COLLAPSE_RATIO,
           oscillation_flips: int = DEFAULT_OSCILLATION_FLIPS,
-          oscillation_amp_pct: float = DEFAULT_OSCILLATION_AMP_PCT) -> Judgment:
-    """라운드 이력 → 판정. history 는 round_no 오름차순(0=시드 기준 라운드)."""
+          oscillation_amp_pct: float = DEFAULT_OSCILLATION_AMP_PCT,
+          holdout: Optional[Sequence[Optional[float]]] = None) -> Judgment:
+    """라운드 이력 → 판정. history 는 round_no 오름차순(0=시드 기준 라운드).
+
+    holdout: history 와 정렬된 표본외 objective(라운드별 베스트를 홀드아웃 구간에서
+    재평가한 값). None 항목 허용(미평가 라운드). 있으면 두 규칙이 추가된다:
+      ① 과최적 괴리 발산(설계↑·홀드아웃↓ 연속) — R7 에서 손으로 잡았던 판정의 자동화.
+      ② 수렴 선언에 '홀드아웃 순악화 아님' 요건 — 악화 상태의 정체는 수렴이 아니라
+         과최적 정체이므로 diverged 로 정직하게 보고한다.
+    """
     if not history:
         return Judgment("continue", "이력 없음 — 첫 라운드 진행")
     cur = history[-1]
@@ -73,6 +89,28 @@ def judge(history: Sequence[RoundStat], seed_trades: int, *,
     deltas = [_improvement_pct(history[i - 1].objective, history[i].objective)
               for i in range(1, len(history))]
 
+    # ①-b 발산: 과최적 괴리 — 설계 개선·홀드아웃 악화 연속(홀드아웃 제공 시에만).
+    hold = list(holdout or [])
+    if len(hold) == len(history):
+        h_deltas = []
+        for i in range(1, len(history)):
+            if hold[i] is None or hold[i - 1] is None:
+                h_deltas.append(None)
+            else:
+                h_deltas.append(_improvement_pct(hold[i - 1], hold[i]))
+        streak = 0
+        for d_design, d_hold in zip(deltas[::-1], h_deltas[::-1]):
+            if (d_hold is not None and d_design > OVERFIT_DESIGN_UP_PCT
+                    and d_hold < OVERFIT_HOLDOUT_DOWN_PCT):
+                streak += 1
+                if streak >= OVERFIT_STREAK:
+                    return Judgment(
+                        "diverged",
+                        f"과최적 괴리 — 설계 개선(+{d_design:.1f}% 등)·홀드아웃 악화"
+                        f"({d_hold:.1f}% 등) {OVERFIT_STREAK}라운드 연속")
+            else:
+                break
+
     # ② 발산: 진동 — 개선율 부호가 크게 교대(파라미터가 안정점을 못 찾음).
     if len(deltas) >= oscillation_flips + 1:
         recent = deltas[-(oscillation_flips + 1):]
@@ -82,14 +120,22 @@ def judge(history: Sequence[RoundStat], seed_trades: int, *,
             return Judgment("diverged",
                             f"진동 — 최근 개선율 {['%+.1f%%' % d for d in recent]} 부호 교대")
 
-    # ③ 수렴: 연속 converge_streak 라운드 개선 < eps.
+    # ③ 수렴: 연속 converge_streak 라운드 개선 < eps (+홀드아웃 순악화 아님 요건).
     if len(deltas) >= converge_streak:
         tail = deltas[-converge_streak:]
         if all(d < eps_pct for d in tail):
+            hold_vals = [h for h in hold if h is not None]
+            if len(hold_vals) >= 2 and _improvement_pct(hold_vals[0], hold_vals[-1]) < 0:
+                return Judgment(
+                    "diverged",
+                    f"설계 정체(개선 {['%+.2f%%' % d for d in tail]} < ε) 인데 홀드아웃은 "
+                    f"순악화({hold_vals[0]:,.0f}→{hold_vals[-1]:,.0f}) — 과최적 정체")
             return Judgment(
                 "converged",
                 f"개선 {['%+.2f%%' % d for d in tail]} — {converge_streak}라운드 연속 "
-                f"< ε({eps_pct}%)", improvement_pct=deltas[-1])
+                f"< ε({eps_pct}%)"
+                + (" · 홀드아웃 순유지" if len(hold_vals) >= 2 else ""),
+                improvement_pct=deltas[-1])
 
     return Judgment("continue", f"직전 개선 {deltas[-1]:+.2f}% — 계속",
                     improvement_pct=deltas[-1])

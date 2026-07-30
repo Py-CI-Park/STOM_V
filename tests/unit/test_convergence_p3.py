@@ -54,3 +54,30 @@ def test_negative_objective_uses_relative_improvement():
 def test_near_zero_baseline_falls_back_to_absolute():
     j = judge(_h(0.0, 5.0), seed_trades=1000)
     assert j.state == "continue"  # 0 나눗셈 폭주 없이 판정.
+
+
+# ------------------------------------------------------ QSP2 홀드아웃 동반 판정
+def test_overfit_divergence_design_up_holdout_down():
+    # 설계 +20%/+15% 개선인데 홀드아웃 -10%/-12% 악화 2연속 → 과최적 발산.
+    h = _h(-100, -80, -68)
+    j = judge(h, seed_trades=1000, holdout=[-50.0, -55.0, -62.0])
+    assert j.state == "diverged" and "과최적 괴리" in j.reason
+
+
+def test_convergence_requires_holdout_not_net_worse():
+    # 설계 정체(ε 미만 3연속)인데 홀드아웃 순악화 → 수렴이 아니라 과최적 정체(발산).
+    h = _h(100, 101, 101.5, 101.7)
+    j = judge(h, seed_trades=1000, holdout=[50.0, 49.0, 47.0, 44.0])
+    assert j.state == "diverged" and "과최적 정체" in j.reason
+
+
+def test_convergence_with_holdout_held():
+    h = _h(100, 101, 101.5, 101.7)
+    j = judge(h, seed_trades=1000, holdout=[50.0, 50.5, 51.0, 51.2])
+    assert j.state == "converged" and "홀드아웃 순유지" in j.reason
+
+
+def test_holdout_none_entries_are_tolerated():
+    h = _h(-100, -80, -70)
+    j = judge(h, seed_trades=1000, holdout=[None, -55.0, -50.0])
+    assert j.state == "continue"
