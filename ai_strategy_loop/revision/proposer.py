@@ -300,17 +300,23 @@ def apply(spec: Dict[str, Any], code: str) -> Tuple[Optional[str], str]:
 
 
 def _replace_consts_in_line(line: str, old: List[float], new: List[float]) -> Optional[str]:
-    """한 줄 안의 숫자 리터럴을 등장 순서대로 old→new 교체(개수·값 일치 필수)."""
+    """한 줄 안의 숫자 리터럴을 등장 순서대로 old→new 교체(개수·값 일치 필수).
+
+    주석은 스캔·치환 대상에서 제외한다(감사 BUG-A: `# anchor 70 의 완화` 류
+    숫자 주석이 검출 개수를 어긋나게 해 절의 75%가 수정 불가였던 치명 결함).
+    절 라인에 '#' 문자열 리터럴은 없다는 전제(전략 조건절은 문자열 미사용).
+    """
     import re
-    nums = re.findall(r"(?<![\w.])\d+(?:\.\d+)?(?![\w.])", line)
+    code_part, hash_ch, comment = line.partition("#")
+    nums = re.findall(r"(?<![\w.])\d+(?:\.\d+)?(?![\w.])", code_part)
     vals = [float(n) for n in nums]
     if vals != [abs(x) for x in old] and vals != old:
         # 음수 표기('-3.0')는 부호가 별 토큰 — 절댓값 비교 폴백까지 불일치면 실패.
         return None
     out, idx = "", 0
     pos = 0
-    for m in re.finditer(r"(?<![\w.])\d+(?:\.\d+)?(?![\w.])", line):
-        out += line[pos:m.start()]
+    for m in re.finditer(r"(?<![\w.])\d+(?:\.\d+)?(?![\w.])", code_part):
+        out += code_part[pos:m.start()]
         repl = float(new[idx])
         # 원문 표기 보존: 원 토큰에 소수점이 있으면 결과도 소수점 유지(15.0→"15" 방지),
         #   정수 토큰(체결강도 40 등)은 정수 유지.
@@ -323,5 +329,5 @@ def _replace_consts_in_line(line: str, old: List[float], new: List[float]) -> Op
         out += text
         idx += 1
         pos = m.end()
-    out += line[pos:]
-    return out
+    out += code_part[pos:]
+    return out + hash_ch + comment

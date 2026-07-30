@@ -88,3 +88,9 @@ def test_holdout_dip_then_recovery_still_converges():
     h = _h(100, 101, 101.5, 101.7)
     j = judge(h, seed_trades=1000, holdout=[100.0, 94.0, 97.0, 99.0])
     assert j.state == "converged", j.reason
+
+
+def test_collapse_is_not_convergence():
+    # 감사 BUG-C — 3연속 급락(음의 큰 델타)은 'ε 미만'이어도 수렴이 아니다.
+    j = judge(_h(100, 50, 25, 12), seed_trades=1000)
+    assert j.state != "converged", j.reason

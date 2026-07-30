@@ -276,3 +276,12 @@ def test_propose_skips_already_tried_identical_spec():
     again = P.propose(ds, CODE, "T", top_k=1, exclude_specs=tried)
     assert all((a["feature"], a["leaf_label"], tuple(a["new_consts"])) not in tried
                for a in again)
+
+
+def test_replace_consts_ignores_comment_numbers():
+    """감사 BUG-A — 숫자 주석이 있는 절 라인도 치환 가능해야 한다."""
+    from ai_strategy_loop.revision.proposer import _replace_consts_in_line
+    line = "        elif not (체결강도 >= 60):               # anchor 70 의 완화"
+    out = _replace_consts_in_line(line, [60.0], [75.0])
+    assert out is not None and "체결강도 >= 75" in out
+    assert "# anchor 70 의 완화" in out  # 주석은 원문 그대로 보존.

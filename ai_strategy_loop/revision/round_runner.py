@@ -104,7 +104,7 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
     if prev:
         label_csv = prev[-1]["best"]["csv_path"]
         base_code_name = prev[-1]["best"]["buy_name"]
-        seed_trades = int(prev[0]["base"]["trade_count"])
+        seed_trades = int(prev[0]["base"].get("trade_count") or 0)  # None 가드(감사 BUG-G)
     else:
         base_run = json.loads(Path(config_path).with_suffix(".baseline.json").read_text(encoding="utf-8")) \
             if Path(config_path).with_suffix(".baseline.json").exists() else None
@@ -128,7 +128,10 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
         base_obj = abs(float((rec.get("base") or {}).get("objective") or 0.0))
         thresh = max(base_obj * 0.01, 100_000.0)
         for lesson in rec.get("lessons", []):
-            if abs(float(lesson.get("delta_vs_base") or 0.0)) < thresh:
+            # abs() 제거(감사 BUG-D): 크게 악화된 축(delta 음수)도 제외 대상.
+            #   '유의미하게 양(+)' 이 아니면 재제안 금지 — 양의 축은 tried_specs 가
+            #   동일 상수 반복만 차단하므로 base 갱신 시 재시도가 살아있다.
+            if float(lesson.get("delta_vs_base") or 0.0) < thresh:
                 exclude_axes.append((lesson.get("axis"), lesson.get("leaf")))
     # BUG-4 교정: 이전 라운드에서 이미 평가된 (변수, 리프, 상수) 동일 제안은 재백테 금지.
     tried_specs = set()
@@ -178,6 +181,10 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
 
     rows = _gen_rows(run_id)
     _objective(rows)
+    # 위치 기반 결합 가드(감사 BUG-E): 행 수가 어긋나면 결과가 엉뚱한 전략에
+    #   귀속되므로 즉시 중단(조용한 절단 금지).
+    if len(rows) != len(pairs):
+        raise SystemExit(f"세대 행 {len(rows)}개 ≠ pairs {len(pairs)}개 — run {run_id} 귀속 불가")
     by_label: Dict[str, Dict[str, Any]] = {}
     for r, p in zip(rows, pairs):
         by_label[p["label"]] = {**r, "pair_label": p["label"], "buy_name": p["buy"]}

@@ -123,7 +123,9 @@ def judge(history: Sequence[RoundStat], seed_trades: int, *,
     # ③ 수렴: 연속 converge_streak 라운드 개선 < eps (+홀드아웃 순악화 아님 요건).
     if len(deltas) >= converge_streak:
         tail = deltas[-converge_streak:]
-        if all(d < eps_pct for d in tail):
+        # abs(): 큰 음의 델타(붕괴)가 '< ε' 를 만족해 수렴으로 오판되는 것 방지
+        #   (감사 BUG-C — 이 루프에선 base 상시 포함으로 δ≥0 이지만 judge 는 순수 함수).
+        if all(abs(d) < eps_pct for d in tail):
             hold_vals = [h for h in hold if h is not None]
             # 허용오차(OVERFIT_HOLDOUT_DOWN_PCT): 초반 하락 후 회복 궤적을 정체로
             #   오판하지 않도록, 순악화가 유의(−5% 초과)할 때만 발산 처리(감사 B6).
