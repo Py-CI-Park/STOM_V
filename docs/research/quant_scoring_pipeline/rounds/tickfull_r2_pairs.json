@@ -1,0 +1,22 @@
+[
+  {
+    "label": "r2_base",
+    "buy": "QSP1TICKFULL_R1C3_B",
+    "sell": "QSP1_T_HIER_900_920_S"
+  },
+  {
+    "label": "r2_c1",
+    "buy": "QSP1TICKFULL_R2C1_B",
+    "sell": "QSP1_T_HIER_900_920_S"
+  },
+  {
+    "label": "r2_c2",
+    "buy": "QSP1TICKFULL_R2C2_B",
+    "sell": "QSP1_T_HIER_900_920_S"
+  },
+  {
+    "label": "r2_c3",
+    "buy": "QSP1TICKFULL_R2C3_B",
+    "sell": "QSP1_T_HIER_900_920_S"
+  }
+]
