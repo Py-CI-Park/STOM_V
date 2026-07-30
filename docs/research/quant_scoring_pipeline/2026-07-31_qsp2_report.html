@@ -1,0 +1,115 @@
+<!doctype html><html lang='ko'><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>QSP2 캠페인 보고서</title><style>
+:root{--bg:#FAF9F4;--card:#FFFFFF;--ink:#22261F;--muted:#6E7466;--line:#DEDCD0;
+  --accent:#1E6B58;--accent-soft:#E4EFEA;--up:#C4453C;--up-soft:#F7E9E7;--down:#33619E;
+  --down-soft:#E8EEF6;--code-bg:#F3F2EB;--code-dim:#8B9082;--mark:#FFF3C2;--mark-line:#C9A227;}
+@media (prefers-color-scheme:dark){:root{--bg:#141712;--card:#1B1F19;--ink:#E7EAE1;--muted:#9AA192;
+  --line:#2E332B;--accent:#54AD92;--accent-soft:#1E2C26;--up:#E0705F;--up-soft:#33201C;--down:#7AA3DA;
+  --down-soft:#1C2635;--code-bg:#10130D;--code-dim:#767D6E;--mark:#3A3416;--mark-line:#C9A227;}}
+:root[data-theme="light"]{--bg:#FAF9F4;--card:#FFFFFF;--ink:#22261F;--muted:#6E7466;--line:#DEDCD0;
+  --accent:#1E6B58;--accent-soft:#E4EFEA;--up:#C4453C;--up-soft:#F7E9E7;--down:#33619E;
+  --down-soft:#E8EEF6;--code-bg:#F3F2EB;--code-dim:#8B9082;--mark:#FFF3C2;--mark-line:#C9A227;}
+:root[data-theme="dark"]{--bg:#141712;--card:#1B1F19;--ink:#E7EAE1;--muted:#9AA192;--line:#2E332B;
+  --accent:#54AD92;--accent-soft:#1E2C26;--up:#E0705F;--up-soft:#33201C;--down:#7AA3DA;
+  --down-soft:#1C2635;--code-bg:#10130D;--code-dim:#767D6E;--mark:#3A3416;--mark-line:#C9A227;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);margin:0;font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;font-size:15px;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:32px 22px 80px}
+h1,h2,h3{font-family:"Batang","Nanum Myeongjo","Apple Myungjo",serif;text-wrap:balance;line-height:1.35}
+h1{font-size:30px;margin:10px 0 6px}
+h2{font-size:22px;margin:0 0 4px;padding-top:8px}
+h3{font-size:17px;margin:22px 0 8px}
+.eyebrow{font-size:11.5px;letter-spacing:.14em;color:var(--accent);font-weight:700}
+.muted{color:var(--muted)}.num{font-variant-numeric:tabular-nums}
+section{margin-top:36px;border-top:2px solid var(--accent);padding-top:14px}
+.lede{font-size:15.5px;max-width:70ch}
+.masthead{border-bottom:3px double var(--ink);padding-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.meta-grid{display:flex;flex-wrap:wrap;gap:6px 26px;font-size:12.5px;color:var(--muted);margin-top:10px}
+.meta-grid b{color:var(--ink);font-weight:600}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:22px 0 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+.kpi .label{font-size:12px;color:var(--muted);letter-spacing:.06em}
+.kpi .value{font-family:"Batang",serif;font-size:26px;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.pos{color:var(--up)}.neg{color:var(--down)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;background:var(--card)}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:6px;margin:14px 0}
+th{background:var(--accent-soft);color:var(--ink);text-align:left;font-weight:700;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:none}
+td.best{font-weight:700}
+.barrow{display:grid;grid-template-columns:172px 1fr 118px;gap:10px;align-items:center;margin:7px 0}
+.barrow .blabel{font-size:13px;text-align:right;color:var(--muted)}
+.barrow .bval{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.track{background:var(--code-bg);border-radius:4px;height:22px;position:relative;overflow:hidden}
+.fill{height:100%;border-radius:4px 3px 3px 4px}
+.fill.acc{background:var(--accent)}.fill.up{background:var(--up)}.fill.dn{background:var(--down)}
+.fill.ghost{background:var(--muted);opacity:.45}
+.chart{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin:14px 0}
+.chart .ctitle{font-size:13px;font-weight:700;margin-bottom:10px}
+.chart .cnote{font-size:12px;color:var(--muted);margin-top:10px}
+.callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px}
+.callout.warn{border-left-color:var(--mark-line);background:var(--mark)}
+.badge{display:inline-block;font-size:11.5px;font-weight:700;border-radius:20px;padding:2px 11px;margin-right:6px;vertical-align:1px}
+.badge.kill{background:var(--down-soft);color:var(--down)}
+.badge.posv{background:var(--up-soft);color:var(--up)}
+.badge.hold{background:var(--code-bg);color:var(--muted)}
+.badge.live{background:var(--accent-soft);color:var(--accent)}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:16px;overflow-x:auto;font-family:"Consolas","D2Coding",monospace;font-size:12.5px;line-height:1.62;margin:10px 0}
+pre .c{color:var(--code-dim)}pre .k{color:var(--accent);font-weight:700}
+pre mark{background:var(--mark);color:inherit;border-radius:3px;padding:1px 2px;outline:1px solid var(--mark-line)}
+.codehead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font-size:12.5px;color:var(--muted);margin-top:14px}
+.codehead b{color:var(--ink);font-size:14px}
+.sha{font-family:"Consolas",monospace;background:var(--code-bg);padding:1px 7px;border-radius:4px;font-size:11.5px}
+.timeline{list-style:none;margin:14px 0;padding:0}
+.timeline li{display:grid;grid-template-columns:96px 92px 1fr;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13.5px;align-items:baseline}
+.timeline li:last-child{border-bottom:none}
+.timeline .tdate{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.funnel{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.fstep{border-radius:5px;padding:9px 14px;color:#fff;font-size:13.5px;display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.score{display:grid;gap:8px;margin:14px 0}
+.srow{display:grid;grid-template-columns:minmax(150px,220px) 1fr 84px;gap:10px;align-items:center;font-size:13px}
+.srow .sname{text-align:right;color:var(--muted)}
+.srow .spts{font-weight:700;font-variant-numeric:tabular-nums}
+.studycard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:14px 0}
+.studycard .shead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.studycard h3{margin:0;font-size:16px}
+.studycard .easy{font-size:13.5px;margin:8px 0 4px}
+.studycard .method{font-size:12.5px;color:var(--muted);margin:6px 0 10px}
+.studycard .ev{font-size:11.5px;color:var(--muted);margin-top:10px;word-break:break-all}
+.evfoot{font-size:11.5px;color:var(--muted);margin-top:16px;border-top:1px dashed var(--line);padding-top:8px;word-break:break-all}
+.repgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin:16px 0}
+.repcard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.repcard .rtitle{font-family:"Batang",serif;font-size:15px;font-weight:700}
+.repcard .rone{font-size:12.5px;color:var(--muted);flex:1}
+.repcard .rmeta{font-size:11.5px;color:var(--muted)}
+.repcard a.open{font-size:13px;font-weight:700;color:var(--accent);text-decoration:none}
+a{color:var(--accent)}
+footer{margin-top:56px;border-top:1px solid var(--line);padding-top:14px;font-size:12px;color:var(--muted)}
+footer code{font-family:"Consolas",monospace;font-size:11.5px}
+.tabs{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:4px;background:var(--bg);border-bottom:2px solid var(--accent);padding:10px 0 0;margin-top:18px}
+.tabbtn{background:transparent;border:1px solid var(--line);border-bottom:none;color:var(--muted);border-radius:6px 6px 0 0;padding:8px 15px;font-size:13.5px;font-weight:700;font-family:inherit;text-decoration:none}
+.tabbtn.active,.tabbtn:hover,.tabbtn:focus{background:var(--card);color:var(--accent);border-color:var(--accent)}
+.tabpanel{padding-top:6px;scroll-margin-top:74px}
+.tabpanel>section:first-of-type{border-top:none}
+@media (max-width:640px){.barrow{grid-template-columns:110px 1fr 96px}.timeline li{grid-template-columns:78px 76px 1fr}h1{font-size:24px}.masthead{flex-direction:column}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .5s ease}}
+</style></head><body>
+<header><h1>QSP2 캠페인 보고서 — anchor 이식 + 홀드아웃 동반 판정</h1>
+<p class='muted'>2026-07-31 06:15 · feature/quant-scoring-pipeline-20260729 · 전 라운드 무인 자율</p></header>
+<section><h2>수렴 곡선 — 설계 vs 홀드아웃</h2><svg viewBox='0 0 760 230' style='width:100%;height:auto' role='img'><line x1='58' y1='196.0' x2='740' y2='196.0' stroke='var(--muted)' stroke-width='0.5' opacity='0.5'/><text x='52' y='200.0' text-anchor='end' font-size='11' fill='var(--muted)' class='num'>+0%</text><text x='52' y='16.8' text-anchor='end' font-size='11' fill='var(--muted)' class='num'>+14%</text><path d='M 58.0 196.0 L 143.2 176.2 L 228.5 176.2 L 313.8 132.7 L 399.0 111.0 L 484.2 96.2 L 569.5 60.9 L 654.8 43.5 L 740.0 18.0' fill='none' stroke='var(--accent)' stroke-width='2.5' /><path d='M 143.2 196.0 L 228.5 196.0 L 313.8 176.6 L 399.0 185.7 L 484.2 114.6 L 569.5 79.0 L 654.8 67.5 L 740.0 76.0' fill='none' stroke='var(--accent)' stroke-width='2.5' stroke-dasharray='6 4' opacity='0.75'/><circle cx='58.0' cy='196.0' r='3.6' fill='var(--accent)'/><circle cx='143.2' cy='176.2' r='3.6' fill='var(--accent)'/><circle cx='228.5' cy='176.2' r='3.6' fill='var(--accent)'/><circle cx='313.8' cy='132.7' r='3.6' fill='var(--accent)'/><circle cx='399.0' cy='111.0' r='3.6' fill='var(--accent)'/><circle cx='484.2' cy='96.2' r='3.6' fill='var(--accent)'/><circle cx='569.5' cy='60.9' r='3.6' fill='var(--accent)'/><circle cx='654.8' cy='43.5' r='3.6' fill='var(--accent)'/><circle cx='740.0' cy='18.0' r='3.6' fill='var(--accent)'/><circle cx='143.2' cy='196.0' r='3.2' fill='var(--accent)' opacity='0.6'/><circle cx='228.5' cy='196.0' r='3.2' fill='var(--accent)' opacity='0.6'/><circle cx='313.8' cy='176.6' r='3.2' fill='var(--accent)' opacity='0.6'/><circle cx='399.0' cy='185.7' r='3.2' fill='var(--accent)' opacity='0.6'/><circle cx='484.2' cy='114.6' r='3.2' fill='var(--accent)' opacity='0.6'/><circle cx='569.5' cy='79.0' r='3.2' fill='var(--accent)' opacity='0.6'/><circle cx='654.8' cy='67.5' r='3.2' fill='var(--accent)' opacity='0.6'/><circle cx='740.0' cy='76.0' r='3.2' fill='var(--accent)' opacity='0.6'/><text x='58.0' y='220' text-anchor='middle' font-size='11' fill='var(--muted)'>시드</text><text x='143.2' y='220' text-anchor='middle' font-size='11' fill='var(--muted)'>R1</text><text x='228.5' y='220' text-anchor='middle' font-size='11' fill='var(--muted)'>R2</text><text x='313.8' y='220' text-anchor='middle' font-size='11' fill='var(--muted)'>R3</text><text x='399.0' y='220' text-anchor='middle' font-size='11' fill='var(--muted)'>R4</text><text x='484.2' y='220' text-anchor='middle' font-size='11' fill='var(--muted)'>R5</text><text x='569.5' y='220' text-anchor='middle' font-size='11' fill='var(--muted)'>R6</text><text x='654.8' y='220' text-anchor='middle' font-size='11' fill='var(--muted)'>R7</text><text x='740.0' y='220' text-anchor='middle' font-size='11' fill='var(--muted)'>R8</text><text x='58' y='14' font-size='11' fill='var(--muted)'>실선=설계구간(2025.04~2026.02) · 점선=홀드아웃(2024.04~2025.04, 표본외) — 시드 대비 손실 축소율</text></svg>
+<p><b>읽는 법</b>: 두 선이 같이 오르면 일반화되는 개선(모의고사·본고사 동반 상승), 실선만 오르고
+점선이 내려가면 설계구간 암기(과최적) — 후자는 판정기가 2라운드 연속 시 자동 발산 선언한다.</p>
+<p>설계 <b>+13.60%</b> · 홀드아웃 <b>+9.17%</b> · 거래당 손익 개선 +9.45%
+(거래수 -4.6%) · 최종 판정 <b>continue</b></p></section>
+<section><h2>라운드 이력</h2><table><tr><th>R</th><th>베스트</th><th>설계 objective</th><th>Δ</th><th>거래</th><th>홀드아웃</th><th>판정</th><th>채택 수정</th></tr><tr><td>시드</td><td>(base)</td><td>-50,911,184</td><td>—</td><td>4,705</td><td>—</td><td>—</td><td>—</td></tr><tr><td>R1</td><td>QSP2ANCH_R1C3_B</td><td>-50,140,022</td><td>+1.51%</td><td>4,686</td><td>-91,485,142</td><td>continue</td><td>B3_905_910×M2_5000_10000 · ?&lt;=등락율&lt;=? 하한 [0.5, 20.0] → [4.26, 20.0] (d=+0.44, B_등락율)</td></tr><tr><td>R2</td><td>QSP2ANCH_R1C3_B</td><td>-50,140,022</td><td>+0.00%</td><td>4,686</td><td>-91,485,142</td><td>continue</td><td>(base 유지 — 후보 전원 미달)</td></tr><tr><td>R3</td><td>QSP2ANCH_R3C2_B</td><td>-48,449,062</td><td>+3.37%</td><td>4,641</td><td>-90,132,130</td><td>continue</td><td>B2_902_905×M1_3000_5000 · 고가근접율&gt;? 하한 [0.0] → [61.5] (d=+0.45, D_고가근접율)</td></tr><tr><td>R4</td><td>QSP2ANCH_R4C1_B</td><td>-47,605,464</td><td>+1.74%</td><td>4,622</td><td>-90,765,713</td><td>continue</td><td>B2_902_905×M2_5000_10000 · 체결강도&gt;=? 하한 [60.0] → [97.9] (d=+0.28, B_체결강도)</td></tr><tr><td>R5</td><td>QSP2ANCH_R5C3_B</td><td>-47,027,878</td><td>+1.21%</td><td>4,563</td><td>-85,793,154</td><td>continue</td><td>B3_905_910×S_3000미만 · ?&lt;=등락율&lt;=? 하한 [0.5, 25.0] → [5.21, 25.0] (d=+0.13, B_등락율)</td></tr><tr><td>R6</td><td>QSP2ANCH_R6C3_B</td><td>-45,653,563</td><td>+2.92%</td><td>4,532</td><td>-83,307,555</td><td>continue</td><td>B1_900_902×L_10000이상 · -?&lt;=시가등락율&lt;? 상한 [2.0, 8.0] → [2.0, 3.53] (d=-0.14, D_시가등락율)</td></tr><tr><td>R7</td><td>QSP2ANCH_R7C3_B</td><td>-44,975,565</td><td>+1.49%</td><td>4,512</td><td>-82,500,987</td><td>continue</td><td>B2_902_905×M2_5000_10000 · ?&lt;=등락율&lt;=? 하한 [0.5, 20.0] → [4.13, 20.0] (d=+0.15, B_등락율)</td></tr><tr><td>R8</td><td>QSP2ANCH_R8C2_B</td><td>-43,984,965</td><td>+2.20%</td><td>4,489</td><td>-83,096,562</td><td>continue</td><td>B3_905_910×L_10000이상 · ?&lt;=등락율&lt;=? 상한 [0.5, 15.0] → [0.5, 5.05] (d=-0.28, B_등락율)</td></tr><tr><td>시드 원엣지(tick)</td><td>−175.3M (8,619건)</td><td>**−50.9M (4,705건)** — anchor 이식 효과</td></tr></table></section>
+<section><h2>QSP1 → QSP2 변경점</h2><table><tr><th>항목</th><th>QSP1</th><th>QSP2</th></tr></table>
+<p class='muted'>독립 감사 2건(축A 56·46 / 축B 45·40)의 치명·높음 결함을 교정 후 가동한 캠페인이다.
+상세는 limitation_ledger.md 2026-07-30 행과 QSP1 최종 보고서 §2.1 정정 참조.</p></section>
+<section><h2>한계 (과대해석 금지)</h2><ol>
+<li>두 구간 모두 총손익 음수 — 덜 잃는 그물이지 수익 전략 아님(실전 반영 없음).</li>
+<li>FDR 유의성 게이트·objective 단일 척도화는 백로그.</li>
+<li>홀드아웃은 후향(2024) 검증 — 델타만 유효.</li></ol></section>
+</body></html>
