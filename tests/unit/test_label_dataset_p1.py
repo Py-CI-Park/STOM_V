@@ -167,3 +167,22 @@ def test_min_timeframe_bands_and_supply_ratio():
     assert list(ds.df["leaf_time"]) == ["B4_오후", "B1_장초반"]
     assert ds.df.iloc[0]["D_거래대금폭발배수"] == pytest.approx(2.0)
     assert ds.df.iloc[0]["D_수급비"] == pytest.approx(2.0)
+
+
+# ---------------------------------------------------- ⑤ 엔진 캡처 열 경계 가드
+def test_snapshot_value_guards_column_out_of_bounds():
+    """v2 확장 실측 결함 회귀(2026-07-30): dict_findex 인덱스가 런타임 arry_code 폭을
+    넘는 필드(min 계산열 미포함 모드의 B_RSI 등)는 IndexError 로 엔진을 죽이는 대신
+    default(0) 를 반환해야 한다 — min run 900s 타임아웃의 원인."""
+    import numpy as np
+    from backtest.backengine_base import BackEngineBase
+
+    class _Fake:
+        arry_code = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        dict_findex = {"정상필드": 1, "폭밖필드": 98}
+
+    get = BackEngineBase._get_snapshot_value
+    assert get(_Fake(), 0, "정상필드") == 2.0
+    assert get(_Fake(), 1, "폭밖필드") == 0          # 폭 밖 → default, 예외 없음
+    assert get(_Fake(), 5, "정상필드") == 0          # 행 밖(기존 가드) 유지
+    assert get(_Fake(), 0, "없는필드", default=-1) == -1

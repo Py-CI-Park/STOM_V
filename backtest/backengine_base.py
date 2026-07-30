@@ -523,6 +523,16 @@ class BackEngineBase(BaseStrategy):
         field_index = self.dict_findex.get(field_name)
         if field_index is None:
             return default
+        # v2 확장(QSP1 P1) 열 경계 가드 — dict_findex 는 전체 factor_list 기준이지만
+        #   런타임 arry_code 폭은 모드에 따라 계산열 일부가 빠질 수 있다(min CLI 실측:
+        #   B_RSI 등 계산열 인덱스가 폭을 넘어 매수 캡처에서 IndexError → 엔진 정지
+        #   → run 타임아웃, 2026-07-30). 폭 밖 필드는 default(0) 기록 — 분석기가
+        #   zero-variance 로 자동 제외한다.
+        try:
+            if field_index >= self.arry_code.shape[1]:
+                return default
+        except (AttributeError, IndexError):  # 1차원/비배열 방어 — 캡처는 절대 죽지 않는다.
+            return default
         value = self.arry_code[row_index, field_index]
         return value.item() if hasattr(value, 'item') else value
 
