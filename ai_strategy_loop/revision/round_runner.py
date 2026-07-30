@@ -138,7 +138,10 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
     for rec in prev:
         for m in rec.get("candidates", []):
             sp = m.get("spec") or {}
-            if m.get("status") == "registered" and sp.get("new_consts"):
+            # apply_fail/gate_fail 도 포함(재검증 구멍 1): 같은 명세는 결정적으로
+            #   같은 실패를 반복하므로 재생성은 슬롯 낭비다. (실패 원인 코드가
+            #   고쳐진 경우엔 base 갱신으로 상수가 이동해 자연히 재시도된다.)
+            if sp.get("new_consts"):
                 tried_specs.add((sp.get("feature"), sp.get("leaf_label"),
                                  tuple(float(x) for x in sp["new_consts"])))
     specs = proposer.propose(ds, base_code, base_code_name, top_k=n_cand,
@@ -187,6 +190,9 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
         raise SystemExit(f"세대 행 {len(rows)}개 ≠ pairs {len(pairs)}개 — run {run_id} 귀속 불가")
     by_label: Dict[str, Dict[str, Any]] = {}
     for r, p in zip(rows, pairs):
+        # 재정렬 가드(재검증 5): 행이 자체 보유한 buy_name 이 pairs 와 다르면 오귀속.
+        if r.get("buy_name") and str(r["buy_name"]) != str(p["buy"]):
+            raise SystemExit(f"세대 행 buy_name={r['buy_name']} ≠ pair {p['buy']} — 순서 오염")
         by_label[p["label"]] = {**r, "pair_label": p["label"], "buy_name": p["buy"]}
     ok_rows = [v for v in by_label.values() if v.get("status") == "ok"]
     if not ok_rows:
@@ -221,12 +227,16 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
             cwd=str(REPO), env=env, capture_output=True, text=True, timeout=60 * 60)
         print("\n".join((h_proc.stdout or "").splitlines()[-4:]), flush=True)
         h_rows = _gen_rows(h_run_id)
-        _objective(h_rows)
         h_ok = [r for r in h_rows if r.get("status") == "ok"]
         if h_ok:
-            holdout_rec = {"run_id": h_run_id, "objective": h_ok[0]["objective"],
+            # 홀드아웃 objective 는 총손익으로 고정(재검증 잔존 지적): 1행 배치라
+            #   any_gate 가 그 행 하나로 뒤집혀 score(~1e-3)↔profit(~-1e8) 스케일이
+            #   라운드마다 섞이면 과최적 괴리 판정이 허위 발화/은폐된다.
+            holdout_rec = {"run_id": h_run_id,
+                           "objective": float(h_ok[0].get("profit", 0) or 0),
                            "trade_count": int(h_ok[0].get("trade_count", 0) or 0),
-                           "profit": h_ok[0].get("profit"), "mdd": h_ok[0].get("mdd")}
+                           "profit": h_ok[0].get("profit"), "mdd": h_ok[0].get("mdd"),
+                           "score": h_ok[0].get("score")}
         else:
             holdout_rec = {"run_id": h_run_id, "objective": None, "error": "no ok row"}
 
@@ -239,8 +249,16 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
     verdict = judge(history, seed_trades=seed_n,
                     holdout=hold_hist if use_hold else None)
 
+    # objective 척도(regime) 기록 — 이전 라운드와 다르면 judge 이력이 이질 척도가
+    #   되므로 경고(혼입 처리 자체는 백로그, 원장 참조).
+    regime = "score" if any(bool(r.get("gate_passed")) for r in rows) else "profit"
+    prev_regimes = {r.get("regime") for r in prev if r.get("regime")}
+    if prev_regimes and regime not in prev_regimes:
+        print(f"[ROUND{round_no}] ⚠ objective 척도 전환 {prev_regimes} → {regime}"
+              f" — 라운드 간 개선율 해석 주의", flush=True)
+
     record = {
-        "tag": tag, "round": round_no, "run_id": run_id,
+        "tag": tag, "round": round_no, "run_id": run_id, "regime": regime,
         "base": {"buy_name": base_code_name,
                  "objective": (base_row or {}).get("objective"),
                  "trade_count": (base_row or {}).get("trade_count"),

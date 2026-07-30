@@ -241,6 +241,8 @@ def test_feature_to_clause_has_no_unit_mismatch_mappings():
     }
     listed = {(f, c) for f, cs in M.items() for c in cs}
     assert not (listed & banned), listed & banned
+    # 정의 불일치(라벨 계수 0.3 vs QSP2 시드 0.20)로 제외 — 계수 통일 전 재등재 금지.
+    assert "D_고가근접율" not in M
 
 
 def test_propose_skips_already_tried_identical_spec():
@@ -285,3 +287,39 @@ def test_replace_consts_ignores_comment_numbers():
     out = _replace_consts_in_line(line, [60.0], [75.0])
     assert out is not None and "체결강도 >= 75" in out
     assert "# anchor 70 의 완화" in out  # 주석은 원문 그대로 보존.
+
+
+def test_propose_falls_back_to_next_feature_when_spec_tried():
+    """재검증 구멍 2 — 1순위 명세가 기시도면 리프를 버리지 말고 2순위 축으로."""
+    import pandas as pd
+    from ai_strategy_loop.autopsy import label_dataset as L
+    from ai_strategy_loop.revision import proposer as P
+
+    rows = []
+    for i in range(80):
+        win = i < 20
+        rows.append({
+            "종목명": "X", "시가총액": 1000, "매수시간": f"2025040709{i % 2:02d}05",
+            "수익률": 1.0 if win else -1.0, "수익금": 1000 if win else -1000,
+            "B_현재가": 10000, "B_등락율": 5.0, "B_매수총잔량": 100, "B_매도총잔량": 100,
+            "B_당일거래대금": 100, "B_시가총액": 1000,
+            "B_체결강도": (120.0 if win else 80.0) + i * 1e-2,      # 2순위 변별 축.
+            "B_전일동시간비": (2.0 if win else 0.2) + i * 1e-3,      # 1순위 변별 축.
+        })
+    for i in range(80):
+        win = i < 60
+        rows.append({
+            "종목명": "Y", "시가총액": 12000, "매수시간": f"2025040709{i % 2:02d}35",
+            "수익률": 1.0 if win else -1.0, "수익금": 1000 if win else -1000,
+            "B_현재가": 50000, "B_등락율": 3.0, "B_매수총잔량": 100, "B_매도총잔량": 100,
+            "B_당일거래대금": 900, "B_시가총액": 12000,
+            "B_체결강도": 100.0 + i * 1e-2, "B_전일동시간비": 1.0 + i * 1e-3,
+        })
+    ds = L.enrich(pd.DataFrame(rows))
+    base = P.propose(ds, CODE, "T", top_k=1)
+    assert base, "기준 제안이 있어야 폴백을 검증할 수 있다"
+    tried = {(base[0]["feature"], base[0]["leaf_label"], tuple(base[0]["new_consts"]))}
+    again = P.propose(ds, CODE, "T", top_k=1, exclude_specs=tried)
+    assert again, "리프 통째 포기 금지 — 차순위 변별 축으로 폴백해야 한다"
+    assert again[0]["leaf_label"] == base[0]["leaf_label"]
+    assert again[0]["feature"] != base[0]["feature"]

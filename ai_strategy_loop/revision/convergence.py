@@ -137,8 +137,8 @@ def judge(history: Sequence[RoundStat], seed_trades: int, *,
                     f"순악화({hold_vals[0]:,.0f}→{hold_vals[-1]:,.0f}) — 과최적 정체")
             return Judgment(
                 "converged",
-                f"개선 {['%+.2f%%' % d for d in tail]} — {converge_streak}라운드 연속 "
-                f"< ε({eps_pct}%)"
+                f"변화량 {['%+.2f%%' % d for d in tail]} — {converge_streak}라운드 연속 "
+                f"|δ| < ε({eps_pct}%)"
                 + (" · 홀드아웃 순유지" if len(hold_vals) >= 2 else ""),
                 improvement_pct=deltas[-1])
 

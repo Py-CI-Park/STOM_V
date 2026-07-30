@@ -41,7 +41,9 @@ FEATURE_TO_CLAUSE: Dict[str, List[str]] = {
     "B_체결강도": ["체결강도>=?"],               # 동일 변수
     "D_거래대금폭발배수": ["거래대금비율>?"],       # 정의 동일(초당거래대금/평균) — 배수 ↔ 배수
     "B_전일동시간비": ["전일동시간비>?"],          # 동일 변수
-    "D_고가근접율": ["고가근접율>?"],             # 정의 동일(현재가-(고가-(고가-저가)*0.3))
+    # D_고가근접율 → 고가근접율>? 는 제외(재검증 FAIL): 라벨 파생은 계수 0.3,
+    #   QSP2 시드 절은 0.20 — 편차가 (고가-저가)에 비례하는 계통 편의라 분위수
+    #   이식이 의도보다 과조임된다. 시드 계수 통일(0.30) 후 재등재(원장 참조).
 }
 # 다중공선 가격축(F-R1-1) — 개별 제안 금지(공통 그물 가격대는 리프 절이 아니다).
 _PRICE_AXIS = {"B_현재가", "B_시가", "B_고가", "B_저가", "D_전일종가", "B_시분초",
@@ -154,9 +156,10 @@ def propose(ds, buy_code: str, target: str, *,
         sub = df.loc[idx]
         sub_pct = pct.loc[idx]
         is_win = sub_pct > 0
-        # 리프 내 변별 변수 중 '조절 절이 존재하는' 것만 후보.
-        best = None
-        unreachable_top = None   # 매핑 부재로 경쟁 못 한 최대 변별 변수(BUG-5 진단).
+        # 리프 내 변별 변수 후보 수집 — 도달 가능(매핑 존재) 축은 |d| 내림차순으로
+        #   폴백 후보가 된다(재검증 구멍 2 교정: 1순위가 기시도면 2순위로 내려간다).
+        reachable = []               # (|d| 내림차순 정렬용) [(feat, d, ident, vals), …]
+        unreachable_top = None       # 매핑 부재로 경쟁 못 한 최대 변별 변수(BUG-5 진단).
         leaf_label = f"{lt}×{lc}"
         for feat in ds.features:
             if feat in _PRICE_AXIS:
@@ -170,33 +173,38 @@ def propose(ds, buy_code: str, target: str, *,
                 if unreachable_top is None or abs(d) > abs(unreachable_top[1]):
                     unreachable_top = (feat, d)
                 continue
-            if best is None or abs(d) > abs(best[1]):
-                best = (feat, d, targets[0], vals)
+            if abs(d) >= 0.1:
+                reachable.append((feat, d, targets[0], vals))
+        reachable.sort(key=lambda t: abs(t[1]), reverse=True)
         if (unreachable_top is not None and abs(unreachable_top[1]) >= 0.1
-                and (best is None or abs(unreachable_top[1]) > abs(best[1]))):
+                and (not reachable or abs(unreachable_top[1]) > abs(reachable[0][1]))):
             print(f"[PROPOSER] {leaf_label}: 최대 변별 {unreachable_top[0]}"
                   f"(d={unreachable_top[1]:+.2f}) 은 매핑 부재로 제안 불가"
                   f" — 커버리지 구멍 진단(감사 A5)", flush=True)
-        if best is None or abs(best[1]) < 0.1:
-            continue  # 실효 변별 없음 — 이 리프는 이번 라운드 보류.
-        feat, d, clause_ident, vals = best
-        clause = clause_idents[clause_ident]
-        win_vals = vals[is_win].dropna()
-        if len(win_vals) < _GROUP_MIN_N:
-            continue
-        # 데이터구동 경계: 승 그룹 분위수. d>0(승이 큼)→하한을 승 25분위로 올림.
-        #   d<0(승이 작음)→상한을 승 75분위로 내림.
-        consts = list(clause.consts)
-        if d > 0:
-            bound = float(win_vals.quantile(0.25))
-            new_consts, which = _tighten_lower(clause_ident, consts, bound)
-        else:
-            bound = float(win_vals.quantile(0.75))
-            new_consts, which = _tighten_upper(clause_ident, consts, bound)
-        if new_consts is None or tuple(new_consts) == tuple(consts):
-            continue
-        if (feat, leaf_label, tuple(float(x) for x in new_consts)) in tried_specs:
-            continue  # 이전 라운드에서 이미 평가된 동일 상수 — 결과가 결정적으로 같다.
+        chosen = None
+        for feat, d, clause_ident, vals in reachable:
+            clause = clause_idents[clause_ident]
+            win_vals = vals[is_win].dropna()
+            if len(win_vals) < _GROUP_MIN_N:
+                continue
+            # 데이터구동 경계: 승 그룹 분위수. d>0(승이 큼)→하한을 승 25분위로 올림.
+            #   d<0(승이 작음)→상한을 승 75분위로 내림.
+            consts = list(clause.consts)
+            if d > 0:
+                bound = float(win_vals.quantile(0.25))
+                new_consts, which = _tighten_lower(clause_ident, consts, bound)
+            else:
+                bound = float(win_vals.quantile(0.75))
+                new_consts, which = _tighten_upper(clause_ident, consts, bound)
+            if new_consts is None or tuple(new_consts) == tuple(consts):
+                continue
+            if (feat, leaf_label, tuple(float(x) for x in new_consts)) in tried_specs:
+                continue  # 기평가 동일 상수(결정적 동일 결과) — 다음 변별 축으로 폴백.
+            chosen = (feat, d, clause_ident, consts, new_consts, which, bound)
+            break
+        if chosen is None:
+            continue  # 이 리프엔 신규 제안 여지 없음 — 다음 손실 리프로.
+        feat, d, clause_ident, consts, new_consts, which, bound = chosen
         specs.append({
             "target": target,
             "leaf": list(leaf_key),
