@@ -101,7 +101,11 @@ def cap_band(value: Any) -> str:
 
 
 def _num(df: pd.DataFrame, col: str) -> pd.Series:
-    return pd.to_numeric(df.get(col), errors="coerce")
+    """컬럼 → 수치 Series. 컬럼 부재 시 전체 NaN Series(스칼라 nan 반환 방지 —
+    부재 컬럼이 파생 수식에 들어가면 .where 호출에서 죽던 실측 결함, 2026-07-30)."""
+    if col not in df.columns:
+        return pd.Series([float("nan")] * len(df), index=df.index, dtype=float)
+    return pd.to_numeric(df[col], errors="coerce")
 
 
 def _safe_div(a: pd.Series, b: pd.Series) -> pd.Series:

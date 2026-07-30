@@ -115,8 +115,19 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
         raise SystemExit(f"base 매수식 로드 실패: {base_code_name}")
 
     ds = lds.build(str(REPO / label_csv) if not os.path.isabs(str(label_csv)) else str(label_csv))
-    specs = proposer.propose(ds, base_code, base_code_name, top_k=n_cand)
-    print(f"[ROUND{round_no}] base={base_code_name} 라벨={label_csv} 제안={len(specs)}", flush=True)
+    # P3.1(F-R3-1) 교훈 환류 — 이전 라운드들에서 base 대비 |Δ| 가 미미했던(사실상 무효)
+    #   (축, 리프) 조합은 재제안하지 않는다. 임계: base objective 의 1% 또는 10만원 중 큰 값.
+    exclude_axes: List[tuple] = []
+    for rec in prev:
+        base_obj = abs(float((rec.get("base") or {}).get("objective") or 0.0))
+        thresh = max(base_obj * 0.01, 100_000.0)
+        for lesson in rec.get("lessons", []):
+            if abs(float(lesson.get("delta_vs_base") or 0.0)) < thresh:
+                exclude_axes.append((lesson.get("axis"), lesson.get("leaf")))
+    specs = proposer.propose(ds, base_code, base_code_name, top_k=n_cand,
+                             exclude_axes=exclude_axes)
+    print(f"[ROUND{round_no}] base={base_code_name} 라벨={label_csv} 제안={len(specs)}"
+          f" (무효 축 제외 {len(set(exclude_axes))})", flush=True)
 
     # 후보 생성·게이트·등록.
     pairs: List[Dict[str, str]] = [{"label": f"r{round_no}_base", "buy": base_code_name, "sell": base_sell}]

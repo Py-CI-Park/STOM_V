@@ -188,3 +188,42 @@ def test_real_seed_parses_and_roundtrips():
         m = H.parse_leaves(code)
         assert m.ok and len(m.leaves) == 16, name
         assert H.skeleton_fp(code)
+
+
+def test_propose_respects_excluded_axes():
+    """P3.1(F-R3-1) — 직전 라운드 무효 축(변수×리프)은 재제안 금지."""
+    import pandas as pd
+    from ai_strategy_loop.autopsy import label_dataset as L
+    from ai_strategy_loop.revision import proposer as P
+
+    # 리프 2개: 손실 리프(B1×S, 승 20/패 60 — 전일동시간비가 승패를 가름) +
+    #   양호 리프(B1×L, 승 60/패 20). 리프가 1개면 '리프 중앙값 < 전체 중앙값'이
+    #   성립 불가라 제안이 0건이 된다(테스트 1차 작성의 실수 — 실측 교훈).
+    rows = []
+    for i in range(80):
+        win = i < 20
+        rows.append({
+            "종목명": "X", "시가총액": 1000, "매수시간": f"2025040709{i % 2:02d}05",
+            "수익률": 1.0 if win else -1.0, "수익금": 1000 if win else -1000,
+            "B_현재가": 10000, "B_등락율": 5.0, "B_매수총잔량": 100, "B_매도총잔량": 100,
+            "B_당일거래대금": 100, "B_시가총액": 1000, "B_체결강도": 100,
+            "B_전일동시간비": (2.0 if win else 0.2) + i * 1e-3,
+        })
+    for i in range(80):
+        win = i < 60
+        rows.append({
+            "종목명": "Y", "시가총액": 12000, "매수시간": f"2025040709{i % 2:02d}35",
+            "수익률": 1.0 if win else -1.0, "수익금": 1000 if win else -1000,
+            "B_현재가": 50000, "B_등락율": 3.0, "B_매수총잔량": 100, "B_매도총잔량": 100,
+            "B_당일거래대금": 900, "B_시가총액": 12000, "B_체결강도": 100,
+            "B_전일동시간비": 1.0 + i * 1e-3,
+        })
+    ds = L.enrich(pd.DataFrame(rows))
+    base = P.propose(ds, CODE, "T", top_k=1)
+    assert base and base[0]["feature"] == "B_전일동시간비"
+    leaf_label = base[0]["leaf_label"]
+    # 같은 축을 제외하면 그 축은 다시 나오지 않아야 한다(다른 축이 나오거나 0건).
+    again = P.propose(ds, CODE, "T", top_k=1,
+                      exclude_axes=[("B_전일동시간비", leaf_label)])
+    assert all(not (s["feature"] == "B_전일동시간비" and s["leaf_label"] == leaf_label)
+               for s in again)

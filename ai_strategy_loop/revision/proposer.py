@@ -108,13 +108,17 @@ def _cohen_d(win: pd.Series, loss: pd.Series) -> float:
 
 
 def propose(ds, buy_code: str, target: str, *,
-            top_k: int = 3, min_n: int = _LEAF_MIN_N) -> List[Dict[str, Any]]:
+            top_k: int = 3, min_n: int = _LEAF_MIN_N,
+            exclude_axes: Optional[List[Tuple[str, str]]] = None) -> List[Dict[str, Any]]:
     """LabelDataset + 현재 매수식 → 수정 명세 목록(손실 리프 상위 top_k).
 
     ds: autopsy.label_dataset.LabelDataset (enrich 결과)
     buy_code: 대상 HIER 매수식 원문(절 좌표 확인용)
     target: 전략 이름(명세 표기용)
+    exclude_axes: [(feature, leaf_label)] — 직전 라운드에서 무효로 판명된 축
+      (P3.1 교훈 환류, F-R3-1). 같은 (변수, 리프) 조합은 다시 제안하지 않는다.
     """
+    excluded_axes = {(str(f), str(l)) for f, l in (exclude_axes or [])}
     hier = parse_leaves(buy_code)
     if not hier.ok:
         return []
@@ -146,8 +150,11 @@ def propose(ds, buy_code: str, target: str, *,
         is_win = sub_pct > 0
         # 리프 내 변별 변수 중 '조절 절이 존재하는' 것만 후보.
         best = None
+        leaf_label = f"{lt}×{lc}"
         for feat in ds.features:
             if feat in _PRICE_AXIS:
+                continue
+            if (feat, leaf_label) in excluded_axes:   # P3.1 — 무효 축 재제안 금지.
                 continue
             targets = [ci for ci in FEATURE_TO_CLAUSE.get(feat, []) if ci in clause_idents]
             if not targets:

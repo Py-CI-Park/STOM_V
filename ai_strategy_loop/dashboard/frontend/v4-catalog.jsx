@@ -185,6 +185,46 @@ function V4Catalog({ baseUrl, wsStatus }) {
 
       {view === "qsp" && (
         <section aria-label="QSP 다후보 라운드 보드">
+          {/* v5.13.4(P4) — objective 수렴 곡선: 구조해석의 잔차 감소 로그에 해당.
+              라운드별 베스트 objective 를 꺾은선으로, ε(2%) 미만 구간은 점선 참조로. */}
+          {qspRounds && (qspRounds.rounds || []).length > 0 && (() => {
+            const rs = qspRounds.rounds;
+            const pts = rs.map(r => Number(r.best && r.best.objective));
+            const base0 = rs[0] && rs[0].base ? Number(rs[0].base.objective) : null;
+            const series = base0 != null ? [base0, ...pts] : pts;
+            const labels = base0 != null ? ["시드", ...rs.map(r => "R" + r.round)] : rs.map(r => "R" + r.round);
+            const W = 720, Hh = 150, padL = 74, padR = 16, padT = 14, padB = 26;
+            const lo = Math.min(...series), hi = Math.max(...series);
+            const span = (hi - lo) || 1;
+            const x = i => padL + (series.length > 1 ? (W - padL - padR) * i / (series.length - 1) : (W - padL - padR) / 2);
+            const y = v => padT + (Hh - padT - padB) * (1 - (v - lo) / span);
+            const path = series.map((v, i) => `${i ? "L" : "M"} ${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
+            const lastState = rs[rs.length - 1].judgment && rs[rs.length - 1].judgment.state;
+            return (
+              <div className="panel" style={{ marginBottom: 10 }}>
+                <div className="panel-hd"><div className="panel-hd-title"><span className="dot" style={{ background: "var(--teal)" }}></span>수렴 곡선 · objective(클수록 좋음)</div>
+                  <span className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)" }}>판정: {lastState || "?"} · ε=2% · 3연속 미만이면 수렴</span></div>
+                <div className="panel-bd">
+                  <svg viewBox={`0 0 ${W} ${Hh}`} style={{ width: "100%", height: "auto", display: "block" }} role="img" aria-label="라운드별 objective 수렴 곡선">
+                    <line x1={padL} y1={padT} x2={padL} y2={Hh - padB} stroke="var(--line-1)" />
+                    <line x1={padL} y1={Hh - padB} x2={W - padR} y2={Hh - padB} stroke="var(--line-1)" />
+                    <text x={padL - 6} y={y(hi) + 3} textAnchor="end" fontSize="9.5" fill="var(--ink-3)" fontFamily="var(--mono)">{Math.round(hi).toLocaleString("ko-KR")}</text>
+                    <text x={padL - 6} y={y(lo) + 3} textAnchor="end" fontSize="9.5" fill="var(--ink-3)" fontFamily="var(--mono)">{Math.round(lo).toLocaleString("ko-KR")}</text>
+                    <path d={path} fill="none" stroke="var(--teal)" strokeWidth="2" />
+                    {series.map((v, i) => (
+                      <g key={i}>
+                        <circle cx={x(i)} cy={y(v)} r="3.5" fill="var(--teal)" />
+                        <text x={x(i)} y={Hh - padB + 13} textAnchor="middle" fontSize="9.5" fill="var(--ink-2)" fontFamily="var(--mono)">{labels[i]}</text>
+                      </g>
+                    ))}
+                  </svg>
+                  <p className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", margin: "6px 0 0" }}>
+                    구조해석의 잔차 감소 곡선에 해당 — 위로 갈수록(손실 축소/점수 상승) 개선. 판정기는 개선율이 ε 미만으로 3라운드 연속이면 수렴을 선언합니다.
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
           {!qspRounds && <p className="mono" style={{ color: "var(--ink-3)" }}>라운드 기록 로딩…</p>}
           {qspRounds && (qspRounds.rounds || []).length === 0 && (
             <div className="research-empty">라운드 기록 없음 — round_runner 실행 시 여기 쌓입니다.</div>
