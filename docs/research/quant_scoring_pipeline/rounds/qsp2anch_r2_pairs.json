@@ -1,0 +1,12 @@
+[
+  {
+    "label": "r2_base",
+    "buy": "QSP2ANCH_R1C3_B",
+    "sell": "QSP2_T_ANCH_900_920_S"
+  },
+  {
+    "label": "r2_c3",
+    "buy": "QSP2ANCH_R2C3_B",
+    "sell": "QSP2_T_ANCH_900_920_S"
+  }
+]
