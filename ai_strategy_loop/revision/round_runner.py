@@ -224,8 +224,9 @@ def main() -> int:
     ap.add_argument("--round", type=int, required=True)
     ap.add_argument("--n", type=int, default=3)
     args = ap.parse_args()
-    run_round(args.base_buy, args.base_sell, args.config, args.tag, args.round, args.n)
-    return 0
+    record = run_round(args.base_buy, args.base_sell, args.config, args.tag, args.round, args.n)
+    # 캠페인 드라이버(bat 루프)용 종료 코드: continue=0, 수렴/발산=2(루프 중단 신호).
+    return 0 if record["judgment"]["state"] == "continue" else 2
 
 
 if __name__ == "__main__":
