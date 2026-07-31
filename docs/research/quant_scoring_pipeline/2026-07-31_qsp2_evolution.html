@@ -1,0 +1,147 @@
+<!doctype html><html lang='ko'><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>QSP2 세대 진화 시각화</title><style>
+:root{--bg:#FAF9F4;--card:#FFFFFF;--ink:#22261F;--muted:#6E7466;--line:#DEDCD0;
+  --accent:#1E6B58;--accent-soft:#E4EFEA;--up:#C4453C;--up-soft:#F7E9E7;--down:#33619E;
+  --down-soft:#E8EEF6;--code-bg:#F3F2EB;--code-dim:#8B9082;--mark:#FFF3C2;--mark-line:#C9A227;}
+@media (prefers-color-scheme:dark){:root{--bg:#141712;--card:#1B1F19;--ink:#E7EAE1;--muted:#9AA192;
+  --line:#2E332B;--accent:#54AD92;--accent-soft:#1E2C26;--up:#E0705F;--up-soft:#33201C;--down:#7AA3DA;
+  --down-soft:#1C2635;--code-bg:#10130D;--code-dim:#767D6E;--mark:#3A3416;--mark-line:#C9A227;}}
+:root[data-theme="light"]{--bg:#FAF9F4;--card:#FFFFFF;--ink:#22261F;--muted:#6E7466;--line:#DEDCD0;
+  --accent:#1E6B58;--accent-soft:#E4EFEA;--up:#C4453C;--up-soft:#F7E9E7;--down:#33619E;
+  --down-soft:#E8EEF6;--code-bg:#F3F2EB;--code-dim:#8B9082;--mark:#FFF3C2;--mark-line:#C9A227;}
+:root[data-theme="dark"]{--bg:#141712;--card:#1B1F19;--ink:#E7EAE1;--muted:#9AA192;--line:#2E332B;
+  --accent:#54AD92;--accent-soft:#1E2C26;--up:#E0705F;--up-soft:#33201C;--down:#7AA3DA;
+  --down-soft:#1C2635;--code-bg:#10130D;--code-dim:#767D6E;--mark:#3A3416;--mark-line:#C9A227;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);margin:0;font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;font-size:15px;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:32px 22px 80px}
+h1,h2,h3{font-family:"Batang","Nanum Myeongjo","Apple Myungjo",serif;text-wrap:balance;line-height:1.35}
+h1{font-size:30px;margin:10px 0 6px}
+h2{font-size:22px;margin:0 0 4px;padding-top:8px}
+h3{font-size:17px;margin:22px 0 8px}
+.eyebrow{font-size:11.5px;letter-spacing:.14em;color:var(--accent);font-weight:700}
+.muted{color:var(--muted)}.num{font-variant-numeric:tabular-nums}
+section{margin-top:36px;border-top:2px solid var(--accent);padding-top:14px}
+.lede{font-size:15.5px;max-width:70ch}
+.masthead{border-bottom:3px double var(--ink);padding-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.meta-grid{display:flex;flex-wrap:wrap;gap:6px 26px;font-size:12.5px;color:var(--muted);margin-top:10px}
+.meta-grid b{color:var(--ink);font-weight:600}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:22px 0 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+.kpi .label{font-size:12px;color:var(--muted);letter-spacing:.06em}
+.kpi .value{font-family:"Batang",serif;font-size:26px;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.pos{color:var(--up)}.neg{color:var(--down)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;background:var(--card)}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:6px;margin:14px 0}
+th{background:var(--accent-soft);color:var(--ink);text-align:left;font-weight:700;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:none}
+td.best{font-weight:700}
+.barrow{display:grid;grid-template-columns:172px 1fr 118px;gap:10px;align-items:center;margin:7px 0}
+.barrow .blabel{font-size:13px;text-align:right;color:var(--muted)}
+.barrow .bval{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.track{background:var(--code-bg);border-radius:4px;height:22px;position:relative;overflow:hidden}
+.fill{height:100%;border-radius:4px 3px 3px 4px}
+.fill.acc{background:var(--accent)}.fill.up{background:var(--up)}.fill.dn{background:var(--down)}
+.fill.ghost{background:var(--muted);opacity:.45}
+.chart{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin:14px 0}
+.chart .ctitle{font-size:13px;font-weight:700;margin-bottom:10px}
+.chart .cnote{font-size:12px;color:var(--muted);margin-top:10px}
+.callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px}
+.callout.warn{border-left-color:var(--mark-line);background:var(--mark)}
+.badge{display:inline-block;font-size:11.5px;font-weight:700;border-radius:20px;padding:2px 11px;margin-right:6px;vertical-align:1px}
+.badge.kill{background:var(--down-soft);color:var(--down)}
+.badge.posv{background:var(--up-soft);color:var(--up)}
+.badge.hold{background:var(--code-bg);color:var(--muted)}
+.badge.live{background:var(--accent-soft);color:var(--accent)}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:16px;overflow-x:auto;font-family:"Consolas","D2Coding",monospace;font-size:12.5px;line-height:1.62;margin:10px 0}
+pre .c{color:var(--code-dim)}pre .k{color:var(--accent);font-weight:700}
+pre mark{background:var(--mark);color:inherit;border-radius:3px;padding:1px 2px;outline:1px solid var(--mark-line)}
+.codehead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font-size:12.5px;color:var(--muted);margin-top:14px}
+.codehead b{color:var(--ink);font-size:14px}
+.sha{font-family:"Consolas",monospace;background:var(--code-bg);padding:1px 7px;border-radius:4px;font-size:11.5px}
+.timeline{list-style:none;margin:14px 0;padding:0}
+.timeline li{display:grid;grid-template-columns:96px 92px 1fr;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13.5px;align-items:baseline}
+.timeline li:last-child{border-bottom:none}
+.timeline .tdate{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.funnel{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.fstep{border-radius:5px;padding:9px 14px;color:#fff;font-size:13.5px;display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.score{display:grid;gap:8px;margin:14px 0}
+.srow{display:grid;grid-template-columns:minmax(150px,220px) 1fr 84px;gap:10px;align-items:center;font-size:13px}
+.srow .sname{text-align:right;color:var(--muted)}
+.srow .spts{font-weight:700;font-variant-numeric:tabular-nums}
+.studycard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:14px 0}
+.studycard .shead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.studycard h3{margin:0;font-size:16px}
+.studycard .easy{font-size:13.5px;margin:8px 0 4px}
+.studycard .method{font-size:12.5px;color:var(--muted);margin:6px 0 10px}
+.studycard .ev{font-size:11.5px;color:var(--muted);margin-top:10px;word-break:break-all}
+.evfoot{font-size:11.5px;color:var(--muted);margin-top:16px;border-top:1px dashed var(--line);padding-top:8px;word-break:break-all}
+.repgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin:16px 0}
+.repcard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.repcard .rtitle{font-family:"Batang",serif;font-size:15px;font-weight:700}
+.repcard .rone{font-size:12.5px;color:var(--muted);flex:1}
+.repcard .rmeta{font-size:11.5px;color:var(--muted)}
+.repcard a.open{font-size:13px;font-weight:700;color:var(--accent);text-decoration:none}
+a{color:var(--accent)}
+footer{margin-top:56px;border-top:1px solid var(--line);padding-top:14px;font-size:12px;color:var(--muted)}
+footer code{font-family:"Consolas",monospace;font-size:11.5px}
+.tabs{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:4px;background:var(--bg);border-bottom:2px solid var(--accent);padding:10px 0 0;margin-top:18px}
+.tabbtn{background:transparent;border:1px solid var(--line);border-bottom:none;color:var(--muted);border-radius:6px 6px 0 0;padding:8px 15px;font-size:13.5px;font-weight:700;font-family:inherit;text-decoration:none}
+.tabbtn.active,.tabbtn:hover,.tabbtn:focus{background:var(--card);color:var(--accent);border-color:var(--accent)}
+.tabpanel{padding-top:6px;scroll-margin-top:74px}
+.tabpanel>section:first-of-type{border-top:none}
+@media (max-width:640px){.barrow{grid-template-columns:110px 1fr 96px}.timeline li{grid-template-columns:78px 76px 1fr}h1{font-size:24px}.masthead{flex-direction:column}}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .5s ease}}
+
+.hm-title{font-weight:600;margin:14px 0 6px}
+.hm-grid{display:grid;grid-template-columns:110px repeat(4,1fr);gap:2px}
+.hm-h{font-size:12px;color:var(--muted);align-self:center;padding:2px 4px}
+.hm-c{padding:8px 6px;border-radius:4px;text-align:center;font-size:13px}
+.hm-c span{display:block;font-size:11px;opacity:.75}
+.hm-drop{outline:2px dashed #8a4a1f;outline-offset:-2px}
+.legend-dv{display:flex;gap:14px;align-items:center;font-size:12px;color:var(--muted);margin:8px 0}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+</style></head><body>
+<header><h1>QSP2 세대 진화 — 라운드별로 무엇이 바뀌었나</h1>
+<p class='muted'>2026-07-31 09:32 · 전 라운드 무인 자율 · 데이터: rounds/qsp2anch_r1~r8.json + 거래 CSV 재집계</p></header>
+
+<section><h2>0. 용어 한 장</h2>
+<p><b>QSP</b> = Quant Scoring Pipeline(퀀트 채점 파이프라인) — "백테스트 결과를 라벨(정답지)로 삼아
+조건식을 스스로 고치는 시스템"의 연구 이름. <b>QSP1</b> = 1차: 이 기계 자체를 만들고 검증한 프로그램.
+<b>QSP2</b> = 2차: 검증된 기계에 <b>좋은 시드</b>(과거 실증 승자 anchor 조건식을 16리프 골격에 이식)를 넣고
+<b>홀드아웃</b>(본 적 없는 2024년 = 본고사)을 매 라운드 자동 응시시킨 캠페인.
+<b>리프(leaf)</b> = 시간 4밴드 × 시총 4단계로 나눈 16개의 진입 구역 — 아래 히트맵의 칸 하나.</p></section>
+
+<section><h2>1. 수렴 곡선 — 설계(실선) vs 홀드아웃(점선)</h2><svg viewBox='0 0 760 210' style='width:100%;height:auto'><line x1='52' y1='180.0' x2='744' y2='180.0' stroke='var(--muted)' stroke-width='0.5' opacity='0.5'/><text x='46' y='184.0' text-anchor='end' font-size='11' fill='var(--muted)' class='num'>+0%</text><text x='46' y='15.2' text-anchor='end' font-size='11' fill='var(--muted)' class='num'>+14%</text><path d='M 52.0 180.0 L 138.5 161.7 L 225.0 161.7 L 311.5 121.7 L 398.0 101.7 L 484.5 88.1 L 571.0 55.5 L 657.5 39.5 L 744.0 16.0' fill='none' stroke='var(--accent)' stroke-width='2.5' /><path d='M 138.5 180.0 L 225.0 180.0 L 311.5 162.2 L 398.0 170.5 L 484.5 105.0 L 571.0 72.2 L 657.5 61.6 L 744.0 69.5' fill='none' stroke='var(--accent)' stroke-width='2.5' stroke-dasharray='6 4' opacity='0.7'/><circle cx='52.0' cy='180.0' r='3.5' fill='var(--accent)'><title>시드 설계 +0.00%</title></circle><circle cx='138.5' cy='161.7' r='3.5' fill='var(--accent)'><title>R1 설계 +1.51%</title></circle><circle cx='225.0' cy='161.7' r='3.5' fill='var(--accent)'><title>R2 설계 +1.51%</title></circle><circle cx='311.5' cy='121.7' r='3.5' fill='var(--accent)'><title>R3 설계 +4.84%</title></circle><circle cx='398.0' cy='101.7' r='3.5' fill='var(--accent)'><title>R4 설계 +6.49%</title></circle><circle cx='484.5' cy='88.1' r='3.5' fill='var(--accent)'><title>R5 설계 +7.63%</title></circle><circle cx='571.0' cy='55.5' r='3.5' fill='var(--accent)'><title>R6 설계 +10.33%</title></circle><circle cx='657.5' cy='39.5' r='3.5' fill='var(--accent)'><title>R7 설계 +11.66%</title></circle><circle cx='744.0' cy='16.0' r='3.5' fill='var(--accent)'><title>R8 설계 +13.60%</title></circle><circle cx='138.5' cy='180.0' r='3.2' fill='var(--accent)' opacity='0.55'><title>R1 홀드아웃 +0.00%</title></circle><circle cx='225.0' cy='180.0' r='3.2' fill='var(--accent)' opacity='0.55'><title>R2 홀드아웃 +0.00%</title></circle><circle cx='311.5' cy='162.2' r='3.2' fill='var(--accent)' opacity='0.55'><title>R3 홀드아웃 +1.48%</title></circle><circle cx='398.0' cy='170.5' r='3.2' fill='var(--accent)' opacity='0.55'><title>R4 홀드아웃 +0.79%</title></circle><circle cx='484.5' cy='105.0' r='3.2' fill='var(--accent)' opacity='0.55'><title>R5 홀드아웃 +6.22%</title></circle><circle cx='571.0' cy='72.2' r='3.2' fill='var(--accent)' opacity='0.55'><title>R6 홀드아웃 +8.94%</title></circle><circle cx='657.5' cy='61.6' r='3.2' fill='var(--accent)' opacity='0.55'><title>R7 홀드아웃 +9.82%</title></circle><circle cx='744.0' cy='69.5' r='3.2' fill='var(--accent)' opacity='0.55'><title>R8 홀드아웃 +9.17%</title></circle><text x='52.0' y='201' text-anchor='middle' font-size='11' fill='var(--muted)'>시드</text><text x='138.5' y='201' text-anchor='middle' font-size='11' fill='var(--muted)'>R1</text><text x='225.0' y='201' text-anchor='middle' font-size='11' fill='var(--muted)'>R2</text><text x='311.5' y='201' text-anchor='middle' font-size='11' fill='var(--muted)'>R3</text><text x='398.0' y='201' text-anchor='middle' font-size='11' fill='var(--muted)'>R4</text><text x='484.5' y='201' text-anchor='middle' font-size='11' fill='var(--muted)'>R5</text><text x='571.0' y='201' text-anchor='middle' font-size='11' fill='var(--muted)'>R6</text><text x='657.5' y='201' text-anchor='middle' font-size='11' fill='var(--muted)'>R7</text><text x='744.0' y='201' text-anchor='middle' font-size='11' fill='var(--muted)'>R8</text></svg>
+<p class='muted'>시드 대비 손실 축소율. 두 선이 같이 오르면 일반화, 실선만 오르면 암기(과최적) 신호.</p></section>
+
+<section><h2>2. 라운드별 채택 수정 (세대 진화 이력)</h2>
+<table><tr><th>R</th><th>채택된 수정</th><th>설계 손익</th><th>홀드아웃 손익</th><th>판정</th></tr><tr><td>R1</td><td>B3_905_910×M2_5000_10000 · ?&lt;=등락율&lt;=? 하한 [0.5, 20.0] → [4.26, 20.0] (d=+0.44, B_등락율)</td><td class='num'>-50,140,022</td><td class='num'>-91,485,142</td><td>continue</td></tr><tr><td>R2</td><td>(base 유지 — 후보 전원 미달)</td><td class='num'>-50,140,022</td><td class='num'>-91,485,142</td><td>continue</td></tr><tr><td>R3</td><td>B2_902_905×M1_3000_5000 · 고가근접율&gt;? 하한 [0.0] → [61.5] (d=+0.45, D_고가근접율)</td><td class='num'>-48,449,062</td><td class='num'>-90,132,130</td><td>continue</td></tr><tr><td>R4</td><td>B2_902_905×M2_5000_10000 · 체결강도&gt;=? 하한 [60.0] → [97.9] (d=+0.28, B_체결강도)</td><td class='num'>-47,605,464</td><td class='num'>-90,765,713</td><td>continue</td></tr><tr><td>R5</td><td>B3_905_910×S_3000미만 · ?&lt;=등락율&lt;=? 하한 [0.5, 25.0] → [5.21, 25.0] (d=+0.13, B_등락율)</td><td class='num'>-47,027,878</td><td class='num'>-85,793,154</td><td>continue</td></tr><tr><td>R6</td><td>B1_900_902×L_10000이상 · -?&lt;=시가등락율&lt;? 상한 [2.0, 8.0] → [2.0, 3.53] (d=-0.14, D_시가등락율)</td><td class='num'>-45,653,563</td><td class='num'>-83,307,555</td><td>continue</td></tr><tr><td>R7</td><td>B2_902_905×M2_5000_10000 · ?&lt;=등락율&lt;=? 하한 [0.5, 20.0] → [4.13, 20.0] (d=+0.15, B_등락율)</td><td class='num'>-44,975,565</td><td class='num'>-82,500,987</td><td>continue</td></tr><tr><td>R8</td><td>B3_905_910×L_10000이상 · ?&lt;=등락율&lt;=? 상한 [0.5, 15.0] → [0.5, 5.05] (d=-0.28, B_등락율)</td><td class='num'>-43,984,965</td><td class='num'>-83,096,562</td><td>continue</td></tr></table>
+<p class='muted'>전부 "절 상수를 승자 통계 위치로 조이기" — 한 라운드 +1~3% 수준의 미세 조정이었다.</p></section>
+
+<section><h2>3. 리프 손익 지형 (히트맵, 공유 스케일)</h2>
+<div class='legend-dv'><span><span class='sw' style='background:rgb(217,118,43)'></span>손실</span>
+<span><span class='sw' style='background:rgb(242,240,236)'></span>0 근처</span>
+<span><span class='sw' style='background:rgb(74,127,181)'></span>이익</span>
+<span>· 점선 테두리 = 제거 후보(하위 3리프)</span></div>
+<div class='hm-title'>r0 시드 · 설계구간</div><div class='hm-grid'><div class='hm-corner'></div><div class='hm-h'>소형 &lt;3000억</div><div class='hm-h'>3000~5000억</div><div class='hm-h'>5000억~1조</div><div class='hm-h'>대형 ≥1조</div><div class='hm-h'>09:00~02분</div><div class='hm-c hm-drop' style='background:rgb(225,159,107);color:#fff' title='B1_900_902×S_3000미만 · 760건 · -12,744,204원'><b>-12.7M</b><span>760건</span></div><div class='hm-c' style='background:rgb(237,217,199);color:var(--ink, #222)' title='B1_900_902×M1_3000_5000 · 243건 · -2,103,683원'><b>-2.1M</b><span>243건</span></div><div class='hm-c' style='background:rgb(237,218,201);color:var(--ink, #222)' title='B1_900_902×M2_5000_10000 · 212건 · -1,962,398원'><b>-2.0M</b><span>212건</span></div><div class='hm-c' style='background:rgb(239,224,211);color:var(--ink, #222)' title='B1_900_902×L_10000이상 · 281건 · -1,258,549원'><b>-1.3M</b><span>281건</span></div><div class='hm-h'>02~05분</div><div class='hm-c hm-drop' style='background:rgb(228,170,126);color:#fff' title='B2_902_905×S_3000미만 · 534건 · -10,192,086원'><b>-10.2M</b><span>534건</span></div><div class='hm-c' style='background:rgb(238,222,207);color:var(--ink, #222)' title='B2_902_905×M1_3000_5000 · 185건 · -1,502,972원'><b>-1.5M</b><span>185건</span></div><div class='hm-c' style='background:rgb(221,226,229);color:var(--ink, #222)' title='B2_902_905×M2_5000_10000 · 162건 · 1,199,805원'><b>+1.2M</b><span>162건</span></div><div class='hm-c' style='background:rgb(240,231,221);color:var(--ink, #222)' title='B2_902_905×L_10000이상 · 198건 · -574,898원'><b>-0.6M</b><span>198건</span></div><div class='hm-h'>05~10분</div><div class='hm-c' style='background:rgb(238,220,205);color:var(--ink, #222)' title='B3_905_910×S_3000미만 · 491건 · -1,666,881원'><b>-1.7M</b><span>491건</span></div><div class='hm-c' style='background:rgb(228,230,231);color:var(--ink, #222)' title='B3_905_910×M1_3000_5000 · 144건 · 668,008원'><b>+0.7M</b><span>144건</span></div><div class='hm-c' style='background:rgb(241,233,225);color:var(--ink, #222)' title='B3_905_910×M2_5000_10000 · 132건 · -364,251원'><b>-0.4M</b><span>132건</span></div><div class='hm-c' style='background:rgb(236,211,191);color:var(--ink, #222)' title='B3_905_910×L_10000이상 · 166건 · -2,856,066원'><b>-2.9M</b><span>166건</span></div><div class='hm-h'>10~20분</div><div class='hm-c hm-drop' style='background:rgb(227,167,120);color:#fff' title='B4_910_920×S_3000미만 · 559건 · -10,947,869원'><b>-10.9M</b><span>559건</span></div><div class='hm-c' style='background:rgb(237,217,199);color:var(--ink, #222)' title='B4_910_920×M1_3000_5000 · 220건 · -2,146,224원'><b>-2.1M</b><span>220건</span></div><div class='hm-c' style='background:rgb(240,230,220);color:var(--ink, #222)' title='B4_910_920×M2_5000_10000 · 194건 · -628,661원'><b>-0.6M</b><span>194건</span></div><div class='hm-c' style='background:rgb(235,205,180);color:var(--ink, #222)' title='B4_910_920×L_10000이상 · 224건 · -3,830,255원'><b>-3.8M</b><span>224건</span></div></div>
+<div class='hm-title'>r8 챔피언 · 설계구간 (8라운드 조임 후)</div><div class='hm-grid'><div class='hm-corner'></div><div class='hm-h'>소형 &lt;3000억</div><div class='hm-h'>3000~5000억</div><div class='hm-h'>5000억~1조</div><div class='hm-h'>대형 ≥1조</div><div class='hm-h'>09:00~02분</div><div class='hm-c hm-drop' style='background:rgb(225,159,107);color:#fff' title='B1_900_902×S_3000미만 · 760건 · -12,744,204원'><b>-12.7M</b><span>760건</span></div><div class='hm-c' style='background:rgb(237,217,199);color:var(--ink, #222)' title='B1_900_902×M1_3000_5000 · 243건 · -2,103,683원'><b>-2.1M</b><span>243건</span></div><div class='hm-c' style='background:rgb(238,219,202);color:var(--ink, #222)' title='B1_900_902×M2_5000_10000 · 211건 · -1,868,114원'><b>-1.9M</b><span>211건</span></div><div class='hm-c' style='background:rgb(226,229,231);color:var(--ink, #222)' title='B1_900_902×L_10000이상 · 203건 · 815,775원'><b>+0.8M</b><span>203건</span></div><div class='hm-h'>02~05분</div><div class='hm-c hm-drop' style='background:rgb(228,170,126);color:#fff' title='B2_902_905×S_3000미만 · 534건 · -10,192,086원'><b>-10.2M</b><span>534건</span></div><div class='hm-c' style='background:rgb(242,239,234);color:var(--ink, #222)' title='B2_902_905×M1_3000_5000 · 107건 · -33,034원'><b>-0.0M</b><span>107건</span></div><div class='hm-c' style='background:rgb(203,214,223);color:var(--ink, #222)' title='B2_902_905×M2_5000_10000 · 93건 · 2,825,069원'><b>+2.8M</b><span>93건</span></div><div class='hm-c' style='background:rgb(238,221,207);color:var(--ink, #222)' title='B2_902_905×L_10000이상 · 241건 · -1,542,268원'><b>-1.5M</b><span>241건</span></div><div class='hm-h'>05~10분</div><div class='hm-c' style='background:rgb(238,237,235);color:var(--ink, #222)' title='B3_905_910×S_3000미만 · 392건 · 112,348원'><b>+0.1M</b><span>392건</span></div><div class='hm-c' style='background:rgb(223,227,230);color:var(--ink, #222)' title='B3_905_910×M1_3000_5000 · 174건 · 1,029,596원'><b>+1.0M</b><span>174건</span></div><div class='hm-c' style='background:rgb(241,237,232);color:var(--ink, #222)' title='B3_905_910×M2_5000_10000 · 114건 · -92,350원'><b>-0.1M</b><span>114건</span></div><div class='hm-c' style='background:rgb(240,229,219);color:var(--ink, #222)' title='B3_905_910×L_10000이상 · 115건 · -690,962원'><b>-0.7M</b><span>115건</span></div><div class='hm-h'>10~20분</div><div class='hm-c hm-drop' style='background:rgb(226,161,111);color:#fff' title='B4_910_920×S_3000미만 · 599건 · -12,178,176원'><b>-12.2M</b><span>599건</span></div><div class='hm-c' style='background:rgb(238,218,202);color:var(--ink, #222)' title='B4_910_920×M1_3000_5000 · 222건 · -1,903,209원'><b>-1.9M</b><span>222건</span></div><div class='hm-c' style='background:rgb(240,230,221);color:var(--ink, #222)' title='B4_910_920×M2_5000_10000 · 226건 · -592,285원'><b>-0.6M</b><span>226건</span></div><div class='hm-c' style='background:rgb(234,199,171);color:var(--ink, #222)' title='B4_910_920×L_10000이상 · 255건 · -4,827,382원'><b>-4.8M</b><span>255건</span></div></div>
+<div class='hm-title'>r8 챔피언 · 홀드아웃(표본외 2024)</div><div class='hm-grid'><div class='hm-corner'></div><div class='hm-h'>소형 &lt;3000억</div><div class='hm-h'>3000~5000억</div><div class='hm-h'>5000억~1조</div><div class='hm-h'>대형 ≥1조</div><div class='hm-h'>09:00~02분</div><div class='hm-c hm-drop' style='background:rgb(226,161,111);color:#fff' title='B1_900_902×S_3000미만 · 1,082건 · -12,190,278원'><b>-12.2M</b><span>1,082건</span></div><div class='hm-c' style='background:rgb(234,203,177);color:var(--ink, #222)' title='B1_900_902×M1_3000_5000 · 323건 · -4,201,399원'><b>-4.2M</b><span>323건</span></div><div class='hm-c' style='background:rgb(238,220,204);color:var(--ink, #222)' title='B1_900_902×M2_5000_10000 · 235건 · -1,773,893원'><b>-1.8M</b><span>235건</span></div><div class='hm-c' style='background:rgb(239,225,212);color:var(--ink, #222)' title='B1_900_902×L_10000이상 · 307건 · -1,142,133원'><b>-1.1M</b><span>307건</span></div><div class='hm-h'>02~05분</div><div class='hm-c hm-drop' style='background:rgb(221,136,72);color:#fff' title='B2_902_905×S_3000미만 · 748건 · -17,996,250원'><b>-18.0M</b><span>748건</span></div><div class='hm-c' style='background:rgb(238,218,201);color:var(--ink, #222)' title='B2_902_905×M1_3000_5000 · 153건 · -1,955,753원'><b>-2.0M</b><span>153건</span></div><div class='hm-c' style='background:rgb(240,230,220);color:var(--ink, #222)' title='B2_902_905×M2_5000_10000 · 110건 · -620,789원'><b>-0.6M</b><span>110건</span></div><div class='hm-c' style='background:rgb(237,218,201);color:var(--ink, #222)' title='B2_902_905×L_10000이상 · 385건 · -1,975,833원'><b>-2.0M</b><span>385건</span></div><div class='hm-h'>05~10분</div><div class='hm-c' style='background:rgb(238,221,207);color:var(--ink, #222)' title='B3_905_910×S_3000미만 · 461건 · -1,540,131원'><b>-1.5M</b><span>461건</span></div><div class='hm-c' style='background:rgb(229,174,132);color:var(--ink, #222)' title='B3_905_910×M1_3000_5000 · 264건 · -9,363,003원'><b>-9.4M</b><span>264건</span></div><div class='hm-c' style='background:rgb(237,217,199);color:var(--ink, #222)' title='B3_905_910×M2_5000_10000 · 152건 · -2,111,134원'><b>-2.1M</b><span>152건</span></div><div class='hm-c' style='background:rgb(234,202,176);color:var(--ink, #222)' title='B3_905_910×L_10000이상 · 256건 · -4,277,719원'><b>-4.3M</b><span>256건</span></div><div class='hm-h'>10~20분</div><div class='hm-c hm-drop' style='background:rgb(221,140,78);color:#fff' title='B4_910_920×S_3000미만 · 809건 · -17,114,296원'><b>-17.1M</b><span>809건</span></div><div class='hm-c' style='background:rgb(240,230,220);color:var(--ink, #222)' title='B4_910_920×M1_3000_5000 · 254건 · -636,278원'><b>-0.6M</b><span>254건</span></div><div class='hm-c' style='background:rgb(235,206,182);color:var(--ink, #222)' title='B4_910_920×M2_5000_10000 · 263건 · -3,641,175원'><b>-3.6M</b><span>263건</span></div><div class='hm-c' style='background:rgb(237,214,194);color:var(--ink, #222)' title='B4_910_920×L_10000이상 · 343건 · -2,556,498원'><b>-2.6M</b><span>343건</span></div></div>
+<p><b>읽는 법</b>: 8라운드를 조여도 손실 지형의 모양은 거의 그대로다 — 손실은 <b>소형주(&lt;3000억) 열</b>에
+구조적으로 몰려 있고, 조임은 이 기둥을 얇게 깎을 뿐 제거하지 못했다. 홀드아웃 패널에서도 같은 열이
+가장 붉다 = 우연이 아니라 구조.</p></section>
+
+<section><h2>4. "크게 제거" 실측 — 사용자 가설 검증</h2>
+<table><tr><th>하위 k개 제거</th><th>마지막 제거 리프</th><th>설계 손익</th><th>개선</th><th>홀드아웃 손익</th><th>개선</th></tr><tr><td>1</td><td>B1_900_902×S_3000미만</td><td class='num'>-31,240,761</td><td class='num'>+29.0%</td><td class='num'>-70,906,284</td><td class='num'>+14.7%</td></tr><tr><td>2</td><td>B4_910_920×S_3000미만</td><td class='num'>-19,062,585</td><td class='num'>+56.7%</td><td class='num'>-53,791,988</td><td class='num'>+35.3%</td></tr><tr><td>3</td><td>B2_902_905×S_3000미만</td><td class='num'>-8,870,499</td><td class='num'>+79.8%</td><td class='num'>-35,795,738</td><td class='num'>+56.9%</td></tr><tr><td>4</td><td>B4_910_920×L_10000이상</td><td class='num'>-4,043,117</td><td class='num'>+90.8%</td><td class='num'>-33,239,240</td><td class='num'>+60.0%</td></tr><tr><td>5</td><td>B1_900_902×M1_3000_5000</td><td class='num'>-1,939,434</td><td class='num'>+95.6%</td><td class='num'>-29,037,841</td><td class='num'>+65.1%</td></tr><tr><td>6</td><td>B4_910_920×M1_3000_5000</td><td class='num'>-36,225</td><td class='num'>+99.9%</td><td class='num'>-28,401,563</td><td class='num'>+65.8%</td></tr><tr><td>7</td><td>B1_900_902×M2_5000_10000</td><td class='num'>1,831,889</td><td class='num'>+104.2%</td><td class='num'>-26,627,670</td><td class='num'>+68.0%</td></tr><tr><td>8</td><td>B2_902_905×L_10000이상</td><td class='num'>3,374,157</td><td class='num'>+107.7%</td><td class='num'>-24,651,837</td><td class='num'>+70.3%</td></tr></table>
+<p><b>하위 3개(전부 소형주 밴드) 제거만으로 설계 +79.8% · 홀드아웃 +56.9%</b> — 8라운드 조임 전체
+(+13.6%/+9.2%)의 약 6배가 한 번의 제거에서 나온다. 단, 설계가 흑자 전환되는 7개 제거 구간에서도
+홀드아웃은 여전히 적자(−26.6M) — 제거는 강력하지만 만능이 아니며, 홀드아웃 동방향 확인이 항상 필요하다.</p></section>
+
+<section><h2>5. 주의 — 반대 사례도 있다</h2>
+<p>B3_905~910분×3000~5000억 리프는 <b>설계 +1.0M(흑자)인데 홀드아웃 −9.4M</b> — 설계구간만 보고
+"남길 리프"를 고르면 이런 가짜 흑자 리프에 속는다. 제거/유지 판단 모두 홀드아웃 병행이 필수인 이유.</p></section>
+</body></html>
