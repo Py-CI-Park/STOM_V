@@ -187,14 +187,38 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
         l_abs = str(REPO / str(label_csv)) if not os.path.isabs(str(label_csv)) else str(label_csv)
     tf = "min" if "min" in str(config_path).lower() else "tick"
     if "drop" in actions:
-        tried_drops = {(m.get("spec") or {}).get("leaf_label") for rec in prev
-                       for m in rec.get("candidates", [])
-                       if (m.get("spec") or {}).get("action") == "drop_leaf"}
+        # 제외 대상은 '측정해서 base 보다 나빴던' 리프만(탐욕 배제 결함 교정).
+        #   제안됐지만 그 라운드 베스트가 아니었을 뿐인 제거는 여전히 좋은 수일 수
+        #   있다 — QSP3 r1 에서 +6.5M 짜리 B1×소형 제거가 영구 유실된 실사고.
+        #   이미 잘려 있는 리프는 propose_drops 의 is_dropped 가 거른다.
+        tried_drops = set()
+        for rec in prev:
+            b_obj = float((rec.get("base") or {}).get("objective") or 0.0)
+            for m in rec.get("candidates", []):
+                sp = m.get("spec") or {}
+                if sp.get("action") not in ("drop_leaf",):
+                    continue
+                row = next((r for r in rec.get("results", [])
+                            if r.get("buy_name") == m.get("buy_name")), None)
+                if row is not None and float(row.get("objective") or 0.0) < b_obj:
+                    tried_drops.add(sp.get("leaf_label"))
         if h_abs:
             specs = surgeon.propose_drops(l_abs, h_abs, base_code, top_k=n_cand,
                                           exclude_leaves=tried_drops, timeframe=tf)
             if specs:
                 mode = "drop"
+                # 복합 후보(사용자 방법론 '크게 크게 제거'): 개별 제거가 대략 가법적
+                #   이라는 실측(프로브 합 ≈ 개별 합)에 근거해 전부 자른 안을 함께 평가.
+                if len(specs) >= 2:
+                    specs = specs + [{
+                        "action": "drop_multi",
+                        "leaves": [sp["leaf"] for sp in specs],
+                        "leaf_label": " + ".join(sp["leaf_label"] for sp in specs),
+                        "specs": specs,
+                        "est_delta_design": sum(sp["est_delta_design"] for sp in specs),
+                        "est_delta_holdout": sum(sp["est_delta_holdout"] for sp in specs),
+                        "change": "DROP-MULTI " + " + ".join(sp["leaf_label"] for sp in specs),
+                    }]
         else:
             print(f"[ROUND{round_no}] 홀드아웃 라벨 CSV 없음 — drop 건너뜀", flush=True)
     if not specs and "filter" in actions and h_abs:
@@ -215,7 +239,18 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
     pairs: List[Dict[str, str]] = [{"label": f"r{round_no}_base", "buy": base_code_name, "sell": base_sell}]
     cand_meta: List[Dict[str, Any]] = []
     for i, spec in enumerate(specs, 1):
-        if spec.get("action") == "drop_leaf":
+        if spec.get("action") == "drop_multi":
+            subs = spec.get("specs") or []
+            new_code, reason = surgeon.apply_drops(subs, base_code)
+            if not new_code:
+                cand_meta.append({"cand": i, "spec": spec, "status": "apply_fail", "reason": reason})
+                continue
+            ok, greason = surgeon.verify_drops(subs, base_code, new_code)
+            if not ok:
+                cand_meta.append({"cand": i, "spec": spec, "status": "gate_fail", "reason": greason})
+                print(f"[ROUND{round_no}] C{i} DROPS GATE FAIL — {greason}", flush=True)
+                continue
+        elif spec.get("action") == "drop_leaf":
             new_code, reason = surgeon.apply_drop(spec, base_code)
             if not new_code:
                 cand_meta.append({"cand": i, "spec": spec, "status": "apply_fail", "reason": reason})

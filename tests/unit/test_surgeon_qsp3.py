@@ -105,3 +105,19 @@ def test_verify_drop_rejects_body_tamper():
     assert tampered != new_code
     ok, why = surgeon.verify_drop(SPEC, CODE, tampered)
     assert not ok, "본문 변조가 통과되면 안 된다"
+
+
+def test_apply_and_verify_multi_drop():
+    """복합 제거(사용자 방법론 '크게 크게') — N개 리프를 한 번에, 게이트도 N줄만 허용."""
+    sp2 = {"action": "drop_leaf", "leaf": ["시분초<90200", "3000<=시가총액<5000"],
+           "leaf_label": "B1_900_902×M1_3000_5000"}
+    specs = [SPEC, sp2]
+    new_code, reason = surgeon.apply_drops(specs, CODE)
+    assert new_code, reason
+    ok, why = surgeon.verify_drops(specs, CODE, new_code)
+    assert ok, why
+    assert surgeon.is_dropped(new_code, TARGET_LEAF)
+    assert surgeon.is_dropped(new_code, ("시분초<90200", "3000<=시가총액<5000"))
+    # 한 개만 명세하고 두 개를 자른 코드는 거부돼야 한다.
+    bad, why2 = surgeon.verify_drops([SPEC], CODE, new_code)
+    assert not bad, why2

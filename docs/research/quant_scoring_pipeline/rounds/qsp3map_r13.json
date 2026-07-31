@@ -1,0 +1,316 @@
+{
+  "tag": "qsp3map",
+  "round": 13,
+  "run_id": "20260731-1555_qsp3map-r13",
+  "regime": "profit",
+  "actions": "drop,filter,tighten",
+  "mode": "drop",
+  "config": "docs/research/quant_scoring_pipeline/config_qsp3.json",
+  "holdout_config": "docs/research/quant_scoring_pipeline/config_qsp3_holdout.json",
+  "base": {
+    "buy_name": "QSP3MAP_R12C3_B",
+    "objective": -10580285.0,
+    "trade_count": 3093,
+    "csv_path": "backtest/csv\\stock_bt_QSP3MAP_R12C3_B_20260731155828.csv"
+  },
+  "candidates": [
+    {
+      "cand": 1,
+      "spec": {
+        "action": "drop_leaf",
+        "leaf": [
+          "시분초<90200",
+          "시가총액<3000"
+        ],
+        "leaf_label": "B1_900_902×S_3000미만",
+        "est_delta_design": 12744204.0,
+        "est_delta_holdout": 12190278.0,
+        "evidence": {
+          "n_design": 760,
+          "pnl_design": -12744204.0,
+          "n_holdout": 1082,
+          "pnl_holdout": -12190278.0,
+          "loss_share_design": 0.6644744851669552
+        },
+        "change": "DROP B1_900_902×S_3000미만 (설계 -12,744,204·760건 / 홀드 -12,190,278·1082건 양쪽 손실)"
+      },
+      "status": "registered",
+      "buy_name": "QSP3MAP_R13C1_B",
+      "gate": "PASS"
+    },
+    {
+      "cand": 2,
+      "spec": {
+        "action": "drop_leaf",
+        "leaf": [
+          "90200<=시분초<90500",
+          "시가총액<3000"
+        ],
+        "leaf_label": "B2_902_905×S_3000미만",
+        "est_delta_design": 2306563.0,
+        "est_delta_holdout": 6883206.0,
+        "evidence": {
+          "n_design": 194,
+          "pnl_design": -2306563.0,
+          "n_holdout": 208,
+          "pnl_holdout": -6883206.0,
+          "loss_share_design": 0.12026269054780883
+        },
+        "change": "DROP B2_902_905×S_3000미만 (설계 -2,306,563·194건 / 홀드 -6,883,206·208건 양쪽 손실)"
+      },
+      "status": "registered",
+      "buy_name": "QSP3MAP_R13C2_B",
+      "gate": "PASS"
+    },
+    {
+      "cand": 3,
+      "spec": {
+        "action": "drop_leaf",
+        "leaf": [
+          "91000<=시분초<92000",
+          "3000<=시가총액<5000"
+        ],
+        "leaf_label": "B4_910_920×M1_3000_5000",
+        "est_delta_design": 2148060.0,
+        "est_delta_holdout": 1064219.0,
+        "evidence": {
+          "n_design": 220,
+          "pnl_design": -2148060.0,
+          "n_holdout": 251,
+          "pnl_holdout": -1064219.0,
+          "loss_share_design": 0.11199844749877903
+        },
+        "change": "DROP B4_910_920×M1_3000_5000 (설계 -2,148,060·220건 / 홀드 -1,064,219·251건 양쪽 손실)"
+      },
+      "status": "registered",
+      "buy_name": "QSP3MAP_R13C3_B",
+      "gate": "PASS"
+    },
+    {
+      "cand": 4,
+      "spec": {
+        "action": "drop_multi",
+        "leaves": [
+          [
+            "시분초<90200",
+            "시가총액<3000"
+          ],
+          [
+            "90200<=시분초<90500",
+            "시가총액<3000"
+          ],
+          [
+            "91000<=시분초<92000",
+            "3000<=시가총액<5000"
+          ]
+        ],
+        "leaf_label": "B1_900_902×S_3000미만 + B2_902_905×S_3000미만 + B4_910_920×M1_3000_5000",
+        "specs": [
+          {
+            "action": "drop_leaf",
+            "leaf": [
+              "시분초<90200",
+              "시가총액<3000"
+            ],
+            "leaf_label": "B1_900_902×S_3000미만",
+            "est_delta_design": 12744204.0,
+            "est_delta_holdout": 12190278.0,
+            "evidence": {
+              "n_design": 760,
+              "pnl_design": -12744204.0,
+              "n_holdout": 1082,
+              "pnl_holdout": -12190278.0,
+              "loss_share_design": 0.6644744851669552
+            },
+            "change": "DROP B1_900_902×S_3000미만 (설계 -12,744,204·760건 / 홀드 -12,190,278·1082건 양쪽 손실)"
+          },
+          {
+            "action": "drop_leaf",
+            "leaf": [
+              "90200<=시분초<90500",
+              "시가총액<3000"
+            ],
+            "leaf_label": "B2_902_905×S_3000미만",
+            "est_delta_design": 2306563.0,
+            "est_delta_holdout": 6883206.0,
+            "evidence": {
+              "n_design": 194,
+              "pnl_design": -2306563.0,
+              "n_holdout": 208,
+              "pnl_holdout": -6883206.0,
+              "loss_share_design": 0.12026269054780883
+            },
+            "change": "DROP B2_902_905×S_3000미만 (설계 -2,306,563·194건 / 홀드 -6,883,206·208건 양쪽 손실)"
+          },
+          {
+            "action": "drop_leaf",
+            "leaf": [
+              "91000<=시분초<92000",
+              "3000<=시가총액<5000"
+            ],
+            "leaf_label": "B4_910_920×M1_3000_5000",
+            "est_delta_design": 2148060.0,
+            "est_delta_holdout": 1064219.0,
+            "evidence": {
+              "n_design": 220,
+              "pnl_design": -2148060.0,
+              "n_holdout": 251,
+              "pnl_holdout": -1064219.0,
+              "loss_share_design": 0.11199844749877903
+            },
+            "change": "DROP B4_910_920×M1_3000_5000 (설계 -2,148,060·220건 / 홀드 -1,064,219·251건 양쪽 손실)"
+          }
+        ],
+        "est_delta_design": 17198827.0,
+        "est_delta_holdout": 20137703.0,
+        "change": "DROP-MULTI B1_900_902×S_3000미만 + B2_902_905×S_3000미만 + B4_910_920×M1_3000_5000"
+      },
+      "status": "registered",
+      "buy_name": "QSP3MAP_R13C4_B",
+      "gate": "PASS"
+    }
+  ],
+  "results": [
+    {
+      "pair_label": "r13_base",
+      "buy_name": "QSP3MAP_R12C3_B",
+      "objective": -10580285.0,
+      "score": 0.04270758011005992,
+      "profit": -10580285.0,
+      "mdd": 33.56,
+      "trade_count": 3093,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP3MAP_R12C3_B_20260731155828.csv"
+    },
+    {
+      "pair_label": "r13_c1",
+      "buy_name": "QSP3MAP_R13C1_B",
+      "objective": -3355264.0,
+      "score": 0.0993977911653846,
+      "profit": -3355264.0,
+      "mdd": 35.57,
+      "trade_count": 2534,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP3MAP_R13C1_B_20260731155913.csv"
+    },
+    {
+      "pair_label": "r13_c2",
+      "buy_name": "QSP3MAP_R13C2_B",
+      "objective": -10159370.0,
+      "score": 0.044931208874817996,
+      "profit": -10159370.0,
+      "mdd": 31.66,
+      "trade_count": 2978,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP3MAP_R13C2_B_20260731155955.csv"
+    },
+    {
+      "pair_label": "r13_c3",
+      "buy_name": "QSP3MAP_R13C3_B",
+      "objective": -9685612.0,
+      "score": 0.0472242409402898,
+      "profit": -9685612.0,
+      "mdd": 30.69,
+      "trade_count": 2869,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP3MAP_R13C3_B_20260731160037.csv"
+    },
+    {
+      "pair_label": "r13_c4",
+      "buy_name": "QSP3MAP_R13C4_B",
+      "objective": -250745.0,
+      "score": 0.24594111869003868,
+      "profit": -250745.0,
+      "mdd": 31.22,
+      "trade_count": 2115,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP3MAP_R13C4_B_20260731160117.csv"
+    }
+  ],
+  "best": {
+    "pair_label": "r13_c4",
+    "buy_name": "QSP3MAP_R13C4_B",
+    "objective": -250745.0,
+    "score": 0.24594111869003868,
+    "profit": -250745.0,
+    "mdd": 31.22,
+    "trade_count": 2115,
+    "csv_path": "backtest/csv\\stock_bt_QSP3MAP_R13C4_B_20260731160117.csv"
+  },
+  "lessons": [
+    {
+      "axis": "drop_leaf",
+      "leaf": "B1_900_902×S_3000미만",
+      "action": "drop_leaf",
+      "objective": -3355264.0,
+      "delta_vs_base": 7225021.0
+    },
+    {
+      "axis": "drop_leaf",
+      "leaf": "B2_902_905×S_3000미만",
+      "action": "drop_leaf",
+      "objective": -10159370.0,
+      "delta_vs_base": 420915.0
+    },
+    {
+      "axis": "drop_leaf",
+      "leaf": "B4_910_920×M1_3000_5000",
+      "action": "drop_leaf",
+      "objective": -9685612.0,
+      "delta_vs_base": 894673.0
+    }
+  ],
+  "reentry": [
+    {
+      "cand": 1,
+      "leaf": "B1_900_902×S_3000미만",
+      "est_delta": 12744204.0,
+      "measured_delta": 7225021.0,
+      "reentry_cost": 5519183.0,
+      "removed_n": 760
+    },
+    {
+      "cand": 2,
+      "leaf": "B2_902_905×S_3000미만",
+      "est_delta": 2306563.0,
+      "measured_delta": 420915.0,
+      "reentry_cost": 1885648.0,
+      "removed_n": 194
+    },
+    {
+      "cand": 3,
+      "leaf": "B4_910_920×M1_3000_5000",
+      "est_delta": 2148060.0,
+      "measured_delta": 894673.0,
+      "reentry_cost": 1253387.0,
+      "removed_n": 220
+    },
+    {
+      "cand": 4,
+      "leaf": "B1_900_902×S_3000미만 + B2_902_905×S_3000미만 + B4_910_920×M1_3000_5000",
+      "est_delta": 17198827.0,
+      "measured_delta": 10329540.0,
+      "reentry_cost": 6869287.0,
+      "removed_n": 0
+    }
+  ],
+  "decomposition": {
+    "base_per_trade": -3420.7193663110247,
+    "best_per_trade": -118.55555555555556,
+    "trade_count_delta_pct": -31.619786614936952
+  },
+  "judgment": {
+    "state": "continue",
+    "reason": "직전 개선 +97.63% — 계속",
+    "improvement_pct": 97.63007329197654
+  },
+  "holdout": {
+    "run_id": "20260731-1601_qsp3map-r13-hold",
+    "objective": -45019001.0,
+    "trade_count": 2979,
+    "profit": -45019001.0,
+    "mdd": 75.54,
+    "score": 0.009700093386006596
+  },
+  "seed_trades": 4489
+}

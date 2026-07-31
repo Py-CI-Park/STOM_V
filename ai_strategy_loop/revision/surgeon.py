@@ -85,6 +85,49 @@ def propose_drops(design_csv: str, holdout_csv: str, buy_code: str, *,
     return specs
 
 
+def apply_drops(specs: List[Dict[str, Any]], code: str) -> Tuple[Optional[str], str]:
+    """복합 제거 — 여러 리프를 한 번에 잘라낸다(리프 효과는 대략 가법적이라는 실측).
+
+    탐욕 1개씩 채택은 '좋지만 최고는 아닌' 제거를 매 라운드 버린다(QSP3 r1 에서
+    +6.5M 짜리 제거가 그렇게 유실됐다). 복합 후보를 함께 평가하면 회수된다.
+    """
+    cur = code
+    for sp in specs:
+        cur, reason = apply_drop(sp, cur)
+        if cur is None:
+            return None, f"복합 제거 실패({sp.get('leaf_label')}): {reason}"
+    return cur, ""
+
+
+def verify_drops(specs: List[Dict[str, Any]], old_code: str, new_code: str) -> Tuple[bool, str]:
+    """복합 제거 검증 — 변경 줄 수 == 제거 리프 수, 각 줄이 DROP 마커, 그 외 diff 0."""
+    old_h, new_h = parse_leaves(old_code), parse_leaves(new_code)
+    if not old_h.ok or not new_h.ok:
+        return False, "parse 실패"
+    if set(old_h.leaves) != set(new_h.leaves):
+        return False, "V_DROPS: 리프 키 집합 변경"
+    old_lines, new_lines = old_code.split("\n"), new_code.split("\n")
+    if len(old_lines) != len(new_lines):
+        return False, "V_DROPS: 줄 수 변경"
+    changed = [i for i, (a, b) in enumerate(zip(old_lines, new_lines)) if a != b]
+    if len(changed) != len(specs):
+        return False, f"V_DROPS: 변경 줄 {len(changed)} ≠ 제거 {len(specs)}"
+    for i in changed:
+        head = new_lines[i].strip()
+        if not (head.startswith(("if True:", "elif True:")) and DROP_MARK in head):
+            return False, "V_DROPS: 드롭 줄 형태 불일치"
+    targets = {tuple(sp.get("leaf") or ()) for sp in specs}
+    for key in old_h.leaves:
+        o = [(c.ident, tuple(c.consts)) for c in old_h.leaves[key]]
+        n = [(c.ident, tuple(c.consts)) for c in new_h.leaves[key]]
+        if key in targets:
+            if not n or n[0][0] != "?" or n[1:] != o[1:]:
+                return False, f"V_DROPS: 대상 리프 변형 {key}"
+        elif n != o:
+            return False, f"V_DROPS: 명세 밖 리프 변경 {key}"
+    return True, ""
+
+
 def apply_drop(spec: Dict[str, Any], code: str) -> Tuple[Optional[str], str]:
     """드롭 명세 적용 — 대상 리프의 첫 절 줄만 `if True:` 로 교체."""
     hier = parse_leaves(code)
