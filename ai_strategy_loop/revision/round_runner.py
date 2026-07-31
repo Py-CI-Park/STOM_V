@@ -85,12 +85,37 @@ def _objective(rows: List[Dict[str, Any]]) -> None:
         r["objective"] = float(r.get("score", 0) or 0) if any_gate else float(r.get("profit", 0) or 0)
 
 
+def _holdout_label_csv(prev: List[Dict[str, Any]], holdout_config: Optional[str],
+                       base_name: str) -> Optional[str]:
+    """base 의 홀드아웃 라벨 CSV — 직전 라운드 홀드아웃 run, 없으면 baseline 포인터.
+
+    drop 제안(QSP3)은 '홀드아웃도 손실' 확인이 필수라 base 의 표본외 거래 CSV 가 필요.
+    base == 직전 베스트이므로 직전 라운드의 홀드아웃 run 이 정확히 그 CSV 다.
+    """
+    run_id = None
+    if prev and (prev[-1].get("holdout") or {}).get("run_id"):
+        run_id = prev[-1]["holdout"]["run_id"]
+    elif holdout_config:
+        ptr = Path(holdout_config).with_suffix(".baseline.json")
+        if ptr.exists():
+            run_id = json.loads(ptr.read_text(encoding="utf-8")).get("run_id")
+    if not run_id:
+        return None
+    rows = [r for r in _gen_rows(run_id) if r.get("status") == "ok" and r.get("csv_path")]
+    if not rows:
+        return None
+    named = [r for r in rows if r.get("buy_name") == base_name]
+    return str((named or rows)[0]["csv_path"])
+
+
 def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
               round_no: int, n_cand: int,
-              holdout_config: Optional[str] = None) -> Dict[str, Any]:
+              holdout_config: Optional[str] = None,
+              actions: str = "tighten") -> Dict[str, Any]:
     from ai_strategy_loop.autopsy import label_dataset as lds
     from ai_strategy_loop.revision import intent_gate as gate
     from ai_strategy_loop.revision import proposer
+    from ai_strategy_loop.revision import surgeon
     from ai_strategy_loop.revision.convergence import RoundStat, judge
 
     ROUNDS_DIR.mkdir(parents=True, exist_ok=True)
@@ -144,24 +169,55 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
             if sp.get("new_consts"):
                 tried_specs.add((sp.get("feature"), sp.get("leaf_label"),
                                  tuple(float(x) for x in sp["new_consts"])))
-    specs = proposer.propose(ds, base_code, base_code_name, top_k=n_cand,
-                             exclude_axes=exclude_axes, exclude_specs=tried_specs)
-    print(f"[ROUND{round_no}] base={base_code_name} 라벨={label_csv} 제안={len(specs)}"
-          f" (무효 축 제외 {len(set(exclude_axes))})", flush=True)
+    # QSP3 — 액션 우선순위: drop(대수술) 이 가능하면 먼저, 소진되면 tighten(조임).
+    #   drop 후보 = 설계+홀드아웃 양쪽 손실 리프(사용자 규칙: 홀드아웃 동방향 필수).
+    specs: List[Dict[str, Any]] = []
+    mode = "tighten"
+    if "drop" in actions:
+        tried_drops = {(m.get("spec") or {}).get("leaf_label") for rec in prev
+                       for m in rec.get("candidates", [])
+                       if (m.get("spec") or {}).get("action") == "drop_leaf"}
+        h_csv = _holdout_label_csv(prev, holdout_config, base_code_name)
+        if h_csv:
+            h_abs = str(REPO / h_csv) if not os.path.isabs(h_csv) else h_csv
+            l_abs = str(REPO / str(label_csv)) if not os.path.isabs(str(label_csv)) else str(label_csv)
+            tf = "min" if "min" in str(config_path).lower() else "tick"
+            specs = surgeon.propose_drops(l_abs, h_abs, base_code, top_k=n_cand,
+                                          exclude_leaves=tried_drops, timeframe=tf)
+            if specs:
+                mode = "drop"
+        else:
+            print(f"[ROUND{round_no}] 홀드아웃 라벨 CSV 없음 — drop 건너뜀(조임으로)", flush=True)
+    if not specs:
+        specs = proposer.propose(ds, base_code, base_code_name, top_k=n_cand,
+                                 exclude_axes=exclude_axes, exclude_specs=tried_specs)
+    print(f"[ROUND{round_no}] base={base_code_name} 라벨={label_csv} 모드={mode}"
+          f" 제안={len(specs)} (무효 축 제외 {len(set(exclude_axes))})", flush=True)
 
     # 후보 생성·게이트·등록.
     pairs: List[Dict[str, str]] = [{"label": f"r{round_no}_base", "buy": base_code_name, "sell": base_sell}]
     cand_meta: List[Dict[str, Any]] = []
     for i, spec in enumerate(specs, 1):
-        new_code, reason = proposer.apply(spec, base_code)
-        if not new_code:
-            cand_meta.append({"cand": i, "spec": spec, "status": "apply_fail", "reason": reason})
-            continue
-        gres = gate.verify(base_code, new_code, [spec])
-        if not gres.ok:
-            cand_meta.append({"cand": i, "spec": spec, "status": "gate_fail", "reason": gres.reason})
-            print(f"[ROUND{round_no}] C{i} GATE FAIL — {gres.reason}", flush=True)
-            continue
+        if spec.get("action") == "drop_leaf":
+            new_code, reason = surgeon.apply_drop(spec, base_code)
+            if not new_code:
+                cand_meta.append({"cand": i, "spec": spec, "status": "apply_fail", "reason": reason})
+                continue
+            ok, greason = surgeon.verify_drop(spec, base_code, new_code)
+            if not ok:
+                cand_meta.append({"cand": i, "spec": spec, "status": "gate_fail", "reason": greason})
+                print(f"[ROUND{round_no}] C{i} DROP GATE FAIL — {greason}", flush=True)
+                continue
+        else:
+            new_code, reason = proposer.apply(spec, base_code)
+            if not new_code:
+                cand_meta.append({"cand": i, "spec": spec, "status": "apply_fail", "reason": reason})
+                continue
+            gres = gate.verify(base_code, new_code, [spec])
+            if not gres.ok:
+                cand_meta.append({"cand": i, "spec": spec, "status": "gate_fail", "reason": gres.reason})
+                print(f"[ROUND{round_no}] C{i} GATE FAIL — {gres.reason}", flush=True)
+                continue
         name = f"{tag.upper()}_R{round_no}C{i}_B"
         _register_buy(name, new_code)
         pairs.append({"label": f"r{round_no}_c{i}", "buy": name, "sell": base_sell})
@@ -208,9 +264,29 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
         meta = next((m for m in cand_meta if m.get("buy_name") == v.get("buy_name")), None)
         if meta:
             lessons.append({
-                "axis": meta["spec"]["feature"], "leaf": meta["spec"]["leaf_label"],
+                "axis": meta["spec"].get("feature") or meta["spec"].get("action", "?"),
+                "leaf": meta["spec"]["leaf_label"],
                 "objective": v["objective"], "delta_vs_base": v["objective"] - (base_row or {}).get("objective", 0.0),
             })
+
+    # QSP3 — 재유입 비용: drop 후보의 빼기 추정 vs 재백테 실측(추정은 순위용일 뿐).
+    reentry: List[Dict[str, Any]] = []
+    base_obj = float((base_row or {}).get("objective") or 0.0)
+    for m in cand_meta:
+        if (m.get("spec") or {}).get("action") != "drop_leaf" or m.get("status") != "registered":
+            continue
+        row = next((v for v in ok_rows if v.get("buy_name") == m.get("buy_name")), None)
+        if row is None:
+            continue
+        measured = float(row["objective"]) - base_obj
+        est = float(m["spec"].get("est_delta_design") or 0.0)
+        reentry.append({"cand": m["cand"], "leaf": m["spec"]["leaf_label"],
+                        "est_delta": est, "measured_delta": measured,
+                        "reentry_cost": est - measured})
+    if reentry:
+        for r_ in reentry:
+            print(f"[ROUND{round_no}] 재유입 {r_['leaf']}: 추정 {r_['est_delta']:+,.0f}"
+                  f" → 실측 {r_['measured_delta']:+,.0f} (비용 {r_['reentry_cost']:,.0f})", flush=True)
 
     # QSP2 — 홀드아웃 평가: 이 라운드 베스트를 표본외 구간에서 1회 재평가(공식 배치).
     holdout_rec: Optional[Dict[str, Any]] = None
@@ -270,6 +346,7 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
         "best": {k: best.get(k) for k in ("pair_label", "buy_name", "objective", "score",
                                           "profit", "mdd", "trade_count", "csv_path")},
         "lessons": lessons,
+        "reentry": reentry,
         "judgment": {"state": verdict.state, "reason": verdict.reason,
                      "improvement_pct": verdict.improvement_pct},
         "holdout": holdout_rec,
@@ -293,9 +370,11 @@ def main() -> int:
     ap.add_argument("--n", type=int, default=3)
     ap.add_argument("--holdout-config", default=None,
                     help="표본외 config JSON — 지정 시 라운드 베스트를 재평가해 판정에 반영")
+    ap.add_argument("--actions", default="tighten",
+                    help="액션 우선순위 CSV — 'drop,tighten'(QSP3 대수술) / 'tighten'(기존)")
     args = ap.parse_args()
     record = run_round(args.base_buy, args.base_sell, args.config, args.tag, args.round,
-                       args.n, holdout_config=args.holdout_config)
+                       args.n, holdout_config=args.holdout_config, actions=args.actions)
     # 캠페인 드라이버(bat 루프)용 종료 코드: continue=0, 수렴/발산=2(루프 중단 신호).
     return 0 if record["judgment"]["state"] == "continue" else 2
 
