@@ -23,16 +23,31 @@ from ai_strategy_loop.revision.proposer import _PRICE_AXIS, _cohen_d, _round_sig
 
 FDR_ALPHA = 0.10
 LEAF_MIN_N = 30
+HOLDOUT_MIN_N = 30          # 홀드아웃 리프 최소 표본(감사1호 A-8 — 1건 충족 방지).
 MAX_REMOVED_FRAC = 0.60
 QUANTS = (0.10, 0.25, 0.50, 0.75, 0.90)
 # 구조 축(리프 좌표 자체)과 시각류 — 필터 대상 아님.
 _STRUCT = {"B_시가총액", "B_시분초"}
+# 구간함수형 이름(감사1호 BUG-Q1): 캡처 컬럼명과 겹치지만 런타임에서는 `이름(30)`
+#   형태의 함수라 `이름 > t` 절이 엔진 exec 에서 TypeError→정지를 만든다.
+#   출처: backtest/back_code_test.py CheckFactor 의 gugan_factors(스냅샷 캡처 대상만 발췌).
+_GUGAN_FUNCS = {
+    "체결강도평균", "초당거래대금평균", "분당거래대금평균",
+    "등락율각도", "당일거래대금각도", "전일비각도",
+    "누적초당매수수량", "누적초당매도수량", "누적분당매수수량", "누적분당매도수량",
+    "최고체결강도", "최저체결강도", "최고현재가", "최저현재가",
+    "최고초당매수수량", "최고초당매도수량", "최고분당매수수량", "최고분당매도수량",
+    "RSI",
+}
 
 
 def _runtime_var(feature: str) -> Optional[str]:
     if not feature.startswith("B_") or feature in _PRICE_AXIS or feature in _STRUCT:
         return None
-    return feature[2:]
+    var = feature[2:]
+    if var in _GUGAN_FUNCS:
+        return None
+    return var
 
 
 def _leaf_frames(csv_path: str):
@@ -66,8 +81,8 @@ def propose_filters(design_csv: str, holdout_csv: str, buy_code: str, *,
             continue  # 드롭된 리프 — 필터 무의미.
         existing = "".join(c.ident for c in clauses)
         sub_h = leaves_h.get((lt, lc))
-        if sub_h is None or sub_h.empty:
-            continue
+        if sub_h is None or len(sub_h) < HOLDOUT_MIN_N:
+            continue  # 홀드아웃 표본 부족 — '양쪽 이득' 판단 불가(A-8).
         is_win = pd.to_numeric(sub["수익률"], errors="coerce") > 0
         # ① 리프 내 변수 family 에 FDR — 잡음 필터 컷(감사 B1 처방).
         stats = []
@@ -174,8 +189,22 @@ def verify_filter(spec: Dict[str, Any], old_code: str, new_code: str) -> Tuple[b
         return False, "parse 실패"
     if set(old_h.leaves) != set(new_h.leaves):
         return False, "V_FILTER: 리프 키 집합 변경"
+    # 전체 파일 라인 diff 가드(감사1호 A-2/BUG-Q4): 생성기는 정확히 2줄 삽입만 한다 —
+    #   그 외의 어떤 라인 변경(리프 본문·공통 그물·파생부)도 여기서 걸린다.
+    old_lines, new_lines = old_code.split("\n"), new_code.split("\n")
+    if len(new_lines) != len(old_lines) + 2:
+        return False, "V_FILTER: 삽입 줄 수 ≠ 2"
+    ins_at = next((i for i, (a, b) in enumerate(zip(old_lines, new_lines)) if a != b),
+                  len(old_lines))
+    inserted = new_lines[ins_at:ins_at + 2]
+    if old_lines[ins_at:] != new_lines[ins_at + 2:]:
+        return False, "V_FILTER: 삽입 외 라인 변경 존재"
+    if "ADD_FILTER" not in inserted[0] or inserted[1].strip() != "매수 = False":
+        return False, "V_FILTER: 삽입 줄 형태 불일치"
     target = tuple(spec.get("leaf") or ())
-    want_ident = f"{spec['runtime_var']}{spec['op']}?"
+    # 음수 임계는 파서가 부호를 마스킹('-?')하므로 기대 ident 도 부호를 반영(BUG-Q2).
+    neg = float(spec.get("threshold") or 0) < 0
+    want_ident = f"{spec['runtime_var']}{spec['op']}{'-?' if neg else '?'}"
     for key in old_h.leaves:
         o = [(c.ident, tuple(c.consts)) for c in old_h.leaves[key]]
         n = [(c.ident, tuple(c.consts)) for c in new_h.leaves[key]]

@@ -34,7 +34,7 @@ def test_verify_drop_rejects_out_of_scope_change():
     tampered = new_code.replace("0.5 <= 등락율 <= 22.0", "0.5 <= 등락율 <= 44.0", 1)
     assert tampered != new_code  # 다른 리프(B1×중소)의 상수 변조.
     ok, why = surgeon.verify_drop(SPEC, CODE, tampered)
-    assert not ok and "명세 밖" in why
+    assert not ok, why  # 라인 diff 가드 또는 리프 대조 어느 쪽이든 거부되면 된다.
 
 
 def test_apply_drop_refuses_already_dropped():
@@ -82,3 +82,26 @@ def test_propose_drops_respects_exclude(tmp_path):
     again = surgeon.propose_drops(d, h, CODE, top_k=3, timeframe="tick",
                                   exclude_leaves={base[0]["leaf_label"]})
     assert all(s["leaf_label"] != base[0]["leaf_label"] for s in again)
+
+
+def test_verify_drop_rejects_marker_forgery():
+    """감사1호 BUG-Q3 — `if False:`/`if 0:` 위조 마커는 드롭으로 인정하지 않는다."""
+    new_code, _ = surgeon.apply_drop(SPEC, CODE)
+    forged = new_code.replace("if True:  # DROP_LEAF", "if False:  # DROP_LEAF", 1)
+    assert forged != new_code
+    ok, why = surgeon.verify_drop(SPEC, CODE, forged)
+    assert not ok, "의미 반전(if False) 위조가 통과되면 안 된다"
+
+
+def test_verify_drop_rejects_body_tamper():
+    """감사1호 BUG-Q4 — 드롭 줄 외의 라인 변경(리프 본문 매수=True 등) 거부."""
+    new_code, _ = surgeon.apply_drop(SPEC, CODE)
+    lines = new_code.split(chr(10))
+    for i, ln in enumerate(lines):
+        if "DROP_LEAF" in ln:
+            lines[i + 1] = lines[i + 1].replace("매수 = False", "매수 = True")
+            break
+    tampered = chr(10).join(lines)
+    assert tampered != new_code
+    ok, why = surgeon.verify_drop(SPEC, CODE, tampered)
+    assert not ok, "본문 변조가 통과되면 안 된다"

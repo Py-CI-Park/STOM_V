@@ -39,6 +39,9 @@ def is_dropped(code: str, leaf_key: Tuple[str, str]) -> bool:
     return bool(cl) and cl[0].ident == "?"
 
 
+HOLDOUT_MIN_N = 30   # 홀드아웃 리프 최소 표본(감사1호 A-8).
+
+
 def propose_drops(design_csv: str, holdout_csv: str, buy_code: str, *,
                   top_k: int = 3,
                   exclude_leaves: Optional[set] = None,
@@ -51,7 +54,7 @@ def propose_drops(design_csv: str, holdout_csv: str, buy_code: str, *,
     h = _leaf_pnl(holdout_csv)
     m = d.join(h, lsuffix="_d", rsuffix="_h", how="inner")
     total_loss = abs(float(m.loc[m["pnl_d"] < 0, "pnl_d"].sum())) or 1.0
-    m = m[(m["pnl_d"] < 0) & (m["pnl_h"] < 0)].sort_values("pnl_d")
+    m = m[(m["pnl_d"] < 0) & (m["pnl_h"] < 0) & (m["n_h"] >= HOLDOUT_MIN_N)].sort_values("pnl_d")
     excluded = exclude_leaves or set()
     specs: List[Dict[str, Any]] = []
     for (lt, lc), row in m.iterrows():
@@ -121,6 +124,18 @@ def verify_drop(spec: Dict[str, Any], old_code: str, new_code: str) -> Tuple[boo
         return False, "parse 실패"
     if set(old_h.leaves) != set(new_h.leaves):
         return False, "V_DROP: 리프 키 집합 변경"
+    # 전체 파일 라인 diff 가드(감사1호 A-2/BUG-Q4): 변경은 정확히 1줄(절 헤더)뿐이어야
+    #   하며, 그 줄은 `if/elif True:  # DROP_LEAF` 형태여야 한다(마커 위조 BUG-Q3 방지 —
+    #   `if False:`/`if 0:` 은 여기서 거부된다).
+    old_lines, new_lines = old_code.split("\n"), new_code.split("\n")
+    if len(old_lines) != len(new_lines):
+        return False, "V_DROP: 줄 수 변경"
+    changed = [i for i, (a, b) in enumerate(zip(old_lines, new_lines)) if a != b]
+    if len(changed) != 1:
+        return False, f"V_DROP: 변경 줄 수 {len(changed)} ≠ 1"
+    head = new_lines[changed[0]].strip()
+    if not (head.startswith(("if True:", "elif True:")) and DROP_MARK in head):
+        return False, "V_DROP: 드롭 줄 형태 불일치(마커/True 아님)"
     target = tuple(spec.get("leaf") or ())
     for key in old_h.leaves:
         o = [(c.ident, tuple(c.consts)) for c in old_h.leaves[key]]

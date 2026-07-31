@@ -102,10 +102,13 @@ def _holdout_label_csv(prev: List[Dict[str, Any]], holdout_config: Optional[str]
     if not run_id:
         return None
     rows = [r for r in _gen_rows(run_id) if r.get("status") == "ok" and r.get("csv_path")]
-    if not rows:
-        return None
     named = [r for r in rows if r.get("buy_name") == base_name]
-    return str((named or rows)[0]["csv_path"])
+    if not named:
+        # 무경고 폴백 금지(감사1호 A-9): 다른 전략의 홀드아웃 CSV 로 '양쪽 손실' 을
+        #   판단하면 제거 자체가 오염된다 — drop/filter 모드를 건너뛰는 편이 정직하다.
+        print(f"[HOLDOUT] run {run_id} 에 base({base_name}) 행 없음 — 대수술 모드 비활성", flush=True)
+        return None
+    return str(named[0]["csv_path"])
 
 
 def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
@@ -293,8 +296,15 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
     # QSP3 — 재유입 비용: drop 후보의 빼기 추정 vs 재백테 실측(추정은 순위용일 뿐).
     reentry: List[Dict[str, Any]] = []
     base_obj = float((base_row or {}).get("objective") or 0.0)
+    # 척도 가드(감사1호 B-3): objective 가 score 로 전환된 라운드에선 est(원) 와
+    #   measured(score) 의 차가 무의미 — reentry 계산을 건너뛰고 사유를 남긴다.
+    _rows_regime_profit = not any(bool(r.get("gate_passed")) for r in rows)
     for m in cand_meta:
         if (m.get("spec") or {}).get("est_delta_design") is None or m.get("status") != "registered":
+            continue
+        if not _rows_regime_profit:
+            reentry.append({"cand": m["cand"], "leaf": m["spec"]["leaf_label"],
+                            "skipped": "score 척도 라운드 — 원 단위 비교 불가"})
             continue
         row = next((v for v in ok_rows if v.get("buy_name") == m.get("buy_name")), None)
         if row is None:
@@ -368,6 +378,16 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
                                           "profit", "mdd", "trade_count", "csv_path")},
         "lessons": lessons,
         "reentry": reentry,
+        # 성과 분해(감사2 B1/감사1호 B-4 의무): 총손익 개선이 거래 축소인지 엣지인지.
+        "decomposition": {
+            "base_per_trade": (base_obj / int((base_row or {}).get("trade_count") or 1)
+                               if (base_row or {}).get("trade_count") else None),
+            "best_per_trade": (float(best["objective"]) / int(best.get("trade_count") or 1)
+                               if best.get("trade_count") else None),
+            "trade_count_delta_pct": (
+                (int(best.get("trade_count") or 0) / int((base_row or {}).get("trade_count") or 1) - 1) * 100
+                if (base_row or {}).get("trade_count") else None),
+        },
         "judgment": {"state": verdict.state, "reason": verdict.reason,
                      "improvement_pct": verdict.improvement_pct},
         "holdout": holdout_rec,

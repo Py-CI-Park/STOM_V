@@ -37,7 +37,7 @@ def test_verify_filter_rejects_out_of_scope_change():
     tampered = new_code.replace("0.5 <= 등락율 <= 22.0", "0.5 <= 등락율 <= 44.0", 1)
     assert tampered != new_code
     ok, why = filtersmith.verify_filter(SPEC, CODE, tampered)
-    assert not ok and "명세 밖" in why
+    assert not ok, why  # 라인 diff 가드 또는 리프 대조 어느 쪽이든 거부되면 된다.
 
 
 def _rows(cap, win, n, tovr, pnl, hhmmss="090105"):
@@ -82,3 +82,30 @@ def test_feature_map_grid_and_loss_regions(tmp_path):
     regions = fm.loss_regions(str(d), bins=4, top=5)
     assert regions and regions[0]["pnl"] < 0
     assert any(r["feature"] == "B_회전율" for r in regions)
+
+
+def test_gugan_function_variables_are_excluded():
+    """감사1호 BUG-Q1 — 구간함수형 이름(런타임에서 함수)은 필터 변수로 금지."""
+    for f in ("B_체결강도평균", "B_등락율각도", "B_당일거래대금각도",
+              "B_초당거래대금평균", "B_누적초당매수수량", "B_RSI"):
+        assert filtersmith._runtime_var(f) is None, f
+    assert filtersmith._runtime_var("B_회전율") == "회전율"
+    assert filtersmith._runtime_var("B_매수총잔량") == "매수총잔량"
+
+
+def test_negative_threshold_filter_roundtrip():
+    """감사1호 BUG-Q2 — 음수 임계 필터도 apply→verify 폐루프가 성립해야 한다."""
+    sp = dict(SPEC, feature="B_거래대금증감", runtime_var="거래대금증감", threshold=-3.5)
+    new_code, reason = filtersmith.apply_filter(sp, CODE)
+    assert new_code, reason
+    ok, why = filtersmith.verify_filter(sp, CODE, new_code)
+    assert ok, why
+
+
+def test_verify_filter_rejects_extra_line_change():
+    """감사1호 BUG-Q4 — 삽입 2줄 외의 어떤 라인 변경도 거부(리프 본문·공통 그물)."""
+    new_code, _ = filtersmith.apply_filter(SPEC, CODE)
+    tampered = new_code.replace("당일거래대금 > 300", "당일거래대금 > 500", 1)  # 공통 그물.
+    assert tampered != new_code
+    ok, why = filtersmith.verify_filter(SPEC, CODE, tampered)
+    assert not ok, "공통 그물 변조가 통과되면 안 된다"
