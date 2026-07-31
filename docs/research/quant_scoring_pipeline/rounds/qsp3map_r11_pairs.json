@@ -1,0 +1,22 @@
+[
+  {
+    "label": "r11_base",
+    "buy": "QSP3MAP_R10C2_B",
+    "sell": "QSP2_T_ANCH_900_920_S"
+  },
+  {
+    "label": "r11_c1",
+    "buy": "QSP3MAP_R11C1_B",
+    "sell": "QSP2_T_ANCH_900_920_S"
+  },
+  {
+    "label": "r11_c2",
+    "buy": "QSP3MAP_R11C2_B",
+    "sell": "QSP2_T_ANCH_900_920_S"
+  },
+  {
+    "label": "r11_c3",
+    "buy": "QSP3MAP_R11C3_B",
+    "sell": "QSP2_T_ANCH_900_920_S"
+  }
+]
