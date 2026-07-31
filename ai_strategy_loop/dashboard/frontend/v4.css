@@ -2190,3 +2190,26 @@
 .bt-leaf-prop-diff { display: grid; gap: 2px; margin-top: 6px; font-size: 10.5px; }
 .bt-leaf-prop-diff .del { color: var(--red); }
 .bt-leaf-prop-diff .add { color: var(--teal); }
+
+/* v5.14.0(QSP3 P4) — 다차원 수익률 맵 탐색기 */
+.bt-fm-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+.bt-fm-sel { font-size: 11px; color: var(--ink-3); display: inline-flex; align-items: center; gap: 4px; }
+.bt-fm-sel select { font-size: 11px; background: var(--bg-2); color: var(--ink-1);
+  border: 1px solid var(--line-1); border-radius: 6px; padding: 3px 6px; max-width: 170px; }
+.bt-fm-toggle { font-size: 11px; background: var(--bg-2); color: var(--ink-3);
+  border: 1px solid var(--line-1); border-radius: 6px; padding: 3px 10px; cursor: pointer; }
+.bt-fm-toggle.on { color: var(--ink-1); border-color: var(--teal); }
+.bt-fm-scroll { overflow-x: auto; }
+.bt-fm-grid { border-collapse: separate; border-spacing: 3px; width: 100%; }
+.bt-fm-grid th { font-size: 10px; color: var(--ink-3); font-weight: 500; max-width: 120px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 4px; }
+.bt-fm-grid tbody th { text-align: right; }
+.bt-fm-grid td { border: 1px solid var(--line-1); border-radius: 6px; padding: 6px 4px;
+  text-align: center; min-width: 64px; }
+.bt-fm-grid td b { font-size: 12px; display: block; }
+.bt-fm-grid td span { font-size: 9.5px; color: var(--ink-3); }
+.bt-fm-rank { width: 100%; font-size: 11.5px; border-collapse: collapse; }
+.bt-fm-rank th, .bt-fm-rank td { padding: 4px 8px; border-bottom: 1px solid var(--line-1); text-align: left; }
+.bt-fm-rank td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.bt-fm-rank td.neg { color: var(--red); }
+.bt-fm-help { margin-top: 8px; font-size: 10.5px; color: var(--ink-3); }

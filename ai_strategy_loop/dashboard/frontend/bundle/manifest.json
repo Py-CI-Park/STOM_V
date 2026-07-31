@@ -2,7 +2,7 @@
   "note": "Track Z PR-6 build manifest — content-hash 캐시 버전(수동 ?v= 폐지). 빌드 산출.",
   "bundles": {
     "app.js": {
-      "v": "ebd38dc3"
+      "v": "9817d46a"
     },
     "stom-ui.js": {
       "v": "f41f5701"
@@ -10,7 +10,7 @@
   },
   "styles": {
     "v4.css": {
-      "v": "2da10691"
+      "v": "6fe6cd6e"
     },
     "styles.css": {
       "v": "77039f90"

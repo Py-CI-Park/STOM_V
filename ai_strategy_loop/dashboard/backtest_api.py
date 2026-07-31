@@ -1941,6 +1941,46 @@ def analysis_leaf_matrix(
     }
 
 
+@backtest_router.get("/analysis/feature_map")
+def analysis_feature_map(
+    job_id: str = "", run_id: str = "", gen_no: Optional[int] = None,
+    x: str = "", y: str = "", bins: int = 5, mode: str = "grid", top: int = 20,
+) -> Dict[str, Any]:
+    """다차원 수익률 맵(QSP3 P4) — 변수 선택형 구간 손익 grid / 손실 영역 랭킹.
+
+    mode="grid": x(+y) 분위 구간별 {n, pnl, mean_ret, win_rate}.
+    mode="regions": 전 변수 1D 스캔 손실 집중 구간 top 랭킹("이 매수 특징 = 손실").
+    variables: 선택 가능한 변수 목록(수치·분산>0). CSV 없음/실패는 빈 구조(무예외).
+    """
+    from ai_strategy_loop.autopsy import feature_map as _fm  # noqa: PLC0415
+
+    csv_path: Optional[str] = None
+    if job_id:
+        csv_path = get_job_manager().result_csv_path(job_id)
+    elif run_id and gen_no is not None:
+        row = _gen_row_readonly(run_id, int(gen_no))
+        csv_path = _resolve_gen_csv(row) if row else None
+    empty = {"job_id": job_id, "run_id": run_id, "gen_no": gen_no, "available": False,
+             "variables": [], "grid": None, "regions": []}
+    if not csv_path:
+        return empty
+    try:
+        import pandas as _pd  # noqa: PLC0415
+
+        df = _fm._load(csv_path)  # enrich 1회 — variables 와 본 계산이 같은 뷰를 공유.
+        variables = _fm._numeric_features(df)
+        bins = max(2, min(10, int(bins)))
+        out = {"job_id": job_id, "run_id": run_id, "gen_no": gen_no, "available": True,
+               "variables": variables, "grid": None, "regions": []}
+        if mode == "regions":
+            out["regions"] = _fm.loss_regions(csv_path, bins=bins, top=max(1, min(50, int(top))))
+        elif x:
+            out["grid"] = _fm.grid(csv_path, x, y or None, bins=bins)
+        return out
+    except Exception:  # noqa: BLE001 - 분석 실패는 빈 구조로 흡수(무예외 계약).
+        return empty
+
+
 @backtest_router.get("/analysis/revision_proposals")
 def analysis_revision_proposals(run_id: str = "", gen_no: Optional[int] = None,
                                 top_k: int = 3) -> Dict[str, Any]:

@@ -26,6 +26,7 @@ import {
 import { BtGuiParitySection } from "./bt-gui-parity.jsx";
 import { BtQuantPanel } from "./bt-quant.jsx";
 import { BtLeafExplorer } from "./bt-leaf-explorer.jsx";
+import { BtFeatureMap } from "./bt-feature-map.jsx";
 
 // ===========================================================================
 // 결과·분석 영역 — 메트릭 카드 + 4차트 + 기여 테이블 + 인사이트.
@@ -591,6 +592,8 @@ return (
         <BtHeatmap heatmap={analysis.heatmap} />
         {/* v5.13.4(QSP1 P1) — 라벨셋 탐색기: 리프(시간×시총) 잔차 히트맵 + 변별 변수. */}
         <BtLeafExplorer baseUrl={baseUrl} jobId={jobId} evoSource={evoSource} isDemo={false} />
+        {/* v5.14.0(QSP3 P4) — 다차원 수익률 맵: 변수 선택형 구간 손익 + 손실 영역 랭킹. */}
+        <BtFeatureMap baseUrl={baseUrl} jobId={jobId} evoSource={evoSource} isDemo={false} />
         <BtMaeMfeScatter points={analysis.mae_mfe} />
         <BtQuantPanel analysis={analysis} />
         <BtExitReasonPanel rows={analysis.exit_reasons} />

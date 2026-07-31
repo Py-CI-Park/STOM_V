@@ -26945,6 +26945,102 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
   }
   Object.assign(window, { BtLeafExplorer });
 
+  // ai_strategy_loop/dashboard/frontend/bt-feature-map.jsx
+  var _FM_METRICS = [
+    ["pnl", "\uC190\uC775 \uD569"],
+    ["mean_ret", "\uD3C9\uADE0\uC218\uC775\uB960"],
+    ["win_rate", "\uC2B9\uB960"],
+    ["n", "\uAC70\uB798\uC218"]
+  ];
+  function _fmCellColor(metric, v, vmax) {
+    if (v == null || !Number.isFinite(v)) return "var(--bg-2)";
+    let t;
+    if (metric === "pnl") t = vmax ? Math.max(-1, Math.min(1, v / vmax)) : 0;
+    else if (metric === "mean_ret") t = Math.max(-1, Math.min(1, v / 0.8));
+    else if (metric === "win_rate") t = Math.max(-1, Math.min(1, (v - 0.5) / 0.3));
+    else return "var(--bg-2)";
+    return t >= 0 ? `rgba(76,214,179,${0.1 + 0.55 * t})` : `rgba(255,107,107,${0.1 + 0.55 * -t})`;
+  }
+  function _fmFmt(metric, v) {
+    if (v == null || !Number.isFinite(v)) return "\u2014";
+    if (metric === "pnl") return `${(v / 1e6).toFixed(1)}M`;
+    if (metric === "mean_ret") return `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
+    if (metric === "win_rate") return `${(v * 100).toFixed(0)}%`;
+    return String(v);
+  }
+  function BtFeatureMap({ baseUrl, jobId, evoSource, isDemo }) {
+    const [vars_, setVars_] = useState_btc([]);
+    const [x, setX] = useState_btc("");
+    const [y, setY] = useState_btc("");
+    const [metric, setMetric] = useState_btc("pnl");
+    const [bins, setBins] = useState_btc(5);
+    const [view, setView] = useState_btc("map");
+    const [data, setData] = useState_btc(null);
+    const [regions, setRegions] = useState_btc(null);
+    const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
+    const srcQs = jobId ? `job_id=${encodeURIComponent(jobId)}` : isEvo ? `run_id=${encodeURIComponent(evoSource.run_id)}&gen_no=${evoSource.gen_no}` : "";
+    useEffect_btc(() => {
+      if (isDemo || !srcQs) {
+        setData(null);
+        setRegions(null);
+        return;
+      }
+      let alive = true;
+      if (view === "regions") {
+        _btFetchJson(`${baseUrl}/bt/analysis/feature_map?${srcQs}&mode=regions&bins=${bins}&top=20`).then((j) => {
+          if (alive) {
+            setRegions(j);
+            setVars_(j && j.variables || []);
+          }
+        }).catch(() => {
+          if (alive) setRegions(null);
+        });
+      } else {
+        const qx = x || "B_\uB4F1\uB77D\uC728";
+        _btFetchJson(`${baseUrl}/bt/analysis/feature_map?${srcQs}&x=${encodeURIComponent(qx)}` + (y ? `&y=${encodeURIComponent(y)}` : "") + `&bins=${bins}`).then((j) => {
+          if (!alive) return;
+          setData(j);
+          const vs = j && j.variables || [];
+          setVars_(vs);
+          if (!x && vs.length) setX(vs.includes("B_\uB4F1\uB77D\uC728") ? "B_\uB4F1\uB77D\uC728" : vs[0]);
+        }).catch(() => {
+          if (alive) setData(null);
+        });
+      }
+      return () => {
+        alive = false;
+      };
+    }, [srcQs, x, y, bins, view, isDemo]);
+    const grid = data && data.grid;
+    const cells = grid && grid.cells || [];
+    const xBins = [...new Set(cells.map((c) => c.x_bin))];
+    const yBins = y ? [...new Set(cells.map((c) => c.y_bin))] : [null];
+    const byKey = {};
+    cells.forEach((c) => {
+      byKey[`${c.x_bin}|${c.y_bin}`] = c;
+    });
+    const vmax = Math.max(1, ...cells.map((c) => Math.abs(c.pnl || 0)));
+    const sel = (val, set3, opts, label) => /* @__PURE__ */ React.createElement("label", { className: "bt-fm-sel" }, label, /* @__PURE__ */ React.createElement("select", { value: val, onChange: (e) => set3(e.target.value) }, opts));
+    const varOpts = (allowEmpty) => [
+      ...allowEmpty ? [/* @__PURE__ */ React.createElement("option", { key: "", value: "" }, "(\uC5C6\uC74C)")] : [],
+      ...vars_.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))
+    ];
+    return /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card", role: "figure", "aria-label": "\uB2E4\uCC28\uC6D0 \uC218\uC775\uB960 \uB9F5" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uB2E4\uCC28\uC6D0 \uC218\uC775\uB960 \uB9F5 (QSP3)"), /* @__PURE__ */ React.createElement("div", { className: "panel-hd-meta" }, /* @__PURE__ */ React.createElement("button", { className: `bt-fm-toggle ${view === "map" ? "on" : ""}`, onClick: () => setView("map") }, "\uB9F5"), /* @__PURE__ */ React.createElement("button", { className: `bt-fm-toggle ${view === "regions" ? "on" : ""}`, onClick: () => setView("regions") }, "\uC190\uC2E4 \uC601\uC5ED \uB7AD\uD0B9"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, view === "map" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bt-fm-controls" }, sel(x, setX, varOpts(false), "X\uCD95"), sel(y, setY, varOpts(true), "Y\uCD95"), sel(metric, setMetric, _FM_METRICS.map(([k, l]) => /* @__PURE__ */ React.createElement("option", { key: k, value: k }, l)), "\uD45C\uC2DC"), sel(String(bins), (v) => setBins(parseInt(v, 10)), [3, 4, 5, 8, 10].map((b) => /* @__PURE__ */ React.createElement("option", { key: b, value: b }, b, "\uAD6C\uAC04")), "\uAD6C\uAC04")), !cells.length ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, isDemo ? "\uB370\uBAA8\uC5D0\uC120 \uBBF8\uC9C0\uC6D0" : "\uB370\uC774\uD130 \uC5C6\uC74C \u2014 \uACB0\uACFC \uB85C\uB4DC \uD6C4 \uBCC0\uC218\uB97C \uC120\uD0DD\uD558\uC138\uC694") : /* @__PURE__ */ React.createElement("div", { className: "bt-fm-scroll" }, /* @__PURE__ */ React.createElement("table", { className: "bt-fm-grid" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, y ? `${y} \u2193 / ${x} \u2192` : x), xBins.map((b) => /* @__PURE__ */ React.createElement("th", { key: b, title: b }, b)))), /* @__PURE__ */ React.createElement("tbody", null, yBins.map((yb) => /* @__PURE__ */ React.createElement("tr", { key: String(yb) }, /* @__PURE__ */ React.createElement("th", { title: String(yb || "") }, yb == null ? "\uC804\uCCB4" : yb), xBins.map((xb) => {
+      const c = byKey[`${xb}|${yb}`];
+      const v = c ? c[metric] : null;
+      return /* @__PURE__ */ React.createElement(
+        "td",
+        {
+          key: xb,
+          style: { background: _fmCellColor(metric, v, vmax) },
+          title: c ? `${x}=${xb}${y ? ` \xB7 ${y}=${yb}` : ""} \xB7 ${c.n}\uAC74 \xB7 \uC190\uC775 ${Math.round(c.pnl).toLocaleString()}\uC6D0 \xB7 \uD3C9\uADE0 ${c.mean_ret.toFixed(2)}% \xB7 \uC2B9\uB960 ${(c.win_rate * 100).toFixed(0)}%` : ""
+        },
+        /* @__PURE__ */ React.createElement("b", null, _fmFmt(metric, v)),
+        /* @__PURE__ */ React.createElement("span", null, c ? `${c.n}\uAC74` : "")
+      );
+    }))))))), view === "regions" && /* @__PURE__ */ React.createElement("div", null, !(regions && regions.regions && regions.regions.length) ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC190\uC2E4 \uC601\uC5ED \uC5C6\uC74C \uB610\uB294 \uB370\uC774\uD130 \uBBF8\uB85C\uB4DC") : /* @__PURE__ */ React.createElement("table", { className: "bt-fm-rank" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "#"), /* @__PURE__ */ React.createElement("th", null, "\uBCC0\uC218"), /* @__PURE__ */ React.createElement("th", null, "\uAD6C\uAC04"), /* @__PURE__ */ React.createElement("th", null, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("th", null, "\uC190\uC775 \uD569"))), /* @__PURE__ */ React.createElement("tbody", null, regions.regions.map((r, i) => /* @__PURE__ */ React.createElement("tr", { key: `${r.feature}|${r.bin}` }, /* @__PURE__ */ React.createElement("td", null, i + 1), /* @__PURE__ */ React.createElement("td", null, r.feature), /* @__PURE__ */ React.createElement("td", { className: "num" }, r.bin), /* @__PURE__ */ React.createElement("td", { className: "num" }, r.n.toLocaleString()), /* @__PURE__ */ React.createElement("td", { className: "num neg" }, Math.round(r.pnl).toLocaleString()))))), /* @__PURE__ */ React.createElement("div", { className: "bt-fm-help" }, '"\uC774 \uB9E4\uC218 \uD2B9\uC9D5 = \uC190\uC2E4" \uC790\uB3D9 \uD6C4\uBCF4 \u2014 QSP3 \uC81C\uAC70/\uD544\uD130 \uC81C\uC548\uC758 \uC785\uB825\uACFC \uAC19\uC740 \uACC4\uC0B0\uC774\uB2E4. \uCC44\uD0DD\uC740 \uD56D\uC0C1 \uC7AC\uBC31\uD14C \uC2E4\uCE21(\uC7AC\uC720\uC785 \uD6A8\uACFC 21~38% \uC2E4\uC99D) + \uD640\uB4DC\uC544\uC6C3 \uB3D9\uBC29\uD5A5.'))));
+  }
+
   // ai_strategy_loop/dashboard/frontend/bt-result-area.jsx
   function btFmtHold(sec) {
     const v = Number(sec);
@@ -27435,7 +27531,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
           onBrushClear,
           moneyCtx
         }
-      ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), capabilities.monteCarlo ? /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc, moneyCtx }) : /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card bt-analysis-unavailable", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBAAC\uD14C\uCE74\uB97C\uB85C")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uBBF8\uC9C0\uC6D0 \xB7 ", capabilities.notes.monteCarlo))), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtLeafExplorer, { baseUrl, jobId, evoSource, isDemo: false }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades, moneyCtx }))),
+      ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), capabilities.monteCarlo ? /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc, moneyCtx }) : /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card bt-analysis-unavailable", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBAAC\uD14C\uCE74\uB97C\uB85C")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uBBF8\uC9C0\uC6D0 \xB7 ", capabilities.notes.monteCarlo))), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtLeafExplorer, { baseUrl, jobId, evoSource, isDemo: false }), /* @__PURE__ */ React.createElement(BtFeatureMap, { baseUrl, jobId, evoSource, isDemo: false }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades, moneyCtx }))),
       (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("section", { className: "bt-result-section bt-result-evidence bt-contributor-evidence", "aria-label": "\uC885\uBAA9 \uAE30\uC5EC \uC99D\uAC70" }, /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC }))))),
       /* @__PURE__ */ React.createElement("section", { className: "bt-result-section bt-result-evidence", "aria-label": "\uBD84\uC11D \uC778\uC0AC\uC774\uD2B8" }, /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights })),
       fullscreen && /* @__PURE__ */ React.createElement(
@@ -39257,7 +39353,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
-  var V4_DASH_VERSION = "v5.13.4";
+  var V4_DASH_VERSION = "v5.14.0";
   (function _initFeLogBuffer() {
     const capacity = 200;
     const redact = (value) => {
