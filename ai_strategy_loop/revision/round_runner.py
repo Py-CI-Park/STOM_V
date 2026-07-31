@@ -117,6 +117,7 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
               actions: str = "tighten") -> Dict[str, Any]:
     from ai_strategy_loop.autopsy import label_dataset as lds
     from ai_strategy_loop.revision import intent_gate as gate
+    from ai_strategy_loop.revision import deep_search
     from ai_strategy_loop.revision import filtersmith
     from ai_strategy_loop.revision import proposer
     from ai_strategy_loop.revision import surgeon
@@ -235,10 +236,23 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
         else:
             print(f"[ROUND{round_no}] 홀드아웃 라벨 CSV 없음 — drop 건너뜀", flush=True)
 
+    def _try_deep():
+        if not h_abs:
+            return []
+        tried_leaves = {(m.get("spec") or {}).get("leaf_label") for rec in prev
+                        for m in rec.get("candidates", [])
+                        if (m.get("spec") or {}).get("action") == "add_filter_deep"}
+        return deep_search.propose_deep(l_abs, h_abs, base_code, top_k=n_cand,
+                                        exclude=tried_leaves, timeframe=tf)
+
     for act in order:
         if specs:
             break
-        if act == "filter":
+        if act == "deep":
+            specs = _try_deep()
+            if specs:
+                mode = "deep"
+        elif act == "filter":
             specs = _try_filter()
             if specs:
                 mode = "rescue" if any(s.get("rescue") for s in specs) else "filter"
@@ -281,6 +295,16 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
             if not ok:
                 cand_meta.append({"cand": i, "spec": spec, "status": "gate_fail", "reason": greason})
                 print(f"[ROUND{round_no}] C{i} DROP GATE FAIL — {greason}", flush=True)
+                continue
+        elif spec.get("action") == "add_filter_deep":
+            new_code, reason = deep_search.apply_deep(spec, base_code)
+            if not new_code:
+                cand_meta.append({"cand": i, "spec": spec, "status": "apply_fail", "reason": reason})
+                continue
+            ok, greason = deep_search.verify_deep(spec, base_code, new_code)
+            if not ok:
+                cand_meta.append({"cand": i, "spec": spec, "status": "gate_fail", "reason": greason})
+                print(f"[ROUND{round_no}] C{i} DEEP GATE FAIL — {greason}", flush=True)
                 continue
         elif spec.get("action") == "add_filter":
             new_code, reason = filtersmith.apply_filter(spec, base_code)
@@ -481,7 +505,7 @@ def main() -> int:
     ap.add_argument("--holdout-config", default=None,
                     help="표본외 config JSON — 지정 시 라운드 베스트를 재평가해 판정에 반영")
     ap.add_argument("--actions", default="tighten",
-                    help="액션 우선순위 CSV — 'drop,tighten'(QSP3 대수술) / 'tighten'(기존)")
+                    help="액션 우선순위 CSV — 지정 순서대로 시도. deep(깊이 탐색)·filter(구제)·drop(제거)·tighten(조임)")
     args = ap.parse_args()
     record = run_round(args.base_buy, args.base_sell, args.config, args.tag, args.round,
                        args.n, holdout_config=args.holdout_config, actions=args.actions)
