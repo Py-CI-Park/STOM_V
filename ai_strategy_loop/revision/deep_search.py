@@ -31,8 +31,15 @@ from ai_strategy_loop.revision.hier_ast import parse_leaves
 from ai_strategy_loop.revision.proposer import _leaf_key_from_labels, _round_sig
 
 BEAM_WIDTH = 6          # 각 깊이에서 남길 후보 수.
-MAX_DEPTH = 3           # 리프당 추가 절 상한(실제 조건식 8~10절 대비 보수적 시작).
+MAX_DEPTH = 4           # 리프당 추가 절 상한(실제 조건식 8~10절 — 깊이 3 효과 확인 후 4로).
 MIN_HOLDOUT_GAIN = 0.0  # 깊이당 지불: 표본외 건당 엣지가 이만큼은 좋아져야 채택.
+
+# 구간함수 문법(`체결강도평균(30) > t`)은 v1 에서 **의도적으로 제외**한다.
+#   캡처 컬럼 B_체결강도평균 은 데이터 준비 단계의 **사전계산 배열 값**이고
+#   (backengine_base._capture_prefixed_snapshot → 배열 열 조회),
+#   조건식의 체결강도평균(N) 은 런타임에서 창 N 으로 다시 계산하는 **함수**다.
+#   두 값이 같다는 근거가 없으므로 캡처 분위수를 함수 임계로 옮기면 과거의
+#   단위 불일치 결함(BUG-1)을 그대로 재현한다. 창 일치가 실측으로 확인되면 해제.
 
 
 def _clause_mask(df: pd.DataFrame, cl: Dict[str, Any]) -> pd.Series:

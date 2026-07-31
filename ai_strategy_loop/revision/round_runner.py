@@ -78,11 +78,22 @@ def _gen_rows(run_id: str) -> List[Dict[str, Any]]:
         st.close()
 
 
-def _objective(rows: List[Dict[str, Any]]) -> None:
-    """행마다 objective 주입: 게이트 통과가 하나라도 있으면 score, 아니면 총손익."""
+def _objective(rows: List[Dict[str, Any]], mode: str = "profit") -> None:
+    """행마다 objective 주입.
+
+    mode="profit"     : 게이트 통과가 하나라도 있으면 score, 아니면 총손익(기존).
+    mode="per_trade"  : **거래당 손익**. 총손익은 거래를 줄이기만 해도 좋아져서
+        '덜 사서 덜 잃은' 개선을 진짜 엣지 개선과 구분하지 못한다(QSP3 실측:
+        표본외 총손익 +35% 인데 건당은 악화). 과조임은 convergence 의 거래 급감
+        발산 규격이 막는다.
+    """
     any_gate = any(bool(r.get("gate_passed")) for r in rows)
     for r in rows:
-        r["objective"] = float(r.get("score", 0) or 0) if any_gate else float(r.get("profit", 0) or 0)
+        if mode == "per_trade":
+            n = int(r.get("trade_count", 0) or 0)
+            r["objective"] = (float(r.get("profit", 0) or 0) / n) if n else float("-inf")
+        else:
+            r["objective"] = float(r.get("score", 0) or 0) if any_gate else float(r.get("profit", 0) or 0)
 
 
 def _holdout_label_csv(prev: List[Dict[str, Any]], holdout_config: Optional[str],
@@ -114,7 +125,8 @@ def _holdout_label_csv(prev: List[Dict[str, Any]], holdout_config: Optional[str]
 def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
               round_no: int, n_cand: int,
               holdout_config: Optional[str] = None,
-              actions: str = "tighten") -> Dict[str, Any]:
+              actions: str = "tighten",
+              objective_mode: str = "profit") -> Dict[str, Any]:
     from ai_strategy_loop.autopsy import label_dataset as lds
     from ai_strategy_loop.revision import intent_gate as gate
     from ai_strategy_loop.revision import deep_search
@@ -156,7 +168,10 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
     exclude_axes: List[tuple] = []
     for rec in prev:
         base_obj = abs(float((rec.get("base") or {}).get("objective") or 0.0))
-        thresh = max(base_obj * 0.01, 100_000.0)
+        # 절대 하한은 목표 스케일에 맞춘다(감사 BUG-Q5): per_trade 목표에서 10만원
+        #   고정 하한을 쓰면 모든 축이 '무효' 로 분류돼 교훈 환류가 죽는다.
+        floor_abs = 10.0 if objective_mode == "per_trade" else 100_000.0
+        thresh = max(base_obj * 0.01, floor_abs)
         for lesson in rec.get("lessons", []):
             # abs() 제거(감사 BUG-D): 크게 악화된 축(delta 음수)도 제외 대상.
             #   '유의미하게 양(+)' 이 아니면 재제안 금지 — 양의 축은 tried_specs 가
@@ -347,7 +362,7 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
     print(tail, flush=True)
 
     rows = _gen_rows(run_id)
-    _objective(rows)
+    _objective(rows, objective_mode)
     # 위치 기반 결합 가드(감사 BUG-E): 행 수가 어긋나면 결과가 엉뚱한 전략에
     #   귀속되므로 즉시 중단(조용한 절단 금지).
     if len(rows) != len(pairs):
@@ -429,8 +444,12 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
             # 홀드아웃 objective 는 총손익으로 고정(재검증 잔존 지적): 1행 배치라
             #   any_gate 가 그 행 하나로 뒤집혀 score(~1e-3)↔profit(~-1e8) 스케일이
             #   라운드마다 섞이면 과최적 괴리 판정이 허위 발화/은폐된다.
+            _h_n = int(h_ok[0].get("trade_count", 0) or 0)
+            _h_profit = float(h_ok[0].get("profit", 0) or 0)
             holdout_rec = {"run_id": h_run_id,
-                           "objective": float(h_ok[0].get("profit", 0) or 0),
+                           # 목표 스케일 일치 — per_trade 모드면 홀드아웃도 건당.
+                           "objective": (_h_profit / _h_n if objective_mode == "per_trade"
+                                         and _h_n else _h_profit),
                            "trade_count": int(h_ok[0].get("trade_count", 0) or 0),
                            "profit": h_ok[0].get("profit"), "mdd": h_ok[0].get("mdd"),
                            "score": h_ok[0].get("score")}
@@ -448,7 +467,8 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
 
     # objective 척도(regime) 기록 — 이전 라운드와 다르면 judge 이력이 이질 척도가
     #   되므로 경고(혼입 처리 자체는 백로그, 원장 참조).
-    regime = "score" if any(bool(r.get("gate_passed")) for r in rows) else "profit"
+    regime = ("per_trade" if objective_mode == "per_trade"
+              else ("score" if any(bool(r.get("gate_passed")) for r in rows) else "profit"))
     prev_regimes = {r.get("regime") for r in prev if r.get("regime")}
     if prev_regimes and regime not in prev_regimes:
         print(f"[ROUND{round_no}] ⚠ objective 척도 전환 {prev_regimes} → {regime}"
@@ -504,11 +524,14 @@ def main() -> int:
     ap.add_argument("--n", type=int, default=3)
     ap.add_argument("--holdout-config", default=None,
                     help="표본외 config JSON — 지정 시 라운드 베스트를 재평가해 판정에 반영")
+    ap.add_argument("--objective", default="profit", choices=("profit", "per_trade"),
+                    help="채점 목표 — per_trade 는 거래당 손익(거래 축소 착시 차단)")
     ap.add_argument("--actions", default="tighten",
                     help="액션 우선순위 CSV — 지정 순서대로 시도. deep(깊이 탐색)·filter(구제)·drop(제거)·tighten(조임)")
     args = ap.parse_args()
     record = run_round(args.base_buy, args.base_sell, args.config, args.tag, args.round,
-                       args.n, holdout_config=args.holdout_config, actions=args.actions)
+                       args.n, holdout_config=args.holdout_config, actions=args.actions,
+                       objective_mode=args.objective)
     # 캠페인 드라이버(bat 루프)용 종료 코드: continue=0, 수렴/발산=2(루프 중단 신호).
     return 0 if record["judgment"]["state"] == "continue" else 2
 

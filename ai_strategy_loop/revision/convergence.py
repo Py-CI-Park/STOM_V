@@ -53,7 +53,10 @@ def _improvement_pct(prev: float, cur: float) -> float:
 #   과최적 괴리: 설계가 이만큼 좋아지는데(각 +1%↑) 홀드아웃이 이만큼 나빠지는(각 −5%↓)
 #   라운드가 연속 2회면 발산 선언(설계 구간 암기 신호).
 OVERFIT_DESIGN_UP_PCT = 1.0
-OVERFIT_HOLDOUT_DOWN_PCT = -5.0
+# −5% → −2% 상향(QSP3 실측): 조임 국면에서 설계↑·홀드아웃↓ 가 3회 관측됐는데
+#   최대 낙폭이 −3.1% 라 −5% 규격에 걸리지 않아 5라운드를 낭비했다. −2% 였다면
+#   r10~r11 에서 자동 중단됐을 것이다(원장 2026-07-31 행).
+OVERFIT_HOLDOUT_DOWN_PCT = -2.0
 OVERFIT_STREAK = 2
 
 

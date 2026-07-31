@@ -1,0 +1,14 @@
+{
+  "provider": "codex_proxy",
+  "bt_timeframe": "tick",
+  "bt_universe_start_time": 90000,
+  "bt_universe_end_time": 93000,
+  "bt_full_start": 20240401,
+  "bt_full_end": 20260227,
+  "bt_warm_engine_count": 32,
+  "bt_warm_run_timeout": 900,
+  "bt_timeout": 7200,
+  "condition_discovery_preset": "research",
+  "condition_discovery_tick_window_start": 90000,
+  "condition_discovery_tick_window_end": 93000
+}
