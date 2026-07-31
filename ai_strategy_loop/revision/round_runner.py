@@ -313,7 +313,10 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
         est = float(m["spec"].get("est_delta_design") or 0.0)
         reentry.append({"cand": m["cand"], "leaf": m["spec"]["leaf_label"],
                         "est_delta": est, "measured_delta": measured,
-                        "reentry_cost": est - measured})
+                        # 부호 양방향 상호작용(감사1호 보론) — 키명은 호환 유지.
+                        "reentry_cost": est - measured,
+                        "removed_n": int((m["spec"].get("evidence") or {}).get("n_design")
+                                         or (m["spec"].get("evidence") or {}).get("removed_n") or 0)})
     if reentry:
         for r_ in reentry:
             print(f"[ROUND{round_no}] 재유입 {r_['leaf']}: 추정 {r_['est_delta']:+,.0f}"
