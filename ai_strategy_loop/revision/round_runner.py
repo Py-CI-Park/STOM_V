@@ -186,7 +186,21 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
         h_abs = str(REPO / h_csv) if not os.path.isabs(h_csv) else h_csv
         l_abs = str(REPO / str(label_csv)) if not os.path.isabs(str(label_csv)) else str(label_csv)
     tf = "min" if "min" in str(config_path).lower() else "tick"
-    if "drop" in actions:
+    # 액션 우선순위는 --actions 에 적은 **순서 그대로** 시도한다(하드코딩 금지).
+    #   'filter,drop,tighten' = 구제 우선 원칙: 손실 리프를 먼저 선별로 살려보고,
+    #   살릴 수 없을 때만 잘라낸다(사용자 지적 실증 — 통째 제거는 알짜까지 버린다).
+    order = [a.strip() for a in str(actions).split(",") if a.strip()]
+
+    def _try_filter():
+        if not h_abs:
+            return []
+        tried_filters = {((m.get("spec") or {}).get("feature"), (m.get("spec") or {}).get("leaf_label"))
+                         for rec in prev for m in rec.get("candidates", [])
+                         if (m.get("spec") or {}).get("action") == "add_filter"}
+        return filtersmith.propose_filters(l_abs, h_abs, base_code, top_k=n_cand,
+                                           exclude=tried_filters, timeframe=tf)
+
+    if "drop" in order:
         # 제외 대상은 '측정해서 base 보다 나빴던' 리프만(탐욕 배제 결함 교정).
         #   제안됐지만 그 라운드 베스트가 아니었을 뿐인 제거는 여전히 좋은 수일 수
         #   있다 — QSP3 r1 에서 +6.5M 짜리 B1×소형 제거가 영구 유실된 실사고.
@@ -202,34 +216,42 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
                             if r.get("buy_name") == m.get("buy_name")), None)
                 if row is not None and float(row.get("objective") or 0.0) < b_obj:
                     tried_drops.add(sp.get("leaf_label"))
+        drop_specs = []
         if h_abs:
-            specs = surgeon.propose_drops(l_abs, h_abs, base_code, top_k=n_cand,
-                                          exclude_leaves=tried_drops, timeframe=tf)
-            if specs:
-                mode = "drop"
-                # 복합 후보(사용자 방법론 '크게 크게 제거'): 개별 제거가 대략 가법적
-                #   이라는 실측(프로브 합 ≈ 개별 합)에 근거해 전부 자른 안을 함께 평가.
-                if len(specs) >= 2:
-                    specs = specs + [{
-                        "action": "drop_multi",
-                        "leaves": [sp["leaf"] for sp in specs],
-                        "leaf_label": " + ".join(sp["leaf_label"] for sp in specs),
-                        "specs": specs,
-                        "est_delta_design": sum(sp["est_delta_design"] for sp in specs),
-                        "est_delta_holdout": sum(sp["est_delta_holdout"] for sp in specs),
-                        "change": "DROP-MULTI " + " + ".join(sp["leaf_label"] for sp in specs),
-                    }]
+            drop_specs = surgeon.propose_drops(l_abs, h_abs, base_code, top_k=n_cand,
+                                               exclude_leaves=tried_drops, timeframe=tf)
+            # 복합 후보(사용자 방법론 '크게 크게 제거'): 개별 제거가 대략 가법적
+            #   이라는 실측(프로브 합 ≈ 개별 합)에 근거해 전부 자른 안을 함께 평가.
+            if len(drop_specs) >= 2:
+                drop_specs = drop_specs + [{
+                    "action": "drop_multi",
+                    "leaves": [sp["leaf"] for sp in drop_specs],
+                    "leaf_label": " + ".join(sp["leaf_label"] for sp in drop_specs),
+                    "specs": list(drop_specs),
+                    "est_delta_design": sum(sp["est_delta_design"] for sp in drop_specs),
+                    "est_delta_holdout": sum(sp["est_delta_holdout"] for sp in drop_specs),
+                    "change": "DROP-MULTI " + " + ".join(sp["leaf_label"] for sp in drop_specs),
+                }]
         else:
             print(f"[ROUND{round_no}] 홀드아웃 라벨 CSV 없음 — drop 건너뜀", flush=True)
-    if not specs and "filter" in actions and h_abs:
-        tried_filters = {((m.get("spec") or {}).get("feature"), (m.get("spec") or {}).get("leaf_label"))
-                         for rec in prev for m in rec.get("candidates", [])
-                         if (m.get("spec") or {}).get("action") == "add_filter"}
-        specs = filtersmith.propose_filters(l_abs, h_abs, base_code, top_k=n_cand,
-                                            exclude=tried_filters, timeframe=tf)
+
+    for act in order:
         if specs:
-            mode = "filter"
-    if not specs:
+            break
+        if act == "filter":
+            specs = _try_filter()
+            if specs:
+                mode = "rescue" if any(s.get("rescue") for s in specs) else "filter"
+        elif act == "drop":
+            if drop_specs:
+                specs = drop_specs
+                mode = "drop"
+        elif act == "tighten":
+            specs = proposer.propose(ds, base_code, base_code_name, top_k=n_cand,
+                                     exclude_axes=exclude_axes, exclude_specs=tried_specs)
+            if specs:
+                mode = "tighten"
+    if not specs:  # 지정 액션이 전부 소진되면 조임으로 폴백(기존 동작 보존).
         specs = proposer.propose(ds, base_code, base_code_name, top_k=n_cand,
                                  exclude_axes=exclude_axes, exclude_specs=tried_specs)
     print(f"[ROUND{round_no}] base={base_code_name} 라벨={label_csv} 모드={mode}"

@@ -144,3 +144,23 @@ def test_loss_regions_has_no_nan_bin(tmp_path):
     pd.DataFrame(rows).to_csv(d, index=False, encoding="utf-8-sig")
     regions = fm.loss_regions(str(d), bins=3, top=20)
     assert all(r["bin"].lower() != "nan" for r in regions), regions
+
+
+def test_rescue_filter_beats_removal_cap(tmp_path):
+    """사용자 지적 실증 — 손실 리프 안에 '양쪽 창 흑자' 부분집합이 있으면,
+    제거율 상한(60%)에 막히지 않고 구제(rescue) 후보로 살아나야 한다."""
+    # 리프 전체는 큰 손실이지만, 회전율 상위 20% 만 남기면 양쪽 창 모두 흑자.
+    # 20% 만 우량(회전율 높음) — 나머지를 걸러내면 제거율 80% 로 캡을 넘는다.
+    design = _rows(1000, True, 80, 9.0, +40_000) + _rows(1000, False, 320, 1.0, -12_000)
+    hold = _rows(1000, True, 80, 9.0, +30_000) + _rows(1000, False, 320, 1.0, -10_000)
+    d = tmp_path / "d.csv"; h = tmp_path / "h.csv"
+    pd.DataFrame(design).to_csv(d, index=False, encoding="utf-8-sig")
+    pd.DataFrame(hold).to_csv(h, index=False, encoding="utf-8-sig")
+    specs = filtersmith.propose_filters(str(d), str(h), CODE, top_k=3, timeframe="tick")
+    assert specs, "구제 가능한 리프에서 후보가 나와야 한다"
+    sp = specs[0]
+    assert sp.get("rescue") is True, sp["change"]
+    ev = sp["evidence"]
+    assert ev["removed_frac"] > filtersmith.MAX_REMOVED_FRAC, "캡을 넘는 선별이어야 의미 있다"
+    assert ev["kept_pnl_design"] > 0 and ev["kept_pnl_holdout"] > 0
+    assert ev["kept_per_trade_design"] > 0 and ev["kept_per_trade_holdout"] > 0
