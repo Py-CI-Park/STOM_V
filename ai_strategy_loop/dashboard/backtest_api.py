@@ -1967,15 +1967,16 @@ def analysis_feature_map(
     try:
         import pandas as _pd  # noqa: PLC0415
 
-        df = _fm._load(csv_path)  # enrich 1회 — variables 와 본 계산이 같은 뷰를 공유.
+        df = _fm._load(csv_path)  # enrich 1회 — df 를 grid/loss_regions 에 전달해 재사용.
         variables = _fm._numeric_features(df)
         bins = max(2, min(10, int(bins)))
         out = {"job_id": job_id, "run_id": run_id, "gen_no": gen_no, "available": True,
                "variables": variables, "grid": None, "regions": []}
         if mode == "regions":
-            out["regions"] = _fm.loss_regions(csv_path, bins=bins, top=max(1, min(50, int(top))))
+            out["regions"] = _fm.loss_regions(csv_path, bins=bins,
+                                              top=max(1, min(50, int(top))), df=df)
         elif x:
-            out["grid"] = _fm.grid(csv_path, x, y or None, bins=bins)
+            out["grid"] = _fm.grid(csv_path, x, y or None, bins=bins, df=df)
         return out
     except Exception:  # noqa: BLE001 - 분석 실패는 빈 구조로 흡수(무예외 계약).
         return empty

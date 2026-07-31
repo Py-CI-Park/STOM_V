@@ -105,6 +105,11 @@ def apply_drop(spec: Dict[str, Any], code: str) -> Tuple[Optional[str], str]:
     head = old_line.lstrip()
     if not (head.startswith("if ") or head.startswith("elif ")):
         return None, f"첫 절 줄 형태 예상 밖: {head[:40]}"
+    # 본문 불변식(감사2 A3): 첫 절 본문이 `매수 = False` 여야 `if True` 가 '차단'이 된다.
+    #   다른 본문이면 무조건 실행으로 의미가 반전되므로 적용을 거부한다.
+    body = lines[lineno].strip() if lineno < len(lines) else ""
+    if not ("매수" in body and "False" in body):
+        return None, f"첫 절 본문이 매수=False 형태가 아님: {body[:40]}"
     kw = "elif" if head.startswith("elif") else "if"
     lines[lineno - 1] = f"{indent}{kw} True:  # {DROP_MARK} — {spec.get('leaf_label')}"
     new_code = "\n".join(lines)

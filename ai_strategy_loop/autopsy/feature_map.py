@@ -36,16 +36,30 @@ def _numeric_features(df: pd.DataFrame) -> List[str]:
 
 
 def _bin_series(s: pd.Series, bins: int) -> pd.Series:
-    """분위 구간 라벨(경계 실값 표기). 동값 지배 변수는 구간 병합 허용(duplicates drop)."""
+    """분위 구간(범주형 유지 — NaN 은 NaN 키로 남아 groupby 에서 자동 제외.
+
+    astype(str) 를 여기서 하면 NaN 이 'nan' 문자열 구간으로 집계에 편입된다
+    (감사2 B8) — 문자열화는 출력 시점에만 한다."""
     try:
-        return pd.qcut(s, q=bins, duplicates="drop").astype(str)
+        return pd.qcut(s, q=bins, duplicates="drop")
     except (ValueError, IndexError):
         return pd.Series(["전체"] * len(s), index=s.index)
 
 
-def grid(csv_path: str, x: str, y: Optional[str] = None, *, bins: int = 5) -> Dict[str, Any]:
-    """X(×Y) 구간별 손익 집계 — 탐색기 히트맵 데이터."""
-    df = _load(csv_path)
+def _fnum(v, default: float = 0.0) -> float:
+    """JSON 안전 실수 — NaN/inf 는 default (FastAPI allow_nan=False 500 방지, 감사2 B9)."""
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return default
+    return f if pd.notna(v) and abs(f) != float("inf") else default
+
+
+def grid(csv_path: str, x: str, y: Optional[str] = None, *, bins: int = 5,
+         df: Optional[pd.DataFrame] = None) -> Dict[str, Any]:
+    """X(×Y) 구간별 손익 집계 — 탐색기 히트맵 데이터. df 를 주면 재-enrich 생략."""
+    if df is None:
+        df = _load(csv_path)
     if x not in df.columns or (y and y not in df.columns):
         return {"error": f"변수 없음: {x if x not in df.columns else y}", "cells": []}
     pnl = pd.to_numeric(df["수익금"], errors="coerce").fillna(0)
@@ -57,16 +71,18 @@ def grid(csv_path: str, x: str, y: Optional[str] = None, *, bins: int = 5) -> Di
     for k, sub in g:
         kx, ky = (k, None) if not y else k
         cells.append({"x_bin": str(kx), "y_bin": (None if ky is None else str(ky)),
-                      "n": int(len(sub)), "pnl": float(sub["pnl"].sum()),
-                      "mean_ret": float(sub["ret"].mean()),
-                      "win_rate": float(sub["win"].mean())})
-    return {"x": x, "y": y, "bins": bins, "total_pnl": float(pnl.sum()),
+                      "n": int(len(sub)), "pnl": _fnum(sub["pnl"].sum()),
+                      "mean_ret": _fnum(sub["ret"].mean()),
+                      "win_rate": _fnum(sub["win"].mean())})
+    return {"x": x, "y": y, "bins": bins, "total_pnl": _fnum(pnl.sum()),
             "n": int(len(df)), "cells": cells}
 
 
-def loss_regions(csv_path: str, *, bins: int = 5, top: int = 20) -> List[Dict[str, Any]]:
+def loss_regions(csv_path: str, *, bins: int = 5, top: int = 20,
+                 df: Optional[pd.DataFrame] = None) -> List[Dict[str, Any]]:
     """전 변수 1D 스캔 — 손실 합이 큰 (변수, 구간) 랭킹. '이 특징 = 손실' 후보."""
-    df = _load(csv_path)
+    if df is None:
+        df = _load(csv_path)
     pnl = pd.to_numeric(df["수익금"], errors="coerce").fillna(0)
     rows: List[Dict[str, Any]] = []
     for f in _numeric_features(df):
@@ -75,6 +91,6 @@ def loss_regions(csv_path: str, *, bins: int = 5, top: int = 20) -> List[Dict[st
         for interval, r in agg.iterrows():
             if r["sum"] < 0:
                 rows.append({"feature": f, "bin": str(interval),
-                             "n": int(r["size"]), "pnl": float(r["sum"])})
+                             "n": int(r["size"]), "pnl": _fnum(r["sum"])})
     rows.sort(key=lambda r: r["pnl"])
     return rows[:top]

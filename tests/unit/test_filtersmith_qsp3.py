@@ -109,3 +109,38 @@ def test_verify_filter_rejects_extra_line_change():
     assert tampered != new_code
     ok, why = filtersmith.verify_filter(SPEC, CODE, tampered)
     assert not ok, "공통 그물 변조가 통과되면 안 된다"
+
+
+def test_gugan_blocklist_covers_all_captured_function_columns():
+    """감사2 A12 — 금지 목록 드리프트 방지: 엔진 정본(gugan_factors)을 AST 로 추출해,
+    캡처 컬럼(B_*) 중 구간함수 이름과 겹치는 것 전부가 _GUGAN_FUNCS 에 있어야 한다.
+    캡처 컬럼이 추가되면(additive 설계) 이 테스트가 자동으로 드리프트를 잡는다."""
+    import ast
+    src = open("backtest/back_code_test.py", encoding="utf-8").read()
+    tree = ast.parse(src)
+    gugan = None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            for t in node.targets:
+                if getattr(t, "id", "") == "gugan_factors":
+                    gugan = {ast.literal_eval(e) for e in node.value.elts}
+    assert gugan, "엔진 정본 gugan_factors 를 찾지 못함"
+    from backtest.back_static import TRADE_RESULT_B_COLUMNS
+    captured_vars = {c[2:] for c in TRADE_RESULT_B_COLUMNS}
+    overlap = captured_vars & gugan
+    missing = overlap - filtersmith._GUGAN_FUNCS
+    assert not missing, f"금지 목록 누락(BUG-Q1 재발 위험): {missing}"
+
+
+def test_loss_regions_has_no_nan_bin(tmp_path):
+    """감사2 B8 — NaN 값은 'nan' 구간으로 집계되면 안 된다."""
+    import math
+    from ai_strategy_loop.autopsy import feature_map as fm
+    rows = _rows(1000, False, 40, 1.0, -2000)
+    for i, r in enumerate(rows):
+        if i % 2 == 0:
+            r["B_회전율"] = math.nan
+    d = tmp_path / "d.csv"
+    pd.DataFrame(rows).to_csv(d, index=False, encoding="utf-8-sig")
+    regions = fm.loss_regions(str(d), bins=3, top=20)
+    assert all(r["bin"].lower() != "nan" for r in regions), regions

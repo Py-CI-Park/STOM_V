@@ -160,6 +160,9 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
             # abs() 제거(감사 BUG-D): 크게 악화된 축(delta 음수)도 제외 대상.
             #   '유의미하게 양(+)' 이 아니면 재제안 금지 — 양의 축은 tried_specs 가
             #   동일 상수 반복만 차단하므로 base 갱신 시 재시도가 살아있다.
+            # 교차오염 방지(감사2 A5): tighten 교훈만 tighten 제외 목록에 넣는다.
+            if lesson.get("action", "tighten") != "tighten":
+                continue
             if float(lesson.get("delta_vs_base") or 0.0) < thresh:
                 exclude_axes.append((lesson.get("axis"), lesson.get("leaf")))
     # BUG-4 교정: 이전 라운드에서 이미 평가된 (변수, 리프, 상수) 동일 제안은 재백테 금지.
@@ -290,6 +293,9 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
             lessons.append({
                 "axis": meta["spec"].get("feature") or meta["spec"].get("action", "?"),
                 "leaf": meta["spec"]["leaf_label"],
+                # 액션 표기(감사2 A5): 교훈 제외는 같은 액션 경로에만 적용해야 한다 —
+                #   add_filter 교훈이 tighten 제안을 차단하는 교차오염 방지.
+                "action": meta["spec"].get("action") or "tighten",
                 "objective": v["objective"], "delta_vs_base": v["objective"] - (base_row or {}).get("objective", 0.0),
             })
 
@@ -369,6 +375,9 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
 
     record = {
         "tag": tag, "round": round_no, "run_id": run_id, "regime": regime,
+        # 실행 조건 기록(감사2 A9): 어떤 액션 우선순위·모드·config 로 돌았는지.
+        "actions": actions, "mode": mode, "config": str(config_path),
+        "holdout_config": str(holdout_config) if holdout_config else None,
         "base": {"buy_name": base_code_name,
                  "objective": (base_row or {}).get("objective"),
                  "trade_count": (base_row or {}).get("trade_count"),

@@ -79,16 +79,22 @@ def propose_filters(design_csv: str, holdout_csv: str, buy_code: str, *,
         clauses = hier.leaves[leaf_key]
         if clauses and clauses[0].ident == "?":
             continue  # 드롭된 리프 — 필터 무의미.
-        existing = "".join(c.ident for c in clauses)
+        existing_idents = [c.ident for c in clauses]
         sub_h = leaves_h.get((lt, lc))
         if sub_h is None or len(sub_h) < HOLDOUT_MIN_N:
             continue  # 홀드아웃 표본 부족 — '양쪽 이득' 판단 불가(A-8).
         is_win = pd.to_numeric(sub["수익률"], errors="coerce") > 0
         # ① 리프 내 변수 family 에 FDR — 잡음 필터 컷(감사 B1 처방).
         stats = []
+        import re as _re
         for f in feats:
             var = _runtime_var(f)
-            if var is None or var in existing or (f, leaf_label) in excluded:
+            if var is None or (f, leaf_label) in excluded:
+                continue
+            # 토큰 경계 일치(감사2 A11): '등락율' 이 '시가등락율' 절 때문에 과다
+            #   배제되지 않도록 부분문자열이 아닌 변수 토큰으로 대조.
+            pat = _re.compile(rf"(?<![0-9A-Za-z_가-힣]){_re.escape(var)}(?![0-9A-Za-z_가-힣])")
+            if any(pat.search(ident) for ident in existing_idents):
                 continue
             vals = pd.to_numeric(sub[f], errors="coerce")
             d = _cohen_d(vals[is_win].dropna(), vals[~is_win].dropna())
