@@ -114,6 +114,7 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
               actions: str = "tighten") -> Dict[str, Any]:
     from ai_strategy_loop.autopsy import label_dataset as lds
     from ai_strategy_loop.revision import intent_gate as gate
+    from ai_strategy_loop.revision import filtersmith
     from ai_strategy_loop.revision import proposer
     from ai_strategy_loop.revision import surgeon
     from ai_strategy_loop.revision.convergence import RoundStat, judge
@@ -173,21 +174,31 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
     #   drop 후보 = 설계+홀드아웃 양쪽 손실 리프(사용자 규칙: 홀드아웃 동방향 필수).
     specs: List[Dict[str, Any]] = []
     mode = "tighten"
+    h_csv = _holdout_label_csv(prev, holdout_config, base_code_name)
+    h_abs = l_abs = None
+    if h_csv:
+        h_abs = str(REPO / h_csv) if not os.path.isabs(h_csv) else h_csv
+        l_abs = str(REPO / str(label_csv)) if not os.path.isabs(str(label_csv)) else str(label_csv)
+    tf = "min" if "min" in str(config_path).lower() else "tick"
     if "drop" in actions:
         tried_drops = {(m.get("spec") or {}).get("leaf_label") for rec in prev
                        for m in rec.get("candidates", [])
                        if (m.get("spec") or {}).get("action") == "drop_leaf"}
-        h_csv = _holdout_label_csv(prev, holdout_config, base_code_name)
-        if h_csv:
-            h_abs = str(REPO / h_csv) if not os.path.isabs(h_csv) else h_csv
-            l_abs = str(REPO / str(label_csv)) if not os.path.isabs(str(label_csv)) else str(label_csv)
-            tf = "min" if "min" in str(config_path).lower() else "tick"
+        if h_abs:
             specs = surgeon.propose_drops(l_abs, h_abs, base_code, top_k=n_cand,
                                           exclude_leaves=tried_drops, timeframe=tf)
             if specs:
                 mode = "drop"
         else:
-            print(f"[ROUND{round_no}] 홀드아웃 라벨 CSV 없음 — drop 건너뜀(조임으로)", flush=True)
+            print(f"[ROUND{round_no}] 홀드아웃 라벨 CSV 없음 — drop 건너뜀", flush=True)
+    if not specs and "filter" in actions and h_abs:
+        tried_filters = {((m.get("spec") or {}).get("feature"), (m.get("spec") or {}).get("leaf_label"))
+                         for rec in prev for m in rec.get("candidates", [])
+                         if (m.get("spec") or {}).get("action") == "add_filter"}
+        specs = filtersmith.propose_filters(l_abs, h_abs, base_code, top_k=n_cand,
+                                            exclude=tried_filters, timeframe=tf)
+        if specs:
+            mode = "filter"
     if not specs:
         specs = proposer.propose(ds, base_code, base_code_name, top_k=n_cand,
                                  exclude_axes=exclude_axes, exclude_specs=tried_specs)
@@ -207,6 +218,16 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
             if not ok:
                 cand_meta.append({"cand": i, "spec": spec, "status": "gate_fail", "reason": greason})
                 print(f"[ROUND{round_no}] C{i} DROP GATE FAIL — {greason}", flush=True)
+                continue
+        elif spec.get("action") == "add_filter":
+            new_code, reason = filtersmith.apply_filter(spec, base_code)
+            if not new_code:
+                cand_meta.append({"cand": i, "spec": spec, "status": "apply_fail", "reason": reason})
+                continue
+            ok, greason = filtersmith.verify_filter(spec, base_code, new_code)
+            if not ok:
+                cand_meta.append({"cand": i, "spec": spec, "status": "gate_fail", "reason": greason})
+                print(f"[ROUND{round_no}] C{i} FILTER GATE FAIL — {greason}", flush=True)
                 continue
         else:
             new_code, reason = proposer.apply(spec, base_code)
@@ -273,7 +294,7 @@ def run_round(base_buy: str, base_sell: str, config_path: str, tag: str,
     reentry: List[Dict[str, Any]] = []
     base_obj = float((base_row or {}).get("objective") or 0.0)
     for m in cand_meta:
-        if (m.get("spec") or {}).get("action") != "drop_leaf" or m.get("status") != "registered":
+        if (m.get("spec") or {}).get("est_delta_design") is None or m.get("status") != "registered":
             continue
         row = next((v for v in ok_rows if v.get("buy_name") == m.get("buy_name")), None)
         if row is None:

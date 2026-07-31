@@ -1,0 +1,84 @@
+# -*- coding: utf-8 -*-
+"""QSP3 P2 — add_filter 제안·적용·검증 + feature_map 테스트."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pandas as pd
+
+from ai_strategy_loop.revision import filtersmith
+from ai_strategy_loop.revision.hier_ast import parse_leaves
+
+SEED = Path("docs/research/quant_scoring_pipeline/seed_drafts/QSP2_T_ANCH_900_920_B.py")
+CODE = SEED.read_text(encoding="utf-8")
+LEAF = ("시분초<90200", "시가총액<3000")
+SPEC = {"action": "add_filter", "leaf": list(LEAF), "leaf_label": "B1_900_902×S_3000미만",
+        "feature": "B_회전율", "runtime_var": "회전율", "op": ">", "threshold": 3.1,
+        "est_delta_design": 1.0, "est_delta_holdout": 1.0}
+
+
+def test_apply_and_verify_filter_roundtrip():
+    new_code, reason = filtersmith.apply_filter(SPEC, CODE)
+    assert new_code, reason
+    ok, why = filtersmith.verify_filter(SPEC, CODE, new_code)
+    assert ok, why
+    h = parse_leaves(new_code)
+    assert h.leaves[LEAF][-1].ident == "회전율>?"
+    # 기존 절 수 +1, 다른 리프 무변화.
+    old_h = parse_leaves(CODE)
+    assert len(h.leaves[LEAF]) == len(old_h.leaves[LEAF]) + 1
+    other = ("시분초<90200", "3000<=시가총액<5000")
+    assert [c.ident for c in h.leaves[other]] == [c.ident for c in old_h.leaves[other]]
+
+
+def test_verify_filter_rejects_out_of_scope_change():
+    new_code, _ = filtersmith.apply_filter(SPEC, CODE)
+    tampered = new_code.replace("0.5 <= 등락율 <= 22.0", "0.5 <= 등락율 <= 44.0", 1)
+    assert tampered != new_code
+    ok, why = filtersmith.verify_filter(SPEC, CODE, tampered)
+    assert not ok and "명세 밖" in why
+
+
+def _rows(cap, win, n, tovr, pnl, hhmmss="090105"):
+    return [{
+        "종목명": f"X{cap}", "시가총액": cap, "매수시간": f"20250407{hhmmss}",
+        "수익률": 1.0 if win else -1.0, "수익금": pnl,
+        "B_현재가": 10000, "B_등락율": 5.0, "B_매수총잔량": 100, "B_매도총잔량": 100,
+        "B_당일거래대금": 100, "B_시가총액": cap, "B_체결강도": 100,
+        "B_전일동시간비": 1.0, "B_회전율": tovr + n * 1e-3,
+    } for n in range(n)]
+
+
+def test_propose_filters_finds_separating_variable(tmp_path):
+    # B1×소형 리프: 승자 회전율~10, 패자~1 — '회전율 > t' 필터가 양쪽 창 모두 이득.
+    design = _rows(1000, True, 40, 10.0, +1000) + _rows(1000, False, 40, 1.0, -2000)
+    hold = _rows(1000, True, 40, 10.0, +800) + _rows(1000, False, 40, 1.0, -1800)
+    d = tmp_path / "d.csv"; h = tmp_path / "h.csv"
+    pd.DataFrame(design).to_csv(d, index=False, encoding="utf-8-sig")
+    pd.DataFrame(hold).to_csv(h, index=False, encoding="utf-8-sig")
+    specs = filtersmith.propose_filters(str(d), str(h), CODE, top_k=3, timeframe="tick")
+    assert specs, "분리 변수를 찾아야 한다"
+    sp = specs[0]
+    assert sp["action"] == "add_filter" and sp["runtime_var"] == "회전율"
+    assert sp["est_delta_design"] > 0 and sp["est_delta_holdout"] > 0
+    assert sp["evidence"]["removed_frac"] <= filtersmith.MAX_REMOVED_FRAC
+    # 적용→검증 폐루프.
+    new_code, reason = filtersmith.apply_filter(sp, CODE)
+    assert new_code, reason
+    ok, why = filtersmith.verify_filter(sp, CODE, new_code)
+    assert ok, why
+
+
+def test_feature_map_grid_and_loss_regions(tmp_path):
+    from ai_strategy_loop.autopsy import feature_map as fm
+    design = _rows(1000, True, 40, 10.0, +1000) + _rows(1000, False, 40, 1.0, -2000)
+    d = tmp_path / "d.csv"
+    pd.DataFrame(design).to_csv(d, index=False, encoding="utf-8-sig")
+    g = fm.grid(str(d), "B_회전율", bins=4)
+    assert g["cells"] and abs(sum(c["pnl"] for c in g["cells"]) - g["total_pnl"]) < 1e-6
+    g2 = fm.grid(str(d), "B_회전율", "B_체결강도", bins=3)
+    assert all(c["y_bin"] is not None for c in g2["cells"])
+    regions = fm.loss_regions(str(d), bins=4, top=5)
+    assert regions and regions[0]["pnl"] < 0
+    assert any(r["feature"] == "B_회전율" for r in regions)
