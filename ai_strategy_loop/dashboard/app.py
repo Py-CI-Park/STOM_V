@@ -231,6 +231,10 @@ def _report_manifest_rows(root: str) -> Dict[str, Dict[str, Any]]:
     for rel_manifest in (
         "generated_reports/manifest.json",
         "research/condition_research/reports/research_report_manifest.json",
+        # QSP(퀀트 채점 파이프라인) 보고서 — 매니페스트를 보고서 옆에 둔다.
+        #   경로 규약상 항목의 path 는 매니페스트 디렉토리 기준 상대경로여야 하고
+        #   '..' 를 포함할 수 없다(_report_manifest_relative_path).
+        "research/quant_scoring_pipeline/qsp_report_manifest.json",
     ):
         manifest_path = os.path.join(root, *rel_manifest.split("/"))
         prefix = os.path.dirname(rel_manifest).replace("\\", "/")
