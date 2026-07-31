@@ -23,6 +23,7 @@ SCHEMA = "stom-research-report-v1"
 
 # (파일, 제목, 연구 ID) — path 는 매니페스트와 같은 디렉토리 기준(파일명 그대로).
 REPORTS = [
+    ("2026-08-01_qsp_presentation.html", "QSP 연구 종합 발표(6차 캠페인)", "qsp_program"),
     ("2026-07-31_qsp3_report.html", "QSP3 대수술 캠페인 보고서", "qsp3_map_surgery"),
     ("2026-07-31_qsp3_evolution.html", "QSP3 세대 진화 — 액션별 기여·리프 지형", "qsp3_map_surgery"),
     ("2026-07-31_qsp2_report.html", "QSP2 anchor 캠페인 보고서", "qsp2_anchor"),

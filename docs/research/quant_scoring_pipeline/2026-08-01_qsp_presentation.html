@@ -1,0 +1,495 @@
+<title>STOM 조건식 연구 발표 — 왜 아직 수익이 아닌가</title>
+<style>
+  :root{
+    --ink:#0d1b1e; --paper:#f2efe8; --amber:#c9781f; --teal:#2f7d7a;
+    --loss:#b04a3c; --gain:#2f7d7a; --line:rgba(13,27,30,.14);
+    --bg:#f2efe8; --fg:#0d1b1e; --fg-2:#3d4f52; --fg-3:#6b7b7d;
+    --card:#faf8f4; --rail:#e6e1d6; --accent:var(--amber);
+    --mono:"SFMono-Regular",ui-monospace,"Cascadia Mono","Consolas",monospace;
+    --sans:"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype","Nanum Myeongjo",Georgia,serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#0d1b1e; --fg:#f0ece2; --fg-2:#b9c4c2; --fg-3:#8496 95;
+      --fg-3:#849695; --card:#132629; --rail:#1b3033; --line:rgba(240,236,226,.16);
+      --amber:#e0973f; --teal:#4fa8a5; --loss:#d4685a; --gain:#4fa8a5; }
+  }
+  :root[data-theme="dark"]{ --bg:#0d1b1e; --fg:#f0ece2; --fg-2:#b9c4c2; --fg-3:#849695;
+    --card:#132629; --rail:#1b3033; --line:rgba(240,236,226,.16);
+    --amber:#e0973f; --teal:#4fa8a5; --loss:#d4685a; --gain:#4fa8a5; }
+  :root[data-theme="light"]{ --bg:#f2efe8; --fg:#0d1b1e; --fg-2:#3d4f52; --fg-3:#6b7b7d;
+    --card:#faf8f4; --rail:#e6e1d6; --line:rgba(13,27,30,.14);
+    --amber:#c9781f; --teal:#2f7d7a; --loss:#b04a3c; --gain:#2f7d7a; }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+    line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px 96px}
+  header.top{padding:64px 0 40px;border-bottom:2px solid var(--fg);margin-bottom:40px}
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-3);
+    font-weight:600;margin-bottom:14px}
+  h1{font-family:var(--serif);font-size:clamp(30px,5vw,50px);line-height:1.14;margin:0 0 18px;
+    text-wrap:balance;font-weight:600;letter-spacing:-.01em}
+  .lede{font-family:var(--serif);font-size:19px;color:var(--fg-2);max-width:62ch;margin:0}
+  h2{font-size:clamp(20px,2.6vw,27px);margin:56px 0 6px;letter-spacing:-.01em;
+    font-weight:700;text-wrap:balance}
+  h2 .num{font-family:var(--mono);font-size:13px;color:var(--amber);display:block;
+    margin-bottom:6px;letter-spacing:.08em}
+  h3{font-size:16px;margin:28px 0 8px;font-weight:700;color:var(--fg)}
+  p{max-width:68ch}
+  .muted{color:var(--fg-2)}
+  .small{font-size:13.5px}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:14px;margin:26px 0}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:3px;padding:16px 18px;
+    border-top:3px solid var(--amber)}
+  .kpi .k{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--fg-3);font-weight:600}
+  .kpi .v{font-family:var(--mono);font-size:25px;font-weight:600;margin-top:6px;
+    font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .kpi .s{font-size:12.5px;color:var(--fg-2);margin-top:2px}
+  .kpi.teal{border-top-color:var(--teal)}
+  .kpi.loss{border-top-color:var(--loss)}
+
+  .tbl-scroll{overflow-x:auto;margin:16px 0;border:1px solid var(--line);border-radius:3px;background:var(--card)}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+  th,td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--line)}
+  thead th{background:var(--rail);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--fg-2);font-weight:700;white-space:nowrap}
+  td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  tbody tr:last-child td{border-bottom:none}
+  .pos{color:var(--gain);font-weight:600}
+  .neg{color:var(--loss);font-weight:600}
+  .tag{font-family:var(--sans);font-size:11px;padding:1px 8px;border-radius:2px;
+    border:1px solid currentColor;font-weight:600;white-space:nowrap}
+  .t-drop{color:var(--amber)}.t-filter{color:var(--teal)}.t-tight{color:var(--fg-3)}
+
+  .callout{border-left:3px solid var(--amber);background:var(--card);padding:16px 20px;
+    margin:22px 0;border-radius:0 3px 3px 0}
+  .callout.teal{border-left-color:var(--teal)}
+  .callout h3{margin-top:0}
+
+  .phase{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:20px 0}
+  .pcard{background:var(--card);border:1px solid var(--line);padding:16px 18px;border-radius:3px}
+  .pcard .h{font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .bar{height:9px;background:var(--rail);border-radius:5px;overflow:hidden;margin:7px 0 3px}
+  .bar i{display:block;height:100%;border-radius:5px}
+  .bar.d i{background:var(--amber)}.bar.h i{background:var(--teal)}
+  .bar.neg i{background:var(--loss)}
+  .blab{display:flex;justify-content:space-between;font-size:11.5px;color:var(--fg-3);
+    font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  .flow{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:22px 0}
+  .step{flex:1 1 158px;background:var(--card);border:1px solid var(--line);border-radius:3px;
+    padding:14px 15px;position:relative}
+  .step .sn{font-family:var(--mono);font-size:11px;color:var(--amber);font-weight:700}
+  .step .st{font-weight:700;margin:4px 0 5px;font-size:14.5px}
+  .step .sd{font-size:12.5px;color:var(--fg-2);line-height:1.5}
+  .step.gate{border-style:dashed;border-color:var(--teal)}
+
+  figure{margin:20px 0}
+  figcaption{font-size:12.5px;color:var(--fg-3);margin-top:8px}
+  svg{max-width:100%;height:auto;display:block}
+
+  .heat{display:grid;grid-template-columns:98px repeat(4,1fr);gap:2px;margin:10px 0 4px;min-width:430px}
+  .heat div{padding:7px 4px;text-align:center;font-size:12px;border-radius:2px}
+  .heat .hh{background:transparent;color:var(--fg-3);font-size:11px;align-self:center}
+  .heat .rh{text-align:right;padding-right:8px}
+  .heat b{display:block;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12.5px}
+  .heat span{font-size:10px;opacity:.72}
+
+  .qa{border-top:1px solid var(--line);padding-top:18px;margin-top:18px}
+  .qa .q{font-family:var(--serif);font-size:19px;font-weight:600;margin-bottom:8px}
+  ul{max-width:68ch}li{margin:5px 0}
+  footer{margin-top:64px;padding-top:22px;border-top:2px solid var(--fg);font-size:12.5px;color:var(--fg-3)}
+  @media (max-width:640px){ .heat{grid-template-columns:74px repeat(4,1fr)} .heat div{font-size:10.5px} }
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">STOM 조건식 연구 · 2026-07-31 발표</div>
+  <h1>손실 지형을 깎아내다 —<br>세 번의 캠페인, 그리고 왜 아직 수익이 아닌가</h1>
+  <p class="lede">백테스트 결과를 정답지 삼아 조건식을 스스로 고치는 파이프라인을 사흘간 만들고 돌렸습니다.
+  손실 구역을 깎아내는 것만으로는 한계가 있었고, 지적을 받아 방향을 <strong>"선별"</strong>로 바꾼 뒤
+  <strong>표본외 건당 엣지가 프로그램 최초로 개선(+10.3%)</strong>됐습니다.
+  이 발표는 그 과정과 남은 거리를 데이터로 설명합니다.</p>
+</header>
+
+<section>
+  <h2><span class="num">01</span>지금까지의 성적</h2>
+  <p>세 캠페인 모두 같은 엔진·같은 채점기를 썼습니다. 다른 것은 <strong>수정의 크기</strong>뿐입니다.</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">QSP1 미세 조임</div><div class="v">+22.4%</div><div class="s">6R · 표본외 검증 없음</div></div>
+    <div class="kpi teal"><div class="k">QSP2 좋은 시드 + 표본외</div><div class="v">+13.6%</div><div class="s">8R · 홀드아웃 +9.2% 동반</div></div>
+    <div class="kpi"><div class="k">QSP3 대수술</div><div class="v">+99.4%</div><div class="s">13R · 홀드아웃 +45.8%</div></div>
+    <div class="kpi teal"><div class="k">QSP6 캠페인(최종·10R)</div><div class="v">전이율 37% / 9%</div><div class="s">구제 vs 깊이 — §6.8이 결론입니다</div></div>
+  </div>
+  <p class="small muted">※ 설계구간 = 2025.04~2026.02(11개월, 09:00~09:30 tick). 홀드아웃 = 2024.04~2025.04(1년, 한 번도 학습에 안 쓴 구간).</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span>파이프라인은 이렇게 돕니다</h2>
+  <p>사람이 하던 [가설 → 조건식 작성 → 백테 대기 → 결과 분석 → 수정]을 기계가 반복합니다.
+  한 바퀴가 약 6분, 사람 개입 0입니다.</p>
+  <div class="flow">
+    <div class="step"><div class="sn">STEP 1</div><div class="st">백테스트</div>
+      <div class="sd">조건식으로 11개월 매매를 재현. 매수 시점의 변수 31종을 함께 기록합니다.</div></div>
+    <div class="step"><div class="sn">STEP 2</div><div class="st">지형 분석</div>
+      <div class="sd">수익률을 라벨 삼아 시간×시총 16구역, 변수 34종의 손익 지도를 만듭니다.</div></div>
+    <div class="step"><div class="sn">STEP 3</div><div class="st">수정안 3개</div>
+      <div class="sd">제거 · 필터 · 조임 중 근거가 있는 수정을 후보로 만듭니다.</div></div>
+    <div class="step gate"><div class="sn">GATE</div><div class="st">의도 검사</div>
+      <div class="sd">코드가 명세대로만 바뀌었는지 기계가 확인. 한 줄이라도 어긋나면 폐기.</div></div>
+    <div class="step"><div class="sn">STEP 4</div><div class="st">재백테 + 본고사</div>
+      <div class="sd">후보 전부 재평가, 승자는 표본외 1년에서 한 번 더 시험.</div></div>
+    <div class="step gate"><div class="sn">JUDGE</div><div class="st">계속 / 중단</div>
+      <div class="sd">설계만 좋아지고 표본외가 나빠지면 "암기"로 보고 스스로 멈춥니다.</div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span>핵심 발견: 무엇이 통했고 무엇이 가짜였나</h2>
+  <p>QSP3 12라운드를 <strong>수정 유형별로 갈라서</strong> 설계 개선분과 표본외 개선분을 각각 합산했습니다.
+  같은 파이프라인인데 결과가 갈렸습니다.</p>
+  <div class="phase">
+    <div class="pcard"><div class="h"><span class="tag t-drop">제거</span> 3라운드</div>
+      <div class="bar d"><i style="width:83%"></i></div><div class="blab"><span>설계</span><span>+19.6M</span></div>
+      <div class="bar h"><i style="width:100%"></i></div><div class="blab"><span>표본외</span><span>+23.6M</span></div>
+      <p class="small" style="margin:8px 0 0"><strong>일반화됨</strong> — 표본외가 오히려 더 개선.</p></div>
+    <div class="pcard"><div class="h"><span class="tag t-filter">필터</span> 2라운드</div>
+      <div class="bar d"><i style="width:29%"></i></div><div class="blab"><span>설계</span><span>+6.8M</span></div>
+      <div class="bar h"><i style="width:28%"></i></div><div class="blab"><span>표본외</span><span>+6.5M</span></div>
+      <p class="small" style="margin:8px 0 0"><strong>일반화됨</strong> — 거의 1:1.</p></div>
+    <div class="pcard"><div class="h"><span class="tag t-tight">조임</span> 5라운드</div>
+      <div class="bar d"><i style="width:25%"></i></div><div class="blab"><span>설계</span><span>+5.8M</span></div>
+      <div class="bar neg"><i style="width:3%"></i></div><div class="blab"><span>표본외</span><span class="neg">−0.5M</span></div>
+      <p class="small" style="margin:8px 0 0"><strong>과최적</strong> — 설계 점수만 올랐습니다.</p></div>
+  </div>
+  <div class="callout">
+    <h3>말씀하신 가설이 데이터로 확인됐습니다</h3>
+    <p style="margin:0">"조금씩 조이는 건 답이 아니다, 크게 제거해야 한다" — 조임 5라운드가 만든 설계 개선 +5.8M은
+    표본외에서 <strong>−0.5M</strong>으로 사라졌습니다. 반면 제거·필터가 만든 개선은 표본외에서 그대로,
+    혹은 더 크게 살아남았습니다.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span>왜 아직 수익이 아닌가 — 세 가지 이유</h2>
+
+  <h3>이유 ① 파이프라인이 가장 큰 물고기를 놓쳤습니다 (설계 결함, 오늘 수정)</h3>
+  <p>최종 조건식에 남은 손실을 뜯어보니 <strong>한 구역이 전체 리프 손실의 66%</strong>를 차지했습니다.
+  09:00~09:02 × 소형주 구역, 760건, 건당 −16,769원, 합계 −12.7M.</p>
+  <p>이 구역은 1라운드에서 제거 후보로 올라왔고 <strong>제거하면 +6.5M 개선</strong>이라는 실측까지 나왔습니다.
+  그런데 같은 라운드의 다른 후보가 +11.6M으로 더 좋아서 탈락했고 — 코드가
+  <em>"한 번 제안된 구역은 다시 제안하지 않는다"</em>로 짜여 있어 <strong>이후 11라운드 동안 영원히 배제</strong>됐습니다.
+  좋은 수를 알고도 버린 겁니다.</p>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>1라운드 후보</th><th class="n">제거 시 실측</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td>09:00~02분 × 소형주 (−12.7M, 760건)</td><td class="n pos">+6,498,464</td><td>탈락 → <strong>영구 배제</strong></td></tr>
+      <tr><td>09:10~20분 × 소형주 (−12.2M, 599건)</td><td class="n pos">+11,634,459</td><td>채택 (승자)</td></tr>
+      <tr><td>09:02~05분 × 소형주 (−10.2M, 534건)</td><td class="n pos">+9,827,161</td><td>탈락 → 영구 배제</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small muted">세 후보 모두 개선이었는데 한 라운드에 하나만 채택하는 탐욕 구조 + 영구 배제가 겹쳐,
+  알려진 +6.5M과 +9.8M을 버렸습니다.</p>
+
+  <h3>이유 ② 왕복 비용이라는 바닥</h3>
+  <p>현재 건당 손익은 −3,421원입니다. 이 시장의 왕복 비용(세금 0.18% + 수수료 양방향)은 거래대금의
+  약 0.6~1.2%로, 평균 진입 규모에서 수천 원대입니다. 즉 <strong>남은 적자의 상당 부분이 비용</strong>이며,
+  이를 넘으려면 "덜 잃는 그물"이 아니라 <strong>비용을 이기는 엣지</strong>가 필요합니다.</p>
+
+  <h3>이유 ③ 개선의 성격 — 덜 사서 덜 잃은 것</h3>
+  <p>표본외 +35.1% 개선을 분해하면 거래당 손익 개선은 +6.5%뿐이고 나머지는 거래수 −31% 효과입니다.
+  손실 구역을 도려내는 일은 여기까지가 한계입니다.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span>손실 지형이 실제로 어떻게 변했나</h2>
+  <p>같은 조건식의 16구역 손익을 시작(QSP2 챔피언)과 끝(QSP3 R12)에서 비교한 것입니다.
+  붉을수록 손실, 푸를수록 이익입니다.</p>
+  <h3 class="small" style="margin-bottom:2px">시작 — 손실이 소형주 열에 기둥처럼 서 있음</h3>
+  <div class="tbl-scroll"><div class="heat">
+    <div class="hh"></div><div class="hh">소형 &lt;3천억</div><div class="hh">3~5천억</div><div class="hh">5천억~1조</div><div class="hh">대형 ≥1조</div>
+    <div class="hh rh">09:00~02분</div>
+      <div style="background:rgba(176,74,60,.85);color:#fff"><b>−12.7M</b><span>760건</span></div>
+      <div style="background:rgba(176,74,60,.32)"><b>−2.1M</b><span>243건</span></div>
+      <div style="background:rgba(176,74,60,.30)"><b>−1.9M</b><span>211건</span></div>
+      <div style="background:rgba(47,125,122,.28)"><b>+0.8M</b><span>203건</span></div>
+    <div class="hh rh">02~05분</div>
+      <div style="background:rgba(176,74,60,.72);color:#fff"><b>−10.2M</b><span>534건</span></div>
+      <div style="background:rgba(176,74,60,.10)"><b>−0.0M</b><span>107건</span></div>
+      <div style="background:rgba(47,125,122,.55)"><b>+2.8M</b><span>93건</span></div>
+      <div style="background:rgba(176,74,60,.26)"><b>−1.5M</b><span>241건</span></div>
+    <div class="hh rh">05~10분</div>
+      <div style="background:rgba(47,125,122,.12)"><b>+0.1M</b><span>392건</span></div>
+      <div style="background:rgba(47,125,122,.30)"><b>+1.0M</b><span>174건</span></div>
+      <div style="background:rgba(176,74,60,.10)"><b>−0.1M</b><span>114건</span></div>
+      <div style="background:rgba(176,74,60,.18)"><b>−0.7M</b><span>115건</span></div>
+    <div class="hh rh">10~20분</div>
+      <div style="background:rgba(176,74,60,.80);color:#fff"><b>−12.2M</b><span>599건</span></div>
+      <div style="background:rgba(176,74,60,.28)"><b>−1.9M</b><span>222건</span></div>
+      <div style="background:rgba(176,74,60,.14)"><b>−0.6M</b><span>226건</span></div>
+      <div style="background:rgba(176,74,60,.42)"><b>−4.8M</b><span>255건</span></div>
+  </div></div>
+  <h3 class="small" style="margin-bottom:2px">끝 — 기둥 두 개가 사라지고 이익 구역이 늘었지만, 하나가 남았습니다</h3>
+  <div class="tbl-scroll"><div class="heat">
+    <div class="hh"></div><div class="hh">소형 &lt;3천억</div><div class="hh">3~5천억</div><div class="hh">5천억~1조</div><div class="hh">대형 ≥1조</div>
+    <div class="hh rh">09:00~02분</div>
+      <div style="background:rgba(176,74,60,.85);color:#fff"><b>−12.7M</b><span>760건 ← 남음</span></div>
+      <div style="background:rgba(176,74,60,.16)"><b>−0.8M</b><span>239건</span></div>
+      <div style="background:rgba(47,125,122,.30)"><b>+1.1M</b><span>7건</span></div>
+      <div style="background:rgba(176,74,60,.06)"><b>−0.0M</b><span>199건</span></div>
+    <div class="hh rh">02~05분</div>
+      <div style="background:rgba(176,74,60,.30)"><b>−2.3M</b><span>194건</span></div>
+      <div style="background:rgba(176,74,60,.08)"><b>−0.2M</b><span>106건</span></div>
+      <div style="background:rgba(47,125,122,.34)"><b>+1.2M</b><span>122건</span></div>
+      <div style="background:rgba(47,125,122,.44)"><b>+1.7M</b><span>99건</span></div>
+    <div class="hh rh">05~10분</div>
+      <div style="background:rgba(176,74,60,.12)"><b>−0.8M</b><span>475건</span></div>
+      <div style="background:rgba(47,125,122,.28)"><b>+0.9M</b><span>176건</span></div>
+      <div style="background:rgba(47,125,122,.30)"><b>+1.0M</b><span>154건</span></div>
+      <div style="background:rgba(47,125,122,.14)"><b>+0.1M</b><span>166건</span></div>
+    <div class="hh rh">10~20분</div>
+      <div style="background:rgba(176,74,60,.10)"><b>−0.2M</b><span>2건 ← 제거됨</span></div>
+      <div style="background:rgba(176,74,60,.28)"><b>−2.1M</b><span>220건</span></div>
+      <div style="background:rgba(47,125,122,.42)"><b>+1.7M</b><span>169건</span></div>
+      <div style="background:rgba(47,125,122,.26)"><b>+0.9M</b><span>5건 ← 제거됨</span></div>
+  </div></div>
+  <figcaption>이익 구역이 4개 → 8개로 늘었습니다. 남은 −12.7M 기둥이 이유 ①의 그 구역입니다.</figcaption>
+</section>
+
+<section>
+  <h2><span class="num">06</span>그래서, 계속 돌리면 수익이 납니까?</h2>
+  <div class="qa">
+    <div class="q">Q. 루프를 더 안 돌아서 수익이 안 난 건가요?</div>
+    <p><strong>아니요 — 횟수가 아니라 구조였습니다.</strong> 12라운드 중 마지막 5라운드(조임)는
+    표본외 기준으로 이득이 0이었습니다. 같은 방식으로 20라운드를 돌려도 설계 점수만 오릅니다.
+    반면 이유 ①의 결함(좋은 제거를 영구 배제)은 <em>구조</em>라, 고치면 즉시 회복됩니다.</p>
+  </div>
+  <div class="qa">
+    <div class="q">Q. 그럼 수익까지 갈 수 있습니까?</div>
+    <p><strong>제거만으로는 갈 수 없습니다.</strong> 13라운드에서 설계구간은 건당 −119원으로
+    손익분기에 닿았지만, 같은 조건식이 표본외에서는 건당 −15,112원으로 <strong>나빠졌습니다</strong>.
+    제거는 "밑지는 장사를 줄이는" 일이지 "남는 장사를 만드는" 일이 아닙니다.</p>
+    <p><strong>그런데 발표 준비 중 받은 지적이 이 결론을 반쯤 뒤집었습니다</strong> — 다음 절을 보십시오.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06.5</span>중대한 정정 — "통째로 지우면 안 된다"는 지적이 맞았습니다</h2>
+  <p>"소형주 시초에서 손실이 크다고 다 지우면 안 된다. 세부 변수를 잘 연구하면
+  거기서 수익이 가장 많이 날 것"이라는 지적을 받고, 삭제 대상이던 그 구역
+  <strong>내부를 전수 조사</strong>했습니다.</p>
+  <div class="callout">
+    <h3>결과: 그 "최악의 구역" 안에 양쪽 구간 흑자인 조건이 9개 있었습니다</h3>
+    <div class="tbl-scroll" style="margin:12px 0 6px"><table>
+      <thead><tr><th>선별 조건 (09:00~02분 × 소형주 내부)</th><th class="n">설계 건당</th><th class="n">표본외 건당</th></tr></thead>
+      <tbody>
+        <tr><td>회전율 &gt; 3.2 (상위 20%)</td><td class="n pos">+8,411원</td><td class="n pos">+4,749원</td></tr>
+        <tr><td>거래대금시총비 &gt; 3.13</td><td class="n pos">+8,316원</td><td class="n pos">+4,880원</td></tr>
+        <tr><td>초당거래대금 &gt; 184</td><td class="n pos">+4,294원</td><td class="n pos">+9,131원</td></tr>
+        <tr><td>매도총잔량 ≤ 5,632</td><td class="n pos">+11,851원</td><td class="n pos">+25,483원</td></tr>
+      </tbody>
+    </table></div>
+    <p style="margin:0" class="small">참고로 현재 챔피언의 표본외 건당은 <strong>−15,112원</strong>입니다.
+    버려진 구역 안에 <strong>+4,749 ~ +25,483원</strong>짜리 알짜가 있었습니다.</p>
+  </div>
+
+  <h3>왜 파이프라인이 이걸 못 찾았나 — 두 가지 결함</h3>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>결함</th><th>내용</th><th>수정</th></tr></thead>
+    <tbody>
+      <tr><td>제거율 상한 60%</td><td>과조임 방지 장치였는데, 알짜만 남기려면 80%를 걸러야 해서
+        <strong>후보 생성 자체가 차단</strong>됐습니다</td><td>잔존분이 양쪽 흑자면 상한 면제(구제 모드)</td></tr>
+      <tr><td>변수 선별 기준</td><td>"승자 평균 vs 패자 평균" 비교로 변수를 먼저 걸렀는데,
+        엣지는 <strong>분포의 꼬리</strong>에 있어 평균 비교로는 안 보입니다 (회전율 효과크기 0.06 = 무의미 판정)</td>
+        <td>사전 선별 없이 변수×임계 전수를 수익 기준으로 직접 평가</td></tr>
+    </tbody>
+  </table></div>
+  <p>순서도 바꿨습니다: <strong>제거 우선 → 구제 우선</strong>. 손실 구역을 만나면 먼저 선별로 살려보고,
+  살릴 수 없을 때만 잘라냅니다. 수정 후 실데이터에서 <strong>6개 구역에서 알짜가 발굴</strong>됐습니다.</p>
+
+  <h3>다만 — 정직하게 말씀드려야 할 통계적 한계</h3>
+  <p>이 알짜들의 통계적 유의성을 계산하면 p값이 0.24~0.45입니다. 즉 <strong>"잡음과 구별되지 않는다"</strong>는 뜻입니다.
+  건당 수익률이 +0.17%인데 표준편차가 4.3%라, 이 정도 엣지를 95% 신뢰로 확인하려면
+  <strong>약 2,100건</strong>이 필요합니다. 현재 구역당 63~151건뿐입니다.</p>
+  <h3>구제 파이프라인 첫 실전 라운드 — 결과와 유보</h3>
+  <p>수정한 파이프라인으로 실제 한 라운드를 돌렸습니다. 같은 출발점(QSP2 챔피언)에서
+  기존 "제거 우선"과 새 "구제 우선"을 비교하면 이렇습니다.</p>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>방식</th><th class="n">설계 개선</th><th class="n">표본외 개선</th><th class="n">표본외 건당</th><th class="n">남은 거래</th></tr></thead>
+    <tbody>
+      <tr><td>제거 우선 (기존)</td><td class="n pos">+26.5%</td><td class="n pos">+18.5%</td><td class="n">−12,662원</td><td class="n">3,890</td></tr>
+      <tr><td><strong>구제 우선 (신규)</strong></td><td class="n pos">+16.2%</td><td class="n pos">+6.2%</td><td class="n">−13,668원</td><td class="n">4,172</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>유보를 정직하게 말씀드립니다</strong>: 한 라운드만 놓고 보면 총량은 여전히 제거 쪽이 큽니다.
+  구제는 한 구역의 알짜만 살리기 때문입니다. 다만 <strong>같은 구역에 대해서는 구제(+7.12M)가
+  제거(+6.50M)보다 나았고</strong>, 거래 76건을 살렸으며, 그 구역이 표본외에서 최악에서
+  거의 손익분기(−0.01%)로 바뀌었습니다. 어느 쪽이 최종적으로 우세한지는 <strong>여러 라운드를
+  끝까지 돌려야</strong> 답할 수 있습니다 — 단일 라운드로 우열을 선언하지 않겠습니다.</p>
+
+  <div class="callout teal">
+    <h3>그래서 연구 방향이 바뀝니다</h3>
+    <p style="margin:0 0 6px">지적하신 방향(선별로 알짜 찾기)이 옳습니다. 다만 그 알짜가 진짜인지 <em>증명</em>하려면
+    지금 데이터로는 부족합니다. 병목이 <strong>알고리즘에서 표본 크기로</strong> 옮겨갔습니다.</p>
+    <p style="margin:0" class="small">대응: ① 설계 구간을 11개월 → <strong>4년</strong>(tick DB는 2022.03부터 보유)으로 확장
+    ② 단일 검증 대신 <strong>연 단위 다중 폴드 워크포워드</strong>로 "유의성" 대신 "반복 재현"을 증거로 삼기
+    ③ 하드 게이트를 이미 <strong>분기 일관성</strong>(설계 과반 분기 흑자 + 표본외 흑자)으로 교체 완료.</p>
+  </div>
+</section>
+<section>
+  <h2><span class="num">06.6</span>부록 — 결함 수정 후 실측치(13라운드)</h2>
+  <div class="callout teal">
+    <h3>영구 배제 결함을 고치고 즉시 검증한 결과</h3>
+    <p style="margin:0 0 10px">두 가지를 고쳤습니다. ① 배제 규칙을 "제안됐던 구역" → <strong>"실측해서 나빴던 구역"</strong>으로 좁혀
+    영구 배제를 없앴고, ② 말씀하신 방법론대로 <strong>여러 구역을 한 번에 잘라내는 복합 후보</strong>를 추가했습니다.</p>
+    <div class="tbl-scroll" style="margin:12px 0"><table>
+      <thead><tr><th>13라운드 후보</th><th class="n">설계 손익</th><th class="n">개선</th></tr></thead>
+      <tbody>
+        <tr><td>base (12라운드 챔피언)</td><td class="n">−10,580,285</td><td class="n">—</td></tr>
+        <tr><td>부활한 −12.7M 구역만 제거</td><td class="n">−3,355,264</td><td class="n pos">+68.3%</td></tr>
+        <tr><td><strong>3구역 동시 제거 (복합)</strong></td><td class="n"><strong>−250,745</strong></td><td class="n pos"><strong>+97.6%</strong></td></tr>
+      </tbody>
+    </table></div>
+    <p style="margin:0" class="small">설계구간 건당 손익이 −3,421원 → <strong>−119원</strong>, 사실상 손익분기입니다.
+    복합 제거(+10.33M)가 개별 3건을 따로 한 합(+8.54M)보다 컸습니다 — 함께 잘라야 교차 손실까지 사라집니다.</p>
+  </div>
+
+  <h3>그런데 — 표본외를 보면 이야기가 달라집니다</h3>
+  <p>같은 13라운드 조건식을 2024년에 적용하면 총손익은 −54.0M → −45.0M으로 좋아집니다(+16.6%).
+  그런데 <strong>거래 1건당</strong>으로 보면 정반대입니다.</p>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>구간</th><th class="n">시작 건당</th><th class="n">최종 건당</th><th>방향</th></tr></thead>
+    <tbody>
+      <tr><td>설계구간 (학습에 쓴 11개월)</td><td class="n">−9,798원</td><td class="n">−119원</td><td class="pos">거의 손익분기</td></tr>
+      <tr><td><strong>표본외 (본 적 없는 1년)</strong></td><td class="n">−13,523원</td><td class="n">−15,112원</td><td class="neg">오히려 악화</td></tr>
+    </tbody>
+  </table></div>
+  <p>표본외 총손익이 좋아진 것은 <strong>거래를 51% 줄였기 때문</strong>이지, 한 건 한 건이 좋아져서가 아닙니다.
+  이유는 명확합니다 — 잘라낸 구역은 설계구간 기준으로 최악이었지만, 2024년에서는 평균보다 나은 거래였습니다.
+  <strong>손실 구역 제거는 총손익을 줄여줄 뿐, 진입 신호의 질을 높이지 못합니다.</strong></p>
+</section>
+
+<section>
+  <h2><span class="num">06.7</span>권고 실행 결과 — 표본외 엣지가 처음으로 개선됐습니다</h2>
+  <p>권고 세 가지(데이터 확장 → 검증 방식 교체 → 깊이 탐색)를 모두 실행했습니다.</p>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>권고</th><th>실행 내용</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td>① 데이터 확장</td><td>설계 11개월 → <strong>3년</strong></td><td>거래 4,489 → <strong>19,894건</strong>(4.4배)</td></tr>
+      <tr><td>② 검증 교체</td><td>홀드아웃을 과거 → <strong>최근 구간</strong>(전향 검증) + 연/반기 폴드 재현 검사</td><td>실전에 맞는 검증으로 전환</td></tr>
+      <tr><td>③ 깊이 탐색</td><td>빔서치 + <strong>양측범위(a&lt;x≤b) + 다변수 AND</strong> + 깊이당 지불 게이트</td><td>깊이 3 조합 자동 발굴</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>엔진 재백테로 확정한 결과</h3>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>구간</th><th class="n">base</th><th class="n">깊이 탐색 후</th><th class="n">총손익</th><th class="n">건당</th><th class="n">거래수</th></tr></thead>
+    <tbody>
+      <tr><td>설계 3년</td><td class="n">−165.3M</td><td class="n">−150.0M</td><td class="n pos">+9.3%</td><td class="n pos">+2.4%</td><td class="n">−7.0%</td></tr>
+      <tr><td><strong>표본외(최근 11개월)</strong></td><td class="n">−44.0M</td><td class="n">−37.4M</td><td class="n pos">+14.9%</td><td class="n pos"><strong>+10.3%</strong></td><td class="n">−5.1%</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout teal">
+    <h3>왜 이것이 의미 있나</h3>
+    <p style="margin:0 0 8px">지금까지는 표본외 총손익이 좋아져도 <strong>건당 엣지는 늘 제자리이거나 악화</strong>였습니다
+    (QSP3 제거 위주: −13,523 → −15,112원). 이번엔 거래를 5%만 줄이고 <strong>건당이 10.3% 개선</strong>됐습니다 —
+    "덜 사서 덜 잃은" 것이 아니라 <strong>고르는 눈이 좋아진</strong> 첫 사례입니다.</p>
+    <p style="margin:0" class="small">채택된 조건(09:00~02분 × 소형주):
+    <code>매수총잔량 38,579~85,490 AND 초당거래대금 &gt; 67 AND 당일거래대금 &gt; 1,200</code> —
+    지적하신 대로 <strong>시초 소형주를 지우지 않고 세부 변수로 골라낸</strong> 결과입니다.</p>
+  </div>
+  <p><strong>남은 거리도 분명합니다</strong>: 건당 −8,785원은 여전히 적자이고, 깊이 3에서 상호작용 손실이
+  67%(추정 +45.9M → 실측 +15.3M)로 커졌으며, 표본외 폴드 검증은 표본 부족으로 아직 작동하지 않습니다.
+  <strong>한 라운드의 결과</strong>이므로 반복 확인이 필요합니다.</p>
+</section>
+
+<section>
+  <h2><span class="num">06.8</span>QSP6 캠페인 완주 — 깊이보다 선별이 4배 잘 통했습니다</h2>
+  <p>권고 다섯 가지를 모두 적용해 10라운드를 무인으로 돌렸습니다.
+  설계는 과거 2년(2022.04~2024.03), 검증은 최근 23개월(2024.04~2026.02),
+  채점은 <strong>건당 손익</strong>, 액션은 깊이→구제→제거(조임 제외)입니다.</p>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>구간</th><th class="n">시작 건당</th><th class="n">최종 건당</th><th class="n">개선</th><th class="n">거래수</th></tr></thead>
+    <tbody>
+      <tr><td>설계 2년</td><td class="n">−6,079원</td><td class="n">−2,365원</td><td class="n pos">+61.1%</td><td class="n">−24.1%</td></tr>
+      <tr><td><strong>표본외 23개월</strong></td><td class="n">−11,875원</td><td class="n">−10,896원</td><td class="n pos">+8.2%</td><td class="n">−25.1%</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>가장 중요한 결과 — 어떤 수정이 실제로 일반화되는가</h3>
+  <p>10라운드를 수정 유형별로 갈라 "설계에서 번 것"과 "표본외로 넘어간 것"을 비교했습니다.
+  이것이 이번 캠페인의 핵심 산출물입니다.</p>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>수정 유형</th><th class="n">라운드</th><th class="n">설계 개선</th><th class="n">표본외 개선</th><th class="n">전이율</th></tr></thead>
+    <tbody>
+      <tr><td><strong>구제</strong>(단순 선별 1~2절)</td><td class="n">4R</td><td class="n">+2,281원/건</td><td class="n pos">+848원/건</td><td class="n pos"><strong>37%</strong></td></tr>
+      <tr><td>깊이(3~4절 조합)</td><td class="n">4R</td><td class="n">+1,433원/건</td><td class="n">+131원/건</td><td class="n neg"><strong>9%</strong></td></tr>
+      <tr><td>base 유지(퇴행 방지)</td><td class="n">2R</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout">
+    <h3>깊이에 대한 답이 나왔습니다</h3>
+    <p style="margin:0 0 8px">"실제 조건식 깊이만큼 탐색해야 하지 않나"는 지적에서 출발해 깊이 4까지 엔진을 만들었고,
+    캠페인 규모로 검증한 결과는 <strong>얕은 선별이 깊은 조합보다 4배 잘 일반화</strong>한다는 것입니다.
+    깊이가 설계 점수는 잘 올리지만(+1,433원/건) 표본외로는 9%만 넘어옵니다.</p>
+    <p style="margin:0" class="small">즉 깊이 탐색은 <em>후보를 발굴하는 도구</em>로는 유용하지만,
+    <em>채택 기준</em>은 여전히 단순함과 표본외 재현이어야 합니다. 다음 캠페인의 기본값을
+    깊이 상한 2 · 구제 우선으로 바꾸는 근거가 됐습니다.</p>
+  </div>
+  <p class="small muted">표본외가 역행한 라운드가 3회(r1 −6.7%, r8 −1.0%, r10 −1.2%) 있었으나 모두 단발이라
+  자동 중단(2연속 −2%) 규격에는 걸리지 않았습니다. r1에서 멈췄다면 이후 r5~r6의 표본외 +9.2%를
+  놓쳤을 것이므로, 2연속 규격을 유지하는 편이 맞다고 판단했습니다.</p>
+</section>
+
+<section>
+  <h2><span class="num">07</span>다음 목표와 프로세스 개선</h2>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>우선</th><th>무엇을</th><th>왜</th><th>기대</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td><strong>구제 우선 · 깊이 상한 2</strong>로 기본값 변경 후 재캠페인</td>
+        <td>전이율 실측(구제 37% vs 깊이 9%) — 지금 설정은 예산의 40%를 저효율 액션에 쓴다</td><td>표본외 개선 가속</td></tr>
+      <tr><td class="n">2</td><td><strong>표본외 역행 단발도 경고 로그</strong> + 라운드별 전이율 자동 기록</td>
+        <td>r1에서 −6.7% 역행이 있었는데 기록만 있고 신호가 없었다</td><td>조기 진단</td></tr>
+      <tr><td class="n">3</td><td>왕복 비용을 채점에 명시 반영(건당 손익 − 비용)</td>
+        <td>현재 −10,896원 중 비용 몫이 분리되지 않아 "엣지가 있나"를 직접 못 본다</td><td>목표의 정확도</td></tr>
+      <tr><td class="n">4</td><td>시드 교체 실험(다른 실증 승자 계열)</td>
+        <td>3개 캠페인 모두 같은 시드에서 출발 — 원엣지 한계일 가능성</td><td>새 수익원 탐색</td></tr>
+      <tr><td class="n">5</td><td>구간함수 창 일치 확인 후 문법 해제</td>
+        <td>상위 변수 다수가 구간함수인데 지금은 금지 — 창만 확인되면 탐색 공간이 넓어진다</td><td>탐색 공간 확대</td></tr>
+    </tbody>
+  </table></div>
+  <p>오늘 순서가 두 번 바뀌었습니다. 아침의 1순위는 "남은 손실 구역 제거"였고,
+  13라운드가 그 길의 끝을 보여줘 "새 시드 탐색"으로 옮겼습니다. 그리고 지적을 받아 조사해 보니
+  <strong>버릴 뻔한 구역 안에 이미 알짜가 있었습니다</strong> — 새 시드를 찾기 전에 가진 것부터 제대로 캐야 합니다.
+  다만 그 알짜를 증명하려면 표본이 10~30배 부족하므로, <strong>1·2(데이터 확장과 검증 방식)가 먼저</strong>입니다.</p>
+  <div class="callout">
+    <h3>한 줄로 요약하면</h3>
+    <p style="margin:0">3일간 만든 것은 <strong>"손실을 깎아내는 기계"</strong>였고, 오늘 <strong>"알짜를 골라내는 기계"</strong>로
+    바뀌었습니다. 남은 일은 그 기계에 <strong>충분한 데이터를 먹이는 것</strong>입니다 —
+    지금은 답을 찾는 능력보다 답을 증명할 표본이 부족한 상태입니다.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span>품질 감사 — 스스로 채점하지 않았습니다</h2>
+  <p>같은 맥락에서 자기 평가를 하면 후하게 준다는 지적을 받아, <strong>서로 모르는 독립 감사 2건</strong>을
+  코드에 붙였습니다. 결과는 냉정했습니다.</p>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>축</th><th class="n">감사 1호</th><th class="n">감사 2호</th><th>판정</th></tr></thead>
+    <tbody>
+      <tr><td>조건식 생성 품질</td><td class="n">59</td><td class="n">75</td><td>95점 미달</td></tr>
+      <tr><td>백테스트 분석 품질</td><td class="n">55</td><td class="n">58</td><td>95점 미달</td></tr>
+    </tbody>
+  </table></div>
+  <p>감사가 잡은 결함 23건을 즉시 고쳤습니다. 그중 하나는 <strong>진행 중이던 캠페인의 사고를 막았습니다</strong> —
+  특정 변수로 필터를 만들면 엔진이 40분 멈추는 결함으로, 발화 직전 라운드에서 차단했습니다.
+  남은 95점 격차는 위 표의 3·4번 항목입니다.</p>
+</section>
+
+<footer>
+  브랜치 <code>feature/qsp3-map-surgery-20260731</code> · 커밋 12건 · 단위 테스트 59건 통과 ·
+  전 라운드 기록 JSON 재현 가능 · <strong>실전 반영 없음(항상 사용자 결정)</strong>
+</footer>
+</div>
