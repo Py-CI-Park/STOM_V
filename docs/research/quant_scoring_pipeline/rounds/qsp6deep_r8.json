@@ -1,0 +1,243 @@
+{
+  "tag": "qsp6deep",
+  "round": 8,
+  "run_id": "20260801-0154_qsp6deep-r8",
+  "regime": "per_trade",
+  "actions": "deep,filter,drop",
+  "mode": "rescue",
+  "config": "docs\\research\\quant_scoring_pipeline\\config_qsp6.json",
+  "holdout_config": "docs\\research\\quant_scoring_pipeline\\config_qsp6_holdout.json",
+  "base": {
+    "buy_name": "QSP6DEEP_R6C2_B",
+    "objective": -3066.5400758310557,
+    "trade_count": 11341,
+    "csv_path": "backtest/csv\\stock_bt_QSP6DEEP_R6C2_B_20260801015959.csv"
+  },
+  "candidates": [
+    {
+      "cand": 1,
+      "spec": {
+        "action": "add_filter",
+        "leaf": [
+          "90200<=시분초<90500",
+          "시가총액>=10000"
+        ],
+        "leaf_label": "B2_902_905×L_10000이상",
+        "feature": "B_초당거래대금",
+        "runtime_var": "초당거래대금",
+        "op": "<=",
+        "threshold": 103.0,
+        "rescue": true,
+        "est_delta_design": 3215499.0,
+        "est_delta_holdout": 3193949.0,
+        "evidence": {
+          "p": 0.10592420213876547,
+          "q": 0.4906348744646028,
+          "quarters_pos": 5,
+          "quarters_all": 8,
+          "kept_n_design": 214,
+          "kept_n_holdout": 181,
+          "kept_pnl_design": 2145046.0,
+          "kept_pnl_holdout": 1625864.0,
+          "kept_per_trade_design": 10023.579439252337,
+          "kept_per_trade_holdout": 8982.674033149171,
+          "removed_n": 637,
+          "removed_frac": 0.7485311398354877
+        },
+        "change": "RESCUE B2_902_905×L_10000이상 · 초당거래대금 <= 103.0 — 잔존 설계 +10,024원/건(214건) · 홀드 +8,983원/건(181건) · 흑자분기 5/8 · p=0.106"
+      },
+      "status": "registered",
+      "buy_name": "QSP6DEEP_R8C1_B",
+      "gate": "PASS"
+    },
+    {
+      "cand": 2,
+      "spec": {
+        "action": "add_filter",
+        "leaf": [
+          "90200<=시분초<90500",
+          "5000<=시가총액<10000"
+        ],
+        "leaf_label": "B2_902_905×M2_5000_10000",
+        "feature": "B_초당거래대금",
+        "runtime_var": "초당거래대금",
+        "op": ">",
+        "threshold": 134.0,
+        "rescue": true,
+        "est_delta_design": 2643527.0,
+        "est_delta_holdout": 333393.0,
+        "evidence": {
+          "p": 0.31165101519241484,
+          "q": 0.492726812152719,
+          "quarters_pos": 4,
+          "quarters_all": 8,
+          "kept_n_design": 117,
+          "kept_n_holdout": 126,
+          "kept_pnl_design": 825593.0,
+          "kept_pnl_holdout": 1219867.0,
+          "kept_per_trade_design": 7056.350427350428,
+          "kept_per_trade_holdout": 9681.484126984127,
+          "removed_n": 119,
+          "removed_frac": 0.5042372881355932
+        },
+        "change": "RESCUE B2_902_905×M2_5000_10000 · 초당거래대금 > 134.0 — 잔존 설계 +7,056원/건(117건) · 홀드 +9,681원/건(126건) · 흑자분기 4/8 · p=0.312"
+      },
+      "status": "registered",
+      "buy_name": "QSP6DEEP_R8C2_B",
+      "gate": "PASS"
+    },
+    {
+      "cand": 3,
+      "spec": {
+        "action": "add_filter",
+        "leaf": [
+          "91000<=시분초<92000",
+          "5000<=시가총액<10000"
+        ],
+        "leaf_label": "B4_910_920×M2_5000_10000",
+        "feature": "B_전일비",
+        "runtime_var": "전일비",
+        "op": ">",
+        "threshold": 30.7,
+        "rescue": true,
+        "est_delta_design": 2265814.0,
+        "est_delta_holdout": 4639247.0,
+        "evidence": {
+          "p": 0.12833589353284694,
+          "q": 0.47474038256678425,
+          "quarters_pos": 5,
+          "quarters_all": 8,
+          "kept_n_design": 211,
+          "kept_n_holdout": 196,
+          "kept_pnl_design": 2062797.0,
+          "kept_pnl_holdout": 1075057.0,
+          "kept_per_trade_design": 9776.289099526066,
+          "kept_per_trade_holdout": 5484.984693877551,
+          "removed_n": 497,
+          "removed_frac": 0.7019774011299436
+        },
+        "change": "RESCUE B4_910_920×M2_5000_10000 · 전일비 > 30.7 — 잔존 설계 +9,776원/건(211건) · 홀드 +5,485원/건(196건) · 흑자분기 5/8 · p=0.128"
+      },
+      "status": "registered",
+      "buy_name": "QSP6DEEP_R8C3_B",
+      "gate": "PASS"
+    }
+  ],
+  "results": [
+    {
+      "pair_label": "r8_base",
+      "buy_name": "QSP6DEEP_R6C2_B",
+      "objective": -3066.5400758310557,
+      "score": 0.013362390796472634,
+      "profit": -34777631.0,
+      "mdd": 44.83,
+      "trade_count": 11341,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP6DEEP_R6C2_B_20260801015959.csv"
+    },
+    {
+      "pair_label": "r8_c1",
+      "buy_name": "QSP6DEEP_R8C1_B",
+      "objective": -2730.0657571623465,
+      "score": 0.015440272559037535,
+      "profit": -30017073.0,
+      "mdd": 43.59,
+      "trade_count": 10995,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP6DEEP_R8C1_B_20260801020125.csv"
+    },
+    {
+      "pair_label": "r8_c2",
+      "buy_name": "QSP6DEEP_R8C2_B",
+      "objective": -3144.8850442477874,
+      "score": 0.013001735476973949,
+      "profit": -35537201.0,
+      "mdd": 46.26,
+      "trade_count": 11300,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP6DEEP_R8C2_B_20260801020252.csv"
+    },
+    {
+      "pair_label": "r8_c3",
+      "buy_name": "QSP6DEEP_R8C3_B",
+      "objective": -2909.611492988727,
+      "score": 0.014548088770394799,
+      "profit": -31746771.0,
+      "mdd": 44.99,
+      "trade_count": 10911,
+      "gate_passed": 0,
+      "csv_path": "backtest/csv\\stock_bt_QSP6DEEP_R8C3_B_20260801020421.csv"
+    }
+  ],
+  "best": {
+    "pair_label": "r8_c1",
+    "buy_name": "QSP6DEEP_R8C1_B",
+    "objective": -2730.0657571623465,
+    "score": 0.015440272559037535,
+    "profit": -30017073.0,
+    "mdd": 43.59,
+    "trade_count": 10995,
+    "csv_path": "backtest/csv\\stock_bt_QSP6DEEP_R8C1_B_20260801020125.csv"
+  },
+  "lessons": [
+    {
+      "axis": "B_초당거래대금",
+      "leaf": "B2_902_905×M2_5000_10000",
+      "action": "add_filter",
+      "objective": -3144.8850442477874,
+      "delta_vs_base": -78.34496841673172
+    },
+    {
+      "axis": "B_전일비",
+      "leaf": "B4_910_920×M2_5000_10000",
+      "action": "add_filter",
+      "objective": -2909.611492988727,
+      "delta_vs_base": 156.92858284232852
+    }
+  ],
+  "reentry": [
+    {
+      "cand": 1,
+      "leaf": "B2_902_905×L_10000이상",
+      "est_delta": 3215499.0,
+      "measured_delta": 336.4743186687092,
+      "reentry_cost": 3215162.5256813313,
+      "removed_n": 637
+    },
+    {
+      "cand": 2,
+      "leaf": "B2_902_905×M2_5000_10000",
+      "est_delta": 2643527.0,
+      "measured_delta": -78.34496841673172,
+      "reentry_cost": 2643605.3449684167,
+      "removed_n": 119
+    },
+    {
+      "cand": 3,
+      "leaf": "B4_910_920×M2_5000_10000",
+      "est_delta": 2265814.0,
+      "measured_delta": 156.92858284232852,
+      "reentry_cost": 2265657.0714171575,
+      "removed_n": 497
+    }
+  ],
+  "decomposition": {
+    "base_per_trade": -0.27039415182356547,
+    "best_per_trade": -0.24830066004205062,
+    "trade_count_delta_pct": -3.0508773476765727
+  },
+  "judgment": {
+    "state": "continue",
+    "reason": "직전 개선 +10.97% — 계속",
+    "improvement_pct": 10.972441590463223
+  },
+  "holdout": {
+    "run_id": "20260801-0204_qsp6deep-r8-hold",
+    "objective": -11185.582817869416,
+    "trade_count": 8730,
+    "profit": -97650138.0,
+    "mdd": 142.47,
+    "score": 0.00421418095689718
+  },
+  "seed_trades": 13718
+}
