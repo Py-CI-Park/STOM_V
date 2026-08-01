@@ -620,7 +620,7 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
                                 onOpenSettings={() => setSettingsOpen(true)}
                                 targetScore={targetScore} mddCap={mddCap} minDailyTrades={minDailyTrades} />
               ) : activeTab === "backtest" ? (
-                <V4Backtest baseUrl={baseUrl} wsStatus={wsStatus} />
+                <V4Backtest baseUrl={baseUrl} wsStatus={wsStatus} onNavigate={selectTab} />
               ) : activeTab === "history" ? (
                 <V4History baseUrl={baseUrl} wsStatus={wsStatus} onNavigate={selectTab} />
               ) : activeTab === "workbench" ? (

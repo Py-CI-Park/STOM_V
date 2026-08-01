@@ -60,6 +60,28 @@ def _is_bootstrap_path(path: str) -> bool:
     return any(path.startswith(prefix) for prefix in BOOTSTRAP_PATH_PREFIXES)
 
 
+def _http_capability(method: str, path: str) -> Capability | None:
+    """Resolve exact routes and bounded FastAPI-style single-segment templates."""
+
+    exact = HTTP_CAPABILITIES.get((method, path))
+    if exact is not None:
+        return exact
+    path_parts = path.strip("/").split("/")
+    for (candidate_method, template), capability in HTTP_CAPABILITIES.items():
+        if candidate_method != method or "{" not in template:
+            continue
+        template_parts = template.strip("/").split("/")
+        if len(template_parts) != len(path_parts):
+            continue
+        if all(
+            expected == observed
+            or (expected.startswith("{") and expected.endswith("}") and bool(observed))
+            for expected, observed in zip(template_parts, path_parts, strict=True)
+        ):
+            return capability
+    return None
+
+
 @dataclass(frozen=True, slots=True)
 class SecurityFailure:
     status_code: int
@@ -122,8 +144,7 @@ class DashboardSecurity:
             return _forbidden("origin_mismatch", "Origin must exactly match the dashboard")
 
         method = request.method.upper()
-        key = (method, request.url.path)
-        capability = HTTP_CAPABILITIES.get(key)
+        capability = _http_capability(method, request.url.path)
         if capability is None:
             if method not in {"GET", "HEAD", "OPTIONS"}:
                 return _forbidden(
@@ -162,8 +183,8 @@ class DashboardSecurity:
         self,
         request: Request,
     ) -> SecurityFailure | None:
-        key = (request.method.upper(), request.url.path)
-        if key not in HTTP_CAPABILITIES or request.method.upper() in {"GET", "HEAD"}:
+        method = request.method.upper()
+        if _http_capability(method, request.url.path) is None or method in {"GET", "HEAD"}:
             return None
         body = bytearray()
         async for chunk in request.stream():

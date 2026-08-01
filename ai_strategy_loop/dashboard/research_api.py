@@ -65,6 +65,7 @@ class DocRoot:
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[2]
 _DOC_ROOTS: Final[tuple[DocRoot, ...]] = (
     DocRoot(category="condition_research", rel_path="docs/research/condition_research"),
+    DocRoot(category="quant_scoring_pipeline", rel_path="docs/research/quant_scoring_pipeline"),
     DocRoot(category="good_results", rel_path="docs/reference/STOM_Good_Results"),
 )
 _SELECTED_UPDATE_LOGS: Final[tuple[str, ...]] = (
@@ -80,6 +81,7 @@ router.include_router(history_router)
 _DOC_INDEX_LOCK = RLock()
 _DOC_INDEX_CACHE: tuple[tuple[tuple[str, int, int], ...], dict[str, tuple[Path, ResearchDocSummary]]] | None = None
 _DOC_INDEX_CHECKED_AT = 0.0
+_DOC_INDEX_CACHE_SOURCE: str | None = None
 _DOC_INDEX_SIGNATURE_TTL_SECONDS = 30.0
 _DOC_INDEX_SIDECAR = REPO_ROOT / "docs" / "generated_reports" / "research_docs_index.json"
 _DOC_INDEX_SIDECAR_SCHEMA = "stom-research-doc-index-v1"
@@ -222,15 +224,25 @@ def _doc_source_snapshot() -> tuple[list[tuple[Path, str]], tuple[tuple[str, int
 def _doc_index() -> dict[str, tuple[Path, ResearchDocSummary]]:
     """Return the metadata index, revalidating its source signature once per TTL."""
 
-    global _DOC_INDEX_CACHE, _DOC_INDEX_CHECKED_AT
+    global _DOC_INDEX_CACHE, _DOC_INDEX_CACHE_SOURCE, _DOC_INDEX_CHECKED_AT
     with _DOC_INDEX_LOCK:
         now = time.monotonic()
-        if _DOC_INDEX_CACHE is not None and now - _DOC_INDEX_CHECKED_AT < _DOC_INDEX_SIGNATURE_TTL_SECONDS:
+        cache_source = (
+            f"sidecar:{_DOC_INDEX_SIDECAR.resolve()}"
+            if _DOC_INDEX_SIDECAR.is_file()
+            else "live-scan"
+        )
+        if (
+            _DOC_INDEX_CACHE is not None
+            and _DOC_INDEX_CACHE_SOURCE == cache_source
+            and now - _DOC_INDEX_CHECKED_AT < _DOC_INDEX_SIGNATURE_TTL_SECONDS
+        ):
             return _DOC_INDEX_CACHE[1]
         sidecar = _doc_sidecar_snapshot()
         if sidecar is not None:
             signature, rows = sidecar
             _DOC_INDEX_CHECKED_AT = now
+            _DOC_INDEX_CACHE_SOURCE = cache_source
             if _DOC_INDEX_CACHE is not None and _DOC_INDEX_CACHE[0] == signature:
                 return _DOC_INDEX_CACHE[1]
             _DOC_INDEX_CACHE = (signature, rows)
@@ -238,6 +250,7 @@ def _doc_index() -> dict[str, tuple[Path, ResearchDocSummary]]:
 
         docs, signature = _doc_source_snapshot()
         _DOC_INDEX_CHECKED_AT = now
+        _DOC_INDEX_CACHE_SOURCE = cache_source
         if _DOC_INDEX_CACHE is not None and _DOC_INDEX_CACHE[0] == signature:
             return _DOC_INDEX_CACHE[1]
         rows = {}

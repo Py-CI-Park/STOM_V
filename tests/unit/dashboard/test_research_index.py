@@ -308,6 +308,38 @@ def test_research_docs_loads_tracked_sidecar_without_markdown_scan(monkeypatch, 
     assert research_api.research_doc("docs/research/condition_research/sidecar.md")["available"] is True
 
 
+def test_research_docs_cache_rebuilds_when_sidecar_identity_changes(monkeypatch, tmp_path: Path) -> None:
+    first = tmp_path / "first.json"
+    second = tmp_path / "second.json"
+    for sidecar, doc_id in (
+        (first, "docs/research/condition_research/first.md"),
+        (second, "docs/research/condition_research/second.md"),
+    ):
+        sidecar.write_text(json.dumps({
+            "schema_version": research_api._DOC_INDEX_SIDECAR_SCHEMA,
+            "docs": [{
+                "id": doc_id,
+                "title": Path(doc_id).stem,
+                "category": "condition_research",
+                "updated_at": "2026-08-02T00:00:00Z",
+                "size": 1,
+            }],
+        }), encoding="utf-8")
+
+    monkeypatch.setattr(research_api, "_DOC_INDEX_SIDECAR", first)
+    research_api._DOC_INDEX_CACHE = None
+    research_api._DOC_INDEX_CACHE_SOURCE = None
+    research_api._DOC_INDEX_CHECKED_AT = 0.0
+    assert {row["id"] for row in research_api.research_docs()["docs"]} == {
+        "docs/research/condition_research/first.md",
+    }
+
+    monkeypatch.setattr(research_api, "_DOC_INDEX_SIDECAR", second)
+    assert {row["id"] for row in research_api.research_docs()["docs"]} == {
+        "docs/research/condition_research/second.md",
+    }
+
+
 def test_research_records_cache_reuses_jsonl_and_invalidates_on_source_change(
     monkeypatch, tmp_path: Path,
 ) -> None:

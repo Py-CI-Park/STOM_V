@@ -4,6 +4,7 @@
  *   B트랙 승격(2026-07-17): v4.1 조건식 History 트리 + G002 시각화 3종(A/B 쌍대비교·
  *   셀 히트맵·홀드아웃 퍼널)을 legacy records 탭과 동일 순서로 마운트한다.
  */
+import { BtTradePathHistory } from "./bt-trade-path-history.jsx";
 // dual-safe ESM import. KEEP each on ONE physical line.
 import { ResearchRecordsPanel } from "./research-records-panel.jsx";
 import { HistoryConditionTreePanel } from "./history-condition-tree.jsx";
@@ -424,6 +425,7 @@ function V4History({ baseUrl, wsStatus, onNavigate }) {
       )}
       {historyStage === "evidence" && (
       <div className="v4-history-evidence-stack">
+      <BtTradePathHistory baseUrl={baseUrl} active={historyStage === "evidence"} />
       <details className="evo-group" open>
         <summary className="evo-group-summary">
           <h2 className="stom-section-label" id="v4-history-lineage-title">조건식 History 트리</h2>

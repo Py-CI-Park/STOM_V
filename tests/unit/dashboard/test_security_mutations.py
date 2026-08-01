@@ -11,6 +11,7 @@ from ai_strategy_loop.controller import state as state_module
 from ai_strategy_loop.dashboard import backtest_api
 from ai_strategy_loop.dashboard.app import create_app
 from ai_strategy_loop.dashboard.security import HTTP_CAPABILITIES
+from ai_strategy_loop.dashboard.security import _http_capability
 from ai_strategy_loop.dashboard.security_capabilities import Capability
 
 
@@ -74,6 +75,23 @@ def test_every_http_mutation_has_an_explicit_capability(monkeypatch, tmp_path: P
         key for key in HTTP_CAPABILITIES if key[0] not in {"GET", "HEAD", "OPTIONS"}
     }
     assert ("GET", "/sim/signals") in HTTP_CAPABILITIES
+
+
+def test_trade_path_mutations_use_safe_backtest_capability() -> None:
+    paths = (
+        "/bt/trade-path/jobs",
+        "/bt/trade-path/counterfactual",
+        "/bt/trade-path/proposals",
+        "/bt/trade-path/official-pair",
+        "/bt/trade-path/matrix",
+    )
+    assert all(
+        HTTP_CAPABILITIES[("POST", path)] is Capability.SAFE_BACKTEST
+        for path in paths
+    )
+    assert _http_capability(
+        "POST", "/bt/trade-path/jobs/tp-example/cancel",
+    ) is Capability.SAFE_BACKTEST
 
 
 def test_read_only_strategy_validation_uses_safe_backtest_capability(

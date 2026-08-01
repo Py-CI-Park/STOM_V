@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-07-22T06:17:11.873480+00:00",
-  "source_fingerprint": "a74425dd9826011153f3e632d3df6f43cba29ae1e5c243d485d951dcb83c8d27",
-  "count": 930,
+  "generated_at": "2026-08-01T16:17:54.073852+00:00",
+  "source_fingerprint": "22566fa237851337b16783d1cba3f519299623c1dcbf6ec44080bfee1ca38b37",
+  "count": 954,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6464,6 +6464,174 @@
       "category": "good_results",
       "updated_at": "2026-06-04T07:23:10.180734+00:00",
       "size": 19974
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-07-29_master_plan.md",
+      "title": "QSP1 총괄 연구 계획 — 좋은 조건식을 만드는 수렴형 파이프라인",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-29T13:19:57.137358+00:00",
+      "size": 6079
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-07-29_prompt_audit.md",
+      "title": "P0-b — 조건식 생성 프롬프트 전수 감사 (2026-07-29)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-29T13:28:54.508137+00:00",
+      "size": 2362
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-07-29_seed_registry.md",
+      "title": "QSP1 — 4종 시드 레지스트리 (퀀트 채점 파이프라인 연구 1기)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-29T13:08:51.074947+00:00",
+      "size": 30643
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-07-30_final_report.md",
+      "title": "QSP1 최종 연구 보고서 — 좋은 조건식을 만드는 수렴형 파이프라인",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-30T14:30:01.443300+00:00",
+      "size": 11619
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-07-31_qsp2_report.md",
+      "title": "QSP2 캠페인 보고서 — anchor 이식 시드 + 홀드아웃 동반 판정",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-30T21:15:28.954496+00:00",
+      "size": 3118
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-07-31_qsp3_report.md",
+      "title": "QSP3 대수술 캠페인 보고서 — 맵 기반 제거·필터 파이프라인",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-31T06:33:25.492098+00:00",
+      "size": 4535
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-01_qsp7_trade_episode_exit_research_system_design.md",
+      "title": "QSP7 거래 에피소드·매도 반사실 연구 시스템 설계",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-01T15:39:18.750173+00:00",
+      "size": 20876
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-01_qsp7_trade_path_research_implementation_result.md",
+      "title": "QSP7 거래 경로·매도 연구 시스템 구현 결과",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-01T16:17:04.283690+00:00",
+      "size": 8806
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
+      "title": "핸드오프 — QSP7 매도식 연구 (2026-08-01)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-01T14:23:23.654399+00:00",
+      "size": 8196
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
+      "title": "AI 에이전트 개입 가이드라인 (QSP1 P2 · v1)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-30T02:40:03.290823+00:00",
+      "size": 1494
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
+      "title": "QSP1 한계 원장 (Limitation Ledger)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-31T23:25:49.159917+00:00",
+      "size": 15830
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/analysis_to_revision.md",
+      "title": "분석→수정 방법론 (v2 증보 초안 G1)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-29T13:30:31.951718+00:00",
+      "size": 1259
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/hierarchy_preservation.md",
+      "title": "계층 조건식 보존 규칙 (v2 증보 초안 G4)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-29T13:30:36.038494+00:00",
+      "size": 595
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/multi_candidate_protocol.md",
+      "title": "다후보 생성 규약 (v2 증보 초안 G3)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-29T13:30:34.477045+00:00",
+      "size": 638
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/self_review_checklist.md",
+      "title": "의도-일치 자가검토 체크리스트 (v2 증보 초안 G2)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-29T13:30:33.250505+00:00",
+      "size": 912
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/round_reviews/QSP3_P1_drop_action.md",
+      "title": "QSP3 P1 게이트 — drop_leaf 액션 프로세스 내장 (2026-07-31)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-31T04:10:51.198391+00:00",
+      "size": 1504
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/round_reviews/QSP3_P2_feature_filter.md",
+      "title": "QSP3 P2 게이트 — 특징 영역 일반화: feature_map + add_filter (2026-07-31)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-31T04:17:24.336091+00:00",
+      "size": 1168
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/round_reviews/QSP3_P4_feature_map_ui.md",
+      "title": "QSP3 P4 게이트 — 다차원 수익률 맵 탐색기 (2026-07-31)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-31T04:34:27.590895+00:00",
+      "size": 973
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/round_reviews/R0_smoke_20260729.md",
+      "title": "R0 리뷰 — QSP1 4시드 스모크 (2026-07-29)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-29T13:42:19.950949+00:00",
+      "size": 2115
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/round_reviews/R1_labelset_20260730.md",
+      "title": "R1 리뷰 — P1 라벨 데이터셋 강화 (2026-07-30)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-30T02:04:18.498642+00:00",
+      "size": 3179
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/round_reviews/R2_revision_gate_20260730.md",
+      "title": "R2 리뷰 — P2 분석→수정 번역 + 의도-일치 게이트 (2026-07-30)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-30T02:42:41.514204+00:00",
+      "size": 2653
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/round_reviews/R3_rounds_20260730.md",
+      "title": "R3 리뷰 — P3 다후보 라운드 + 수렴 판정 (2026-07-30)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-30T03:14:22.875460+00:00",
+      "size": 2013
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/round_reviews/R4_visualization_20260730.md",
+      "title": "R4 리뷰 — P4 시각화 고도화 + P3.1 교훈 환류 (2026-07-30)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-30T03:38:11.036910+00:00",
+      "size": 1299
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/round_reviews/R5_campaign_20260730.md",
+      "title": "R5 리뷰 — P5 설계구간 수렴 캠페인 + 최종 보고서 (2026-07-30)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-07-30T05:49:42.067334+00:00",
+      "size": 1701
     },
     {
       "id": "docs/update_log/2026-06-02_analysis_capability_audit.md",

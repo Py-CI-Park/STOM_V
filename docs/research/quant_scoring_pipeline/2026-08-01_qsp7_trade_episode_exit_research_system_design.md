@@ -1,10 +1,11 @@
 # QSP7 거래 에피소드·매도 반사실 연구 시스템 설계
 
 > 작성일: 2026-08-01
-> 상태: 설계 검토 완료·구현 전
-> 적용 범위: 연구 전용 `feature/qsp3-map-surgery-20260731`
+> 상태: P0~P7 연구 표면 구현 완료·공식 후보 재백테스트는 사용자 선택 대기
+> 적용 범위: 연구 전용 `codex/qsp7-trade-episode-research`
 > 비적용 범위: 실거래, 운영 전략 자동 반영, 전체청산 이후 시세 생성·추정
 > 선행 문서: [HANDOFF_2026-08-01_QSP7_매도식연구.md](./HANDOFF_2026-08-01_QSP7_매도식연구.md)
+> 구현 결과: [2026-08-01_qsp7_trade_path_research_implementation_result.md](./2026-08-01_qsp7_trade_path_research_implementation_result.md)
 
 ---
 

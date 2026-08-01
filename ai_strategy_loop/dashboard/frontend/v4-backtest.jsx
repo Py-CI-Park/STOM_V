@@ -6,6 +6,7 @@
  */
 // dual-safe ESM import (esbuild bundle 경로). KEEP on ONE physical line.
 import { BacktestTab } from "./backtest.jsx";
+import { BtTradePathTab } from "./bt-trade-path-tab.jsx";
 
 function _confirmBacktestDanger(event) {
   const target = event.target;
@@ -16,7 +17,7 @@ function _confirmBacktestDanger(event) {
   event.stopPropagation();
 }
 
-function V4Backtest({ baseUrl, wsStatus }) {
+function V4Backtest({ baseUrl, wsStatus, onNavigate }) {
   const connected = wsStatus === "open" || wsStatus === "connected";
   return (
     <section className="v4-backtest" aria-labelledby="v4-backtest-heading">
@@ -31,6 +32,7 @@ function V4Backtest({ baseUrl, wsStatus }) {
            onClickCapture={_confirmBacktestDanger}>
         <BacktestTab baseUrl={baseUrl} wsStatus={wsStatus} />
       </div>
+      <BtTradePathTab baseUrl={baseUrl} onNavigate={onNavigate} />
     </section>
   );
 }

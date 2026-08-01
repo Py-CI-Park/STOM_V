@@ -6,6 +6,7 @@
  */
 // dual-safe ESM import (esbuild bundle 경로). KEEP on ONE physical line.
 import { SimulationTab } from "./simulation.jsx";
+import { BtReplayTradeContext } from "./bt-replay-trade-context.jsx";
 
 function V4Replay({ baseUrl, wsStatus, active }) {
   const replayReady = wsStatus === "open" || wsStatus === "demo";
@@ -20,6 +21,7 @@ function V4Replay({ baseUrl, wsStatus, active }) {
 
   return (
     <div className="v4-replay">
+      <BtReplayTradeContext />
       <section className="panel" aria-labelledby="v4-replay-journey-title">
         <header className="panel-hd">
           <div>

@@ -101,6 +101,7 @@ REGISTRY_JSON: Final[str] = ".omo/evidence/stom-reorg-20260618/research-registry
 SOURCE_INVENTORY: Final[str] = ".omo/evidence/stom-reorg-20260618/research-source-inventory.md"
 DOC_ROOTS: Final[tuple[tuple[str, str], ...]] = (
     ("condition_research", "docs/research/condition_research"),
+    ("quant_scoring_pipeline", "docs/research/quant_scoring_pipeline"),
     ("good_results", "docs/reference/STOM_Good_Results"),
 )
 UPDATE_LOG_ROOT: Final[str] = "docs/update_log"
