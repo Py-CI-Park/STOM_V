@@ -135,8 +135,10 @@ def source_contract(
         csv_sha256=file_sha256(csv_path),
         timeframe=timeframe,
         forced_liquidation_time=forced_liquidation_time,
-        strategy_buy=buy,
-        strategy_sell=sell,
+        strategy_buy=buy_code,
+        strategy_sell=sell_code,
+        strategy_buy_name=buy,
+        strategy_sell_name=sell,
         strategy_buy_sha256=hashlib.sha256(buy_code.encode("utf-8")).hexdigest() if buy_code else "",
         strategy_sell_sha256=hashlib.sha256(sell_code.encode("utf-8")).hexdigest() if sell_code else "",
     )

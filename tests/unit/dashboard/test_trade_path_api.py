@@ -34,7 +34,14 @@ class _FakeJobManager:
             "buy": "매수A", "sell": "매도A",
             "start": 20250102, "end": 20250102,
             "timeframe": self._candidate_timeframe if job_id == "candidate" else "tick",
-            "buy_code": "매수 = True", "sell_code": "매도 = False",
+            "buy_code": "매수 = True",
+            "sell_code": (
+                "매도 = False\n"
+                "if 보유시간 >= 30 and 수익률 <= -2:\n"
+                "    매도 = True\n"
+                "if 매도:\n"
+                "    self.Sell()"
+            ),
         }
         if self._end_time is not None:
             spec["end_time"] = self._end_time
@@ -134,6 +141,14 @@ def test_trade_path_api_runs_analysis_counterfactual_and_official_pair(
         f"/bt/trade-path/trade/{trade_key}", params={"analysis_id": analysis_id},
     ).json()
     assert detail["episode"]["market_path"][-1]["timestamp"] == 20250102090300
+    sell_trace = client.get("/bt/trade-path/sell-dsl-trace", params={
+        "analysis_id": analysis_id, "trade_key": trade_key,
+    }).json()
+    assert sell_trace["authority"] == "advisory"
+    assert sell_trace["timeframe"] == "tick"
+    assert sell_trace["replay"]["status"] == "supported", sell_trace
+    assert sell_trace["replay"]["exit_timestamp"] == 20250102090100
+    assert sell_trace["data_quality"]["bounded_at"] == 20250102090300
 
     advisory = client.post("/bt/trade-path/counterfactual", json={
         "analysis_id": analysis_id,
@@ -156,6 +171,12 @@ def test_trade_path_api_runs_analysis_counterfactual_and_official_pair(
     }).json()
     assert official["authority"] == "official"
     assert official["pair"]["delta_profit_krw"] == 49_604
+    gate = client.post("/bt/trade-path/promotion-gate", json={
+        "design_baseline_job_id": "baseline", "design_candidate_job_id": "candidate",
+        "oos_baseline_job_id": "baseline", "oos_candidate_job_id": "candidate",
+    }).json()
+    assert gate["verdict"] == "blocked"
+    assert "design_oos_period_overlap" in gate["blockers"]
     history = client.get("/bt/trade-path/history").json()
     assert {row["event"] for row in history["records"]} >= {
         "analysis_success",
@@ -172,6 +193,8 @@ def test_main_app_registers_trade_path_router() -> None:
     paths = {route.path for route in create_app().routes}
     assert "/bt/trade-path/preflight" in paths
     assert "/bt/trade-path/report" in paths
+    assert "/bt/trade-path/sell-dsl-trace" in paths
+    assert "/bt/trade-path/promotion-gate" in paths
 
 
 def test_official_pair_rejects_incompatible_timeframes(

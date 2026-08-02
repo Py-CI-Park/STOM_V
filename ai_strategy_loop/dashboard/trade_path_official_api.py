@@ -10,7 +10,7 @@ from fastapi.encoders import jsonable_encoder
 
 from ai_strategy_loop.autopsy.exit_transition import compare_official_results
 from ai_strategy_loop.dashboard.backtest_jobs import get_job_manager
-from ai_strategy_loop.dashboard.trade_path_api_models import MatrixRequest, OfficialPairRequest
+from ai_strategy_loop.dashboard.trade_path_api_models import MatrixRequest, OfficialPairRequest, PromotionGateRequest
 from ai_strategy_loop.dashboard.trade_path_jobs import trade_path_coordinator
 
 
@@ -61,6 +61,57 @@ def official_pair(payload: OfficialPairRequest) -> dict[str, object]:
     response = jsonable_encoder({"available": True, "pair": asdict(pair), "authority": "official"})
     trade_path_coordinator().add_official_pair(response)
     return response
+
+
+def _period(record: dict[str, object]) -> tuple[int, int] | None:
+    spec = record.get("spec") if isinstance(record.get("spec"), dict) else {}
+    try:
+        return int(spec["start"]), int(spec["end"])
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+@official_trade_path_router.post("/promotion-gate")
+def promotion_gate(payload: PromotionGateRequest) -> dict[str, object]:
+    """Adopt only when separate official design and OOS pairs both improve."""
+    manager = get_job_manager()
+    design = official_pair(OfficialPairRequest(
+        baseline_job_id=payload.design_baseline_job_id,
+        candidate_job_id=payload.design_candidate_job_id,
+    ))
+    oos = official_pair(OfficialPairRequest(
+        baseline_job_id=payload.oos_baseline_job_id,
+        candidate_job_id=payload.oos_candidate_job_id,
+    ))
+    blockers: list[str] = []
+    if not design.get("available"):
+        blockers.append("design_pair_unavailable")
+    if not oos.get("available"):
+        blockers.append("oos_pair_unavailable")
+    design_period = _period(manager.get(payload.design_baseline_job_id, log_tail=0))
+    oos_period = _period(manager.get(payload.oos_baseline_job_id, log_tail=0))
+    if design_period is None or oos_period is None:
+        blockers.append("period_metadata_missing")
+    elif not (design_period[1] < oos_period[0] or oos_period[1] < design_period[0]):
+        blockers.append("design_oos_period_overlap")
+    design_delta = ((design.get("pair") or {}).get("delta_profit_krw")
+                    if isinstance(design.get("pair"), dict) else None)
+    oos_delta = ((oos.get("pair") or {}).get("delta_profit_krw")
+                 if isinstance(oos.get("pair"), dict) else None)
+    if design_delta is not None and design_delta <= 0:
+        blockers.append("design_not_improved")
+    if oos_delta is not None and oos_delta <= 0:
+        blockers.append("oos_not_improved")
+    return jsonable_encoder({
+        "available": not blockers,
+        "authority": "official",
+        "verdict": "adoptable" if not blockers else "blocked",
+        "design": design,
+        "oos": oos,
+        "periods": {"design": design_period, "oos": oos_period},
+        "blockers": blockers,
+        "rule": "설계와 비중첩 OOS 공식 pair가 모두 개선될 때만 채택 가능",
+    })
 
 
 @official_trade_path_router.post("/matrix")

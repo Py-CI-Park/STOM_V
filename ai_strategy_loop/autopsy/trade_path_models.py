@@ -28,6 +28,8 @@ class RunSource:
     forced_liquidation_time: int
     strategy_buy: str = ""
     strategy_sell: str = ""
+    strategy_buy_name: str = ""
+    strategy_sell_name: str = ""
     strategy_buy_sha256: str = ""
     strategy_sell_sha256: str = ""
 
@@ -79,6 +81,16 @@ class MarketPoint:
     sell_quantity: float | None = None
     buy_rest: float | None = None
     sell_rest: float | None = None
+    rate: float | None = None
+    day_money: float | None = None
+    turnover: float | None = None
+    market_cap: float | None = None
+    minute_open: float | None = None
+    minute_high: float | None = None
+    minute_low: float | None = None
+    day_open: float | None = None
+    day_high: float | None = None
+    day_low: float | None = None
 
 
 @dataclass(frozen=True, slots=True)

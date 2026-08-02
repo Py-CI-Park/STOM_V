@@ -72,6 +72,39 @@ def test_trade_path_surface_mounts_entry_variable_autopsy() -> None:
     assert "R_*·S_*는 매수 입력으로 사용하지 않습니다" in entry
 
 
+def test_sell_dsl_trace_is_a_distinct_bounded_advisory_page() -> None:
+    source = _read("bt-sell-dsl-trace.jsx")
+    tab = _read("bt-trade-path-tab.jsx")
+    assert "/bt/trade-path/sell-dsl-trace" in source
+    assert "전체청산 이전까지만" in source
+    assert "지원하지 않는 변수·함수는 임의 값으로 추측하지 않습니다" in source
+    assert '"sell-trace","매도식 추적"' in tab
+
+
+def test_sell_proposal_cards_disclose_family_and_timeframe() -> None:
+    source = _read("bt-condition-proposals.jsx")
+    assert 'row.family || "연구군"' in source
+    assert 'row.timeframe || "unknown"' in source
+
+
+def test_oos_page_requires_two_official_non_overlapping_pairs() -> None:
+    source = _read("bt-oos-gate.jsx")
+    tab = _read("bt-trade-path-tab.jsx")
+    styles = _read("trade-path.css")
+    assert "/bt/trade-path/promotion-gate" in source
+    assert "비중첩 OOS" in source
+    assert "설계/OOS 채택 판정" in source
+    assert '["oos","OOS 채택"]' in tab
+    assert '· ${job.job_id}`' in source
+    assert ".tp-oos-form select" in styles
+
+
+def test_trade_path_polling_continues_after_an_unchanged_progress_response() -> None:
+    source = _read("bt-trade-path-tab.jsx")
+    assert "}, [baseUrl, analysisId, analysis]);" in source
+    assert "analysis && analysis.progress" not in source
+
+
 def test_trade_path_time_formatter_handles_tick_and_min_timestamps() -> None:
     source = _read("bt-trade-path-chart.jsx")
     assert "text.length === 12" in source

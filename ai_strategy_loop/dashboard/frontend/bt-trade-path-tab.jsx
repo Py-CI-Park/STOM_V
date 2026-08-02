@@ -5,6 +5,8 @@ import { BtConditionProposals } from "./bt-condition-proposals.jsx";
 import { BtExitTransition } from "./bt-exit-transition.jsx";
 import { BtDataContract } from "./bt-data-contract.jsx";
 import { BtEntryAutopsy } from "./bt-entry-autopsy.jsx";
+import { BtSellDslTrace } from "./bt-sell-dsl-trace.jsx";
+import { BtOosGate } from "./bt-oos-gate.jsx";
 const { useState: useState_tpt, useEffect: useEffect_tpt } = React;
 
 function _tpFetch(url, options) {
@@ -53,7 +55,7 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
     if (!analysisId || ["success", "error", "cancelled"].includes(analysis.status)) return undefined;
     const timer = setTimeout(() => _tpFetch(baseUrl + "/bt/trade-path/jobs/" + encodeURIComponent(analysisId)).then(setAnalysis).catch(reason => setError(String(reason.message || reason))), 600);
     return () => clearTimeout(timer);
-  }, [baseUrl, analysisId, analysis && analysis.status, analysis && analysis.progress]);
+  }, [baseUrl, analysisId, analysis]);
 
   useEffect_tpt(() => {
     if (!analysisId || analysis.status !== "success") return;
@@ -85,7 +87,7 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
 
   const totals = analysis && analysis.summary;
   const running = analysis && ["queued", "running"].includes(analysis.status);
-  const pageTabs = [["data","데이터 계약"],["entry","매수 해부"],...(totals ? [["summary","매도 해부"],["path","거래 경로"],["counterfactual","가상 매도"],["proposals","조건식 후보"],["official","공식 pair"]] : [])];
+  const pageTabs = [["data","데이터 계약"],["entry","매수 해부"],...(totals ? [["summary","매도 해부"],["path","거래 경로"],...(detail ? [["sell-trace","매도식 추적"]] : []),["counterfactual","가상 매도"],["proposals","조건식 후보"],["official","공식 pair"],["oos","OOS 채택"]] : [])];
   return <section className="panel tp-workbench" aria-labelledby="tp-title">
     <header className="panel-hd"><div><div className="stom-section-label" id="tp-title">QSP7 · 거래 에피소드 / 매도 연구</div><div className="mono">실제 매도 뒤도 전체청산까지만 관찰 · 미실행 거래는 공식 엔진으로 재검증</div></div><div className="tp-authority-strip"><span className="tp-authority diagnostic">진단</span><span className="tp-authority advisory">자문</span><span className="tp-authority official">정본</span></div></header>
     <div className="panel-bd">
@@ -99,9 +101,11 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
       {totals && <>
         {activeView === "summary" && <div className="tp-summary"><div className="tp-summary-actions"><span className="tp-authority diagnostic">진단</span><button className="btn ghost sm" onClick={() => window.open(baseUrl + "/bt/trade-path/report?analysis_id=" + encodeURIComponent(analysisId), "_blank", "noopener")}>진단 보고서 열기</button></div><div className="tp-kpis"><article><small>분석 거래</small><b>{totals.analyzed_count}</b></article><article><small>제외</small><b>{totals.excluded_count}</b></article><article><small>경계 전 회복</small><b>{totals.recovered_count}</b></article><article><small>실제 순손익</small><b>{_tpMoney(totals.actual_profit_krw)}</b></article></div><div className="tp-cohorts">{cohorts.map(row => <button key={row.key} onClick={() => { const hit = trades.find(trade => trade.exit_reason === row.key); if (hit) openTrade(hit); }}><b>{row.key}</b><span>{row.count}건 · 회복 {row.recovered_count} · {_tpMoney(row.actual_profit_krw)}</span></button>)}</div><div className="tp-trade-list">{trades.slice(0, 30).map(row => <button key={row.trade_key} onClick={() => openTrade(row)}><span>{row.name}</span><code>{String(row.buy_time).slice(8)} → {String(row.sell_time).slice(8)}</code><b className={row.actual_profit_krw >= 0 ? "pos" : "neg"}>{_tpMoney(row.actual_profit_krw)}</b></button>)}</div></div>}
         {activeView === "path" && (detail ? <div><BtTradePathChart episode={detail}/><div className="tp-path-actions"><span className="tp-authority diagnostic">진단</span><span>가상 horizon은 실제 틱 지연과 검열 사유를 함께 보존합니다.</span><button className="btn primary sm" onClick={replay}>이 거래를 Replay에서 열기</button></div></div> : <div className="tp-empty">요약에서 거래를 선택하세요.</div>)}
+        {activeView === "sell-trace" && <BtSellDslTrace baseUrl={baseUrl} analysisId={analysisId} episode={detail}/>}
         {activeView === "counterfactual" && <div><BtExitCounterfactual baseUrl={baseUrl} analysisId={analysisId} onResult={setCf}/>{cf && <div className="tp-cf-result"><b>가상 순손익 변화 {_tpMoney(cf.total_delta_profit_krw)}</b><span>평가 {cf.outcomes?.length || 0} · 제외 {cf.failures?.length || 0}</span>{(cf.transitions || []).map(row => <small key={`${row.actual_reason}-${row.candidate_reason}`}>{row.actual_reason} → {row.candidate_reason}: {row.count}</small>)}</div>}</div>}
         {activeView === "proposals" && <div><button className="btn primary sm" onClick={generateProposals}>근거 기반 후보 생성</button><BtConditionProposals proposals={proposals}/></div>}
-        {activeView === "official" && <BtExitTransition baseUrl={baseUrl} jobs={jobs} baselineJobId={jobId}/>}</>}
+        {activeView === "official" && <BtExitTransition baseUrl={baseUrl} jobs={jobs} baselineJobId={jobId}/>}
+        {activeView === "oos" && <BtOosGate baseUrl={baseUrl} jobs={jobs} baselineJobId={jobId}/>}</>}
     </div>
   </section>;
 }

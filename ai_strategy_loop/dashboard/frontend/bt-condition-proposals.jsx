@@ -6,7 +6,7 @@ function BtConditionProposals({ proposals }) {
   return (
     <div className="tp-proposal-grid">
       {rows.map(row => <article className="tp-proposal" key={row.proposal_id}>
-        <header><div><b>{row.title}</b><small>{row.intent}</small></div><span className="tp-authority advisory">자문</span></header>
+        <header><div><b>{row.title}</b><small>{row.family || "연구군"} · {row.timeframe || "unknown"} 전용</small><small>{row.intent}</small></div><span className="tp-authority advisory">자문</span></header>
         <pre>{row.stom_code}</pre>
         <dl><dt>근거</dt><dd>{row.evidence}</dd><dt>반증</dt><dd>{row.counterevidence}</dd><dt>위험</dt><dd>{row.risk}</dd></dl>
         <button className="btn ghost sm" onClick={() => copy(row.stom_code)}>초안 복사 · 자동 저장 안 함</button>

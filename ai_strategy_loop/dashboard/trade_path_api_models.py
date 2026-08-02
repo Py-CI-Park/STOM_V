@@ -81,6 +81,13 @@ class OfficialPairRequest(FrozenPayload):
     candidate_job_id: ShortText
 
 
+class PromotionGateRequest(FrozenPayload):
+    design_baseline_job_id: ShortText
+    design_candidate_job_id: ShortText
+    oos_baseline_job_id: ShortText
+    oos_candidate_job_id: ShortText
+
+
 class MatrixCellPayload(FrozenPayload):
     job_id: ShortText
     buy: ShortText

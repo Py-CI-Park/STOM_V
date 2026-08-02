@@ -149,6 +149,24 @@ def test_data_contract_api_exposes_profile_for_completed_job(
     assert response["contract"]["boundary"]["forced_liquidation_time"] == 93000
 
 
+def test_legacy_contract_uses_latest_actual_exit_as_conservative_boundary(
+    tmp_path: Path,
+) -> None:
+    csv_path = tmp_path / "legacy.csv"
+    csv_path.write_text(
+        "종목명,매수시간,매도시간\n삼성전자,202501020900,202501021519\n",
+        encoding="utf-8-sig",
+    )
+
+    contract = build_trade_artifact_contract(
+        csv_path=csv_path, job_id="legacy", spec={"timeframe": "min"},
+    )
+
+    assert contract.boundary.forced_liquidation_time == 151900
+    assert contract.boundary.source == "legacy_csv_latest_exit"
+    assert contract.boundary.confidence == "conservative"
+
+
 def test_trade_path_router_registers_data_contract_page_api() -> None:
     paths = {route.path for route in trade_path_router.routes}
 

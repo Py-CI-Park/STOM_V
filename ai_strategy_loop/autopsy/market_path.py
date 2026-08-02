@@ -117,7 +117,10 @@ class MarketPathRepository:
                 f'SELECT "index", "현재가", {column("체결강도")}, '
                 f'{column("초당매수수량") if "초당매수수량" in columns else column("분당매수수량")}, '
                 f'{column("초당매도수량") if "초당매도수량" in columns else column("분당매도수량")}, '
-                f'{column("매수총잔량")}, {column("매도총잔량")} '
+                f'{column("매수총잔량")}, {column("매도총잔량")}, '
+                f'{column("등락율")}, {column("당일거래대금")}, {column("회전율")}, '
+                f'{column("시가총액")}, {column("분봉시가")}, {column("분봉고가")}, '
+                f'{column("분봉저가")}, {column("시가")}, {column("고가")}, {column("저가")} '
                 f'FROM "{code}" WHERE "index" >= ? AND "index" <= ? '
                 f'ORDER BY "index" LIMIT {_MAX_ROWS + 1}'
             )
@@ -132,6 +135,16 @@ class MarketPathRepository:
                 sell_quantity=_optional_float(row[4]),
                 buy_rest=_optional_float(row[5]),
                 sell_rest=_optional_float(row[6]),
+                rate=_optional_float(row[7]),
+                day_money=_optional_float(row[8]),
+                turnover=_optional_float(row[9]),
+                market_cap=_optional_float(row[10]),
+                minute_open=_optional_float(row[11]),
+                minute_high=_optional_float(row[12]),
+                minute_low=_optional_float(row[13]),
+                day_open=_optional_float(row[14]),
+                day_high=_optional_float(row[15]),
+                day_low=_optional_float(row[16]),
             )
             for row in rows[:_MAX_ROWS]
             if row[0] is not None and row[1] is not None

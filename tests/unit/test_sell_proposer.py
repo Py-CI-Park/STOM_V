@@ -13,11 +13,13 @@ def _analysis(timeframe: Timeframe):
         actual_profit_krw=-10_000,
         recovered_by_boundary=True,
         exit_reason="손절",
+        hold_seconds=60,
     )
     forced = SimpleNamespace(
         actual_profit_krw=1_000,
         recovered_by_boundary=False,
         exit_reason="전략종료청산",
+        hold_seconds=600,
     )
     return SimpleNamespace(
         source=SimpleNamespace(timeframe=timeframe),
@@ -28,18 +30,20 @@ def _analysis(timeframe: Timeframe):
 def test_min_sell_proposals_convert_second_intent_to_minute_units() -> None:
     proposals = propose_sell_conditions(_analysis(Timeframe.MIN))
 
-    assert "보유시간 >= 2" in proposals[0].stom_code
-    assert "최저현재가(2, 1)" in proposals[0].stom_code
-    assert "보유시간 >= 5" in proposals[1].stom_code
-    assert "2분" in proposals[0].intent
-    assert "5분" in proposals[1].intent
+    by_id = {row.proposal_id: row for row in proposals}
+    assert len(by_id) == 4
+    assert "보유시간 >= 3" in by_id["delay_stop_with_breakdown"].stom_code
+    assert "최저현재가(5, 보유시간)" in by_id["delay_stop_with_breakdown"].stom_code
+    assert "보유시간 >= 10" in by_id["preclose_profitable_fade"].stom_code
+    assert by_id["stagnation_trend_decay"].timeframe == "min"
+    assert {row.family for row in proposals} == {"손실 방어", "수익 반납", "시간 가치", "마감 관리"}
 
 
 def test_tick_sell_proposals_keep_second_units() -> None:
     proposals = propose_sell_conditions(_analysis(Timeframe.TICK))
 
-    assert "보유시간 >= 90" in proposals[0].stom_code
-    assert "최저현재가(90, 1)" in proposals[0].stom_code
-    assert "보유시간 >= 300" in proposals[1].stom_code
-    assert "90초" in proposals[0].intent
-    assert "300초" in proposals[1].intent
+    by_id = {row.proposal_id: row for row in proposals}
+    assert "보유시간 >= 90" in by_id["delay_stop_with_breakdown"].stom_code
+    assert "최저현재가(60, 보유시간)" in by_id["delay_stop_with_breakdown"].stom_code
+    assert "보유시간 >= 300" in by_id["preclose_profitable_fade"].stom_code
+    assert by_id["stagnation_trend_decay"].timeframe == "tick"

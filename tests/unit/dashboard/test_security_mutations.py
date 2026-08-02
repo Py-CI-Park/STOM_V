@@ -83,6 +83,7 @@ def test_trade_path_mutations_use_safe_backtest_capability() -> None:
         "/bt/trade-path/counterfactual",
         "/bt/trade-path/proposals",
         "/bt/trade-path/official-pair",
+        "/bt/trade-path/promotion-gate",
         "/bt/trade-path/matrix",
     )
     assert all(

@@ -170,6 +170,17 @@ def _optional_int(value: Scalar) -> int | None:
         return None
 
 
+def _legacy_exit_boundary(rows: Sequence[Mapping[str, str]], timeframe: str) -> int | None:
+    values: list[int] = []
+    for row in rows:
+        digits = "".join(char for char in str(row.get("매도시간") or "") if char.isdigit())
+        if len(digits) == 14:
+            values.append(int(digits[-6:]))
+        elif len(digits) == 12:
+            values.append(int(digits[-4:] + "00"))
+    return max(values) if values else None
+
+
 def build_trade_artifact_contract(
     *, csv_path: Path, job_id: str, spec: Mapping[str, Scalar],
 ) -> TradeArtifactContract:
@@ -180,11 +191,19 @@ def build_trade_artifact_contract(
         rows = tuple(reader)
     columns = _column_profiles(fieldnames, rows)
     end_time = _optional_int(spec.get("end_time"))
+    legacy_boundary = None if end_time is not None else _legacy_exit_boundary(
+        rows, str(spec.get("timeframe") or "unknown"),
+    )
+    boundary_time = end_time if end_time is not None else legacy_boundary
     boundary = SessionBoundary(
         start_time=_optional_int(spec.get("start_time")),
-        forced_liquidation_time=end_time,
-        source="job_spec_end_time" if end_time is not None else "missing",
-        confidence="official" if end_time is not None else "unknown",
+        forced_liquidation_time=boundary_time,
+        source="job_spec_end_time" if end_time is not None else (
+            "legacy_csv_latest_exit" if legacy_boundary is not None else "missing"
+        ),
+        confidence="official" if end_time is not None else (
+            "conservative" if legacy_boundary is not None else "unknown"
+        ),
     )
     artifact = ArtifactIdentity(
         path=str(csv_path.resolve()),
@@ -210,4 +229,3 @@ def build_trade_artifact_contract(
         groups=_group_profiles(columns),
         columns=columns,
     )
-
