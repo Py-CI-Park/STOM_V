@@ -7,6 +7,7 @@
 > - 부모: `loop/process-research-pipeline` — **2U_C 로 가지 않는다. main 병합 금지.**
 > - 직전 커밋: `54273759 research(손실 해부)` — 이 문서는 그 다음 작업의 출발점이다.
 > - 최신 설계 보정: [`2026-08-01_qsp7_trade_episode_exit_research_system_design.md`](./2026-08-01_qsp7_trade_episode_exit_research_system_design.md) — 손절 변형 착수 전에 거래 에피소드·잔여경로·반사실 권위 계약을 우선 적용한다.
+> - 현재 최상위 기준: [`2026-08-02_qsp7_integrated_direction_scorecard_and_roadmap.md`](./2026-08-02_qsp7_integrated_direction_scorecard_and_roadmap.md) — 초기 결론 중 보정된 항목, 실제 구현 점수, 조건식 생성 한계와 다음 로드맵은 이 문서를 우선한다.
 
 ---
 

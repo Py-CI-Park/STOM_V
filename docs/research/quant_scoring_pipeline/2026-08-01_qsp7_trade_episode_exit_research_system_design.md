@@ -6,6 +6,7 @@
 > 비적용 범위: 실거래, 운영 전략 자동 반영, 전체청산 이후 시세 생성·추정
 > 선행 문서: [HANDOFF_2026-08-01_QSP7_매도식연구.md](./HANDOFF_2026-08-01_QSP7_매도식연구.md)
 > 구현 결과: [2026-08-01_qsp7_trade_path_research_implementation_result.md](./2026-08-01_qsp7_trade_path_research_implementation_result.md)
+> 현재 최상위 기준: [2026-08-02_qsp7_integrated_direction_scorecard_and_roadmap.md](./2026-08-02_qsp7_integrated_direction_scorecard_and_roadmap.md)
 
 ---
 
