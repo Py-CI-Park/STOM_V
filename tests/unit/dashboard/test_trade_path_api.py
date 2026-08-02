@@ -17,22 +17,32 @@ from ai_strategy_loop.dashboard.trade_path_ledger import TradePathLedger
 
 
 class _FakeJobManager:
-    def __init__(self, baseline: Path, candidate: Path) -> None:
+    def __init__(
+        self, baseline: Path, candidate: Path, *, end_time: int | None = 90300,
+        candidate_timeframe: str = "tick",
+    ) -> None:
         self._paths = {"baseline": baseline, "candidate": candidate}
+        self._end_time = end_time
+        self._candidate_timeframe = candidate_timeframe
 
     def get(self, job_id: str, log_tail: int = 0):
         del log_tail
         path = self._paths.get(job_id)
         if path is None:
             return {"available": False}
+        spec = {
+            "buy": "매수A", "sell": "매도A",
+            "start": 20250102, "end": 20250102,
+            "timeframe": self._candidate_timeframe if job_id == "candidate" else "tick",
+            "buy_code": "매수 = True", "sell_code": "매도 = False",
+        }
+        if self._end_time is not None:
+            spec["end_time"] = self._end_time
         return {
             "available": True,
             "status": "success",
             "csv_path": str(path),
-            "spec": {
-                "buy": "매수A", "sell": "매도A", "timeframe": "tick",
-                "buy_code": "매수 = True", "sell_code": "매도 = False",
-            },
+            "spec": spec,
             "metrics": {"total_profit_krw": -31_740},
         }
 
@@ -113,6 +123,8 @@ def test_trade_path_api_runs_analysis_counterfactual_and_official_pair(
     # Then: 진단→자문→정본 권위가 서로 섞이지 않고 전 구간이 연결된다.
     assert preflight["available"] is True
     assert preflight["counterfactual_limit"] == "forced_liquidation_boundary"
+    assert preflight["forced_liquidation_time"] == 90300
+    assert preflight["boundary_source"] == "job_spec_end_time"
     assert state["status"] == "success"
     summary = client.get("/bt/trade-path/summary", params={"analysis_id": analysis_id}).json()
     assert summary["summary"]["analyzed_count"] == 1
@@ -160,3 +172,76 @@ def test_main_app_registers_trade_path_router() -> None:
     paths = {route.path for route in create_app().routes}
     assert "/bt/trade-path/preflight" in paths
     assert "/bt/trade-path/report" in paths
+
+
+def test_official_pair_rejects_incompatible_timeframes(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    baseline, candidate = tmp_path / "baseline.csv", tmp_path / "candidate.csv"
+    _csv(baseline)
+    _csv(candidate)
+    manager = _FakeJobManager(baseline, candidate, candidate_timeframe="min")
+    monkeypatch.setattr(trade_path_official_api, "get_job_manager", lambda: manager)
+    app = FastAPI()
+    app.include_router(trade_path_router)
+    client = TestClient(app)
+
+    response = client.post("/bt/trade-path/official-pair", json={
+        "baseline_job_id": "baseline", "candidate_job_id": "candidate",
+    }).json()
+
+    assert response["available"] is False
+    assert response["reason"] == "incompatible_official_pair"
+    assert response["mismatches"] == ["timeframe"]
+
+
+def test_preflight_rejects_boundary_before_any_actual_exit(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    database = tmp_path / "database"
+    _market_fixture(database)
+    baseline, candidate = tmp_path / "baseline.csv", tmp_path / "candidate.csv"
+    _csv(baseline, sell_time="20250102151800", reason="전략종료청산")
+    _csv(candidate)
+    manager = _FakeJobManager(baseline, candidate, end_time=None)
+    monkeypatch.setattr(trade_path_source, "get_job_manager", lambda: manager)
+    monkeypatch.setenv("STOM_TRADE_PATH_DATABASE_DIR", str(database))
+    monkeypatch.setenv("STOM_TRADE_PATH_CODE_INFO_DB", str(database / "code_info.db"))
+    app = FastAPI()
+    app.include_router(trade_path_router)
+    client = TestClient(app)
+
+    response = client.get(
+        "/bt/trade-path/preflight",
+        params={"job_id": "baseline", "forced_liquidation_time": 93000},
+    ).json()
+
+    assert response["available"] is False
+    assert response["reason"] == "actual_exit_after_forced_liquidation"
+    assert response["exit_after_boundary_count"] == 1
+
+
+def test_preflight_infers_legacy_boundary_from_latest_actual_exit(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    database = tmp_path / "database"
+    _market_fixture(database)
+    baseline, candidate = tmp_path / "baseline.csv", tmp_path / "candidate.csv"
+    _csv(baseline, sell_time="20250102151800", reason="전략종료청산")
+    _csv(candidate)
+    manager = _FakeJobManager(baseline, candidate, end_time=None)
+    monkeypatch.setattr(trade_path_source, "get_job_manager", lambda: manager)
+    monkeypatch.setenv("STOM_TRADE_PATH_DATABASE_DIR", str(database))
+    monkeypatch.setenv("STOM_TRADE_PATH_CODE_INFO_DB", str(database / "code_info.db"))
+    app = FastAPI()
+    app.include_router(trade_path_router)
+    client = TestClient(app)
+
+    response = client.get(
+        "/bt/trade-path/preflight", params={"job_id": "baseline"},
+    ).json()
+
+    assert response["available"] is True
+    assert response["forced_liquidation_time"] == 151800
+    assert response["boundary_source"] == "legacy_csv_latest_exit"
+    assert response["boundary_confidence"] == "conservative"

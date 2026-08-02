@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 
 from ai_strategy_loop.autopsy.trade_path_analysis_models import TradePathAnalysis
+from ai_strategy_loop.autopsy.trade_path_models import Timeframe
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,17 +31,27 @@ def validate_candidate_code(code: str) -> None:
         raise ValueError("invalid_stom_sell_shape")
 
 
+def _timeframe_threshold(seconds: int, timeframe: Timeframe) -> tuple[int, str]:
+    if timeframe is Timeframe.MIN:
+        minutes = max(1, int(math.ceil(seconds / 60)))
+        return minutes, f"{minutes}분"
+    return seconds, f"{seconds}초"
+
+
 def propose_sell_conditions(analysis: TradePathAnalysis) -> tuple[SellProposal, ...]:
     rows = analysis.episodes
     if not rows:
         return ()
     recovered = [row for row in rows if row.actual_profit_krw < 0 and row.recovered_by_boundary]
     forced = [row for row in rows if row.exit_reason.startswith("전략종료")]
+    stop_hold, stop_label = _timeframe_threshold(90, analysis.source.timeframe)
+    preclose_hold, preclose_label = _timeframe_threshold(300, analysis.source.timeframe)
     proposals: list[SellProposal] = []
     if recovered:
         code = (
             "매도 = False\n"
-            "if 보유시간 >= 90 and 수익률 <= -2 and 현재가 < 최저현재가(90, 1):\n"
+            f"if 보유시간 >= {stop_hold} and 수익률 <= -2 "
+            f"and 현재가 < 최저현재가({stop_hold}, 1):\n"
             "    매도 = True\n\n"
             "if 매도:\n"
             "    self.Sell()"
@@ -48,7 +60,7 @@ def propose_sell_conditions(analysis: TradePathAnalysis) -> tuple[SellProposal, 
         proposals.append(SellProposal(
             proposal_id="delay_stop_with_breakdown",
             title="초기 손절 지연 + 저점 이탈 확인",
-            intent="정상 흔들림 손절을 줄이되 추가하락 확인 시 청산",
+            intent=f"최소 {stop_label} 정상 흔들림을 허용하고 추가하락 확인 시 청산",
             stom_code=code,
             evidence=f"손실 후 전체청산 전 회복 거래 {len(recovered)}건",
             counterevidence=f"회복하지 못한 손실 거래 {sum(1 for row in rows if row.actual_profit_krw < 0) - len(recovered)}건",
@@ -57,7 +69,7 @@ def propose_sell_conditions(analysis: TradePathAnalysis) -> tuple[SellProposal, 
     if forced:
         code = (
             "매도 = False\n"
-            "if 보유시간 >= 300 and 수익률 > 0 and 현재가 < 이동평균(30):\n"
+            f"if 보유시간 >= {preclose_hold} and 수익률 > 0 and 현재가 < 이동평균(30):\n"
             "    매도 = True\n\n"
             "if 매도:\n"
             "    self.Sell()"
@@ -66,7 +78,7 @@ def propose_sell_conditions(analysis: TradePathAnalysis) -> tuple[SellProposal, 
         proposals.append(SellProposal(
             proposal_id="preclose_profitable_fade",
             title="전체청산 전 이익권 추세이탈 청산",
-            intent="장 마감 강제청산은 유지하고 그 전에 이익권 반납만 줄임",
+            intent=f"최소 {preclose_label} 보유 뒤 장 마감 강제청산 전 이익권 반납만 줄임",
             stom_code=code,
             evidence=f"전략종료 청산 {len(forced)}건",
             counterevidence="손실권 포지션에는 적용하지 않아 손실 강제청산을 직접 줄이지 않음",

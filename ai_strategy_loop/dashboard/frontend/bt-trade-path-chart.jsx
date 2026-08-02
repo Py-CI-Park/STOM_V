@@ -1,7 +1,9 @@
 /* QSP7 selected-trade path chart: entry → actual exit → forced liquidation. */
 function _tpTime(value) {
-  const text = String(value || "").padStart(14, "0");
-  return text.length >= 14 ? `${text.slice(8, 10)}:${text.slice(10, 12)}:${text.slice(12, 14)}` : "—";
+  const text = String(value || "").replace(/\D/g, "");
+  if (text.length === 14) return `${text.slice(8, 10)}:${text.slice(10, 12)}:${text.slice(12, 14)}`;
+  if (text.length === 12) return `${text.slice(8, 10)}:${text.slice(10, 12)}`;
+  return "—";
 }
 
 function BtTradePathChart({ episode }) {

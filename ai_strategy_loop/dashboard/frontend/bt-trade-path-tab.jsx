@@ -16,6 +16,7 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
   const [cohorts, setCohorts] = useState_tpt([]), [trades, setTrades] = useState_tpt([]);
   const [detail, setDetail] = useState_tpt(null), [cf, setCf] = useState_tpt(null);
   const [proposals, setProposals] = useState_tpt(null), [error, setError] = useState_tpt("");
+  const [boundaryTime, setBoundaryTime] = useState_tpt("");
   const [activeView, setActiveView] = useState_tpt("summary");
   const analysisId = analysis && analysis.analysis_id;
 
@@ -31,13 +32,15 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
   const inspect = () => {
     if (!jobId) return;
     setError("");
-    _tpFetch(baseUrl + "/bt/trade-path/preflight?job_id=" + encodeURIComponent(jobId))
-      .then(setPreflight).catch(reason => setError(String(reason.message || reason)));
+    const boundaryQuery = boundaryTime ? "&forced_liquidation_time=" + encodeURIComponent(boundaryTime) : "";
+    _tpFetch(baseUrl + "/bt/trade-path/preflight?job_id=" + encodeURIComponent(jobId) + boundaryQuery)
+      .then(payload => { setPreflight(payload); if (payload.forced_liquidation_time) setBoundaryTime(String(payload.forced_liquidation_time).padStart(6, "0")); })
+      .catch(reason => setError(String(reason.message || reason)));
   };
   const start = () => {
-    if (!jobId) return;
+    if (!jobId || !preflight?.available || !boundaryTime) return;
     setError(""); setDetail(null); setCf(null); setProposals(null);
-    _tpFetch(baseUrl + "/bt/trade-path/jobs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_id: jobId }) })
+    _tpFetch(baseUrl + "/bt/trade-path/jobs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_id: jobId, forced_liquidation_time: Number(boundaryTime) }) })
       .then(setAnalysis).catch(reason => setError(String(reason.message || reason)));
   };
 
@@ -80,8 +83,8 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
   return <section className="panel tp-workbench" aria-labelledby="tp-title">
     <header className="panel-hd"><div><div className="stom-section-label" id="tp-title">QSP7 · 거래 에피소드 / 매도 연구</div><div className="mono">실제 매도 뒤도 전체청산까지만 관찰 · 미실행 거래는 공식 엔진으로 재검증</div></div><div className="tp-authority-strip"><span className="tp-authority diagnostic">진단</span><span className="tp-authority advisory">자문</span><span className="tp-authority official">정본</span></div></header>
     <div className="panel-bd">
-      <div className="tp-source-bar"><label>완료 결과<select value={jobId} onChange={event => { setJobId(event.target.value); setPreflight(null); }}><option value="">job 선택</option>{jobs.map(job => <option key={job.job_id} value={job.job_id}>{job.spec?.buy || ""} · {job.spec?.sell || ""} · {job.job_id}</option>)}</select></label><button className="btn ghost sm" onClick={inspect} disabled={!jobId}>사전 점검</button><button className="btn primary sm" onClick={start} disabled={!jobId || running}>경로 분석 시작</button>{running && <button className="btn danger sm" onClick={() => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" })}>취소</button>}</div>
-      {preflight && <div className={`tp-preflight ${preflight.available ? "ready" : "blocked"}`}><b>{preflight.available ? "분석 가능" : "분석 불가"}</b><span>{preflight.available ? `거래 ${preflight.trade_count} · 날짜 ${preflight.covered_date_count}/${preflight.date_count} · ${preflight.source.timeframe}` : preflight.reason}</span><small>경계: 전체청산 이후 데이터는 존재해도 사용하지 않음</small></div>}
+      <div className="tp-source-bar"><label>완료 결과<select value={jobId} onChange={event => { setJobId(event.target.value); setBoundaryTime(""); setPreflight(null); setAnalysis(null); setCohorts([]); setTrades([]); setDetail(null); }}><option value="">job 선택</option>{jobs.map(job => <option key={job.job_id} value={job.job_id}>{job.spec?.buy || ""} · {job.spec?.sell || ""} · {job.job_id}</option>)}</select></label><label>전체청산 (HHMMSS)<input value={boundaryTime} inputMode="numeric" maxLength="6" placeholder="자동 판별" onChange={event => { setBoundaryTime(event.target.value.replace(/\D/g, "").slice(0, 6)); setPreflight(null); }}/></label><button className="btn ghost sm" onClick={inspect} disabled={!jobId}>사전 점검</button><button className="btn primary sm" onClick={start} disabled={!jobId || !preflight?.available || running}>경로 분석 시작</button>{running && <button className="btn danger sm" onClick={() => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" })}>취소</button>}</div>
+      {preflight && <div className={`tp-preflight ${preflight.available ? "ready" : "blocked"}`}><b>{preflight.available ? "분석 가능" : "분석 불가"}</b><span>{preflight.available ? `거래 ${preflight.trade_count} · 날짜 ${preflight.covered_date_count}/${preflight.date_count} · ${preflight.source.timeframe}` : `${preflight.reason}${preflight.exit_after_boundary_count ? ` · 경계 뒤 실제 매도 ${preflight.exit_after_boundary_count}건` : ""}`}</span><small>전체청산 {String(preflight.forced_liquidation_time || "").padStart(6, "0")} · {preflight.boundary_source || "미확인"} · 전체청산 이후 데이터는 존재해도 사용하지 않음</small></div>}
       {running && <div className="tp-progress" role="progressbar" aria-valuenow={Math.round((analysis.progress || 0) * 100)}><i style={{ width: `${Math.round((analysis.progress || 0) * 100)}%` }}/><span>{analysis.processed || 0}/{analysis.total || "?"} · {Math.round((analysis.progress || 0) * 100)}%</span></div>}
       {error && <p className="tp-error" role="alert">{error}</p>}
       {totals && <><nav className="tp-view-tabs" aria-label="거래 경로 분석 단계">{[["summary","요약·코호트"],["path","거래 경로"],["counterfactual","가상 매도"],["proposals","조건식 후보"],["official","공식 pair"]].map(([key,label]) => <button key={key} className={activeView === key ? "active" : ""} onClick={() => setActiveView(key)}>{label}</button>)}</nav>

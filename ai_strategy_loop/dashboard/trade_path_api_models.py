@@ -16,7 +16,7 @@ class FrozenPayload(BaseModel):
 
 class AnalysisRequest(FrozenPayload):
     job_id: ShortText
-    forced_liquidation_time: int = Field(default=93000, ge=0, le=235959)
+    forced_liquidation_time: int | None = Field(default=None, ge=0, le=235959)
     decision_horizons: tuple[int, ...] = (30, 60, 90, 120, 180, 300)
     continuation_horizons: tuple[int, ...] = (30, 60, 120, 300, 600)
 

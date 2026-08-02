@@ -37,8 +37,16 @@ def test_trade_path_surface_discloses_authority_and_boundary() -> None:
     assert "자문" in source
     assert "정본" in source
     assert "전체청산" in source
+    assert "전체청산 (HHMMSS)" in source
+    assert "forced_liquidation_time" in source
     assert "/bt/trade-path/preflight" in source
     assert "/bt/trade-path/counterfactual" in source
+
+
+def test_trade_path_time_formatter_handles_tick_and_min_timestamps() -> None:
+    source = _read("bt-trade-path-chart.jsx")
+    assert "text.length === 12" in source
+    assert "text.length === 14" in source
 
 
 def test_reports_wiki_indexes_quant_scoring_pipeline() -> None:

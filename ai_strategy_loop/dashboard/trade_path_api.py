@@ -13,6 +13,7 @@ from ai_strategy_loop.autopsy.exit_counterfactual import evaluate_policy
 from ai_strategy_loop.autopsy.market_path import MarketPathRepository
 from ai_strategy_loop.autopsy.trade_episode import EpisodeBuilder, read_trade_rows
 from ai_strategy_loop.autopsy.trade_path_analysis import cohort_summaries
+from ai_strategy_loop.autopsy.trade_path_clock import liquidation_timestamp
 from ai_strategy_loop.autopsy.trade_path_models import Clause, ExitPolicy, ExitRule
 from ai_strategy_loop.dashboard.trade_path_api_models import (
     AnalysisRequest,
@@ -80,8 +81,22 @@ def _episode(result, row_id: int, builder: EpisodeBuilder):
     )
 
 
+def _exit_after_boundary_count(resolved, rows) -> int:
+    unit = 1_000_000 if resolved.source.timeframe.value == "tick" else 10_000
+    return sum(
+        1 for row in rows
+        if row.sell_time > liquidation_timestamp(
+            row.buy_time // unit,
+            resolved.source.forced_liquidation_time,
+            resolved.source.timeframe,
+        )
+    )
+
+
 @trade_path_router.get("/preflight")
-def preflight(job_id: str = "", forced_liquidation_time: int = 93000) -> dict[str, object]:
+def preflight(
+    job_id: str = "", forced_liquidation_time: int | None = None,
+) -> dict[str, object]:
     try:
         resolved = resolve_job_source(job_id, forced_liquidation_time=forced_liquidation_time)
         rows = read_trade_rows(Path(resolved.source.csv_path))
@@ -97,6 +112,24 @@ def preflight(job_id: str = "", forced_liquidation_time: int = 93000) -> dict[st
             date, resolved.source.timeframe,
         ) is not None
     )
+    after_boundary = _exit_after_boundary_count(resolved, rows)
+    boundary_payload = {
+        "forced_liquidation_time": resolved.source.forced_liquidation_time,
+        "boundary_source": resolved.boundary_source,
+        "boundary_confidence": resolved.boundary_confidence,
+    }
+    if after_boundary:
+        return jsonable_encoder({
+            "available": False,
+            "authority": "diagnostic",
+            "reason": "actual_exit_after_forced_liquidation",
+            "source": asdict(resolved.source),
+            "trade_count": len(rows),
+            "date_count": len(dates),
+            "covered_date_count": covered,
+            "exit_after_boundary_count": after_boundary,
+            **boundary_payload,
+        })
     return jsonable_encoder({
         "available": True,
         "authority": "diagnostic",
@@ -105,6 +138,7 @@ def preflight(job_id: str = "", forced_liquidation_time: int = 93000) -> dict[st
         "date_count": len(dates),
         "covered_date_count": covered,
         "counterfactual_limit": "forced_liquidation_boundary",
+        **boundary_payload,
     })
 
 
@@ -115,8 +149,17 @@ def start_analysis(payload: AnalysisRequest) -> dict[str, object]:
             payload.job_id,
             forced_liquidation_time=payload.forced_liquidation_time,
         )
-    except ValueError as exc:
+        rows = read_trade_rows(Path(resolved.source.csv_path))
+    except (OSError, ValueError) as exc:
         return {"available": False, "status": "error", "reason": str(exc)}
+    after_boundary = _exit_after_boundary_count(resolved, rows)
+    if after_boundary:
+        return {
+            "available": False,
+            "status": "error",
+            "reason": "actual_exit_after_forced_liquidation",
+            "exit_after_boundary_count": after_boundary,
+        }
     job = trade_path_coordinator().submit(
         resolved=resolved,
         decision_horizons=payload.decision_horizons,

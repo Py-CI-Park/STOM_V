@@ -17,9 +17,37 @@ from ai_strategy_loop.dashboard.trade_path_jobs import trade_path_coordinator
 official_trade_path_router = APIRouter()
 
 
+def _pair_mismatches(baseline: dict[str, object], candidate: dict[str, object]) -> list[str]:
+    left = baseline.get("spec") if isinstance(baseline.get("spec"), dict) else {}
+    right = candidate.get("spec") if isinstance(candidate.get("spec"), dict) else {}
+    mismatches: list[str] = []
+    for key in ("timeframe", "start", "end"):
+        if left.get(key) in (None, "") or right.get(key) in (None, "") or left.get(key) != right.get(key):
+            mismatches.append(key)
+    if left.get("buy") != right.get("buy") or (
+        left.get("buy_code") and right.get("buy_code")
+        and left.get("buy_code") != right.get("buy_code")
+    ):
+        mismatches.append("buy_condition")
+    for key in ("divid_mode", "one_code", "back_db_override"):
+        if left.get(key) != right.get(key):
+            mismatches.append(key)
+    return mismatches
+
+
 @official_trade_path_router.post("/official-pair")
 def official_pair(payload: OfficialPairRequest) -> dict[str, object]:
     manager = get_job_manager()
+    baseline_record = manager.get(payload.baseline_job_id, log_tail=0)
+    candidate_record = manager.get(payload.candidate_job_id, log_tail=0)
+    mismatches = _pair_mismatches(baseline_record, candidate_record)
+    if mismatches:
+        return {
+            "available": False,
+            "reason": "incompatible_official_pair",
+            "mismatches": mismatches,
+            "authority": "official",
+        }
     baseline = manager.result_csv_path(payload.baseline_job_id)
     candidate = manager.result_csv_path(payload.candidate_job_id)
     if not baseline or not candidate or not Path(baseline).is_file() or not Path(candidate).is_file():
