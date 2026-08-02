@@ -43,6 +43,24 @@ def test_trade_path_surface_discloses_authority_and_boundary() -> None:
     assert "/bt/trade-path/counterfactual" in source
 
 
+def test_trade_path_surface_mounts_data_contract_page() -> None:
+    source = _read("bt-trade-path-tab.jsx")
+    contract = _read("bt-data-contract.jsx")
+    assert 'from "./bt-data-contract.jsx"' in source
+    assert "데이터 계약" in source
+    assert "/bt/trade-path/data-contract" in source
+    assert "CSV SHA256" in contract
+    assert "zero_only" in contract
+    assert "missing" in contract
+
+
+def test_official_run_form_sends_intraday_session_boundary() -> None:
+    source = _read("bt-tab-run.jsx")
+    assert "start_time" in source
+    assert "end_time" in source
+    assert "전체청산" in source
+
+
 def test_trade_path_time_formatter_handles_tick_and_min_timestamps() -> None:
     source = _read("bt-trade-path-chart.jsx")
     assert "text.length === 12" in source

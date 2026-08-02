@@ -29,6 +29,7 @@ from ai_strategy_loop.dashboard._windows_process_job import (
     WindowsProcessJob,
     attach_process_job,
 )
+from ai_strategy_loop.dashboard.backtest_job_spec import BacktestJobSpec
 from ai_strategy_loop.controller.telemetry import dashboard_telemetry
 
 # 패키지 루트(.../ai_strategy_loop) 기준 경로. CWD 무관.
@@ -46,48 +47,6 @@ _LOG_TAIL_LINES = 50
 _POLL_SEC = 0.4
 
 CommandBuilder = Callable[["BacktestJobSpec"], List[str]]
-
-
-@dataclass
-class BacktestJobSpec:
-    """잡 실행 파라미터. /bt/run 페이로드에서 검증 후 생성된다."""
-
-    buy: str
-    sell: str
-    start: int
-    end: int
-    buy_code: Optional[str] = None
-    sell_code: Optional[str] = None
-    timeframe: str = "min"
-    engines: int = 4
-    timeout: int = 600
-    divid_mode: str = "종목코드별 분류"
-    one_code: Optional[str] = None
-    # 스모크/서브셋 백테용: 절대 경로를 주면 STOM_CLI_DB_STOCK_BACK_TICK/MIN 으로 주입된다.
-    back_db_override: Optional[str] = None
-    # 실행 모드(GUI 패리티 진입점):
-    #   "backtest"(기본, --buy/--sell 단일 실행)
-    #   "optimize"(stom_backtest optimize 래핑 — param_space JSON 파일 필수)
-    #   "wfo"(stom_backtest wfo 래핑 — 전진분석, train/test 윈도우 필수)
-    #   "sweep"(stom_backtest sweep param|rolling 래핑 — sweep_action 으로 분기)
-    mode: str = "backtest"
-    # optimize/wfo 모드 파라미터 탐색공간 JSON 파일 절대경로(--param-space 로 전달).
-    param_space: Optional[str] = None
-    # optimize/wfo 방법(grid|random)·목표지표.
-    opt_method: str = "grid"
-    opt_objective: str = "tpi"
-    # wfo(전진분석) train/test 윈도우 크기(일). mode=="wfo" 필수(>=1).
-    train_window_days: int = 0
-    test_window_days: int = 0
-    # wfo/sweep rolling 윈도우 이동 간격(일). wfo 미지정(0)이면 test_window_days 사용.
-    step_days: int = 0
-    # sweep 하위 동작: "param"(조합 스윕, sweep_params JSON 필수) | "rolling"(날짜 롤링).
-    sweep_action: str = "param"
-    # sweep param 모드 파라미터 조합 JSON 파일 절대경로(--params 로 전달).
-    sweep_params: Optional[str] = None
-    # sweep rolling 모드 윈도우 크기(일). mode=="sweep" + sweep_action=="rolling" 필수(>=1).
-    window_days: int = 0
-
 
 
 # ---------------------------------------------------------------- 진행 신호 감시
@@ -257,6 +216,8 @@ def default_command_builder(spec: BacktestJobSpec) -> List[str]:
             "--sell", spec.sell,
             "--start", str(spec.start),
             "--end", str(spec.end),
+            "--start-time", str(spec.start_time),
+            "--end-time", str(spec.end_time),
             "--param-space", str(spec.param_space or ""),
             "--method", spec.opt_method,
             "--objective", spec.opt_objective,
@@ -275,6 +236,8 @@ def default_command_builder(spec: BacktestJobSpec) -> List[str]:
             "--sell", spec.sell,
             "--start", str(spec.start),
             "--end", str(spec.end),
+            "--start-time", str(spec.start_time),
+            "--end-time", str(spec.end_time),
             "--train-window-days", str(spec.train_window_days),
             "--test-window-days", str(spec.test_window_days),
             "--objective", spec.opt_objective,
@@ -298,6 +261,8 @@ def default_command_builder(spec: BacktestJobSpec) -> List[str]:
                 "--sell", spec.sell,
                 "--start", str(spec.start),
                 "--end", str(spec.end),
+                "--start-time", str(spec.start_time),
+                "--end-time", str(spec.end_time),
                 "--window-days", str(spec.window_days),
                 "--step-days", str(spec.step_days),
             ])
@@ -308,6 +273,8 @@ def default_command_builder(spec: BacktestJobSpec) -> List[str]:
                 "--sell", spec.sell,
                 "--start", str(spec.start),
                 "--end", str(spec.end),
+                "--start-time", str(spec.start_time),
+                "--end-time", str(spec.end_time),
                 "--params", str(spec.sweep_params or ""),
             ])
         cmd.extend([
@@ -324,6 +291,8 @@ def default_command_builder(spec: BacktestJobSpec) -> List[str]:
         "--sell", spec.sell,
         "--start", str(spec.start),
         "--end", str(spec.end),
+        "--start-time", str(spec.start_time),
+        "--end-time", str(spec.end_time),
         "--timeframe", spec.timeframe,
         "--divid-mode", spec.divid_mode,
         "--engines", str(spec.engines),

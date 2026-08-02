@@ -92,6 +92,8 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
   const [start, setStart] = useState_bt("");
   const [end, setEnd] = useState_bt("");
   const [timeframe, setTimeframe] = useState_bt("min");
+  const [sessionStart, setSessionStart] = useState_bt("090000");
+  const [sessionEnd, setSessionEnd] = useState_bt("152800");
   const [engines, setEngines] = useState_bt(_btDefaultEngineCount);
   // v5.11.4 — 백테스트 엔진은 거래일 수보다 많은 엔진을 쓸 수 없다. 실행하고 20초 뒤
   //   실패로 알게 되던 것을 기간을 고르는 순간 화면에서 알려준다. days=null 은
@@ -227,12 +229,16 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
     const payload = {
       buy: (buy || "").trim(), sell: (sell || "").trim(),
       start: parseInt(start, 10) || 0, end: parseInt(end, 10) || 0,
+      start_time: parseInt(sessionStart, 10) || 0, end_time: parseInt(sessionEnd, 10) || 0,
       timeframe, engines: parseInt(engines, 10) || _btDefaultEngineCount(),
       mode,
     };
     if (!payload.buy || !payload.sell) { setRunErr("매수/매도 조건식을 선택하세요."); return; }
     if (!/^\d{8}$/.test(String(start)) || !/^\d{8}$/.test(String(end))) {
       setRunErr("기간은 YYYYMMDD 8자리로 입력하세요."); return;
+    }
+    if (!/^\d{6}$/.test(sessionStart) || !/^\d{6}$/.test(sessionEnd)) {
+      setRunErr("세션 시작·전체청산은 HHMMSS 6자리로 입력하세요."); return;
     }
     if (mode === "backtest") {
       payload.divid_mode = dividMode;
@@ -426,10 +432,18 @@ function BtRunPanel({ baseUrl, isDemo, libNames, onResult, compareA, onCompareB,
           </div>
           <div className="field" style={{ minWidth: 100 }}>
             <label>시간단위</label>
-            <select className="select" value={timeframe} onChange={e => setTimeframe(e.target.value)} disabled={isDemo} aria-label="시간단위 선택">
+            <select className="select" value={timeframe} onChange={e => { const next = e.target.value; setTimeframe(next); setSessionEnd(next === "tick" ? "093000" : "152800"); }} disabled={isDemo} aria-label="시간단위 선택">
               <option value="min">분봉 (min)</option>
               <option value="tick">틱 (tick)</option>
             </select>
+          </div>
+          <div className="field" style={{ minWidth: 92 }}>
+            <label>세션 시작</label>
+            <input className="input mono" value={sessionStart} maxLength="6" inputMode="numeric" onChange={e => setSessionStart(e.target.value.replace(/\D/g, "").slice(0, 6))} disabled={isDemo} />
+          </div>
+          <div className="field" style={{ minWidth: 100 }}>
+            <label>전체청산</label>
+            <input className="input mono" value={sessionEnd} maxLength="6" inputMode="numeric" onChange={e => setSessionEnd(e.target.value.replace(/\D/g, "").slice(0, 6))} disabled={isDemo} />
           </div>
           <div className="field bt-engine-field" style={{ minWidth: 118 }}>
             <label>엔진 수 (CPU 25%)</label>

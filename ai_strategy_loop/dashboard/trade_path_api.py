@@ -15,21 +15,19 @@ from ai_strategy_loop.autopsy.trade_episode import EpisodeBuilder, read_trade_ro
 from ai_strategy_loop.autopsy.trade_path_analysis import cohort_summaries
 from ai_strategy_loop.autopsy.trade_path_clock import liquidation_timestamp
 from ai_strategy_loop.autopsy.trade_path_models import Clause, ExitPolicy, ExitRule
-from ai_strategy_loop.dashboard.trade_path_api_models import (
-    AnalysisRequest,
-    CounterfactualRequest,
-    ProposalRequest,
-)
+from ai_strategy_loop.dashboard.trade_path_api_models import AnalysisRequest, CounterfactualRequest, ProposalRequest
 from ai_strategy_loop.dashboard.trade_path_jobs import TradePathJob, trade_path_coordinator
 from ai_strategy_loop.dashboard.trade_path_official_api import official_trade_path_router
 from ai_strategy_loop.dashboard.trade_path_report import trade_path_report_router
 from ai_strategy_loop.dashboard.trade_path_source import resolve_job_source
+from ai_strategy_loop.dashboard.trade_contract_api import trade_contract_router
 from ai_strategy_loop.revision.sell_proposer import propose_sell_conditions
 
 
 trade_path_router = APIRouter(prefix="/bt/trade-path", tags=["trade-path"])
 trade_path_router.include_router(official_trade_path_router)
 trade_path_router.include_router(trade_path_report_router)
+trade_path_router.include_router(trade_contract_router)
 
 
 def _job_payload(job: TradePathJob | None) -> dict[str, object]:

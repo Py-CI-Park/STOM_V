@@ -3,6 +3,7 @@ import { BtTradePathChart } from "./bt-trade-path-chart.jsx";
 import { BtExitCounterfactual } from "./bt-exit-counterfactual.jsx";
 import { BtConditionProposals } from "./bt-condition-proposals.jsx";
 import { BtExitTransition } from "./bt-exit-transition.jsx";
+import { BtDataContract } from "./bt-data-contract.jsx";
 const { useState: useState_tpt, useEffect: useEffect_tpt } = React;
 
 function _tpFetch(url, options) {
@@ -16,6 +17,7 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
   const [cohorts, setCohorts] = useState_tpt([]), [trades, setTrades] = useState_tpt([]);
   const [detail, setDetail] = useState_tpt(null), [cf, setCf] = useState_tpt(null);
   const [proposals, setProposals] = useState_tpt(null), [error, setError] = useState_tpt("");
+  const [dataContract, setDataContract] = useState_tpt(null);
   const [boundaryTime, setBoundaryTime] = useState_tpt("");
   const [activeView, setActiveView] = useState_tpt("summary");
   const analysisId = analysis && analysis.analysis_id;
@@ -33,8 +35,10 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
     if (!jobId) return;
     setError("");
     const boundaryQuery = boundaryTime ? "&forced_liquidation_time=" + encodeURIComponent(boundaryTime) : "";
-    _tpFetch(baseUrl + "/bt/trade-path/preflight?job_id=" + encodeURIComponent(jobId) + boundaryQuery)
-      .then(payload => { setPreflight(payload); if (payload.forced_liquidation_time) setBoundaryTime(String(payload.forced_liquidation_time).padStart(6, "0")); })
+    Promise.all([
+      _tpFetch(baseUrl + "/bt/trade-path/preflight?job_id=" + encodeURIComponent(jobId) + boundaryQuery),
+      _tpFetch(baseUrl + "/bt/trade-path/data-contract?job_id=" + encodeURIComponent(jobId)),
+    ]).then(([payload, contractPayload]) => { setPreflight(payload); setDataContract(contractPayload.contract || null); if (payload.forced_liquidation_time) setBoundaryTime(String(payload.forced_liquidation_time).padStart(6, "0")); })
       .catch(reason => setError(String(reason.message || reason)));
   };
   const start = () => {
@@ -83,11 +87,12 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
   return <section className="panel tp-workbench" aria-labelledby="tp-title">
     <header className="panel-hd"><div><div className="stom-section-label" id="tp-title">QSP7 · 거래 에피소드 / 매도 연구</div><div className="mono">실제 매도 뒤도 전체청산까지만 관찰 · 미실행 거래는 공식 엔진으로 재검증</div></div><div className="tp-authority-strip"><span className="tp-authority diagnostic">진단</span><span className="tp-authority advisory">자문</span><span className="tp-authority official">정본</span></div></header>
     <div className="panel-bd">
-      <div className="tp-source-bar"><label>완료 결과<select value={jobId} onChange={event => { setJobId(event.target.value); setBoundaryTime(""); setPreflight(null); setAnalysis(null); setCohorts([]); setTrades([]); setDetail(null); }}><option value="">job 선택</option>{jobs.map(job => <option key={job.job_id} value={job.job_id}>{job.spec?.buy || ""} · {job.spec?.sell || ""} · {job.job_id}</option>)}</select></label><label>전체청산 (HHMMSS)<input value={boundaryTime} inputMode="numeric" maxLength="6" placeholder="자동 판별" onChange={event => { setBoundaryTime(event.target.value.replace(/\D/g, "").slice(0, 6)); setPreflight(null); }}/></label><button className="btn ghost sm" onClick={inspect} disabled={!jobId}>사전 점검</button><button className="btn primary sm" onClick={start} disabled={!jobId || !preflight?.available || running}>경로 분석 시작</button>{running && <button className="btn danger sm" onClick={() => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" })}>취소</button>}</div>
+      <div className="tp-source-bar"><label>완료 결과<select value={jobId} onChange={event => { setJobId(event.target.value); setBoundaryTime(""); setPreflight(null); setDataContract(null); setAnalysis(null); setCohorts([]); setTrades([]); setDetail(null); }}><option value="">job 선택</option>{jobs.map(job => <option key={job.job_id} value={job.job_id}>{job.spec?.buy || ""} · {job.spec?.sell || ""} · {job.job_id}</option>)}</select></label><label>전체청산 (HHMMSS)<input value={boundaryTime} inputMode="numeric" maxLength="6" placeholder="자동 판별" onChange={event => { setBoundaryTime(event.target.value.replace(/\D/g, "").slice(0, 6)); setPreflight(null); }}/></label><button className="btn ghost sm" onClick={inspect} disabled={!jobId}>사전 점검</button><button className="btn primary sm" onClick={start} disabled={!jobId || !preflight?.available || running}>경로 분석 시작</button>{running && <button className="btn danger sm" onClick={() => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" })}>취소</button>}</div>
       {preflight && <div className={`tp-preflight ${preflight.available ? "ready" : "blocked"}`}><b>{preflight.available ? "분석 가능" : "분석 불가"}</b><span>{preflight.available ? `거래 ${preflight.trade_count} · 날짜 ${preflight.covered_date_count}/${preflight.date_count} · ${preflight.source.timeframe}` : `${preflight.reason}${preflight.exit_after_boundary_count ? ` · 경계 뒤 실제 매도 ${preflight.exit_after_boundary_count}건` : ""}`}</span><small>전체청산 {String(preflight.forced_liquidation_time || "").padStart(6, "0")} · {preflight.boundary_source || "미확인"} · 전체청산 이후 데이터는 존재해도 사용하지 않음</small></div>}
+      {dataContract && <div aria-label="데이터 계약"><BtDataContract contract={dataContract}/></div>}
       {running && <div className="tp-progress" role="progressbar" aria-valuenow={Math.round((analysis.progress || 0) * 100)}><i style={{ width: `${Math.round((analysis.progress || 0) * 100)}%` }}/><span>{analysis.processed || 0}/{analysis.total || "?"} · {Math.round((analysis.progress || 0) * 100)}%</span></div>}
       {error && <p className="tp-error" role="alert">{error}</p>}
-      {totals && <><nav className="tp-view-tabs" aria-label="거래 경로 분석 단계">{[["summary","요약·코호트"],["path","거래 경로"],["counterfactual","가상 매도"],["proposals","조건식 후보"],["official","공식 pair"]].map(([key,label]) => <button key={key} className={activeView === key ? "active" : ""} onClick={() => setActiveView(key)}>{label}</button>)}</nav>
+      {totals && <><nav className="tp-view-tabs" aria-label="거래 경로 분석 단계">{[["summary","매도 해부"],["path","거래 경로"],["counterfactual","가상 매도"],["proposals","조건식 후보"],["official","공식 pair"]].map(([key,label]) => <button key={key} className={activeView === key ? "active" : ""} onClick={() => setActiveView(key)}>{label}</button>)}</nav>
         {activeView === "summary" && <div className="tp-summary"><div className="tp-summary-actions"><span className="tp-authority diagnostic">진단</span><button className="btn ghost sm" onClick={() => window.open(baseUrl + "/bt/trade-path/report?analysis_id=" + encodeURIComponent(analysisId), "_blank", "noopener")}>진단 보고서 열기</button></div><div className="tp-kpis"><article><small>분석 거래</small><b>{totals.analyzed_count}</b></article><article><small>제외</small><b>{totals.excluded_count}</b></article><article><small>경계 전 회복</small><b>{totals.recovered_count}</b></article><article><small>실제 순손익</small><b>{_tpMoney(totals.actual_profit_krw)}</b></article></div><div className="tp-cohorts">{cohorts.map(row => <button key={row.key} onClick={() => { const hit = trades.find(trade => trade.exit_reason === row.key); if (hit) openTrade(hit); }}><b>{row.key}</b><span>{row.count}건 · 회복 {row.recovered_count} · {_tpMoney(row.actual_profit_krw)}</span></button>)}</div><div className="tp-trade-list">{trades.slice(0, 30).map(row => <button key={row.trade_key} onClick={() => openTrade(row)}><span>{row.name}</span><code>{String(row.buy_time).slice(8)} → {String(row.sell_time).slice(8)}</code><b className={row.actual_profit_krw >= 0 ? "pos" : "neg"}>{_tpMoney(row.actual_profit_krw)}</b></button>)}</div></div>}
         {activeView === "path" && (detail ? <div><BtTradePathChart episode={detail}/><div className="tp-path-actions"><span className="tp-authority diagnostic">진단</span><span>가상 horizon은 실제 틱 지연과 검열 사유를 함께 보존합니다.</span><button className="btn primary sm" onClick={replay}>이 거래를 Replay에서 열기</button></div></div> : <div className="tp-empty">요약에서 거래를 선택하세요.</div>)}
         {activeView === "counterfactual" && <div><BtExitCounterfactual baseUrl={baseUrl} analysisId={analysisId} onResult={setCf}/>{cf && <div className="tp-cf-result"><b>가상 순손익 변화 {_tpMoney(cf.total_delta_profit_krw)}</b><span>평가 {cf.outcomes?.length || 0} · 제외 {cf.failures?.length || 0}</span>{(cf.transitions || []).map(row => <small key={`${row.actual_reason}-${row.candidate_reason}`}>{row.actual_reason} → {row.candidate_reason}: {row.count}</small>)}</div>}</div>}

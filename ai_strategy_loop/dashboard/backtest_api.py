@@ -299,6 +299,8 @@ class BacktestRunPayload(_MutationPayload):
     sell: StrategyName
     start: int = Field(ge=20_000_101, le=20_991_231)
     end: int = Field(ge=20_000_101, le=20_991_231)
+    start_time: int = Field(default=90000, ge=0, le=235_959)
+    end_time: int = Field(default=152800, ge=0, le=235_959)
     timeframe: Literal["tick", "min"] = "min"
     # v5.11.4 — 상한 16 은 코어가 적던 시절의 값이다. 64코어급 워크스테이션에서
     #   전 기간 전종목 백테스트를 돌릴 수 없어 상한만 올린다(기본값 규칙은 불변).
@@ -1245,20 +1247,18 @@ def run_backtest(payload: BacktestRunPayload) -> Dict[str, Any]:
     spec = BacktestJobSpec(
         buy=payload.buy,
         sell=payload.sell,
-        start=payload.start,
-        end=payload.end,
+        start=payload.start, end=payload.end,
+        start_time=payload.start_time, end_time=payload.end_time,
         buy_code=buy_code,
         sell_code=sell_code,
         timeframe=payload.timeframe,
-        engines=engines,
-        timeout=payload.timeout,
+        engines=engines, timeout=payload.timeout,
         divid_mode=divid_mode,
         one_code=one_code,
         back_db_override=back_db_override,
         mode=payload.mode,
         param_space=param_space,
-        opt_method=payload.opt_method,
-        opt_objective=payload.opt_objective,
+        opt_method=payload.opt_method, opt_objective=payload.opt_objective,
         train_window_days=payload.train_window_days,
         test_window_days=payload.test_window_days,
         step_days=payload.step_days,
