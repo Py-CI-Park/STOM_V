@@ -61,6 +61,17 @@ def test_official_run_form_sends_intraday_session_boundary() -> None:
     assert "전체청산" in source
 
 
+def test_trade_path_surface_mounts_entry_variable_autopsy() -> None:
+    source = _read("bt-trade-path-tab.jsx")
+    entry = _read("bt-entry-autopsy.jsx")
+    assert 'from "./bt-entry-autopsy.jsx"' in source
+    assert "매수 해부" in source
+    assert "/bt/analysis/leaf_matrix" in entry
+    assert "/bt/analysis/feature_map" in entry
+    assert "모든 B_*" in entry
+    assert "R_*·S_*는 매수 입력으로 사용하지 않습니다" in entry
+
+
 def test_trade_path_time_formatter_handles_tick_and_min_timestamps() -> None:
     source = _read("bt-trade-path-chart.jsx")
     assert "text.length === 12" in source
