@@ -5,6 +5,7 @@
 > 기준 커밋: `e4ac882a` → `b6484549` → `3dda4cb3`와 현재 복구 작업 트리
 > 문서 역할: 대화와 문서가 바뀌면서 생긴 혼선을 정리하는 **QSP7 최상위 기준 문서**
 > 권위 구분: 아래의 “구현됨”은 코드·실행 증거이고, “계획”과 “목표값”은 아직 성과가 아니다.
+> 최종 실행 계획: [2026-08-02_qsp7_hybrid_db_and_unified_pipeline_master_plan.md](./2026-08-02_qsp7_hybrid_db_and_unified_pipeline_master_plan.md)
 
 ---
 
