@@ -87,9 +87,14 @@ class CandidateRunRequest(FrozenPayload):
     family: Annotated[str, StringConstraints(strip_whitespace=True, max_length=64)] = ""
 
 
+ResearchAxis = Annotated[str, StringConstraints(pattern="^(sell|buy)$")]
+
+
 class OfficialPairRequest(FrozenPayload):
     baseline_job_id: ShortText
     candidate_job_id: ShortText
+    # 한 라운드 한 축(R2-1): 바꾼 축만 달라야 하고 반대 축은 고정이어야 한다.
+    axis: ResearchAxis = "sell"
 
 
 class PromotionGateRequest(FrozenPayload):
@@ -97,6 +102,7 @@ class PromotionGateRequest(FrozenPayload):
     design_candidate_job_id: ShortText
     oos_baseline_job_id: ShortText
     oos_candidate_job_id: ShortText
+    axis: ResearchAxis = "sell"
 
 
 class MatrixCellPayload(FrozenPayload):
