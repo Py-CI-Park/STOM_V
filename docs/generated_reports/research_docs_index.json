@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-03T10:06:58.990100+00:00",
-  "source_fingerprint": "3210185c6bb795088a8d58928770124e84c9d33b90633a54e96c92800e2e2a87",
-  "count": 963,
+  "generated_at": "2026-08-03T10:37:04.843086+00:00",
+  "source_fingerprint": "8e10241aa7cb0179d85d53e0ddbdd9884ebc0167d0a5ac3b0b86bfa121311aed",
+  "count": 964,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6546,8 +6546,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_execution_midpoint_check.md",
       "title": "QSP7 실행 중간 점검 — 플랫폼 완성(P0~P6) 확정과 R1·컨트롤 실행 개시",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-03T10:06:06.275110+00:00",
-      "size": 2765
+      "updated_at": "2026-08-03T10:36:22.252851+00:00",
+      "size": 4293
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_master_execution_plan.md",
@@ -6695,6 +6695,13 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-07-30T05:49:42.067334+00:00",
       "size": 1701
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/rounds/R1_min_20260803.md",
+      "title": "R1 — min 레인 첫 공식 연구 라운드 (2026-08-03)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-03T10:35:50.945595+00:00",
+      "size": 3000
     },
     {
       "id": "docs/update_log/2026-06-02_analysis_capability_audit.md",
