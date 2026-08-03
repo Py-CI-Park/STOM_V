@@ -3,7 +3,7 @@
 import { _btFetchJson } from "./bt-tab-utils.jsx";
 const { useState: useState_ri, useEffect: useEffect_ri } = React;
 
-function _riNum(value, digits = 3) {
+function _rviNum(value, digits = 3) {
   const number = Number(value);
   return Number.isFinite(number) ? number.toLocaleString(undefined, { maximumFractionDigits: digits }) : "—";
 }
@@ -40,11 +40,11 @@ function BtRecoveryInsight({ baseUrl, analysisId }) {
           <div role="row" className="head"><span>변수</span><span>Cohen d</span><span>q</span><span>fold</span><span>양성 평균</span><span>음성 평균</span><span>표본</span></div>
           {(payload.top || []).map(row => <div role="row" key={row.feature} className={row.passes_fdr ? "pass" : "weak"}>
             <code>{row.feature}</code>
-            <b>{_riNum(row.d)}</b>
-            <span>{_riNum(row.q, 4)}{row.passes_fdr ? " ✓" : ""}</span>
+            <b>{_rviNum(row.d)}</b>
+            <span>{_rviNum(row.q, 4)}{row.passes_fdr ? " ✓" : ""}</span>
             <span>{row.fold_consistent ? "일관" : "혼재"}</span>
-            <span>{_riNum(row.positive_mean)}</span>
-            <span>{_riNum(row.negative_mean)}</span>
+            <span>{_rviNum(row.positive_mean)}</span>
+            <span>{_rviNum(row.negative_mean)}</span>
             <small>{row.n_positive}/{row.n_negative}</small>
           </div>)}
         </div>
