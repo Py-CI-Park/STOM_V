@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-03T10:50:58.472698+00:00",
-  "source_fingerprint": "21496adc44969cd9e82e449bb23c391eaaa2fc49f78bcc20fb7d182366850438",
-  "count": 964,
+  "generated_at": "2026-08-03T12:58:49.588232+00:00",
+  "source_fingerprint": "a7b2186907c70875b9acfd503d3dfa4f878433cd680a53eab7c1e567df563118",
+  "count": 965,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6546,15 +6546,15 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_execution_midpoint_check.md",
       "title": "QSP7 실행 중간 점검 — 플랫폼 완성(P0~P6) 확정과 R1·컨트롤 실행 개시",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-03T10:50:24.876205+00:00",
-      "size": 4804
+      "updated_at": "2026-08-03T12:57:56.913133+00:00",
+      "size": 5548
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_master_execution_plan.md",
       "title": "QSP7 마스터 실행 계획 — 페이지 세부 설계 · 브랜치 운영 · 기대 효과 · 도달 가능성",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-03T09:57:34.325300+00:00",
-      "size": 17291
+      "updated_at": "2026-08-03T12:58:09.724548+00:00",
+      "size": 18240
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_platform_completion_roadmap.md",
@@ -6702,6 +6702,13 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-08-03T10:35:50.945595+00:00",
       "size": 3000
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/rounds/R2_min_buyfilter_20260803.md",
+      "title": "R2 — min 레인 매수 진입 필터 라운드 (2026-08-03)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-03T12:56:56.066698+00:00",
+      "size": 3913
     },
     {
       "id": "docs/update_log/2026-06-02_analysis_capability_audit.md",
