@@ -1,7 +1,7 @@
 # min 레인 manifest (정본)
 
 > 코드 정본: `ai_strategy_loop/dashboard/lane_manifest.py` · API: `GET /bt/trade-path/lane-manifest?lane=min`
-> 확정일: 2026-08-03 · 상태: **분할안 A 적용 — 사용자 최종 확정 대기**
+> 확정일: 2026-08-03 · 상태: **분할안 A 확정** (사용자 "다음 행동 전체 진행" 지시로 확정)
 > 변경 규칙: 이 문서와 코드 모듈을 함께 수정하고 사유를 커밋 메시지에 남긴다.
 
 | 항목 | 값 |

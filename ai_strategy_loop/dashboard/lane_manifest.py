@@ -70,7 +70,7 @@ LANE_MANIFESTS: Final[dict[str, LaneManifest]] = {
         session_end=152800,
         forced_liquidation_time=152800,
         cost_policy="GetKiwoomPgSgSp(세0.18%+수수료0.015%×2, 왕복≈0.21%) — 수익금에 이미 반영",
-        decision_status="분할안 A 적용(설계 8개월/OOS 3개월) — 사용자 최종 확정 대기",
+        decision_status="분할안 A 확정(설계 8개월/OOS 3개월) — 2026-08-03 사용자 전체 진행 지시로 확정",
         notes=(
             "min DB는 2025-04-07~2026-02-27 총 11개월(213거래일)이 전부 — OOS 3개월이 구조적 상한",
             "기존 min control(20260802_063342)은 전 기간 사용이라 OOS 자격 없음(limitation_ledger 2026-08-03)",
