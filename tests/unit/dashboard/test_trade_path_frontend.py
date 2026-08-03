@@ -88,6 +88,31 @@ def test_oos_gate_prefills_from_attributed_candidate_runs() -> None:
     assert "candidate_id" in source
 
 
+def test_recovery_insight_page_gates_by_fdr_and_marks_labels_research_only() -> None:
+    source = _read("bt-recovery-insight.jsx")
+    tab = _read("bt-trade-path-tab.jsx")
+    assert "/bt/trade-path/recovery-insight" in source
+    assert "passes_fdr" in source and "fold_consistent" in source
+    assert "조건식 입력으로 사용하지 않습니다" in source
+    assert "판별력 있는 변수가 없습니다" in source  # 0건도 결과로 표시
+    assert "회복 판별" in tab and "<BtRecoveryInsight" in tab
+
+
+def test_calibration_page_accumulates_and_never_fakes_virtual_deltas() -> None:
+    source = _read("bt-calibration.jsx")
+    tab = _read("bt-trade-path-tab.jsx")
+    assert "/bt/trade-path/calibration" in source
+    assert "미기록" in source  # 가상 delta 부재를 숫자로 꾸미지 않는다
+    assert "캘리브레이션" in tab and "<BtCalibration" in tab
+
+
+def test_sell_anatomy_auto_summary_uses_observational_language_only() -> None:
+    source = _read("bt-trade-path-tab.jsx")
+    assert "관찰 결과이며 이 조건을 제거한 효과가 아닙니다" in source
+    # 인과 표현 금지: "제거하면 ~ 개선" 류 문구가 화면 문자열에 없어야 한다.
+    assert "제거하면" not in source
+
+
 def test_official_run_form_sends_intraday_session_boundary() -> None:
     source = _read("bt-tab-run.jsx")
     assert "start_time" in source

@@ -10,6 +10,7 @@ from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 
 from ai_strategy_loop.autopsy.exit_counterfactual import evaluate_policy
+from ai_strategy_loop.autopsy.recovery_insight import insight_payload
 from ai_strategy_loop.autopsy.market_path import MarketPathRepository
 from ai_strategy_loop.autopsy.trade_episode import EpisodeBuilder, read_trade_rows
 from ai_strategy_loop.autopsy.trade_path_analysis import cohort_summaries
@@ -303,6 +304,63 @@ def proposals(payload: ProposalRequest) -> dict[str, object]:
     if result is not None:
         trade_path_coordinator().add_proposals(payload.analysis_id, response)
     return response
+
+
+@trade_path_router.get("/recovery-insight")
+def recovery_insight(analysis_id: str = "", label: str = "recovery") -> dict[str, object]:
+    """회복/승패 판별 변수 탐색(P3) — FDR q≤0.1 게이트, 라벨은 근거 제시 전용."""
+    result = _require_result(analysis_id)
+    if result is None:
+        return {"available": False, "reason": "analysis_not_ready", "authority": "diagnostic"}
+    unit = 1_000_000 if result.source.timeframe.value == "tick" else 10_000
+    date_by_row = {row.row_id: row.buy_time // unit for row in result.episodes}
+    if label == "winloss":
+        labels_by_row = {
+            row.row_id: row.actual_profit_krw > 0
+            for row in result.episodes if row.actual_profit_krw != 0
+        }
+    else:
+        label = "recovery"
+        labels_by_row = {
+            row.row_id: bool(row.recovered_by_boundary)
+            for row in result.episodes if row.actual_profit_krw < 0
+        }
+    return jsonable_encoder(insight_payload(
+        csv_path=Path(result.source.csv_path),
+        labels_by_row=labels_by_row,
+        date_by_row=date_by_row,
+        label_name=label,
+    ))
+
+
+@trade_path_router.get("/calibration")
+def calibration(lane: str = "") -> dict[str, object]:
+    """가상↔공식 오차 축적 자리(P3-3) — 귀속된 후보의 공식 pair 만 대상."""
+    coordinator = trade_path_coordinator()
+    runs = {row.get("job_id"): row for row in coordinator.candidate_runs(lane)}
+    records: list[dict[str, object]] = []
+    for payload in coordinator.official_pairs():
+        pair = payload.get("pair") if isinstance(payload, dict) else None
+        if not isinstance(pair, dict):
+            continue
+        attribution = runs.get(pair.get("candidate_job_id"))
+        if attribution is None:
+            continue
+        records.append({
+            "candidate_id": attribution.get("candidate_id"),
+            "lane": attribution.get("lane"),
+            "role": attribution.get("role"),
+            "official_delta_profit_krw": pair.get("delta_profit_krw"),
+            "virtual_delta_profit_krw": None,
+            "note": "가상 delta 는 동일 후보의 counterfactual 실행 시 함께 축적됩니다.",
+        })
+    return {
+        "available": True,
+        "authority": "diagnostic",
+        "records": records,
+        "minimum_for_calibration": 5,
+        "status": "accumulating" if len(records) < 5 else "ready",
+    }
 
 
 @trade_path_router.post("/candidate-runs")
