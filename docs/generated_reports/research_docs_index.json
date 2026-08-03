@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-03T10:37:04.843086+00:00",
-  "source_fingerprint": "8e10241aa7cb0179d85d53e0ddbdd9884ebc0167d0a5ac3b0b86bfa121311aed",
+  "generated_at": "2026-08-03T10:50:58.472698+00:00",
+  "source_fingerprint": "21496adc44969cd9e82e449bb23c391eaaa2fc49f78bcc20fb7d182366850438",
   "count": 964,
   "docs": [
     {
@@ -6546,8 +6546,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_execution_midpoint_check.md",
       "title": "QSP7 실행 중간 점검 — 플랫폼 완성(P0~P6) 확정과 R1·컨트롤 실행 개시",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-03T10:36:22.252851+00:00",
-      "size": 4293
+      "updated_at": "2026-08-03T10:50:24.876205+00:00",
+      "size": 4804
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_master_execution_plan.md",
