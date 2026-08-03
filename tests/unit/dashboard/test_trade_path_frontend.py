@@ -113,6 +113,41 @@ def test_sell_anatomy_auto_summary_uses_observational_language_only() -> None:
     assert "제거하면" not in source
 
 
+def test_every_workbench_failure_path_speaks_korean_guidance() -> None:
+    tab = _read("bt-trade-path-tab.jsx")
+    messages = _read("bt-tp-messages.jsx")
+    # 모든 setError 경로가 한국어 사전(_tpKo)을 통과한다 — 날 것 사유 노출 금지.
+    assert tab.count("setError(") == tab.count("setError(_tpKo(") + tab.count('setError("")')
+    # 대표 사유들이 조치 안내를 갖는다.
+    for reason in ("market_path_missing", "backtest_result_not_ready",
+                   "cohort_too_small", "design_oos_period_overlap"):
+        assert reason in messages
+    assert "확인하세요" in messages
+
+
+def test_wizard_shows_next_condition_for_every_step() -> None:
+    tab = _read("bt-trade-path-tab.jsx")
+    messages = _read("bt-tp-messages.jsx")
+    assert "_tpNextHint" in tab
+    for view in ("data", "entry", "summary", "path", "counterfactual", "insight",
+                 "proposals", "console", "official", "oos", "calibration", "ledger"):
+        assert f'{view}:' in messages or f'"{view}"' in messages
+
+
+def test_preflight_surfaces_uncovered_dates_warning() -> None:
+    tab = _read("bt-trade-path-tab.jsx")
+    assert "uncovered_dates" in tab
+    assert "데이터 없는 날짜" in tab
+
+
+def test_ledger_browser_mounts_with_entities() -> None:
+    source = _read("bt-ledger-browser.jsx")
+    tab = _read("bt-trade-path-tab.jsx")
+    assert "/bt/trade-path/ledger" in source
+    assert "rebuild" in source
+    assert "<BtLedgerBrowser" in tab and "원장" in tab
+
+
 def test_official_run_form_sends_intraday_session_boundary() -> None:
     source = _read("bt-tab-run.jsx")
     assert "start_time" in source
