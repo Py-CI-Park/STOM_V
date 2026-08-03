@@ -81,7 +81,8 @@ def resolve_job_source(
     record = get_job_manager().get(job_id, log_tail=0)
     if not record.get("available"):
         raise ValueError("backtest_job_not_found")
-    if record.get("status") not in ("success", "error"):
+    # P4 — 실패한 백테스트의 CSV 는 불완전 산출물이므로 분석 입력으로 받지 않는다.
+    if record.get("status") != "success":
         raise ValueError("backtest_result_not_ready")
     csv_path = _existing_csv(record.get("csv_path"))
     if csv_path is None:

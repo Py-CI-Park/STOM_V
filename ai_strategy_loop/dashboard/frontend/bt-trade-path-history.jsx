@@ -17,6 +17,14 @@ function BtTradePathHistory({ baseUrl, active }) {
   const analyses = (payload && payload.analyses) || [];
   const pairs = (payload && payload.official_pairs) || [];
   const records = (payload && payload.records) || [];
+  const persisted = (payload && payload.persisted) || [];
+  const reopen = analysisId => {
+    // P4 — get() 이 sidecar 에서 투명 복원하므로 상태 조회만으로 다시 열린다.
+    fetch(baseUrl + "/bt/trade-path/jobs/" + encodeURIComponent(analysisId))
+      .then(response => response.json())
+      .then(() => fetch(baseUrl + "/bt/trade-path/history").then(r => r.json()).then(setPayload))
+      .catch(() => {});
+  };
   return (
     <details className="evo-group" open>
       <summary className="evo-group-summary">
@@ -30,6 +38,17 @@ function BtTradePathHistory({ baseUrl, active }) {
               <span className={`tp-status ${row.status}`}>{row.status}</span>
               <code>{row.analysis_id}</code>
               <small>{row.summary ? `분석 ${row.summary.analyzed_count} · 제외 ${row.summary.excluded_count}` : `진행 ${Math.round((row.progress || 0) * 100)}%`}</small>
+            </article>
+          ))}
+        </section>
+        <section>
+          <b>보존된 분석 (재시작 후에도 유지)</b>
+          {!persisted.length ? <p className="tp-empty">sidecar 원장에 보존된 분석이 없습니다.</p> : persisted.slice(0, 10).map(row => (
+            <article key={row.analysis_id}>
+              <span className={`tp-lane-badge ${row.lane}`}>{row.lane}</span>
+              <code>{row.analysis_id}</code>
+              <small>분석 {row.totals?.analyzed_count ?? 0}건 · {String(row.created_at || "").slice(0, 19)}</small>
+              <button className="btn ghost sm" onClick={() => reopen(row.analysis_id)}>다시 열기</button>
             </article>
           ))}
         </section>

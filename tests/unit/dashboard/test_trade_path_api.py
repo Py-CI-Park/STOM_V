@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 
 from ai_strategy_loop.dashboard import trade_path_jobs, trade_path_official_api, trade_path_source
 from ai_strategy_loop.dashboard.trade_path_api import trade_path_router
+from ai_strategy_loop.dashboard.research_sidecar import ResearchSidecar
 from ai_strategy_loop.dashboard.trade_path_jobs import TradePathCoordinator
 from ai_strategy_loop.dashboard.trade_path_ledger import TradePathLedger
 
@@ -107,7 +108,8 @@ def test_trade_path_api_runs_analysis_counterfactual_and_official_pair(
     monkeypatch.setattr(
         trade_path_jobs,
         "_COORDINATOR",
-        TradePathCoordinator(ledger=TradePathLedger(ledger_path)),
+        TradePathCoordinator(ledger=TradePathLedger(ledger_path),
+                             sidecar=ResearchSidecar(tmp_path / "sidecar.db")),
     )
     monkeypatch.setattr(trade_path_source, "get_job_manager", lambda: manager)
     monkeypatch.setattr(trade_path_official_api, "get_job_manager", lambda: manager)
@@ -195,7 +197,8 @@ def test_candidate_run_attribution_round_trips_by_lane(monkeypatch, tmp_path: Pa
     monkeypatch.setattr(
         trade_path_jobs,
         "_COORDINATOR",
-        TradePathCoordinator(ledger=TradePathLedger(ledger_path)),
+        TradePathCoordinator(ledger=TradePathLedger(ledger_path),
+                             sidecar=ResearchSidecar(tmp_path / "sidecar.db")),
     )
     app = FastAPI()
     app.include_router(trade_path_router)

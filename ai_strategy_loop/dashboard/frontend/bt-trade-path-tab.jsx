@@ -10,6 +10,7 @@ import { BtOosGate } from "./bt-oos-gate.jsx";
 import { BtCandidateConsole } from "./bt-candidate-console.jsx";
 import { BtRecoveryInsight } from "./bt-recovery-insight.jsx";
 import { BtCalibration } from "./bt-calibration.jsx";
+import { BtLedgerBrowser } from "./bt-ledger-browser.jsx";
 const { useState: useState_tpt, useEffect: useEffect_tpt } = React;
 
 function _tpFetch(url, options) {
@@ -106,7 +107,7 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
   const running = analysis && ["queued", "running"].includes(analysis.status);
   const proposalRows = (proposals && proposals.proposals) || [];
   const selectedProposal = proposalRows.find(row => row.proposal_id === selectedProposalId) || null;
-  const pageTabs = [["data","데이터 계약"],["entry","매수 해부"],...(totals ? [["summary","매도 해부"],["path","거래 경로"],...(detail ? [["sell-trace","매도식 추적"]] : []),["counterfactual","가상 매도"],["insight","회복 판별"],["proposals","조건식 후보"],["console","후보 실행"],["official","공식 pair"],["oos","OOS 채택"],["calibration","캘리브레이션"]] : [])];
+  const pageTabs = [["data","데이터 계약"],["entry","매수 해부"],...(totals ? [["summary","매도 해부"],["path","거래 경로"],...(detail ? [["sell-trace","매도식 추적"]] : []),["counterfactual","가상 매도"],["insight","회복 판별"],["proposals","조건식 후보"],["console","후보 실행"],["official","공식 pair"],["oos","OOS 채택"],["calibration","캘리브레이션"]] : []),["ledger","원장"]];
   const manifestRow = laneManifest && laneManifest.manifest;
   return <section className="panel tp-workbench" aria-labelledby="tp-title">
     <header className="panel-hd"><div><div className="stom-section-label" id="tp-title">QSP7 · 거래 에피소드 / 매도 연구</div><div className="mono">실제 매도 뒤도 전체청산까지만 관찰 · 미실행 거래는 공식 엔진으로 재검증</div></div><div className="tp-authority-strip"><span className={`tp-lane-badge ${lane}`}>{lane}</span><span className="tp-authority diagnostic">진단</span><span className="tp-authority advisory">자문</span><span className="tp-authority official">정본</span></div></header>
@@ -141,6 +142,7 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
         </div>}
         {activeView === "official" && <BtExitTransition baseUrl={baseUrl} jobs={jobs} baselineJobId={jobId}/>}
         {activeView === "oos" && <BtOosGate baseUrl={baseUrl} jobs={jobs} baselineJobId={jobId} lane={lane}/>}</>}
+      {activeView === "ledger" && <BtLedgerBrowser baseUrl={baseUrl} lane={lane}/>}
     </div>
   </section>;
 }

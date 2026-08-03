@@ -388,4 +388,29 @@ def analysis_history() -> dict[str, object]:
     coordinator = trade_path_coordinator()
     return {"available": True, "analyses": [_job_payload(job) for job in coordinator.list_jobs()],
             "official_pairs": list(coordinator.official_pairs()),
-            "records": list(coordinator.history_records())}
+            "records": list(coordinator.history_records()),
+            "persisted": coordinator.sidecar().list_analyses(limit=50)}
+
+
+@trade_path_router.get("/ledger")
+def research_ledger(entity: str = "analyses", lane: str = "", limit: int = 50) -> dict[str, object]:
+    """sidecar 연구 원장 조회(P4, SELECT-only)."""
+    coordinator = trade_path_coordinator()
+    sidecar = coordinator.sidecar()
+    if entity == "artifacts":
+        rows: list[dict[str, object]] = sidecar.list_artifacts(limit=limit)
+    elif entity == "candidate-runs":
+        rows = list(coordinator.candidate_runs(lane))[:max(1, min(limit, 500))]
+    elif entity == "events":
+        rows = list(coordinator.history_records(limit=limit))
+    else:
+        entity = "analyses"
+        rows = sidecar.list_analyses(limit=limit, lane=lane)
+    return jsonable_encoder({
+        "available": True,
+        "authority": "diagnostic",
+        "entity": entity,
+        "rows": rows,
+        "counts": sidecar.counts(),
+        "rebuild_sha256": sidecar.rebuild_hash(),
+    })
