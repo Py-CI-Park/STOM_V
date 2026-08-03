@@ -74,7 +74,10 @@ def _quantile(values: list[float], q: float) -> float:
 def _allowed_names(lane: str) -> set[str]:
     lane_extra = _TICK_ONLY if lane == "tick" else _MIN_ONLY
     catalog_names = {item.name for item in catalog_for_lane(lane)}
-    return _COMMON_NAMES | lane_extra | catalog_names
+    base = _COMMON_NAMES | lane_extra | catalog_names
+    # STOM 문법: 모든 변수는 `변수명N(이전틱수)` 이전값 함수를 가진다(strategy.txt).
+    previous = {f"{name}N" for name in base if name not in ("매도", "self")}
+    return base | previous
 
 
 def validate_candidate_code(

@@ -109,6 +109,23 @@ def test_intent_gate_requires_declared_thresholds_in_code() -> None:
         validate_candidate_code(code, lane="min", expected_consts=(-3.5,))
 
 
+def test_intent_gate_accepts_previous_value_functions_of_allowed_names() -> None:
+    # STOM 문법: 변수명N(틱수)는 모든 허용 변수에 존재 — 기준선 매도식이 실제 사용.
+    code = (
+        "매도 = False\n"
+        "if 5 < 최고수익률 and 현재가N(1) >= 이동평균(60, 1) and 이동평균(60) > 현재가:\n"
+        "    매도 = True\n"
+        "if 매도:\n    self.Sell()"
+    )
+    validate_candidate_code(code, lane="min")
+    # 교차 레인 변수의 N 함수는 여전히 차단된다.
+    with pytest.raises(CandidateValidationError, match="unknown_or_cross_lane"):
+        validate_candidate_code(
+            "매도 = False\nif 분당매수수량N(1) > 10:\n    매도 = True\nif 매도:\n    self.Sell()",
+            lane="tick",
+        )
+
+
 def test_intent_gate_blocks_future_label_leakage() -> None:
     with pytest.raises(CandidateValidationError, match="future_label_leakage"):
         validate_candidate_code(
