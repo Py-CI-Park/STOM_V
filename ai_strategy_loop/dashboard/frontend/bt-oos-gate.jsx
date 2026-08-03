@@ -19,7 +19,7 @@ function _oosPickAttributed(runs) {
   };
 }
 
-function BtOosGate({ baseUrl, jobs, baselineJobId, lane }) {
+function BtOosGate({ baseUrl, jobs, baselineJobId, lane, axis = "sell" }) {
   const [form, setForm] = useState_oos({ designBaseline: baselineJobId || "", designCandidate: "", oosBaseline: "", oosCandidate: "" });
   const [result, setResult] = useState_oos(null);
   const [busy, setBusy] = useState_oos(false);
@@ -41,6 +41,7 @@ function BtOosGate({ baseUrl, jobs, baselineJobId, lane }) {
     _btPostJson(`${baseUrl}/bt/trade-path/promotion-gate`, {
       design_baseline_job_id: form.designBaseline, design_candidate_job_id: form.designCandidate,
       oos_baseline_job_id: form.oosBaseline, oos_candidate_job_id: form.oosCandidate,
+      axis,
     }, 60000).then(setResult).catch(reason => setResult({ verdict: "blocked", blockers: [String(reason.message || reason)] })).finally(() => setBusy(false));
   };
   const designDelta = result?.design?.pair?.delta_profit_krw;
@@ -51,7 +52,7 @@ function BtOosGate({ baseUrl, jobs, baselineJobId, lane }) {
     {attributed && Object.values(attributed).some(Boolean) && <button className="btn ghost sm" onClick={applyAttributed}>귀속된 후보 실행 job 자동 채움</button>}
     <div className="tp-oos-form"><fieldset><legend>① 설계 구간</legend>{field("designBaseline", "기준")}{field("designCandidate", "후보")}</fieldset><fieldset><legend>② OOS 구간</legend>{field("oosBaseline", "기준")}{field("oosCandidate", "후보")}</fieldset></div>
     <button className="btn primary sm" disabled={busy || Object.values(form).some(value => !value)} onClick={run}>{busy ? "공식 결과 확인 중…" : "설계/OOS 채택 판정"}</button>
-    {result && <div className={`tp-oos-verdict ${result.verdict === "adoptable" ? "ready" : "blocked"}`}><b>{result.verdict === "adoptable" ? "채택 가능" : "채택 불가"}</b><span>설계 {Number(designDelta || 0).toLocaleString()}원 · OOS {Number(oosDelta || 0).toLocaleString()}원</span><small>{(result.blockers || []).join(" · ") || result.rule}</small></div>}
+    {result && <div className={`tp-oos-verdict ${result.verdict === "adoptable" ? "ready" : "blocked"}`}><b>{result.verdict === "adoptable" ? "채택 가능" : "채택 불가"}</b><span>설계 {Number(designDelta || 0).toLocaleString()}원 · OOS {Number(oosDelta || 0).toLocaleString()}원</span>{axis === "buy" && <span className="mono">건당 엣지 설계 {Number(result.design_per_trade_delta || 0).toLocaleString()}원 · OOS {Number(result.oos_per_trade_delta || 0).toLocaleString()}원 · 거래 유지 {Math.round((result.design_trade_ratio || 0) * 100)}%/{Math.round((result.oos_trade_ratio || 0) * 100)}% (하한 {Math.round((result.min_trade_ratio || 0.4) * 100)}%)</span>}<small>{(result.blockers || []).join(" · ") || result.rule}</small></div>}
   </section>;
 }
 

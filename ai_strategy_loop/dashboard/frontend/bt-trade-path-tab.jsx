@@ -11,6 +11,7 @@ import { BtCandidateConsole } from "./bt-candidate-console.jsx";
 import { BtRecoveryInsight } from "./bt-recovery-insight.jsx";
 import { BtCalibration } from "./bt-calibration.jsx";
 import { BtLedgerBrowser } from "./bt-ledger-browser.jsx";
+import { BtBuyFilters } from "./bt-buy-filters.jsx";
 import { _tpKo, _tpNextHint } from "./bt-tp-messages.jsx";
 const { useState: useState_tpt, useEffect: useEffect_tpt } = React;
 
@@ -31,12 +32,16 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
   const [lane, setLane] = useState_tpt("min");
   const [laneManifest, setLaneManifest] = useState_tpt(null);
   const [selectedProposalId, setSelectedProposalId] = useState_tpt("");
+  const [axis, setAxis] = useState_tpt("sell");
+  const [buyFilters, setBuyFilters] = useState_tpt(null);
+  const [selectedFilter, setSelectedFilter] = useState_tpt(null);
   const analysisId = analysis && analysis.analysis_id;
 
   const resetForLane = () => {
     setJobId(""); setPreflight(null); setDataContract(null); setBoundaryTime("");
     setAnalysis(null); setCohorts([]); setTrades([]); setDetail(null); setCf(null);
     setProposals(null); setSelectedProposalId(""); setActiveView("data");
+    setBuyFilters(null); setSelectedFilter(null);
   };
 
   useEffect_tpt(() => {
@@ -110,13 +115,16 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
   const running = analysis && ["queued", "running"].includes(analysis.status);
   const proposalRows = (proposals && proposals.proposals) || [];
   const selectedProposal = proposalRows.find(row => row.proposal_id === selectedProposalId) || null;
-  const pageTabs = [["data","데이터 계약"],["entry","매수 해부"],...(totals ? [["summary","매도 해부"],["path","거래 경로"],...(detail ? [["sell-trace","매도식 추적"]] : []),["counterfactual","가상 매도"],["insight","회복 판별"],["proposals","조건식 후보"],["console","후보 실행"],["official","공식 pair"],["oos","OOS 채택"],["calibration","캘리브레이션"]] : []),["ledger","원장"]];
+  const pageTabs = [["data","데이터 계약"],["entry","매수 해부"],...(totals ? [["summary","매도 해부"],["path","거래 경로"],...(detail ? [["sell-trace","매도식 추적"]] : []),["counterfactual","가상 매도"],["insight","회복 판별"],[axis === "buy" ? "buy-filters" : "proposals", axis === "buy" ? "매수 필터 후보" : "조건식 후보"],["console","후보 실행"],["official","공식 pair"],["oos","OOS 채택"],["calibration","캘리브레이션"]] : []),["ledger","원장"]];
   const manifestRow = laneManifest && laneManifest.manifest;
   return <section className="panel tp-workbench" aria-labelledby="tp-title">
     <header className="panel-hd"><div><div className="stom-section-label" id="tp-title">QSP7 · 거래 에피소드 / 매도 연구</div><div className="mono">실제 매도 뒤도 전체청산까지만 관찰 · 미실행 거래는 공식 엔진으로 재검증</div></div><div className="tp-authority-strip"><span className={`tp-lane-badge ${lane}`}>{lane}</span><span className="tp-authority diagnostic">진단</span><span className="tp-authority advisory">자문</span><span className="tp-authority official">정본</span></div></header>
     <div className="panel-bd">
       <div className="tp-lane-bar" role="tablist" aria-label="연구 레인 선택">
         {["min","tick"].map(name => <button key={name} role="tab" aria-selected={lane === name} className={lane === name ? "active" : ""} onClick={() => { if (name !== lane) { setLane(name); resetForLane(); } }}>{name} 레인</button>)}
+        <span className="tp-axis-switch" role="tablist" aria-label="연구 축 선택">
+          {[["sell","매도 축"],["buy","매수 축"]].map(([key,label]) => <button key={key} role="tab" aria-selected={axis === key} className={axis === key ? "active" : ""} onClick={() => { if (key !== axis) { setAxis(key); setSelectedProposalId(""); setSelectedFilter(null); setActiveView(key === "buy" ? "buy-filters" : "proposals"); } }}>{label}</button>)}
+        </span>
         {manifestRow && <span className="tp-lane-manifest mono">설계 {manifestRow.design.start}~{manifestRow.design.end} · OOS {manifestRow.oos.start}~{manifestRow.oos.end} · 세션 ~{String(manifestRow.session_end).padStart(6, "0")}{laneManifest.baseline_registered ? "" : " · ⚠ 기준선 미등록"}</span>}
       </div>
       <div className="tp-source-bar"><label>완료 결과<select value={jobId} onChange={event => { setJobId(event.target.value); setBoundaryTime(""); setPreflight(null); setDataContract(null); setActiveView("data"); setAnalysis(null); setCohorts([]); setTrades([]); setDetail(null); }}><option value="">job 선택</option>{jobs.map(job => <option key={job.job_id} value={job.job_id}>{job.spec?.buy || ""} · {job.spec?.sell || ""} · {job.job_id}</option>)}</select></label><label>전체청산 (HHMMSS)<input value={boundaryTime} inputMode="numeric" maxLength="6" placeholder="자동 판별" onChange={event => { setBoundaryTime(event.target.value.replace(/\D/g, "").slice(0, 6)); setPreflight(null); }}/></label><button className="btn ghost sm" onClick={inspect} disabled={!jobId}>사전 점검</button><button className="btn primary sm" onClick={start} disabled={!jobId || !preflight?.available || running}>경로 분석 시작</button>{running && <button className="btn danger sm" onClick={() => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" }).catch(reason => setError(_tpKo(String(reason.message || reason))))}>취소</button>}</div>
@@ -136,16 +144,18 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
         {activeView === "insight" && <BtRecoveryInsight baseUrl={baseUrl} analysisId={analysisId}/>}
         {activeView === "calibration" && <BtCalibration baseUrl={baseUrl} lane={lane}/>}
         {activeView === "proposals" && <div><button className="btn primary sm" onClick={generateProposals}>근거 기반 후보 생성</button><BtConditionProposals proposals={proposals}/></div>}
+        {activeView === "buy-filters" && <BtBuyFilters baseUrl={baseUrl} analysisId={analysisId} payload={buyFilters} onPayload={setBuyFilters} selectedId={selectedFilter && selectedFilter.proposal_id} onSelect={row => { setSelectedFilter(row); setActiveView("console"); }}/>}
         {activeView === "console" && <div>
-          {proposalRows.length > 0 && <label className="tp-cc-picker">실행할 후보
+          {axis === "sell" && proposalRows.length > 0 && <label className="tp-cc-picker">실행할 후보
             <select value={selectedProposalId} onChange={event => setSelectedProposalId(event.target.value)}>
               <option value="">후보 선택</option>
               {proposalRows.map(row => <option key={row.proposal_id} value={row.proposal_id}>{row.family} · {row.title}</option>)}
             </select></label>}
-          <BtCandidateConsole baseUrl={baseUrl} lane={lane} manifest={laneManifest} proposal={selectedProposal}/>
+          {axis === "buy" && <div className="tp-cc-picker mono">{selectedFilter ? `선택된 매수 필터: ${selectedFilter.title} · 기대 진입 유지율 ${(Number(selectedFilter.expected_retention) * 100).toFixed(1)}%` : "매수 필터 후보 화면에서 [이 필터로 실행 준비]를 누르세요."}</div>}
+          <BtCandidateConsole baseUrl={baseUrl} lane={lane} manifest={laneManifest} axis={axis} proposal={axis === "buy" ? selectedFilter : selectedProposal}/>
         </div>}
         {activeView === "official" && <BtExitTransition baseUrl={baseUrl} jobs={jobs} baselineJobId={jobId}/>}
-        {activeView === "oos" && <BtOosGate baseUrl={baseUrl} jobs={jobs} baselineJobId={jobId} lane={lane}/>}</>}
+        {activeView === "oos" && <BtOosGate baseUrl={baseUrl} jobs={jobs} baselineJobId={jobId} lane={lane} axis={axis}/>}</>}
       {activeView === "ledger" && <BtLedgerBrowser baseUrl={baseUrl} lane={lane}/>}
     </div>
   </section>;

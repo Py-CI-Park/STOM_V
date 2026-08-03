@@ -407,8 +407,10 @@ def attribute_candidate_run(payload: CandidateRunRequest) -> dict[str, object]:
         "candidate_id": payload.candidate_id,
         "lane": payload.lane,
         "role": payload.role,
+        "axis": payload.axis,
         "job_id": payload.job_id,
         "sell_name": payload.sell_name,
+        "buy_name": payload.buy_name,
         "family": payload.family,
     })
     return {"available": True, "authority": "official", "record": record}

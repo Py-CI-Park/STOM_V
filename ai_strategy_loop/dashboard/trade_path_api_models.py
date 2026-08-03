@@ -85,6 +85,9 @@ class CandidateRunRequest(FrozenPayload):
     job_id: ShortText
     sell_name: ShortText
     family: Annotated[str, StringConstraints(strip_whitespace=True, max_length=64)] = ""
+    # R2 — 어느 축을 바꾼 실행인지. buy 축이면 sell_name 은 기준선 매도식이다.
+    axis: Annotated[str, StringConstraints(pattern="^(sell|buy)$")] = "sell"
+    buy_name: Annotated[str, StringConstraints(strip_whitespace=True, max_length=128)] = ""
 
 
 ResearchAxis = Annotated[str, StringConstraints(pattern="^(sell|buy)$")]

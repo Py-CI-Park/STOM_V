@@ -35,6 +35,13 @@ const _TP_REASON_KO = {
   period_metadata_missing: "job 기간 정보가 없어 겹침을 판정할 수 없습니다.",
   design_oos_period_overlap: "설계와 OOS 기간이 겹칩니다 — 비중첩 기간으로 다시 실행하세요.",
   design_not_improved: "설계 구간에서 개선되지 않았습니다 — 채택 불가가 정상입니다.",
+  design_per_trade_edge_not_improved: "설계 구간에서 건당 엣지가 개선되지 않았습니다 — 거래만 줄어든 개선은 채택하지 않습니다.",
+  oos_per_trade_edge_not_improved: "OOS 구간에서 건당 엣지가 개선되지 않았습니다.",
+  design_trade_count_collapsed: "설계 구간 거래가 너무 많이 사라졌습니다(유지율 40% 미만) — 표본 붕괴입니다.",
+  oos_trade_count_collapsed: "OOS 구간 거래가 너무 많이 사라졌습니다(유지율 40% 미만).",
+  baseline_buy_missing: "레인 기준선 매수식을 strategy DB 에서 찾지 못했습니다.",
+  sell_condition: "매수 축 라운드인데 매도식이 서로 다릅니다 — 한 라운드 한 축 규율 위반입니다.",
+  buy_condition: "매도 축 라운드인데 매수식이 서로 다릅니다 — 진입 고정 전제가 깨집니다.",
   oos_not_improved: "OOS 구간에서 개선되지 않았습니다 — 채택 불가가 정상입니다.",
 };
 
@@ -54,6 +61,7 @@ const _TP_NEXT_KO = {
   counterfactual: "다음 → 회복 판별: 가상 delta 는 자문입니다. 판별 변수로 가설 근거를 보강하세요.",
   insight: "다음 → 조건식 후보: FDR 통과 변수를 근거로 후보를 생성하세요. 통과 0개면 그것도 결과입니다.",
   proposals: "다음 → 후보 실행: 서로 다른 family 후보를 고르세요. 숫자만 다른 복제는 하나로 칩니다.",
+  "buy-filters": "다음 → 후보 실행: 필터는 진입을 줄입니다. 기대 유지율과 건당 엣지를 함께 보세요.",
   console: "다음 → 공식 pair: 설계 실행이 success 가 되면 기준선과 비교하세요.",
   official: "다음 → OOS 채택: 비용 후 손익·MDD·거래수가 함께 확인되면 OOS 로 넘어가세요.",
   oos: "다음 → 캘리브레이션·History: 설계·OOS 둘 다 개선 + 사람 승인 전에는 채택하지 않습니다.",

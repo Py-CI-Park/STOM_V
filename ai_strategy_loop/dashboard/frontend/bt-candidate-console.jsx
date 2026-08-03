@@ -16,7 +16,7 @@ function _ccFamilySlug(family) {
   return String(family || "후보").replace(/\s+/g, "");
 }
 
-function BtCandidateConsole({ baseUrl, lane, manifest, proposal }) {
+function BtCandidateConsole({ baseUrl, lane, manifest, proposal, axis = "sell" }) {
   const [regState, setRegState] = useState_cc({ phase: "idle", name: "", message: "" });
   const [jobs, setJobs] = useState_cc({ design: null, oos: null });
   const [error, setError] = useState_cc("");
@@ -43,7 +43,7 @@ function BtCandidateConsole({ baseUrl, lane, manifest, proposal }) {
     setError("");
     setRegState(current => ({ ...current, phase: "busy" }));
     _btPostJson(`${baseUrl}/bt/strategy`, {
-      kind: "sell", name: candidateName, code: proposal.stom_code, overwrite: false,
+      kind: axis, name: candidateName, code: proposal.stom_code, overwrite: false,
     }, 20000).then(payload => {
       if (payload && (payload.status === "ok" || payload.saved || payload.available)) {
         setRegState({ phase: "done", name: candidateName, message: "연구용 전략으로 등록됨 · 자동 채택 아님" });
@@ -63,11 +63,14 @@ function BtCandidateConsole({ baseUrl, lane, manifest, proposal }) {
     }).catch(reason => setError(String(reason.message || reason)));
   };
 
-  const run = (role, sellName, candidateId) => {
+  const run = (role, strategyName, candidateId) => {
     const period = role === "design" ? design : oos;
+    // 한 라운드 한 축: 바꾼 축만 후보 전략, 반대 축은 manifest 기준선 고정.
+    const buyName = axis === "buy" ? strategyName : laneManifest.baseline_buy;
+    const sellName = axis === "buy" ? laneManifest.baseline_sell : strategyName;
     setError("");
     _btPostJson(`${baseUrl}/bt/run`, {
-      buy: laneManifest.baseline_buy, sell: sellName,
+      buy: buyName, sell: sellName,
       start: period.start, end: period.end,
       start_time: laneManifest.session_start, end_time: laneManifest.session_end,
       timeframe: laneManifest.timeframe, mode: "backtest",
@@ -76,8 +79,8 @@ function BtCandidateConsole({ baseUrl, lane, manifest, proposal }) {
       if (!jobId) { setError((payload && payload.message) || "공식 실행 시작 실패"); return; }
       setJobs(current => ({ ...current, [role]: { id: jobId, status: "queued", progress: 0 } }));
       _btPostJson(`${baseUrl}/bt/trade-path/candidate-runs`, {
-        candidate_id: candidateId, lane, role, job_id: jobId,
-        sell_name: sellName, family: proposal.family || "",
+        candidate_id: candidateId, lane, role, axis, job_id: jobId,
+        sell_name: sellName, buy_name: buyName, family: proposal.family || "",
       }, 15000).catch(reason => setError(`귀속 기록 실패: ${String(reason.message || reason)}`));
       poll(role, jobId);
     }).catch(reason => setError(String(reason.message || reason)));
@@ -89,7 +92,7 @@ function BtCandidateConsole({ baseUrl, lane, manifest, proposal }) {
     : <span className="tp-cc-job idle">미실행</span>;
 
   return <section className="tp-subpanel tp-candidate-console" aria-labelledby="tp-cc-title">
-    <header><div><b id="tp-cc-title">후보 실행 콘솔 · {lane}</b><small>기간·세션·기준선은 manifest 자동 주입 — 수기 입력 없음</small></div><span className="tp-authority official">정본</span></header>
+    <header><div><b id="tp-cc-title">후보 실행 콘솔 · {lane} · 축={axis === "buy" ? "매수" : "매도"}</b><small>기간·세션·기준선은 manifest 자동 주입 — 수기 입력 없음 · 반대 축은 기준선 고정</small></div><span className="tp-authority official">정본</span></header>
     <div className="tp-cc-manifest mono">
       설계 {design.start}~{design.end} · OOS {oos.start}~{oos.end} · 세션 {String(laneManifest.session_start).padStart(6, "0")}~{String(laneManifest.session_end).padStart(6, "0")} · 기준선 {laneManifest.baseline_buy}/{laneManifest.baseline_sell}
       {laneManifest.decision_status && laneManifest.decision_status.includes("대기") && <em className="tp-cc-pending"> · {laneManifest.decision_status}</em>}
@@ -102,7 +105,7 @@ function BtCandidateConsole({ baseUrl, lane, manifest, proposal }) {
         </button>
       </li>
       <li className={designDone ? "done" : ""}>
-        <div><b>② 설계 실행</b>{jobBadge(jobs.design)}<small>기준선 매수식 고정 · 후보 매도식만 교체(한 라운드 한 축)</small></div>
+        <div><b>② 설계 실행</b>{jobBadge(jobs.design)}<small>{axis === "buy" ? "기준선 매도식 고정 · 후보 매수식만 교체" : "기준선 매수식 고정 · 후보 매도식만 교체"}(한 라운드 한 축)</small></div>
         <button className="btn primary sm" onClick={() => run("design", regState.name || candidateName, proposal.proposal_id)} disabled={regState.phase !== "done" || (jobs.design && !["error", "cancelled"].includes(jobs.design.status))}>설계 실행</button>
       </li>
       <li>
@@ -111,9 +114,9 @@ function BtCandidateConsole({ baseUrl, lane, manifest, proposal }) {
       </li>
     </ol>
     <div className="tp-cc-baseline">
-      <small>기준선 pair 가 없으면 함께 실행하세요 (같은 기간·기준선 매도식):</small>
-      <button className="btn ghost sm" onClick={() => run("design", laneManifest.baseline_sell, "baseline")}>기준선 설계 실행</button>
-      <button className="btn ghost sm" onClick={() => run("oos", laneManifest.baseline_sell, "baseline")}>기준선 OOS 실행</button>
+      <small>기준선 pair 가 없으면 함께 실행하세요 (같은 기간·기준선 전략):</small>
+      <button className="btn ghost sm" onClick={() => run("design", axis === "buy" ? laneManifest.baseline_buy : laneManifest.baseline_sell, "baseline")}>기준선 설계 실행</button>
+      <button className="btn ghost sm" onClick={() => run("oos", axis === "buy" ? laneManifest.baseline_buy : laneManifest.baseline_sell, "baseline")}>기준선 OOS 실행</button>
     </div>
     {error && <p className="tp-error" role="alert">{error}</p>}
   </section>;

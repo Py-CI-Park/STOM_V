@@ -148,6 +148,35 @@ def test_ledger_browser_mounts_with_entities() -> None:
     assert "<BtLedgerBrowser" in tab and "원장" in tab
 
 
+def test_axis_switch_routes_to_the_matching_candidate_page() -> None:
+    tab = _read("bt-trade-path-tab.jsx")
+    assert "tp-axis-switch" in tab
+    assert "매수 축" in tab and "매도 축" in tab
+    assert 'from "./bt-buy-filters.jsx"' in tab
+    assert "<BtBuyFilters" in tab
+    # 축을 바꾸면 후보 선택 상태를 초기화한다(교차 오염 방지).
+    assert "setSelectedFilter(null)" in tab
+
+
+def test_buy_filter_cards_always_disclose_entry_retention() -> None:
+    source = _read("bt-buy-filters.jsx")
+    assert "/bt/trade-path/buy-filters" in source
+    assert "기대 진입 유지율" in source
+    assert "건당 엣지" in source          # 거래 축소형 가짜 개선 경고
+    assert "이것도 결과입니다" in source   # 0건도 결과
+    assert "추정하지 않음" in source or "제외된 변수" in source
+
+
+def test_console_and_gate_are_axis_aware() -> None:
+    console = _read("bt-candidate-console.jsx")
+    gate = _read("bt-oos-gate.jsx")
+    # 한 라운드 한 축: 매수 축이면 매수식이 후보, 매도식은 기준선 고정.
+    assert 'axis === "buy" ? strategyName : laneManifest.baseline_buy' in console
+    assert 'kind: axis' in console
+    assert "axis," in gate or "axis: axis" in gate
+    assert "거래 유지" in gate
+
+
 def test_official_run_form_sends_intraday_session_boundary() -> None:
     source = _read("bt-tab-run.jsx")
     assert "start_time" in source
