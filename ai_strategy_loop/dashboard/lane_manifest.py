@@ -103,6 +103,27 @@ def _strategy_sha256(kind: str, name: str) -> str:
     return hashlib.sha256(str(row[0]).encode("utf-8")).hexdigest()
 
 
+def baseline_code(lane: str, kind: str) -> str:
+    """레인 기준선 매수/매도 코드 원문(read-only). 부재는 빈 문자열."""
+    manifest = LANE_MANIFESTS.get(lane)
+    if manifest is None:
+        return ""
+    name = manifest.baseline_buy if kind == "buy" else manifest.baseline_sell
+    table = "stockbuy" if kind == "buy" else "stocksell"
+    path = _strategy_db_path()
+    if not path.is_file():
+        return ""
+    try:
+        uri = f"file:{path.as_posix()}?mode=ro"
+        with sqlite3.connect(uri, uri=True) as connection:
+            row = connection.execute(
+                f'SELECT 전략코드 FROM {table} WHERE "index" = ?', (name,)
+            ).fetchone()
+    except sqlite3.Error:
+        return ""
+    return str(row[0]) if row and row[0] else ""
+
+
 def lane_manifest_payload(lane: str) -> dict[str, object]:
     manifest = LANE_MANIFESTS.get(lane)
     if manifest is None:

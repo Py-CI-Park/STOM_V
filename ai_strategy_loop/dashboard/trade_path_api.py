@@ -10,7 +10,8 @@ from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 
 from ai_strategy_loop.autopsy.exit_counterfactual import evaluate_policy
-from ai_strategy_loop.autopsy.recovery_insight import insight_payload
+from ai_strategy_loop.autopsy.recovery_insight import insight_payload, variable_stats
+from ai_strategy_loop.revision.buy_filter_proposer import propose_buy_filters
 from ai_strategy_loop.autopsy.market_path import MarketPathRepository
 from ai_strategy_loop.autopsy.trade_episode import EpisodeBuilder, read_trade_rows
 from ai_strategy_loop.autopsy.trade_path_analysis import cohort_summaries
@@ -27,7 +28,7 @@ from ai_strategy_loop.dashboard.trade_path_official_api import official_trade_pa
 from ai_strategy_loop.dashboard.trade_path_report import trade_path_report_router
 from ai_strategy_loop.dashboard.trade_path_source import resolve_job_source
 from ai_strategy_loop.dashboard.trade_contract_api import trade_contract_router
-from ai_strategy_loop.dashboard.lane_manifest import lane_manifest_payload
+from ai_strategy_loop.dashboard.lane_manifest import baseline_code, lane_manifest_payload
 from ai_strategy_loop.dashboard.sell_dsl_api import sell_dsl_router
 from ai_strategy_loop.revision.sell_proposer import propose_sell_conditions
 from ai_strategy_loop.revision.variable_catalog import catalog_payload
@@ -331,6 +332,42 @@ def recovery_insight(analysis_id: str = "", label: str = "recovery") -> dict[str
         date_by_row=date_by_row,
         label_name=label,
     ))
+
+
+@trade_path_router.post("/buy-filters")
+def buy_filters(payload: ProposalRequest) -> dict[str, object]:
+    """회복 판별 통계 → 얕은 매수 진입 필터 후보(R2). 근거 없으면 0건이 정상."""
+    result = _require_result(payload.analysis_id)
+    if result is None:
+        return {"available": False, "reason": "analysis_not_ready", "authority": "advisory"}
+    lane = result.source.timeframe.value
+    base = baseline_code(lane, "buy")
+    if not base:
+        return {"available": False, "reason": "baseline_buy_missing", "authority": "advisory"}
+    unit = 1_000_000 if lane == "tick" else 10_000
+    labels = {
+        row.row_id: bool(row.recovered_by_boundary)
+        for row in result.episodes if row.actual_profit_krw < 0
+    }
+    dates = {row.row_id: row.buy_time // unit for row in result.episodes}
+    csv_path = Path(result.source.csv_path)
+    stats = variable_stats(csv_path=csv_path, labels_by_row=labels, date_by_row=dates)
+    proposals, skipped = propose_buy_filters(
+        csv_path=csv_path, stats=stats, base_code=base, timeframe=lane,
+    )
+    response = jsonable_encoder({
+        "available": True, "authority": "advisory", "axis": "buy", "lane": lane,
+        "saved": False,
+        "label": "recovery",
+        "eligible_variables": sum(
+            1 for stat in stats if stat.passes_fdr and stat.fold_consistent
+        ),
+        "proposals": [asdict(row) for row in proposals],
+        "skipped": list(skipped),
+        "note": "필터는 진입을 줄인다 — 채택 게이트가 건당 엣지와 거래 유지율을 함께 본다.",
+    })
+    trade_path_coordinator().add_proposals(payload.analysis_id, response)
+    return response
 
 
 @trade_path_router.get("/calibration")
