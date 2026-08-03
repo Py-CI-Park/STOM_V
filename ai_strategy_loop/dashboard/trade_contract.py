@@ -170,7 +170,7 @@ def _optional_int(value: Scalar) -> int | None:
         return None
 
 
-def _legacy_exit_boundary(rows: Sequence[Mapping[str, str]], timeframe: str) -> int | None:
+def _legacy_exit_boundary(rows: Sequence[Mapping[str, str]]) -> int | None:
     values: list[int] = []
     for row in rows:
         digits = "".join(char for char in str(row.get("매도시간") or "") if char.isdigit())
@@ -191,9 +191,7 @@ def build_trade_artifact_contract(
         rows = tuple(reader)
     columns = _column_profiles(fieldnames, rows)
     end_time = _optional_int(spec.get("end_time"))
-    legacy_boundary = None if end_time is not None else _legacy_exit_boundary(
-        rows, str(spec.get("timeframe") or "unknown"),
-    )
+    legacy_boundary = None if end_time is not None else _legacy_exit_boundary(rows)
     boundary_time = end_time if end_time is not None else legacy_boundary
     boundary = SessionBoundary(
         start_time=_optional_int(spec.get("start_time")),

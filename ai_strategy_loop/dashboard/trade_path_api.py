@@ -106,12 +106,13 @@ def preflight(
         row.buy_time // (1_000_000 if resolved.source.timeframe.value == "tick" else 10_000)
         for row in rows
     }
-    covered = sum(
-        1 for date in dates
-        if MarketPathRepository(database_dir=resolved.database_dir).database_path(
-            date, resolved.source.timeframe,
-        ) is not None
+    # P0-2 — 파일 존재가 아니라 실제 데이터 존재 기준. 통합 DB 폴백이 있어도
+    #   moneytop 에 그 날짜가 없으면 미커버로 집계해 공백을 경고할 수 있게 한다.
+    covered_set = MarketPathRepository(database_dir=resolved.database_dir).covered_dates(
+        dates=dates, timeframe=resolved.source.timeframe,
     )
+    covered = len(covered_set)
+    uncovered_dates = sorted(set(dates) - covered_set)
     after_boundary = _exit_after_boundary_count(resolved, rows)
     boundary_payload = {
         "forced_liquidation_time": resolved.source.forced_liquidation_time,
@@ -137,6 +138,7 @@ def preflight(
         "trade_count": len(rows),
         "date_count": len(dates),
         "covered_date_count": covered,
+        "uncovered_dates": uncovered_dates[:20],
         "counterfactual_limit": "forced_liquidation_boundary",
         **boundary_payload,
     })

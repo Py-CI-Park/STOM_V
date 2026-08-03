@@ -47,6 +47,7 @@ class ReplayResponse(FrozenResponse):
     strategy_sha256: str
     unsupported: tuple[str, ...]
     note: str
+    insufficient_points: int = 0
 
 
 class ActualExitResponse(FrozenResponse):

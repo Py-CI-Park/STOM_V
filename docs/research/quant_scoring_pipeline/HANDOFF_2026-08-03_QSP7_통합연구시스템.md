@@ -270,7 +270,7 @@ pair 경로는 정상 작동했지만 MDD 재현성 차이는 승격 전에 원�
 
 | 검증 | 마지막 결과 |
 |---|---|
-| QSP7 집중 Python 테스트 | **143 passed** |
+| QSP7 집중 Python 테스트 | **84 passed** (전 범위 9파일 기준 · §13 명령의 5파일만은 29 — 2026-08-03 실측 교정, 이전 표기 143은 오기) |
 | frontend 계약 테스트 | **13 passed** |
 | runtime JSX graph | **107 JSX / 557 graph files PASS** |
 | nonrelease verifier | PASS |
@@ -455,7 +455,7 @@ STOM QSP7 통합 연구 시스템 작업을 이어서 진행하세요.
 - 연구 화면 10/10 완료: 데이터 계약, 매수 해부, 매도 해부, 거래 경로, 매도식 추적, 가상 매도, 조건식 후보, 공식 pair, OOS 채택, History.
 - tick/min 실제 경로 결합과 대표 매도식 first-trigger replay가 작동합니다.
 - 5개 후보 family와 공식 pair/OOS 차단 gate가 연결됐습니다.
-- 마지막 검증: QSP7 집중 Python 143 passed, frontend 13 passed, runtime JSX 107/557 PASS, nonrelease verifier PASS.
+- 마지막 검증: QSP7 집중 Python 84 passed(9파일 전 범위), frontend 13 passed, runtime JSX 107/557 PASS, nonrelease verifier PASS.
 - 구현 성숙도는 약 7.8/10이지만 변경 전략의 수익 개선 증명은 2.5/10이며 공식 design/OOS 통과 후보는 아직 0건입니다.
 
 절대 불변식:

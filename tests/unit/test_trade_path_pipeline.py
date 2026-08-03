@@ -157,6 +157,61 @@ def test_market_repository_is_read_only_and_returns_no_post_boundary_rows(
     assert path.read_only is True
 
 
+def test_consolidated_db_serves_every_trading_date_for_the_same_symbol(tmp_path: Path) -> None:
+    # Given: 일별 DB가 없고 통합 stock_min_back.db 하나에 같은 종목의 두 날짜가 담긴 상태.
+    database_dir = tmp_path / "database"
+    database_dir.mkdir(parents=True)
+    with sqlite3.connect(database_dir / "stock_min_back.db") as connection:
+        connection.execute(
+            'CREATE TABLE "005930" ("index" INTEGER PRIMARY KEY, "현재가" REAL)'
+        )
+        connection.executemany(
+            'INSERT INTO "005930" VALUES (?, ?)',
+            [
+                (202504010900, 100.0), (202504010901, 101.0), (202504010902, 102.0),
+                (202504040900, 200.0), (202504040901, 201.0), (202504040902, 202.0),
+            ],
+        )
+    repository = MarketPathRepository(database_dir=database_dir)
+
+    # When: 같은 저장소 인스턴스로 첫째 날 다음 둘째 날을 조회한다.
+    first = repository.load(
+        date=20250401, code="005930", timeframe=Timeframe.MIN,
+        start_timestamp=202504010900, end_timestamp=202504011520,
+    )
+    second = repository.load(
+        date=20250404, code="005930", timeframe=Timeframe.MIN,
+        start_timestamp=202504040900, end_timestamp=202504041520,
+    )
+
+    # Then: 캐시가 날짜를 구분해 둘째 날 데이터가 비지 않는다.
+    assert [point.timestamp for point in first.points] == [202504010900, 202504010901, 202504010902]
+    assert [point.timestamp for point in second.points] == [202504040900, 202504040901, 202504040902]
+
+
+def test_date_coverage_counts_rows_not_file_presence(tmp_path: Path) -> None:
+    # Given: 통합 min DB 하나에 moneytop 이 2일치만 있고, 일별 파일은 하루치만 있다.
+    database_dir = tmp_path / "database"
+    database_dir.mkdir(parents=True)
+    with sqlite3.connect(database_dir / "stock_min_back.db") as connection:
+        connection.execute('CREATE TABLE moneytop ("index" INTEGER PRIMARY KEY, "종목코드" TEXT)')
+        connection.executemany(
+            'INSERT INTO moneytop VALUES (?, ?)',
+            [(202504010900, "005930"), (202504040900, "005930")],
+        )
+    with sqlite3.connect(database_dir / "stock_min_20250407.db") as connection:
+        connection.execute('CREATE TABLE "005930" ("index" INTEGER PRIMARY KEY, "현재가" REAL)')
+    repository = MarketPathRepository(database_dir=database_dir)
+
+    # When: 4개 날짜의 커버리지를 묻는다 (통합 2일 + 일별 1일 + 공백 1일).
+    covered = repository.covered_dates(
+        dates=(20250401, 20250404, 20250407, 20250410), timeframe=Timeframe.MIN,
+    )
+
+    # Then: 파일 존재가 아니라 실제 데이터 존재 기준으로 3일만 커버된다.
+    assert covered == {20250401, 20250404, 20250407}
+
+
 def test_ambiguous_symbol_is_excluded(tmp_path: Path) -> None:
     # Given: 동일 종목명이 두 코드에 연결된 code_info DB.
     database_dir = tmp_path / "database"
@@ -181,6 +236,28 @@ def test_ambiguous_symbol_is_excluded(tmp_path: Path) -> None:
             decision_horizons=(60,),
             continuation_horizons=(60,),
         )
+
+
+def test_counterfactual_forced_liquidation_replacement_requires_a_real_trigger(
+    episode_fixture,
+) -> None:
+    # Given: 실제 매도사유가 전략종료청산인 에피소드 (사유만 교체한 복제).
+    episode, _, _ = episode_fixture
+    from dataclasses import replace as _replace
+    forced_episode = _replace(
+        episode,
+        actual_exit=_replace(episode.actual_exit, reason="전략종료청산"),
+    )
+    never_policy = ExitPolicy("never", (
+        ExitRule("rule-none", (Clause("net_return_pct", "<=", -99.0),)),
+    ))
+
+    # When: 가상 정책도 아무 규칙을 발동시키지 못해 전체청산으로 끝난다.
+    outcome = evaluate_policy(forced_episode, never_policy)
+
+    # Then: 실제 사유만 보고 "강제청산을 대체했다"고 과대 표시하지 않는다(P0-4).
+    assert outcome.triggered_rule_id == "forced_liquidation"
+    assert outcome.replaced_forced_liquidation is False
 
 
 def test_min_horizon_rounds_forward_to_the_next_observed_bar() -> None:

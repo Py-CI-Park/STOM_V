@@ -46,7 +46,7 @@ def main(argv: list[str] | None = None) -> int:
         for row in rows
     }
     repository = MarketPathRepository(database_dir=Path(args.database_dir))
-    covered = sum(1 for date in dates if repository.database_path(date, timeframe) is not None)
+    covered = len(repository.covered_dates(dates=dates, timeframe=timeframe))
     payload: dict[str, object] = {
         "available": True,
         "authority": "diagnostic",

@@ -28,7 +28,11 @@ class MarketPathRepository:
 
     def __init__(self, *, database_dir: Path) -> None:
         self._database_dir = database_dir.resolve()
-        self._cache: OrderedDict[tuple[str, str], tuple[tuple[MarketPoint, ...], bool]] = OrderedDict()
+        # 캐시 키에 date 를 반드시 포함한다 — 통합 stock_*_back.db 폴백에서는 한
+        #   파일이 여러 날짜를 담으므로 (db, code) 만으로는 첫 조회 날짜의 하루치가
+        #   다른 날짜 조회에 재사용되어 빈 경로가 조용히 반환된다(P0-1).
+        self._cache: OrderedDict[tuple[str, str, int], tuple[tuple[MarketPoint, ...], bool]] = OrderedDict()
+        self._date_index: dict[str, frozenset[int]] = {}
         self._cache_lock = threading.RLock()
 
     def database_path(self, date: int, timeframe: Timeframe) -> Path | None:
@@ -38,6 +42,50 @@ class MarketPathRepository:
             return daily
         consolidated = self._database_dir / f"{stem}_back.db"
         return consolidated if consolidated.is_file() else None
+
+    def covered_dates(
+        self, *, dates: tuple[int, ...] | set[int], timeframe: Timeframe,
+    ) -> set[int]:
+        """실제 데이터가 존재하는 날짜만 반환한다(P0-2).
+
+        일별 파일은 파일 존재 = 그 날 데이터로 신뢰하고, 통합 ``*_back.db`` 는
+        moneytop 의 실제 날짜 목록으로 검증한다 — 파일이 있다는 이유만으로
+        커버리지를 100% 로 표시하던 허수를 제거한다. moneytop 이 없으면
+        검증 불가이므로 fail-closed 로 미커버 처리한다.
+        """
+        stem = "stock_tick" if timeframe is Timeframe.TICK else "stock_min"
+        covered: set[int] = set()
+        fallback: list[int] = []
+        for date in set(dates):
+            if (self._database_dir / f"{stem}_{date}.db").is_file():
+                covered.add(date)
+            else:
+                fallback.append(date)
+        consolidated = self._database_dir / f"{stem}_back.db"
+        if fallback and consolidated.is_file():
+            available = self._consolidated_dates(consolidated, timeframe)
+            covered.update(date for date in fallback if date in available)
+        return covered
+
+    def _consolidated_dates(self, db_path: Path, timeframe: Timeframe) -> frozenset[int]:
+        key = str(db_path.resolve())
+        with self._cache_lock:
+            cached = self._date_index.get(key)
+        if cached is not None:
+            return cached
+        unit = 1_000_000 if timeframe is Timeframe.TICK else 10_000
+        try:
+            uri = f"file:{db_path.as_posix()}?mode=ro"
+            with sqlite3.connect(uri, uri=True) as connection:
+                rows = connection.execute(
+                    f'SELECT DISTINCT "index" / {unit} FROM moneytop'
+                ).fetchall()
+            available = frozenset(int(row[0]) for row in rows if row[0] is not None)
+        except sqlite3.Error:
+            available = frozenset()
+        with self._cache_lock:
+            self._date_index[key] = available
+        return available
 
     def load(
         self,
@@ -55,7 +103,7 @@ class MarketPathRepository:
         db_path = self.database_path(date, timeframe)
         if db_path is None:
             return MarketPath(date, code, timeframe, (), "", True)
-        cache_key = (str(db_path.resolve()), code)
+        cache_key = (str(db_path.resolve()), code, date)
         with self._cache_lock:
             cached = self._cache.get(cache_key)
             if cached is not None:

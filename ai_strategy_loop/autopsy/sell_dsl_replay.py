@@ -45,6 +45,14 @@ class _Unsupported(ValueError):
     pass
 
 
+class _InsufficientHistory(ValueError):
+    """창/이전값 함수가 요구하는 과거 데이터가 그 시점에 없다(P0-3).
+
+    0.0 대체는 조건을 조용히 뒤집는 추정이므로 금지한다 — 해당 시점 평가를
+    건너뛰고 그 수를 결과에 공개한다.
+    """
+
+
 @dataclass(frozen=True, slots=True)
 class SellDslReplay:
     status: str
@@ -59,6 +67,7 @@ class SellDslReplay:
     strategy_sha256: str
     unsupported: tuple[str, ...] = ()
     note: str = ""
+    insufficient_points: int = 0
 
 
 def _unsupported_tokens(tree: ast.AST) -> tuple[str, ...]:
@@ -86,19 +95,23 @@ class _Runtime:
     def _previous(self, field: str, pre: int) -> float:
         index = self.entry_index if pre == -1 else self.index - pre
         if index < 0 or index >= len(self.points):
-            return 0.0
+            raise _InsufficientHistory(f"{field}N({pre})")
         value = getattr(self.points[index], field)
-        return float(value) if value is not None else 0.0
+        if value is None:
+            raise _InsufficientHistory(f"{field}N({pre})")
+        return float(value)
 
     def _window(self, field: str, tick: int, pre: int, operation: str) -> float:
+        if tick <= 0:
+            raise _Unsupported("window_tick_must_be_positive")
         end = self.entry_index if pre == -1 else self.index - pre
         start = end + 1 - tick
-        if tick <= 0 or start < 0 or end >= len(self.points):
-            return 0.0
+        if start < 0 or end >= len(self.points):
+            raise _InsufficientHistory(f"{operation}:{field}({tick},{pre})")
         values = [getattr(point, field) for point in self.points[start:end + 1]]
         clean = [float(value) for value in values if value is not None]
         if len(clean) != tick:
-            return 0.0
+            raise _InsufficientHistory(f"{operation}:{field}({tick},{pre})")
         if operation == "mean":
             return round(sum(clean) / len(clean), 3)
         return max(clean) if operation == "max" else min(clean)
@@ -203,6 +216,8 @@ def replay_sell_strategy(*, code: str, points: tuple[MarketPoint, ...], entry_ti
     orders = {line: index + 1 for index, line in enumerate(sorted(order_lines))}
     runtime, high, low = _Runtime(usable, entry_index), 0.0, 0.0
     selected, matched = usable[-1], []
+    insufficient = 0
+    evaluated = 0
     for index in range(entry_index, len(usable)):
         runtime.index = index
         point = usable[index]
@@ -218,13 +233,29 @@ def replay_sell_strategy(*, code: str, points: tuple[MarketPoint, ...], entry_ti
         match: list[Any] = []
         try:
             triggered = _execute(tree.body, runtime, env, orders, (), match)
+        except _InsufficientHistory:
+            # P0-3 — 0.0 대체 대신 이 시점 평가를 건너뛰고 수를 공개한다.
+            insufficient += 1
+            continue
         except (ArithmeticError, TypeError, _Unsupported) as exc:
             return SellDslReplay("unsupported", False, None, None, None, "", None, None, None,
                                  digest, (str(exc),), "실행 중 지원 불가 식을 발견했습니다.")
+        evaluated += 1
         if triggered:
             selected, matched = point, match
             break
+    if evaluated == 0:
+        return SellDslReplay(
+            "insufficient_history", False, None, None, None, "", None, None, None,
+            digest, (), "모든 시점에서 창 데이터가 부족해 평가하지 못했습니다.",
+            insufficient,
+        )
     profit, net_return = kiwoom_profit(buy_amount, buy_price, selected.price)
+    note = (
+        f"창 데이터 부족으로 {insufficient}개 시점 평가를 건너뛰었습니다."
+        if insufficient else ""
+    )
     return SellDslReplay("supported", bool(matched), selected.timestamp, selected.price,
                          matched[0] if matched else None, matched[1] if matched else "전체청산",
-                         net_return, profit, profit - actual_exit.profit_krw, digest)
+                         net_return, profit, profit - actual_exit.profit_krw, digest,
+                         (), note, insufficient)

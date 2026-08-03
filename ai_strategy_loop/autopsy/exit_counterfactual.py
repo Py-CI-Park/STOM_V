@@ -95,5 +95,10 @@ def evaluate_policy(episode: TradeEpisode, policy: ExitPolicy) -> Counterfactual
         net_return_pct=net_return,
         profit_krw=profit,
         delta_profit_krw=profit - episode.actual_exit.profit_krw,
-        replaced_forced_liquidation=episode.actual_exit.reason.startswith("전략종료"),
+        # P0-4 — 실제 사유가 강제청산이어도, 가상 정책이 규칙을 발동시키지 못해
+        #   같은 전체청산으로 끝났다면 "대체"가 아니다.
+        replaced_forced_liquidation=(
+            episode.actual_exit.reason.startswith("전략종료")
+            and selected_rule != "forced_liquidation"
+        ),
     )

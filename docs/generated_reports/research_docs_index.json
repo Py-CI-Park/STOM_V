@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-03T07:12:14.417464+00:00",
-  "source_fingerprint": "66a0d97c7858d3fe7bf76cfed28a4f06da570cb692d8ee6533a171ae4281406f",
+  "generated_at": "2026-08-03T08:40:04.234306+00:00",
+  "source_fingerprint": "8e473b49131ed1e4d74f5b1d88b4a0a5ebaf1e8a166e67dc4a53e00449b8e374",
   "count": 960,
   "docs": [
     {
@@ -6567,8 +6567,8 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-03_QSP7_통합연구시스템.md",
       "title": "QSP7 구현·성과·후속 연구 통합 핸드오프",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-03T00:37:26.897980+00:00",
-      "size": 23501
+      "updated_at": "2026-08-03T08:39:09.701825+00:00",
+      "size": 23576
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
@@ -6581,8 +6581,8 @@
       "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
       "title": "QSP1 한계 원장 (Limitation Ledger)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-07-31T23:25:49.159917+00:00",
-      "size": 15830
+      "updated_at": "2026-08-03T08:38:52.411113+00:00",
+      "size": 16684
     },
     {
       "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/analysis_to_revision.md",
