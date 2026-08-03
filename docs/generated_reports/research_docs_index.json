@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-03T14:17:42.536818+00:00",
-  "source_fingerprint": "f166323ecbb0929ed60a038b1e3b670edfa4134a5af563df68b39f3aff0492fb",
-  "count": 966,
+  "generated_at": "2026-08-03T14:20:05.835829+00:00",
+  "source_fingerprint": "c02ae8e53a9bf04c0d646aeafa7de403be258ed429b4d787f567212f62f38243",
+  "count": 967,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6583,6 +6583,13 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-08-03T08:39:09.701825+00:00",
       "size": 23576
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-04_QSP7_G0_손실영역엔진.md",
+      "title": "QSP7 G-0 핸드오프 — 손실 영역 탐구 엔진 착수",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-03T14:19:25.612447+00:00",
+      "size": 9244
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
