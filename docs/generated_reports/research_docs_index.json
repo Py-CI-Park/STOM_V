@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-03T14:48:59.475175+00:00",
-  "source_fingerprint": "97bf0b122877bdf7f111fd66a1500d724cd23ed22e29bc030aef5d7c9b9acd77",
+  "generated_at": "2026-08-03T23:35:50.017502+00:00",
+  "source_fingerprint": "187572cb7b57e21930f3e2818033a969c78fef17679f693cb74a7736c61a83dc",
   "count": 967,
   "docs": [
     {
@@ -6553,8 +6553,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_g0_loss_region_engine_design.md",
       "title": "QSP7 G-0 손실 영역 탐구 엔진 설계서",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-03T14:45:47.832067+00:00",
-      "size": 21269
+      "updated_at": "2026-08-03T23:33:50.076741+00:00",
+      "size": 21588
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_master_execution_plan.md",
@@ -6588,8 +6588,8 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-04_QSP7_G0_손실영역엔진.md",
       "title": "QSP7 G-0 핸드오프 — 손실 영역 탐구 엔진 착수",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-03T14:48:05.828469+00:00",
-      "size": 10927
+      "updated_at": "2026-08-03T23:34:56.192025+00:00",
+      "size": 11062
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
