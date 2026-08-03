@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-03T12:58:49.588232+00:00",
-  "source_fingerprint": "a7b2186907c70875b9acfd503d3dfa4f878433cd680a53eab7c1e567df563118",
-  "count": 965,
+  "generated_at": "2026-08-03T14:13:29.774611+00:00",
+  "source_fingerprint": "75a8b4cb9a79c54539019d38d08069980c8aa9e31587b988bd4d733efd515eaf",
+  "count": 966,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6548,6 +6548,13 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-08-03T12:57:56.913133+00:00",
       "size": 5548
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_g0_loss_region_engine_design.md",
+      "title": "QSP7 G-0 손실 영역 탐구 엔진 설계서",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-03T14:12:43.084392+00:00",
+      "size": 13553
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_master_execution_plan.md",
