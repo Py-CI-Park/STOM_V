@@ -29,6 +29,7 @@ from ai_strategy_loop.dashboard.trade_contract_api import trade_contract_router
 from ai_strategy_loop.dashboard.lane_manifest import lane_manifest_payload
 from ai_strategy_loop.dashboard.sell_dsl_api import sell_dsl_router
 from ai_strategy_loop.revision.sell_proposer import propose_sell_conditions
+from ai_strategy_loop.revision.variable_catalog import catalog_payload
 
 
 trade_path_router = APIRouter(prefix="/bt/trade-path", tags=["trade-path"])
@@ -97,6 +98,12 @@ def _exit_after_boundary_count(resolved, rows) -> int:
             resolved.source.timeframe,
         )
     )
+
+
+@trade_path_router.get("/variable-catalog")
+def variable_catalog(lane: str = "") -> dict[str, object]:
+    """후보 생성 허용 변수 원장(P2-9) — 등록분 외 변수는 후보에 쓰지 않는다."""
+    return jsonable_encoder(catalog_payload(lane))
 
 
 @trade_path_router.get("/lane-manifest")

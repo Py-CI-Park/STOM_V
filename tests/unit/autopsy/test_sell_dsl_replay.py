@@ -132,6 +132,30 @@ if 매도:
     assert result.insufficient_points == 5
 
 
+def test_replay_blocks_cross_lane_variables_between_tick_and_min() -> None:
+    # Given: tick 재생인데 min 전용 변수(분당매수수량)를 쓰는 매도식.
+    code = """매도 = False
+if 분당매수수량 > 100:
+    매도 = True
+if 매도:
+    self.Sell()
+"""
+    result = replay_sell_strategy(
+        code=code,
+        points=(_point(20250102090000, 100), _point(20250102090001, 99)),
+        entry_timestamp=20250102090000,
+        boundary_timestamp=20250102090001,
+        timeframe=Timeframe.TICK,
+        buy_price=100,
+        buy_amount=1_000_000,
+        actual_exit=ActualExit(20250102090001, 99, -1.0, -10_000, "기존 손절"),
+    )
+
+    # Then: tick/min 문법 분리 게이트가 재생 단계에서도 작동한다(P2-6).
+    assert result.status == "unsupported"
+    assert "분당매수수량" in result.unsupported
+
+
 def test_replay_never_guesses_an_unsupported_stom_function() -> None:
     code = """매도 = False
 if 사용자정의미지원함수(30) and 수익률 < 0:

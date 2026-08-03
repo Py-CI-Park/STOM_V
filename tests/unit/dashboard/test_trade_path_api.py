@@ -160,7 +160,9 @@ def test_trade_path_api_runs_analysis_counterfactual_and_official_pair(
     assert advisory["outcomes"][0]["exit_timestamp"] == 20250102090200
     proposals = client.post("/bt/trade-path/proposals", json={"analysis_id": analysis_id}).json()
     assert proposals["saved"] is False
-    assert proposals["proposals"]
+    # P2 표본 게이트: 거래 1건 표본으로는 후보를 만들지 않는 것이 정상 동작이다.
+    assert proposals["available"] is True
+    assert proposals["proposals"] == []
     report = client.get("/bt/trade-path/report", params={"analysis_id": analysis_id})
     assert report.status_code == 200
     assert report.headers["x-stom-authority"] == "diagnostic"

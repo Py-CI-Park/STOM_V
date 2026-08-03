@@ -40,6 +40,16 @@ _WINDOW_FUNCTIONS = {
 _PREVIOUS_FUNCTIONS = {f"{name}N": field for name, field in _POINT_FIELDS.items()}
 _SUPPORTED_FUNCTIONS = {*_SAFE_BUILTINS, *_WINDOW_FUNCTIONS, *_PREVIOUS_FUNCTIONS}
 
+# P2-6 — tick/min 전용 이름. 교차 사용은 재생 단계에서 unsupported 로 차단한다.
+_TICK_ONLY_NAMES = {"초당매수수량", "초당매도수량"}
+_MIN_ONLY_NAMES = {"분당매수수량", "분당매도수량"}
+
+
+def _cross_lane_names(timeframe: Timeframe) -> set[str]:
+    other = _MIN_ONLY_NAMES if timeframe is Timeframe.TICK else _TICK_ONLY_NAMES
+    derived = {f"{name}N" for name in other} | {f"최고{name}" for name in other}
+    return other | derived
+
 
 class _Unsupported(ValueError):
     pass
@@ -70,7 +80,7 @@ class SellDslReplay:
     insufficient_points: int = 0
 
 
-def _unsupported_tokens(tree: ast.AST) -> tuple[str, ...]:
+def _unsupported_tokens(tree: ast.AST, timeframe: Timeframe) -> tuple[str, ...]:
     assigned = {
         target.id for node in ast.walk(tree) if isinstance(node, ast.Assign)
         for target in node.targets if isinstance(target, ast.Name)
@@ -83,8 +93,9 @@ def _unsupported_tokens(tree: ast.AST) -> tuple[str, ...]:
         node.id for node in ast.walk(tree) if isinstance(node, ast.Name)
         and not isinstance(getattr(node, "ctx", None), ast.Store)
     }
-    bad_calls = calls - _SUPPORTED_FUNCTIONS
-    bad_names = names - assigned - _STATE_NAMES - _SUPPORTED_FUNCTIONS
+    cross = _cross_lane_names(timeframe)
+    bad_calls = (calls - _SUPPORTED_FUNCTIONS) | (calls & cross)
+    bad_names = (names - assigned - _STATE_NAMES - _SUPPORTED_FUNCTIONS) | (names & cross)
     return tuple(sorted(bad_calls | bad_names))
 
 
@@ -201,7 +212,7 @@ def replay_sell_strategy(*, code: str, points: tuple[MarketPoint, ...], entry_ti
     except SyntaxError as exc:
         return SellDslReplay("invalid", False, None, None, None, "", None, None, None,
                              digest, ("syntax",), str(exc))
-    unsupported = _unsupported_tokens(tree)
+    unsupported = _unsupported_tokens(tree, timeframe)
     if unsupported:
         return SellDslReplay("unsupported", False, None, None, None, "", None, None, None,
                              digest, unsupported, "지원하지 않는 변수/함수는 추측하지 않습니다.")

@@ -49,6 +49,7 @@ class HierMap:
     cap_edges: List[int] = field(default_factory=list)
     ok: bool = False
     reason: str = ""
+    shape: str = ""  # "hier" | "flat" (P2-8 구조 어댑터가 기록)
 
 
 class _ConstMask(ast.NodeTransformer):
@@ -170,6 +171,35 @@ def parse_leaves(code: str) -> HierMap:
         return result
     result.ok = True
     return result
+
+
+FLAT_LEAF: Tuple[str, str] = ("flat", "flat")
+
+
+def parse_leaves_flexible(code: str) -> HierMap:
+    """HIER 우선, 실패 시 평탄 elif 체인을 단일 리프로 해부(P2-8 구조 어댑터).
+
+    tick 기준선·매도식처럼 시간밴드×시총 계층이 없는 평탄 조건식도
+    생성 엔진(필터 추가·intent 판정)이 다룰 수 있게 한다. 평탄 리프의
+    좌표는 ``FLAT_LEAF`` 로 고정되어 hier 리프와 절대 섞이지 않는다.
+    """
+    result = parse_leaves(code)
+    if result.ok:
+        result.shape = "hier"
+        return result
+    flat = HierMap(shape="flat")
+    try:
+        tree = ast.parse(str(code or ""))
+    except SyntaxError as exc:
+        flat.reason = f"syntax: {exc}"
+        return flat
+    clauses = _leaf_clauses(list(tree.body))
+    if not clauses:
+        flat.reason = f"no clauses (hier: {result.reason})"
+        return flat
+    flat.leaves[FLAT_LEAF] = clauses
+    flat.ok = True
+    return flat
 
 
 @dataclass
