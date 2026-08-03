@@ -187,6 +187,45 @@ def test_trade_path_api_runs_analysis_counterfactual_and_official_pair(
     assert all(row["schema_version"] == "stom-trade-path-ledger-v1" for row in history["records"])
 
 
+def test_candidate_run_attribution_round_trips_by_lane(monkeypatch, tmp_path: Path) -> None:
+    # Given: 격리 코디네이터와 라우터만 올린 앱(P1-4 귀속 계약).
+    ledger_path = tmp_path / "ledger.jsonl"
+    monkeypatch.setattr(
+        trade_path_jobs,
+        "_COORDINATOR",
+        TradePathCoordinator(ledger=TradePathLedger(ledger_path)),
+    )
+    app = FastAPI()
+    app.include_router(trade_path_router)
+    client = TestClient(app)
+
+    # When: min 후보의 설계 job 과 tick 기준선 job 을 귀속한다.
+    first = client.post("/bt/trade-path/candidate-runs", json={
+        "candidate_id": "delay_stop_with_breakdown", "lane": "min", "role": "design",
+        "job_id": "job-min-1", "sell_name": "QSP7_min_손실방어_x", "family": "손실 방어",
+    }).json()
+    client.post("/bt/trade-path/candidate-runs", json={
+        "candidate_id": "baseline", "lane": "tick", "role": "design",
+        "job_id": "job-tick-1", "sell_name": "ResearchTest_Tick_S",
+    })
+
+    # Then: 레인 필터가 교차 오염 없이 동작하고 원장에 official 로 남는다.
+    assert first["available"] is True and first["authority"] == "official"
+    min_runs = client.get("/bt/trade-path/candidate-runs", params={"lane": "min"}).json()["runs"]
+    assert [row["job_id"] for row in min_runs] == ["job-min-1"]
+    all_runs = client.get("/bt/trade-path/candidate-runs").json()["runs"]
+    assert len(all_runs) == 2
+    ledger_text = ledger_path.read_text(encoding="utf-8")
+    assert "candidate_run_attributed" in ledger_text
+
+    # And: 허용되지 않은 role/lane 은 검증 단계에서 거부된다.
+    bad = client.post("/bt/trade-path/candidate-runs", json={
+        "candidate_id": "x", "lane": "hour", "role": "design",
+        "job_id": "j", "sell_name": "s",
+    })
+    assert bad.status_code == 422
+
+
 def test_main_app_registers_trade_path_router() -> None:
     from ai_strategy_loop.dashboard.app import create_app
 

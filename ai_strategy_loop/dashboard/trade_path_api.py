@@ -15,7 +15,12 @@ from ai_strategy_loop.autopsy.trade_episode import EpisodeBuilder, read_trade_ro
 from ai_strategy_loop.autopsy.trade_path_analysis import cohort_summaries
 from ai_strategy_loop.autopsy.trade_path_clock import liquidation_timestamp
 from ai_strategy_loop.autopsy.trade_path_models import Clause, ExitPolicy, ExitRule
-from ai_strategy_loop.dashboard.trade_path_api_models import AnalysisRequest, CounterfactualRequest, ProposalRequest
+from ai_strategy_loop.dashboard.trade_path_api_models import (
+    AnalysisRequest,
+    CandidateRunRequest,
+    CounterfactualRequest,
+    ProposalRequest,
+)
 from ai_strategy_loop.dashboard.trade_path_jobs import TradePathJob, trade_path_coordinator
 from ai_strategy_loop.dashboard.trade_path_official_api import official_trade_path_router
 from ai_strategy_loop.dashboard.trade_path_report import trade_path_report_router
@@ -291,6 +296,26 @@ def proposals(payload: ProposalRequest) -> dict[str, object]:
     if result is not None:
         trade_path_coordinator().add_proposals(payload.analysis_id, response)
     return response
+
+
+@trade_path_router.post("/candidate-runs")
+def attribute_candidate_run(payload: CandidateRunRequest) -> dict[str, object]:
+    """후보(또는 기준선)와 공식 job 을 귀속한다 — pair/OOS 입력 자동 채움용(P1-4)."""
+    record = trade_path_coordinator().add_candidate_run({
+        "candidate_id": payload.candidate_id,
+        "lane": payload.lane,
+        "role": payload.role,
+        "job_id": payload.job_id,
+        "sell_name": payload.sell_name,
+        "family": payload.family,
+    })
+    return {"available": True, "authority": "official", "record": record}
+
+
+@trade_path_router.get("/candidate-runs")
+def list_candidate_runs(lane: str = "") -> dict[str, object]:
+    return {"available": True, "authority": "official",
+            "runs": list(trade_path_coordinator().candidate_runs(lane))}
 
 
 @trade_path_router.get("/history")

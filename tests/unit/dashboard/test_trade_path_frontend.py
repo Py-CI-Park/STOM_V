@@ -54,6 +54,40 @@ def test_trade_path_surface_mounts_data_contract_page() -> None:
     assert "missing" in contract
 
 
+def test_candidate_console_injects_manifest_and_never_accepts_manual_periods() -> None:
+    source = _read("bt-candidate-console.jsx")
+    # manifest 자동 주입 계약(P1): 기간·세션·기준선은 manifest 에서만 온다.
+    assert "/bt/trade-path/lane-manifest" not in source  # manifest 는 상위(tab)가 주입
+    assert "laneManifest.baseline_buy" in source
+    assert "period.start" in source and "period.end" in source
+    assert "session_start" in source and "session_end" in source
+    # 수기 기간 입력 경로 부재: input 요소로 기간을 받지 않는다.
+    assert "<input" not in source
+    # 3클릭 흐름과 귀속 기록.
+    assert "/bt/strategy" in source
+    assert "/bt/run" in source
+    assert "/bt/trade-path/candidate-runs" in source
+    assert "자동 채택 아님" in source
+
+
+def test_workbench_lane_switch_isolates_lanes_and_mounts_console() -> None:
+    source = _read("bt-trade-path-tab.jsx")
+    assert 'from "./bt-candidate-console.jsx"' in source
+    assert "/bt/trade-path/lane-manifest" in source
+    assert "resetForLane" in source
+    # 레인과 다른 timeframe job 은 목록에서 제외된다.
+    assert '=== lane' in source or "row.spec.timeframe) || \"min\") === lane" in source
+    assert "tp-lane-badge" in source
+    assert "후보 실행" in source
+
+
+def test_oos_gate_prefills_from_attributed_candidate_runs() -> None:
+    source = _read("bt-oos-gate.jsx")
+    assert "/bt/trade-path/candidate-runs" in source
+    assert "귀속" in source
+    assert "candidate_id" in source
+
+
 def test_official_run_form_sends_intraday_session_boundary() -> None:
     source = _read("bt-tab-run.jsx")
     assert "start_time" in source

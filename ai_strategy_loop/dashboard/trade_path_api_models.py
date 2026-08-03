@@ -76,6 +76,17 @@ class ProposalRequest(FrozenPayload):
     analysis_id: ShortText
 
 
+class CandidateRunRequest(FrozenPayload):
+    """후보↔공식 job 귀속(P1-4). candidate_id="baseline" 은 기준선 실행 귀속."""
+
+    candidate_id: ShortText
+    lane: Annotated[str, StringConstraints(pattern="^(tick|min)$")]
+    role: Annotated[str, StringConstraints(pattern="^(design|oos)$")]
+    job_id: ShortText
+    sell_name: ShortText
+    family: Annotated[str, StringConstraints(strip_whitespace=True, max_length=64)] = ""
+
+
 class OfficialPairRequest(FrozenPayload):
     baseline_job_id: ShortText
     candidate_job_id: ShortText

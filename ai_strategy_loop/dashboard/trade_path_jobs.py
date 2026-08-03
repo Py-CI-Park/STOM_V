@@ -36,6 +36,7 @@ class TradePathCoordinator:
         self._cancel: dict[str, threading.Event] = {}
         self._counterfactual: dict[str, object] = {}
         self._official_pairs: list[object] = []
+        self._candidate_runs: list[dict[str, object]] = []
         self._ledger = ledger
 
     def submit(
@@ -162,6 +163,26 @@ class TradePathCoordinator:
     def get_counterfactual(self, analysis_id: str) -> object | None:
         with self._lock:
             return self._counterfactual.get(analysis_id)
+
+    def add_candidate_run(self, payload: dict[str, object]) -> dict[str, object]:
+        """후보↔공식 job 귀속(P1-4). pair/OOS 게이트가 드롭다운 수기 선택 대신 사용한다."""
+        record = dict(payload)
+        with self._lock:
+            self._candidate_runs.insert(0, record)
+            del self._candidate_runs[200:]
+        self._ledger.append(
+            event="candidate_run_attributed",
+            authority="official",
+            payload=record,
+        )
+        return record
+
+    def candidate_runs(self, lane: str = "") -> tuple[dict[str, object], ...]:
+        with self._lock:
+            rows = tuple(self._candidate_runs)
+        if not lane:
+            return rows
+        return tuple(row for row in rows if row.get("lane") == lane)
 
     def add_official_pair(self, payload: object) -> None:
         with self._lock:
