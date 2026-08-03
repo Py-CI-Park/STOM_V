@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-01T16:17:54.073852+00:00",
-  "source_fingerprint": "22566fa237851337b16783d1cba3f519299623c1dcbf6ec44080bfee1ca38b37",
-  "count": 954,
+  "generated_at": "2026-08-03T07:12:14.417464+00:00",
+  "source_fingerprint": "66a0d97c7858d3fe7bf76cfed28a4f06da570cb692d8ee6533a171ae4281406f",
+  "count": 960,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6511,22 +6511,64 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-01_qsp7_trade_episode_exit_research_system_design.md",
       "title": "QSP7 거래 에피소드·매도 반사실 연구 시스템 설계",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-01T15:39:18.750173+00:00",
-      "size": 20876
+      "updated_at": "2026-08-02T00:48:46.693690+00:00",
+      "size": 21018
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-01_qsp7_trade_path_research_implementation_result.md",
       "title": "QSP7 거래 경로·매도 연구 시스템 구현 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-01T16:17:04.283690+00:00",
-      "size": 8806
+      "updated_at": "2026-08-02T00:48:46.710505+00:00",
+      "size": 13256
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-02_qsp7_hybrid_db_and_unified_pipeline_master_plan.md",
+      "title": "QSP7 하이브리드 결과 저장소·단일 연구 파이프라인 최종 계획",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-03T00:35:48.764544+00:00",
+      "size": 17565
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-02_qsp7_integrated_direction_scorecard_and_roadmap.md",
+      "title": "QSP7 통합 방향성 점검·성과·연구 로드맵",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-03T00:35:48.771748+00:00",
+      "size": 27024
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_dual_lane_validation_and_research_plan.md",
+      "title": "QSP7 tick/min 이중 레인 파이프라인 실측 검증과 연구 실행 계획",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-03T07:11:36.794156+00:00",
+      "size": 15674
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_master_execution_plan.md",
+      "title": "QSP7 마스터 실행 계획 — 페이지 세부 설계 · 브랜치 운영 · 기대 효과 · 도달 가능성",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-03T07:11:13.493728+00:00",
+      "size": 14686
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_platform_completion_roadmap.md",
+      "title": "QSP7 연구 플랫폼 완성 로드맵 — 전수 검사 결과와 P0~P6 실행 계획",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-03T07:11:33.308701+00:00",
+      "size": 24145
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
       "title": "핸드오프 — QSP7 매도식 연구 (2026-08-01)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-01T14:23:23.654399+00:00",
-      "size": 8196
+      "updated_at": "2026-08-03T00:35:48.756938+00:00",
+      "size": 8610
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-03_QSP7_통합연구시스템.md",
+      "title": "QSP7 구현·성과·후속 연구 통합 핸드오프",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-03T00:37:26.897980+00:00",
+      "size": 23501
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",

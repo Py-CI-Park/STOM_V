@@ -1,5 +1,7 @@
 # QSP7 tick/min 이중 레인 파이프라인 실측 검증과 연구 실행 계획
 
+> **실행 정본은 [2026-08-03_qsp7_master_execution_plan.md](./2026-08-03_qsp7_master_execution_plan.md)이다.** 이 문서는 실측 증거·레인 설계·변수 확장(§10) 근거로 유지된다.
+
 > 작성일: 2026-08-03
 > 브랜치: `feature/qsp7-platform-completion-20260803`
 > 상위 문서: [2026-08-03_qsp7_platform_completion_roadmap.md](./2026-08-03_qsp7_platform_completion_roadmap.md) (P0~P6 로드맵)

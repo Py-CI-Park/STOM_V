@@ -1,5 +1,7 @@
 # QSP7 연구 플랫폼 완성 로드맵 — 전수 검사 결과와 P0~P6 실행 계획
 
+> **실행 정본은 [2026-08-03_qsp7_master_execution_plan.md](./2026-08-03_qsp7_master_execution_plan.md)이다.** 이 문서는 전수 검사 원본·결함 원장으로 유지된다.
+
 > 작성일: 2026-08-03
 > 저장소: `C:/System_Trading/STOM/STOM_V.wt-dev`
 > 작업 브랜치: `feature/qsp7-platform-completion-20260803`
