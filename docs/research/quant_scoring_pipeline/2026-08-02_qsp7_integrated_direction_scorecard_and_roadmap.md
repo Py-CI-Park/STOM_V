@@ -1,5 +1,7 @@
 # QSP7 통합 방향성 점검·성과·연구 로드맵
 
+> 최신 재개 문서: [HANDOFF_2026-08-03_QSP7_통합연구시스템.md](./HANDOFF_2026-08-03_QSP7_통합연구시스템.md)
+
 > 작성일: 2026-08-02
 > 기준 브랜치: `codex/qsp7-trade-episode-research`
 > 기준 커밋: `e4ac882a` → `b6484549` → `3dda4cb3` → `cb3b0d7e`와 현재 구현 작업 트리

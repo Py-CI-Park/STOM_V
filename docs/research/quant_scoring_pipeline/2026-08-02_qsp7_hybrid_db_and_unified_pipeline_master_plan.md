@@ -4,6 +4,7 @@
 > 최종 구현·브라우저 검증일: 2026-08-03
 > 상태: 통합 연구 화면·핵심 replay 구현 완료, 공식 후보 수익·OOS 및 sidecar DB는 미완료
 > 적용 브랜치: `codex/qsp7-trade-episode-research`
+> 최신 핸드오프: [HANDOFF_2026-08-03_QSP7_통합연구시스템.md](./HANDOFF_2026-08-03_QSP7_통합연구시스템.md)
 > 상위 판단 문서: [2026-08-02_qsp7_integrated_direction_scorecard_and_roadmap.md](./2026-08-02_qsp7_integrated_direction_scorecard_and_roadmap.md)
 > 안전 경계: 운영 `_database/strategy.db` 쓰기, 실거래, 전체청산 이후 시세 추정, 후보 자동 채택 금지
 
