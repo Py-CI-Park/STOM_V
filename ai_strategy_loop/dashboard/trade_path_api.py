@@ -21,6 +21,7 @@ from ai_strategy_loop.dashboard.trade_path_official_api import official_trade_pa
 from ai_strategy_loop.dashboard.trade_path_report import trade_path_report_router
 from ai_strategy_loop.dashboard.trade_path_source import resolve_job_source
 from ai_strategy_loop.dashboard.trade_contract_api import trade_contract_router
+from ai_strategy_loop.dashboard.lane_manifest import lane_manifest_payload
 from ai_strategy_loop.dashboard.sell_dsl_api import sell_dsl_router
 from ai_strategy_loop.revision.sell_proposer import propose_sell_conditions
 
@@ -91,6 +92,12 @@ def _exit_after_boundary_count(resolved, rows) -> int:
             resolved.source.timeframe,
         )
     )
+
+
+@trade_path_router.get("/lane-manifest")
+def lane_manifest(lane: str = "") -> dict[str, object]:
+    """레인(tick/min)의 기준선·설계/OOS 기간·세션 경계 정본(P6)."""
+    return jsonable_encoder(lane_manifest_payload(lane))
 
 
 @trade_path_router.get("/preflight")

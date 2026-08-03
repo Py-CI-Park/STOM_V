@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-03T08:40:04.234306+00:00",
-  "source_fingerprint": "8e473b49131ed1e4d74f5b1d88b4a0a5ebaf1e8a166e67dc4a53e00449b8e374",
-  "count": 960,
+  "generated_at": "2026-08-03T08:44:33.230911+00:00",
+  "source_fingerprint": "4e80ee2823b2348be601a2ebb3e9eaaa2dce2bf902cd3aeed9f7b2f7c4d125db",
+  "count": 962,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6576,6 +6576,20 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-07-30T02:40:03.290823+00:00",
       "size": 1494
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/lane_manifest_min.md",
+      "title": "min 레인 manifest (정본)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-03T08:43:36.766672+00:00",
+      "size": 750
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/lane_manifest_tick.md",
+      "title": "tick 레인 manifest (정본)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-03T08:43:31.060989+00:00",
+      "size": 722
     },
     {
       "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
