@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-03T14:13:29.774611+00:00",
-  "source_fingerprint": "75a8b4cb9a79c54539019d38d08069980c8aa9e31587b988bd4d733efd515eaf",
+  "generated_at": "2026-08-03T14:17:42.536818+00:00",
+  "source_fingerprint": "f166323ecbb0929ed60a038b1e3b670edfa4134a5af563df68b39f3aff0492fb",
   "count": 966,
   "docs": [
     {
@@ -6553,8 +6553,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_g0_loss_region_engine_design.md",
       "title": "QSP7 G-0 손실 영역 탐구 엔진 설계서",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-03T14:12:43.084392+00:00",
-      "size": 13553
+      "updated_at": "2026-08-03T14:16:54.026877+00:00",
+      "size": 15950
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_master_execution_plan.md",
