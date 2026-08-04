@@ -52,6 +52,8 @@ HTTP_CAPABILITIES: Final = {
     ("POST", "/bt/trade-path/matrix"): Capability.SAFE_BACKTEST,
     ("POST", "/bt/trade-path/candidate-runs"): Capability.SAFE_BACKTEST,
     ("POST", "/bt/trade-path/buy-filters"): Capability.SAFE_BACKTEST,
+    ("POST", "/bt/trade-path/removal-simulate"): Capability.SAFE_BACKTEST,
+    ("POST", "/bt/trade-path/region-candidates"): Capability.SAFE_BACKTEST,
     ("GET", "/sim/signals"): Capability.SAFE_BACKTEST,
     ("POST", "/bt/strategy"): Capability.STRATEGY_WRITE,
     ("POST", "/bt/strategy/delete"): Capability.STRATEGY_WRITE,

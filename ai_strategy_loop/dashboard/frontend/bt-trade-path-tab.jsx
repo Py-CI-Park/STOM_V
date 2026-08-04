@@ -12,6 +12,11 @@ import { BtRecoveryInsight } from "./bt-recovery-insight.jsx";
 import { BtCalibration } from "./bt-calibration.jsx";
 import { BtLedgerBrowser } from "./bt-ledger-browser.jsx";
 import { BtBuyFilters } from "./bt-buy-filters.jsx";
+import { BtLossProfile } from "./bt-loss-profile.jsx";
+import { BtLossPockets } from "./bt-loss-pockets.jsx";
+import { BtRemovalSim } from "./bt-removal-sim.jsx";
+import { BtGenerationCurve } from "./bt-generation-curve.jsx";
+import { BtSplitDiagnostics } from "./bt-split-diagnostics.jsx";
 import { _tpKo, _tpNextHint } from "./bt-tp-messages.jsx";
 const { useState: useState_tpt, useEffect: useEffect_tpt } = React;
 
@@ -115,7 +120,8 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
   const running = analysis && ["queued", "running"].includes(analysis.status);
   const proposalRows = (proposals && proposals.proposals) || [];
   const selectedProposal = proposalRows.find(row => row.proposal_id === selectedProposalId) || null;
-  const pageTabs = [["data","데이터 계약"],["entry","매수 해부"],...(totals ? [["summary","매도 해부"],["path","거래 경로"],...(detail ? [["sell-trace","매도식 추적"]] : []),["counterfactual","가상 매도"],["insight","회복 판별"],[axis === "buy" ? "buy-filters" : "proposals", axis === "buy" ? "매수 필터 후보" : "조건식 후보"],["console","후보 실행"],["official","공식 pair"],["oos","OOS 채택"],["calibration","캘리브레이션"]] : []),["ledger","원장"]];
+  // 손실 영역 화면(17~19·21)은 경로 분석 없이 job 만으로 동작한다 — 백테스트 직후 바로 볼 수 있다.
+  const pageTabs = [["data","데이터 계약"],["split","구간 분할"],["loss","손실 프로파일"],["pockets","포켓 지도"],["removal","제거 시뮬레이터"],["entry","매수 해부"],...(totals ? [["summary","매도 해부"],["path","거래 경로"],...(detail ? [["sell-trace","매도식 추적"]] : []),["counterfactual","가상 매도"],["insight","회복 판별"],[axis === "buy" ? "buy-filters" : "proposals", axis === "buy" ? "매수 필터 후보" : "조건식 후보"],["console","후보 실행"],["official","공식 pair"],["oos","채택 게이트"],["calibration","캘리브레이션"]] : []),["generations","세대 곡선"],["ledger","원장"]];
   const manifestRow = laneManifest && laneManifest.manifest;
   return <section className="panel tp-workbench" aria-labelledby="tp-title">
     <header className="panel-hd"><div><div className="stom-section-label" id="tp-title">QSP7 · 거래 에피소드 / 매도 연구</div><div className="mono">실제 매도 뒤도 전체청산까지만 관찰 · 미실행 거래는 공식 엔진으로 재검증</div></div><div className="tp-authority-strip"><span className={`tp-lane-badge ${lane}`}>{lane}</span><span className="tp-authority diagnostic">진단</span><span className="tp-authority advisory">자문</span><span className="tp-authority official">정본</span></div></header>
@@ -125,7 +131,7 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
         <span className="tp-axis-switch" role="tablist" aria-label="연구 축 선택">
           {[["sell","매도 축"],["buy","매수 축"]].map(([key,label]) => <button key={key} role="tab" aria-selected={axis === key} className={axis === key ? "active" : ""} onClick={() => { if (key !== axis) { setAxis(key); setSelectedProposalId(""); setSelectedFilter(null); setActiveView(key === "buy" ? "buy-filters" : "proposals"); } }}>{label}</button>)}
         </span>
-        {manifestRow && <span className="tp-lane-manifest mono">설계 {manifestRow.design.start}~{manifestRow.design.end} · OOS {manifestRow.oos.start}~{manifestRow.oos.end} · 세션 ~{String(manifestRow.session_end).padStart(6, "0")}{laneManifest.baseline_registered ? "" : " · ⚠ 기준선 미등록"}</span>}
+        {manifestRow && <span className="tp-lane-manifest mono">평가 {manifestRow.evaluation ? `${manifestRow.evaluation.start}~${manifestRow.evaluation.end}` : `${manifestRow.design.start}~${manifestRow.oos.end}`} · 분할 {laneManifest.split_boundary || manifestRow.split_boundary} · 설계 {manifestRow.design.start}~{manifestRow.design.end} · 홀드아웃 {manifestRow.oos.start}~{manifestRow.oos.end} · 세션 ~{String(manifestRow.session_end).padStart(6, "0")}{laneManifest.baseline_registered ? "" : " · ⚠ 기준선 미등록"}</span>}
       </div>
       <div className="tp-source-bar"><label>완료 결과<select value={jobId} onChange={event => { setJobId(event.target.value); setBoundaryTime(""); setPreflight(null); setDataContract(null); setActiveView("data"); setAnalysis(null); setCohorts([]); setTrades([]); setDetail(null); }}><option value="">job 선택</option>{jobs.map(job => <option key={job.job_id} value={job.job_id}>{job.spec?.buy || ""} · {job.spec?.sell || ""} · {job.job_id}</option>)}</select></label><label>전체청산 (HHMMSS)<input value={boundaryTime} inputMode="numeric" maxLength="6" placeholder="자동 판별" onChange={event => { setBoundaryTime(event.target.value.replace(/\D/g, "").slice(0, 6)); setPreflight(null); }}/></label><button className="btn ghost sm" onClick={inspect} disabled={!jobId}>사전 점검</button><button className="btn primary sm" onClick={start} disabled={!jobId || !preflight?.available || running}>경로 분석 시작</button>{running && <button className="btn danger sm" onClick={() => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" }).catch(reason => setError(_tpKo(String(reason.message || reason))))}>취소</button>}</div>
       {preflight && <div className={`tp-preflight ${preflight.available ? "ready" : "blocked"}`}><b>{preflight.available ? "분석 가능" : "분석 불가"}</b><span>{preflight.available ? `거래 ${preflight.trade_count} · 날짜 ${preflight.covered_date_count}/${preflight.date_count} · ${preflight.source.timeframe}` : `${_tpKo(preflight.reason)}${preflight.exit_after_boundary_count ? ` · 경계 뒤 실제 매도 ${preflight.exit_after_boundary_count}건` : ""}`}</span>{(preflight.uncovered_dates || []).length > 0 && <span className="tp-uncovered">⚠ 데이터 없는 날짜 {preflight.date_count - preflight.covered_date_count}일: {preflight.uncovered_dates.slice(0, 6).join(", ")}{preflight.uncovered_dates.length > 6 ? " …" : ""}</span>}<small>전체청산 {String(preflight.forced_liquidation_time || "").padStart(6, "0")} · {preflight.boundary_source || "미확인"} · 전체청산 이후 데이터는 존재해도 사용하지 않음</small></div>}
@@ -133,6 +139,10 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
       {dataContract && _tpNextHint(activeView) && <div className="tp-next-hint">{_tpNextHint(activeView)}</div>}
       {dataContract && activeView === "data" && <div aria-label="데이터 계약"><BtDataContract contract={dataContract}/></div>}
       {dataContract && activeView === "entry" && <BtEntryAutopsy baseUrl={baseUrl} jobId={jobId} contract={dataContract}/>}
+      {dataContract && activeView === "split" && <BtSplitDiagnostics baseUrl={baseUrl} jobId={jobId} lane={lane}/>}
+      {dataContract && activeView === "loss" && <BtLossProfile baseUrl={baseUrl} jobId={jobId} lane={lane}/>}
+      {dataContract && activeView === "pockets" && <BtLossPockets baseUrl={baseUrl} jobId={jobId} lane={lane}/>}
+      {dataContract && activeView === "removal" && <BtRemovalSim baseUrl={baseUrl} jobId={jobId} lane={lane}/>}
       {running && <div className="tp-progress" role="progressbar" aria-valuenow={Math.round((analysis.progress || 0) * 100)}><i style={{ width: `${Math.round((analysis.progress || 0) * 100)}%` }}/><span>{analysis.processed || 0}/{analysis.total || "?"} · {Math.round((analysis.progress || 0) * 100)}%</span></div>}
       {error && <p className="tp-error" role="alert">{error}</p>}
       {totals && <>
@@ -155,7 +165,8 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
           <BtCandidateConsole baseUrl={baseUrl} lane={lane} manifest={laneManifest} axis={axis} proposal={axis === "buy" ? selectedFilter : selectedProposal}/>
         </div>}
         {activeView === "official" && <BtExitTransition baseUrl={baseUrl} jobs={jobs} baselineJobId={jobId}/>}
-        {activeView === "oos" && <BtOosGate baseUrl={baseUrl} jobs={jobs} baselineJobId={jobId} lane={lane} axis={axis}/>}</>}
+        {activeView === "oos" && <BtOosGate baseUrl={baseUrl} jobs={jobs} baselineJobId={jobId} lane={lane} axis={axis} manifest={laneManifest}/>}</>}
+      {activeView === "generations" && <BtGenerationCurve baseUrl={baseUrl} lane={lane}/>}
       {activeView === "ledger" && <BtLedgerBrowser baseUrl={baseUrl} lane={lane}/>}
     </div>
   </section>;

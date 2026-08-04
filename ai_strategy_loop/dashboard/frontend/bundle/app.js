@@ -38159,9 +38159,17 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       oosCandidate: latest("oos", false)
     };
   }
-  function BtOosGate({ baseUrl, jobs, baselineJobId, lane, axis = "sell" }) {
-    var _a, _b, _c, _d;
+  function _oosMoney(value) {
+    return Number(value || 0).toLocaleString() + "\uC6D0";
+  }
+  function _oosPct(value) {
+    return Math.round((Number(value) || 0) * 100) + "%";
+  }
+  function BtOosGate({ baseUrl, jobs, baselineJobId, lane, axis = "sell", manifest }) {
+    var _a, _b, _c, _d, _e, _f, _g;
+    const [mode, setMode] = useState_oos("split");
     const [form, setForm] = useState_oos({ designBaseline: baselineJobId || "", designCandidate: "", oosBaseline: "", oosCandidate: "" });
+    const [split, setSplit] = useState_oos({ baseline: baselineJobId || "", candidate: "" });
     const [result, setResult] = useState_oos(null);
     const [busy, setBusy] = useState_oos(false);
     const [attributed, setAttributed] = useState_oos(null);
@@ -38177,25 +38185,52 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         alive = false;
       };
     }, [baseUrl, lane]);
+    const row = manifest && manifest.manifest;
+    const designPeriod = row ? { t_start: row.design.start, t_end: row.design.end } : null;
+    const holdoutPeriod = row ? { t_start: row.oos.start, t_end: row.oos.end } : null;
     const applyAttributed = () => {
       if (attributed) setForm((current) => ({ ...current, ...Object.fromEntries(Object.entries(attributed).filter(([, value]) => value)) }));
     };
     const field = (key, label) => /* @__PURE__ */ React.createElement("label", null, label, /* @__PURE__ */ React.createElement("select", { value: form[key], onChange: (event) => setForm((current) => ({ ...current, [key]: event.target.value })) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\uACF5\uC2DD job \uC120\uD0DD"), (jobs || []).map((job) => /* @__PURE__ */ React.createElement("option", { key: job.job_id, value: job.job_id }, _oosJobLabel(job)))));
+    const splitField = (key, label) => /* @__PURE__ */ React.createElement("label", null, label, /* @__PURE__ */ React.createElement("select", { value: split[key], onChange: (event) => setSplit((current) => ({ ...current, [key]: event.target.value })) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\uACF5\uC2DD job \uC120\uD0DD"), (jobs || []).map((job) => /* @__PURE__ */ React.createElement("option", { key: job.job_id, value: job.job_id }, _oosJobLabel(job)))));
+    const ready = mode === "split" ? Boolean(split.baseline && split.candidate && designPeriod && holdoutPeriod) : Object.values(form).every(Boolean);
     const run = () => {
-      if (Object.values(form).some((value) => !value)) return;
+      if (!ready) return;
       setBusy(true);
       setResult(null);
-      _btPostJson(`${baseUrl}/bt/trade-path/promotion-gate`, {
+      const body = mode === "split" ? {
+        baseline_job_id: split.baseline,
+        candidate_job_id: split.candidate,
+        axis,
+        design_period: designPeriod,
+        holdout_period: holdoutPeriod
+      } : {
         design_baseline_job_id: form.designBaseline,
         design_candidate_job_id: form.designCandidate,
         oos_baseline_job_id: form.oosBaseline,
         oos_candidate_job_id: form.oosCandidate,
         axis
-      }, 6e4).then(setResult).catch((reason) => setResult({ verdict: "blocked", blockers: [String(reason.message || reason)] })).finally(() => setBusy(false));
+      };
+      _btPostJson(`${baseUrl}/bt/trade-path/promotion-gate`, body, 12e4).then(setResult).catch((reason) => setResult({ verdict: "blocked", blockers: [String(reason.message || reason)] })).finally(() => setBusy(false));
     };
-    const designDelta = (_b = (_a = result == null ? void 0 : result.design) == null ? void 0 : _a.pair) == null ? void 0 : _b.delta_profit_krw;
-    const oosDelta = (_d = (_c = result == null ? void 0 : result.oos) == null ? void 0 : _c.pair) == null ? void 0 : _d.delta_profit_krw;
-    return /* @__PURE__ */ React.createElement("section", { className: "tp-subpanel tp-oos-gate", "aria-labelledby": "tp-oos-title" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", { id: "tp-oos-title" }, "\uC124\uACC4 + \uBE44\uC911\uCCA9 OOS \uCC44\uD0DD \uAC8C\uC774\uD2B8"), /* @__PURE__ */ React.createElement("small", null, "\uAC19\uC740 \uB9E4\uC218\uC2DD\xB7timeframe\uC758 \uAE30\uC900/\uD6C4\uBCF4 \uACF5\uC2DD job 2\uC30D\uC744 \uBE44\uAD50\uD569\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("span", { className: "tp-authority official" }, "\uC815\uBCF8")), /* @__PURE__ */ React.createElement("div", { className: "tp-oos-rule" }, "\uAC00\uC0C1 \uC7AC\uC0DD\uC774 \uC88B\uC544\uB3C4 \uCC44\uD0DD\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uC124\uACC4 \uACF5\uC2DD pair\uC640 \uBCC4\uB3C4 \uAE30\uAC04 OOS \uACF5\uC2DD pair\uAC00 \uBAA8\uB450 \uAC1C\uC120\uB3FC\uC57C \uD569\uB2C8\uB2E4."), attributed && Object.values(attributed).some(Boolean) && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: applyAttributed }, "\uADC0\uC18D\uB41C \uD6C4\uBCF4 \uC2E4\uD589 job \uC790\uB3D9 \uCC44\uC6C0"), /* @__PURE__ */ React.createElement("div", { className: "tp-oos-form" }, /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", null, "\u2460 \uC124\uACC4 \uAD6C\uAC04"), field("designBaseline", "\uAE30\uC900"), field("designCandidate", "\uD6C4\uBCF4")), /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", null, "\u2461 OOS \uAD6C\uAC04"), field("oosBaseline", "\uAE30\uC900"), field("oosCandidate", "\uD6C4\uBCF4"))), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", disabled: busy || Object.values(form).some((value) => !value), onClick: run }, busy ? "\uACF5\uC2DD \uACB0\uACFC \uD655\uC778 \uC911\u2026" : "\uC124\uACC4/OOS \uCC44\uD0DD \uD310\uC815"), result && /* @__PURE__ */ React.createElement("div", { className: `tp-oos-verdict ${result.verdict === "adoptable" ? "ready" : "blocked"}` }, /* @__PURE__ */ React.createElement("b", null, result.verdict === "adoptable" ? "\uCC44\uD0DD \uAC00\uB2A5" : "\uCC44\uD0DD \uBD88\uAC00"), /* @__PURE__ */ React.createElement("span", null, "\uC124\uACC4 ", Number(designDelta || 0).toLocaleString(), "\uC6D0 \xB7 OOS ", Number(oosDelta || 0).toLocaleString(), "\uC6D0"), axis === "buy" && /* @__PURE__ */ React.createElement("span", { className: "mono" }, "\uAC74\uB2F9 \uC5E3\uC9C0 \uC124\uACC4 ", Number(result.design_per_trade_delta || 0).toLocaleString(), "\uC6D0 \xB7 OOS ", Number(result.oos_per_trade_delta || 0).toLocaleString(), "\uC6D0 \xB7 \uAC70\uB798 \uC720\uC9C0 ", Math.round((result.design_trade_ratio || 0) * 100), "%/", Math.round((result.oos_trade_ratio || 0) * 100), "% (\uD558\uD55C ", Math.round((result.min_trade_ratio || 0.4) * 100), "%)"), /* @__PURE__ */ React.createElement("small", null, (result.blockers || []).join(" \xB7 ") || result.rule)));
+    const second = result && (result.holdout || result.oos);
+    const secondLabel = result && result.mode === "2job_split" ? "\uD640\uB4DC\uC544\uC6C3" : "OOS";
+    const secondEdge = result && ((_a = result.holdout_per_trade_delta) != null ? _a : result.oos_per_trade_delta);
+    const secondRatio = result && ((_b = result.holdout_trade_ratio) != null ? _b : result.oos_trade_ratio);
+    return /* @__PURE__ */ React.createElement("section", { className: "tp-subpanel tp-oos-gate", "aria-labelledby": "tp-oos-title" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", { id: "tp-oos-title" }, "\uCC44\uD0DD \uAC8C\uC774\uD2B8"), /* @__PURE__ */ React.createElement("small", null, "\uAC00\uC0C1 \uC7AC\uC0DD\uC774 \uC88B\uC544\uB3C4 \uCC44\uD0DD\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uB450 \uAD6C\uAC04 \uACF5\uC2DD \uACB0\uACFC\uAC00 \uBAA8\uB450 \uAC1C\uC120\uB3FC\uC57C \uD569\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("span", { className: "tp-authority official" }, "\uC815\uBCF8")), /* @__PURE__ */ React.createElement("div", { className: "tp-oos-modes", role: "tablist", "aria-label": "\uD310\uC815 \uBAA8\uB4DC" }, [["split", "v2 \uBD84\uD560 (\uC5F0\uC18D 1\uD68C \uB7F0)"], ["four", "4-job \uB3C5\uB9BD \uB7F0"]].map(([key, label]) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key,
+        role: "tab",
+        "aria-selected": mode === key,
+        className: mode === key ? "active" : "",
+        onClick: () => {
+          setMode(key);
+          setResult(null);
+        }
+      },
+      label
+    ))), mode === "split" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "tp-oos-rule" }, "\uC5F0\uC18D 1\uD68C \uB7F0\uC744 ", /* @__PURE__ */ React.createElement("b", null, designPeriod ? `${designPeriod.t_start}~${designPeriod.t_end}` : "?"), "(\uC124\uACC4)\uACFC", /* @__PURE__ */ React.createElement("b", null, " ", holdoutPeriod ? `${holdoutPeriod.t_start}~${holdoutPeriod.t_end}` : "?"), "(\uD640\uB4DC\uC544\uC6C3)\uC73C\uB85C \uB098\uB220 \uD310\uC815\uD569\uB2C8\uB2E4. \u26A0 \uC790\uBCF8\uC774 \uC774\uC5B4\uC9C0\uBBC0\uB85C \uD640\uB4DC\uC544\uC6C3\uC740 \uB3C5\uB9BD OOS \uAC00 \uC544\uB2D9\uB2C8\uB2E4 \u2014 \uAC74\uB2F9 \uC190\uC775\uC73C\uB85C \uD310\uB2E8\uD558\uC138\uC694."), /* @__PURE__ */ React.createElement("div", { className: "tp-oos-form" }, /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", null, "\uAE30\uC900\uC120 \uB7F0"), splitField("baseline", "\uAE30\uC900")), /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", null, "\uD6C4\uBCF4 \uB7F0"), splitField("candidate", "\uD6C4\uBCF4")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "tp-oos-rule" }, "\uC124\uACC4 \uACF5\uC2DD pair\uC640 ", /* @__PURE__ */ React.createElement("b", null, "\uBE44\uC911\uCCA9"), " OOS \uACF5\uC2DD pair\uAC00 \uBAA8\uB450 \uAC1C\uC120\uB3FC\uC57C \uD569\uB2C8\uB2E4."), attributed && Object.values(attributed).some(Boolean) && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: applyAttributed }, "\uADC0\uC18D\uB41C \uD6C4\uBCF4 \uC2E4\uD589 job \uC790\uB3D9 \uCC44\uC6C0"), /* @__PURE__ */ React.createElement("div", { className: "tp-oos-form" }, /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", null, "\u2460 \uC124\uACC4 \uAD6C\uAC04"), field("designBaseline", "\uAE30\uC900"), field("designCandidate", "\uD6C4\uBCF4")), /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", null, "\u2461 OOS \uAD6C\uAC04"), field("oosBaseline", "\uAE30\uC900"), field("oosCandidate", "\uD6C4\uBCF4")))), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", disabled: busy || !ready, onClick: run }, busy ? "\uACF5\uC2DD \uACB0\uACFC \uD655\uC778 \uC911\u2026" : "\uCC44\uD0DD \uD310\uC815"), result && /* @__PURE__ */ React.createElement("div", { className: `tp-oos-verdict ${result.verdict === "adoptable" ? "ready" : "blocked"}` }, /* @__PURE__ */ React.createElement("b", null, result.verdict === "adoptable" ? "\uCC44\uD0DD \uAC00\uB2A5 (\uC0AC\uB78C \uC2B9\uC778 \uB300\uAE30)" : "\uCC44\uD0DD \uBD88\uAC00"), /* @__PURE__ */ React.createElement("span", null, "\uC124\uACC4 ", _oosMoney((_d = (_c = result.design) == null ? void 0 : _c.pair) == null ? void 0 : _d.delta_profit_krw), " \xB7 ", secondLabel, " ", _oosMoney((_e = second == null ? void 0 : second.pair) == null ? void 0 : _e.delta_profit_krw)), axis === "buy" && /* @__PURE__ */ React.createElement("span", { className: "mono" }, "\uAC74\uB2F9 \uC5E3\uC9C0 \uC124\uACC4 ", _oosMoney(result.design_per_trade_delta), " \xB7 ", secondLabel, " ", _oosMoney(secondEdge), " \xB7 \uAC70\uB798 \uC720\uC9C0 ", _oosPct(result.design_trade_ratio), "/", _oosPct(secondRatio), " (\uD558\uD55C ", _oosPct(result.min_trade_ratio || 0.4), ")"), result.mode === "2job_split" && /* @__PURE__ */ React.createElement("span", { className: `mono ${result.split_reconciled ? "" : "neg"}` }, "\uAC80\uC0B0 ", result.split_reconciled ? "\uD1B5\uACFC" : "\uC2E4\uD328", " \u2014 \uB450 \uAD6C\uAC04 \uD569 ", Number(((_f = result.split_trade_counts) == null ? void 0 : _f.parts) || 0).toLocaleString(), " / \uC804\uCCB4 ", Number(((_g = result.split_trade_counts) == null ? void 0 : _g.whole) || 0).toLocaleString(), "\uAC74"), /* @__PURE__ */ React.createElement("small", null, (result.blockers || []).join(" \xB7 ") || result.rule), result.caveat && /* @__PURE__ */ React.createElement("small", null, result.caveat)));
   }
   Object.assign(window, { BtOosGate });
 
@@ -38409,6 +38444,399 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { BtBuyFilters });
 
+  // ai_strategy_loop/dashboard/frontend/bt-loss-profile.jsx
+  var { useState: useState_lp, useEffect: useEffect_lp } = React;
+  var _lpSHAPE = {
+    monotone_up: ["\uB2E8\uC870 \uC0C1\uC2B9", "\uAC12\uC774 \uD074\uC218\uB85D \uC88B\uC544\uC9D0 \u2192 \uB0AE\uC740 \uCABD\uC744 \uC790\uB984"],
+    monotone_down: ["\uB2E8\uC870 \uD558\uB77D", "\uAC12\uC774 \uD074\uC218\uB85D \uB098\uBE60\uC9D0 \u2192 \uB192\uC740 \uCABD\uC744 \uC790\uB984"],
+    tail_high: ["\uC0C1\uB2E8 \uAF2C\uB9AC", "\uC704\uCABD 2\uBD84\uC704\uB9CC \uAE09\uB77D"],
+    tail_low: ["\uD558\uB2E8 \uAF2C\uB9AC", "\uC544\uB798\uCABD 2\uBD84\uC704\uB9CC \uAE09\uB77D"],
+    valley: ["\uACE8\uC9DC\uAE30", "\uAC00\uC6B4\uB370 \uAD6C\uAC04\uB9CC \uB098\uC068 \u2192 \uC591\uCE21 \uBC94\uC704\uB85C \uC790\uB984"],
+    multi_band: ["\uB2E4\uC911 \uBC34\uB4DC", "\uB098\uC05C \uAD6C\uAC04\uC774 \uB458\uB85C \uAC08\uB77C\uC9D0 \u2192 or \uB85C \uBB36\uC5B4 \uC790\uB984"],
+    flat: ["\uD3C9\uD0C4", "\uD310\uBCC4\uB825 \uC5C6\uC74C \u2014 \uC790\uB97C \uACF3\uC774 \uC5C6\uC2B5\uB2C8\uB2E4"]
+  };
+  function _lpNum(value, digits = 0) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number.toLocaleString(void 0, { maximumFractionDigits: digits }) : "\u2014";
+  }
+  function _lpPct(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? (number * 100).toFixed(1) + "%" : "\u2014";
+  }
+  function _lpEdge(value) {
+    return value === null || value === void 0 ? "\u221E" : _lpNum(value, 2);
+  }
+  function _lpBars({ rows, overall, span }) {
+    const values = rows.map((row) => Number(row.per_trade) || 0);
+    const limit = Math.max(1, ...values.map(Math.abs));
+    return /* @__PURE__ */ React.createElement("div", { className: "tp-lp-bars" }, rows.map((row) => {
+      const value = Number(row.per_trade) || 0;
+      const inSpan = span && row.bucket >= span.from_bucket && row.bucket <= span.to_bucket;
+      const width = Math.round(Math.abs(value) / limit * 100);
+      const tone = value < overall ? "bad" : "good";
+      return /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          key: row.bucket,
+          className: `tp-lp-bar ${tone}${row.insufficient ? " thin" : ""}${inSpan ? " span" : ""}`,
+          title: `D${row.bucket} \xB7 ${row.n.toLocaleString()}\uAC74 \xB7 \uAC74\uB2F9 ${_lpNum(value)}\uC6D0${row.insufficient ? " \xB7 \uD45C\uBCF8 \uBD80\uC871" : ""}`
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "lbl" }, "D", row.bucket),
+        /* @__PURE__ */ React.createElement("i", { style: { width: `${width}%` } }),
+        /* @__PURE__ */ React.createElement("span", { className: "val mono" }, _lpNum(value))
+      );
+    }));
+  }
+  function BtLossProfile({ baseUrl, jobId, lane }) {
+    const [payload, setPayload] = useState_lp(null);
+    const [error, setError] = useState_lp("");
+    const [picked, setPicked] = useState_lp("");
+    useEffect_lp(() => {
+      if (!baseUrl || !jobId) return void 0;
+      let alive = true;
+      setPayload(null);
+      setError("");
+      setPicked("");
+      _btFetchJson(`${baseUrl}/bt/trade-path/loss-profile?job_id=${encodeURIComponent(jobId)}&lane=${encodeURIComponent(lane)}`, 18e4).then((result) => {
+        if (alive) setPayload(result);
+      }).catch((reason) => {
+        if (alive) setError(String(reason.message || reason));
+      });
+      return () => {
+        alive = false;
+      };
+    }, [baseUrl, jobId, lane]);
+    if (!jobId) return /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC644\uB8CC\uB41C \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uB97C \uBA3C\uC800 \uC120\uD0DD\uD558\uC138\uC694.");
+    if (error) return /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, "\uC190\uC2E4 \uD504\uB85C\uD30C\uC77C \uC870\uD68C \uC2E4\uD328: ", error);
+    if (!payload) return /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uBCC0\uC218\uBCC4 10\uBD84\uC704 \uC190\uC2E4 \uACE1\uC120\uC744 \uACC4\uC0B0 \uC911\uC785\uB2C8\uB2E4\u2026");
+    if (!payload.available) {
+      return /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uD45C\uBCF8\uC774 \uBD80\uC871\uD569\uB2C8\uB2E4 \u2014 \uC124\uACC4 ", payload.design_rows, "\uAC74 / \uD640\uB4DC\uC544\uC6C3 ", payload.holdout_rows, "\uAC74 (\uCD5C\uC18C ", payload.minimum_total, "\uAC74 \uD544\uC694). \uC774\uAC83\uB3C4 \uACB0\uACFC\uC785\uB2C8\uB2E4.");
+    }
+    const profiles = payload.profiles || [];
+    const current = profiles.find((row) => row.variable === picked) || profiles[0] || null;
+    return /* @__PURE__ */ React.createElement("section", { className: "tp-subpanel tp-loss-profile", "aria-labelledby": "tp-lp-title" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", { id: "tp-lp-title" }, "\uC190\uC2E4 \uD504\uB85C\uD30C\uC77C\uB7EC"), /* @__PURE__ */ React.createElement("small", null, "10\uBD84\uC704 \uACBD\uACC4\uB294 \uC124\uACC4 \uAD6C\uAC04\uC5D0\uC11C\uB9CC \uC0B0\uCD9C \xB7 \uD640\uB4DC\uC544\uC6C3\uC5D0 \uAC19\uC740 \uACBD\uACC4 \uC801\uC6A9(\uB204\uCD9C \uAE08\uC9C0)")), /* @__PURE__ */ React.createElement("span", { className: "tp-authority diagnostic" }, "\uC9C4\uB2E8")), /* @__PURE__ */ React.createElement("div", { className: "tp-lp-kpis mono" }, "\uBD84\uD560 ", payload.split, " \xB7 \uC124\uACC4 ", _lpNum(payload.design_rows), "\uAC74 / \uD640\uB4DC\uC544\uC6C3 ", _lpNum(payload.holdout_rows), "\uAC74 \xB7 \uAC80\uC815 ", payload.tested, "\uBCC0\uC218 \xB7 \uD640\uB4DC\uC544\uC6C3 \uD655\uC778 ", payload.confirmed_count, " \xB7 \uC870\uAC74\uC2DD \uAC00\uB2A5 ", payload.proposable_count), /* @__PURE__ */ React.createElement("div", { className: "tp-entry-guard" }, payload.guard), (payload.pareto || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "tp-lp-pareto" }, /* @__PURE__ */ React.createElement("b", null, "\uD30C\uB808\uD1A0 \uC804\uC120 \u2014 \uC801\uAC8C \uC790\uB974\uACE0 \uB9CE\uC774 \uC5BB\uB294 \uCD95"), (payload.pareto || []).map((row) => /* @__PURE__ */ React.createElement("span", { key: row.variable, className: "mono" }, row.variable, " \xB7 \uC81C\uAC70 ", _lpPct(row.removal), " \xB7 \uAC74\uB2F9 +", _lpNum(row.gain), "\uC6D0"))), /* @__PURE__ */ React.createElement("div", { className: "tp-lp-body" }, /* @__PURE__ */ React.createElement("div", { className: "tp-lp-list", role: "listbox", "aria-label": "\uBCC0\uC218 \uBAA9\uB85D" }, profiles.map((row) => {
+      const shape = _lpSHAPE[row.shape] || [row.shape, ""];
+      const active = current && row.variable === current.variable;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: row.variable,
+          role: "option",
+          "aria-selected": !!active,
+          className: active ? "active" : "",
+          onClick: () => setPicked(row.variable)
+        },
+        /* @__PURE__ */ React.createElement("code", null, row.variable),
+        /* @__PURE__ */ React.createElement("span", { className: `tp-lp-shape ${row.shape}` }, shape[0]),
+        row.confirmed ? /* @__PURE__ */ React.createElement("span", { className: "tp-lp-ok" }, "\uD655\uC778") : /* @__PURE__ */ React.createElement("span", { className: "tp-lp-weak" }, row.reason === "flat" ? "\uD3C9\uD0C4" : "\uBBF8\uD655\uC778"),
+        !row.proposable && /* @__PURE__ */ React.createElement("span", { className: "tp-lp-diag" }, "\uC9C4\uB2E8 \uC804\uC6A9")
+      );
+    }), profiles.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uD310\uBCC4\uB825 \uC788\uB294 \uBCC0\uC218\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 \uC774\uAC83\uB3C4 \uACB0\uACFC\uC785\uB2C8\uB2E4.")), current && /* @__PURE__ */ React.createElement("div", { className: "tp-lp-detail" }, /* @__PURE__ */ React.createElement("div", { className: "tp-lp-head" }, /* @__PURE__ */ React.createElement("b", null, /* @__PURE__ */ React.createElement("code", null, current.variable)), /* @__PURE__ */ React.createElement("span", { className: `tp-lp-shape ${current.shape}` }, (_lpSHAPE[current.shape] || [current.shape])[0]), /* @__PURE__ */ React.createElement("small", null, (_lpSHAPE[current.shape] || ["", ""])[1]), !current.proposable && /* @__PURE__ */ React.createElement("span", { className: "tp-lp-diag" }, "\uC774 \uBCC0\uC218\uB294 \uC9C4\uB2E8 \uC804\uC6A9\uC785\uB2C8\uB2E4 \u2014 \uC870\uAC74\uC2DD \uD6C4\uBCF4 \uCD95\uC73C\uB85C \uC4F0\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "tp-lp-two" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("small", null, "\uC124\uACC4 (\uC804\uCCB4 \uAC74\uB2F9 ", _lpNum(current.design_overall), "\uC6D0)"), _lpBars({ rows: current.design || [], overall: current.design_overall, span: current.worst_span })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("small", null, "\uD640\uB4DC\uC544\uC6C3 (\uC804\uCCB4 \uAC74\uB2F9 ", _lpNum(current.holdout_overall), "\uC6D0)"), _lpBars({ rows: current.holdout || [], overall: current.holdout_overall, span: current.worst_span }))), current.worst_span ? /* @__PURE__ */ React.createElement("div", { className: `tp-lp-span ${current.confirmed ? "confirmed" : "unstable"}` }, /* @__PURE__ */ React.createElement("b", null, current.confirmed ? "\uD640\uB4DC\uC544\uC6C3 \uD655\uC778\uB428" : "\uD640\uB4DC\uC544\uC6C3 \uBBF8\uD655\uC778 \u2014 \uD6C4\uBCF4 \uC81C\uC678"), /* @__PURE__ */ React.createElement("code", null, _lpEdge(current.worst_span.low), " < ", current.variable, " \u2264 ", _lpEdge(current.worst_span.high)), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "D", current.worst_span.from_bucket, "~D", current.worst_span.to_bucket, " \xB7 \uC81C\uAC70 ", _lpPct(current.worst_span.design_share), " \xB7 \uC124\uACC4 \uAC74\uB2F9 ", _lpNum(current.worst_span.design_per_trade), " \xB7 \uD640\uB4DC \uAC74\uB2F9 ", _lpNum(current.worst_span.holdout_per_trade)), !current.confirmed && /* @__PURE__ */ React.createElement("small", null, "\uC0AC\uC720: ", current.reason)) : /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC778\uC811 2\uCE78 \uC774\uC0C1 \uC5F0\uC18D\uC778 \uC190\uC2E4 \uAD6C\uAC04\uC774 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 \uACE0\uB9BD 1\uCE78\uC740 \uB178\uC774\uC988\uB85C \uBCF4\uACE0 \uC81C\uC678\uD569\uB2C8\uB2E4."))));
+  }
+  Object.assign(window, { BtLossProfile });
+
+  // ai_strategy_loop/dashboard/frontend/bt-loss-pockets.jsx
+  var { useState: useState_pk, useEffect: useEffect_pk } = React;
+  var _pkDEFAULT = "B_\uB4F1\uB77D\uC728,B_\uCCB4\uACB0\uAC15\uB3C4,B_\uD68C\uC804\uC728,B_\uC2DC\uBD84\uCD08,B_\uC2DC\uAC00\uCD1D\uC561,B_\uC804\uC77C\uBE44";
+  function _pkNum(value, digits = 0) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number.toLocaleString(void 0, { maximumFractionDigits: digits }) : "\u2014";
+  }
+  function _pkPct(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? (number * 100).toFixed(2) + "%" : "\u2014";
+  }
+  function _pkBound(low, high, name) {
+    if (low === null || low === void 0) return `${name} \u2264 ${_pkNum(high, 2)}`;
+    if (high === null || high === void 0) return `${name} > ${_pkNum(low, 2)}`;
+    return `${_pkNum(low, 2)} < ${name} \u2264 ${_pkNum(high, 2)}`;
+  }
+  function _pkGrid({ pocket }) {
+    const cells = new Set((pocket.cell_list || []).map((cell) => `${cell[0]}:${cell[1]}`));
+    const rows = [];
+    for (let y = 10; y >= 1; y -= 1) {
+      const columns = [];
+      for (let x = 1; x <= 10; x += 1) {
+        const hit = cells.has(`${x}:${y}`);
+        columns.push(/* @__PURE__ */ React.createElement("i", { key: x, className: hit ? "hit" : "", title: `${pocket.pair[0]} D${x} \xD7 ${pocket.pair[1]} D${y}` }));
+      }
+      rows.push(/* @__PURE__ */ React.createElement("div", { key: y, className: "row" }, columns));
+    }
+    return /* @__PURE__ */ React.createElement("div", { className: "tp-pk-grid", "aria-label": "\uD3EC\uCF13 \uC704\uCE58 \uACA9\uC790" }, rows);
+  }
+  function BtLossPockets({ baseUrl, jobId, lane }) {
+    const [variables, setVariables] = useState_pk(_pkDEFAULT);
+    const [applied, setApplied] = useState_pk(_pkDEFAULT);
+    const [payload, setPayload] = useState_pk(null);
+    const [error, setError] = useState_pk("");
+    useEffect_pk(() => {
+      if (!baseUrl || !jobId) return void 0;
+      let alive = true;
+      setPayload(null);
+      setError("");
+      const query = `job_id=${encodeURIComponent(jobId)}&lane=${encodeURIComponent(lane)}&variables=${encodeURIComponent(applied)}`;
+      _btFetchJson(`${baseUrl}/bt/trade-path/loss-pockets?${query}`, 3e5).then((result) => {
+        if (alive) setPayload(result);
+      }).catch((reason) => {
+        if (alive) setError(String(reason.message || reason));
+      });
+      return () => {
+        alive = false;
+      };
+    }, [baseUrl, jobId, lane, applied]);
+    if (!jobId) return /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC644\uB8CC\uB41C \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uB97C \uBA3C\uC800 \uC120\uD0DD\uD558\uC138\uC694.");
+    const pockets = payload && payload.pockets || [];
+    return /* @__PURE__ */ React.createElement("section", { className: "tp-subpanel tp-loss-pockets", "aria-labelledby": "tp-pk-title" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", { id: "tp-pk-title" }, "2D \uC190\uC2E4 \uD3EC\uCF13 \uC9C0\uB3C4"), /* @__PURE__ */ React.createElement("small", null, "\uC0C1\uAD00 |r|<0.6 \uC778 \uC30D\uB9CC \xB7 \uC124\uACC4\xB7\uD640\uB4DC\uC544\uC6C3 \uB3D9\uC2DC \uC190\uC2E4 \xB7 Welch t + BH-FDR(q\u22640.10) \xB7 \uC778\uC811 2\uCE78 \uC774\uC0C1")), /* @__PURE__ */ React.createElement("span", { className: "tp-authority diagnostic" }, "\uC9C4\uB2E8")), /* @__PURE__ */ React.createElement("div", { className: "tp-pk-controls" }, /* @__PURE__ */ React.createElement("label", null, "\uBCC0\uC218(\uC27C\uD45C \uAD6C\uBD84)", /* @__PURE__ */ React.createElement("input", { value: variables, onChange: (event) => setVariables(event.target.value), spellCheck: "false" })), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setApplied(variables) }, "\uB2E4\uC2DC \uD0D0\uC0C9"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => {
+      setVariables(_pkDEFAULT);
+      setApplied(_pkDEFAULT);
+    } }, "\uAE30\uBCF8\uAC12")), error && /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, "\uD3EC\uCF13 \uD0D0\uC0C9 \uC2E4\uD328: ", error), !payload && !error && /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uBCC0\uC218\uC30D \uACA9\uC790\uB97C \uD6D1\uB294 \uC911\uC785\uB2C8\uB2E4\u2026 (\uBCC0\uC218\uAC00 \uB9CE\uC73C\uBA74 \uC2DC\uAC04\uC774 \uAC78\uB9BD\uB2C8\uB2E4)"), payload && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "tp-pk-kpis mono" }, "\uBD84\uD560 ", payload.split, " \xB7 \uBCC0\uC218 ", (payload.variables || []).length, "\uAC1C \xB7 FDR \u03B1=", payload.fdr_alpha, " \xB7 \uD3EC\uCF13 ", pockets.length, "\uAC74"), pockets.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, payload.reason === "no_eligible_pair" ? "2D \uD3EC\uCF13\uC740 \uBCC0\uC218 2\uAC1C \uC774\uC0C1\uC774 \uD544\uC694\uD569\uB2C8\uB2E4." : "\uC720\uC758\uD55C \uC190\uC2E4 \uD3EC\uCF13\uC774 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 \uC774\uAC83\uB3C4 \uACB0\uACFC\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "tp-pk-list" }, pockets.map((pocket, index2) => /* @__PURE__ */ React.createElement("article", { key: `${pocket.pair[0]}-${pocket.pair[1]}-${index2}`, className: "tp-pk-card" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("b", null, /* @__PURE__ */ React.createElement("code", null, pocket.pair[0]), " \xD7 ", /* @__PURE__ */ React.createElement("code", null, pocket.pair[1])), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "\uCE78 ", pocket.cells, " \xB7 q\u2264", Number(pocket.max_q).toFixed(3), " \xB7 \uB0AD\uBE44 ", _pkPct(pocket.rect_waste))), _pkGrid({ pocket }), /* @__PURE__ */ React.createElement("div", { className: "tp-pk-expr" }, /* @__PURE__ */ React.createElement("code", null, _pkBound(pocket.x_low, pocket.x_high, pocket.pair[0].replace(/^B_/, "")), " and ", _pkBound(pocket.y_low, pocket.y_high, pocket.pair[1].replace(/^B_/, "")))), /* @__PURE__ */ React.createElement("div", { className: "tp-pk-metrics mono" }, /* @__PURE__ */ React.createElement("span", null, "\uC81C\uAC70 ", _pkPct(pocket.design_share)), /* @__PURE__ */ React.createElement("span", { className: "neg" }, "\uC124\uACC4 \uAC74\uB2F9 ", _pkNum(pocket.design_per_trade)), /* @__PURE__ */ React.createElement("span", { className: "neg" }, "\uD640\uB4DC \uAC74\uB2F9 ", _pkNum(pocket.holdout_per_trade)), /* @__PURE__ */ React.createElement("span", null, "\uAC70\uB798 ", _pkNum(pocket.design_n), "/", _pkNum(pocket.holdout_n)))))), payload.note && /* @__PURE__ */ React.createElement("div", { className: "tp-entry-guard" }, payload.note)));
+  }
+  Object.assign(window, { BtLossPockets });
+
+  // ai_strategy_loop/dashboard/frontend/bt-removal-sim.jsx
+  var { useState: useState_rs } = React;
+  function _rsNum(value, digits = 0) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number.toLocaleString(void 0, { maximumFractionDigits: digits }) : "\u2014";
+  }
+  function _rsPct(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? (number * 100).toFixed(1) + "%" : "\u2014";
+  }
+  function _rsParse(text) {
+    const cleaned = String(text || "").trim();
+    if (!cleaned) return null;
+    let match = cleaned.match(/^(\S+)\s*(>=|>)\s*(-?[\d.]+)$/);
+    if (match) return { column: match[1], low: Number(match[3]), high: null };
+    match = cleaned.match(/^(\S+)\s*(<=|<)\s*(-?[\d.]+)$/);
+    if (match) return { column: match[1], low: null, high: Number(match[3]) };
+    match = cleaned.match(/^(\S+)\s+(-?[\d.]+)\s*~\s*(-?[\d.]+)$/);
+    if (match) return { column: match[1], low: Number(match[2]), high: Number(match[3]) };
+    return null;
+  }
+  function _rsLabel(interval2) {
+    if (interval2.low === null) return `${interval2.column} \u2264 ${interval2.high}`;
+    if (interval2.high === null) return `${interval2.column} > ${interval2.low}`;
+    return `${interval2.low} < ${interval2.column} \u2264 ${interval2.high}`;
+  }
+  function BtRemovalSim({ baseUrl, jobId, lane }) {
+    const [draft, setDraft] = useState_rs("");
+    const [cart, setCart] = useState_rs([]);
+    const [pending, setPending] = useState_rs([]);
+    const [payload, setPayload] = useState_rs(null);
+    const [error, setError] = useState_rs("");
+    const [busy, setBusy] = useState_rs(false);
+    const [autos, setAutos] = useState_rs(null);
+    const addInterval = () => {
+      const parsed = _rsParse(draft);
+      if (!parsed) {
+        setError("\uD615\uC2DD\uC744 \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. \uC608: B_\uB4F1\uB77D\uC728 > 15.68 \xB7 B_\uCCB4\uACB0\uAC15\uB3C4 62~111 \xB7 B_\uC2DC\uBD84\uCD08 <= 90122");
+        return;
+      }
+      setError("");
+      setPending(pending.concat([parsed]));
+      setDraft("");
+    };
+    const commitClause = () => {
+      if (!pending.length) return;
+      setCart(cart.concat([{ terms: [pending] }]));
+      setPending([]);
+    };
+    const run = () => {
+      const clauses2 = cart.concat(pending.length ? [{ terms: [pending] }] : []);
+      if (!clauses2.length || !jobId) return;
+      setBusy(true);
+      setError("");
+      setPayload(null);
+      _btPostJson(
+        `${baseUrl}/bt/trade-path/removal-simulate`,
+        { job_id: jobId, lane, clauses: clauses2 },
+        18e4
+      ).then((result) => {
+        setPayload(result);
+        if (!result.available) setError(result.reason || "\uC2E4\uD328");
+      }).catch((reason) => setError(String(reason.message || reason))).finally(() => setBusy(false));
+    };
+    const suggest = () => {
+      setBusy(true);
+      setError("");
+      setAutos(null);
+      _btPostJson(
+        `${baseUrl}/bt/trade-path/region-candidates`,
+        { job_id: jobId, lane, generation: 1 },
+        6e5
+      ).then((result) => {
+        setAutos(result);
+        if (!result.available) setError(result.reason || "\uC2E4\uD328");
+      }).catch((reason) => setError(String(reason.message || reason))).finally(() => setBusy(false));
+    };
+    const adopt = (candidate) => {
+      setCart((candidate.clauses || []).map((clause) => ({
+        terms: (clause.terms || []).map((group) => group.map((interval2) => ({
+          column: interval2.column,
+          low: interval2.low,
+          high: interval2.high
+        })))
+      })));
+      setPending([]);
+      setPayload(null);
+    };
+    if (!jobId) return /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC644\uB8CC\uB41C \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uB97C \uBA3C\uC800 \uC120\uD0DD\uD558\uC138\uC694.");
+    const clauses = cart.concat(pending.length ? [{ terms: [pending] }] : []);
+    const retention = payload && payload.available ? Number(payload.design_retention) : null;
+    const floor = payload ? Number(payload.cumulative_floor) : 0.4;
+    const gauge = retention === null ? 0 : Math.max(0, Math.min(100, Math.round(retention * 100)));
+    return /* @__PURE__ */ React.createElement("section", { className: "tp-subpanel tp-removal-sim", "aria-labelledby": "tp-rs-title" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", { id: "tp-rs-title" }, "\uC81C\uAC70 \uC2DC\uBBAC\uB808\uC774\uD130"), /* @__PURE__ */ React.createElement("small", null, "CSV \uC7AC\uACC4\uC0B0 \xB7 \uACF5\uC2DD \uBC31\uD14C\uC2A4\uD2B8\uAC00 \uC544\uB2D9\uB2C8\uB2E4")), /* @__PURE__ */ React.createElement("span", { className: "tp-authority advisory" }, "\uC790\uBB38")), /* @__PURE__ */ React.createElement("div", { className: "tp-rs-warn", role: "note" }, "\u26A0 ", /* @__PURE__ */ React.createElement("b", null, "\uC7AC\uC720\uC785 \uBBF8\uBC18\uC601 \xB7 \uC21C\uC704\uC6A9"), " \u2014 \uC81C\uAC70\uB85C \uD480\uB9B0 \uC790\uAE08\uC774 \uB2E4\uB978 \uC885\uBAA9\uC73C\uB85C \uC7AC\uC720\uC785\uB418\uB294 \uD6A8\uACFC\uB97C \uACC4\uC0B0\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. R2 \uC2E4\uCE21\uC5D0\uC11C\uB294 \uD544\uD130 \uC801\uC6A9 \uD6C4 \uAC70\uB798\uAC00 \uC624\uD788\uB824 \uB298\uC5C8\uC2B5\uB2C8\uB2E4(\uC720\uC9C0\uC728 100.7%). \uD310\uC815\uC740 \uACF5\uC2DD pair/gate \uAC00 \uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "tp-rs-controls" }, /* @__PURE__ */ React.createElement("label", null, "\uC81C\uAC70 \uAD6C\uAC04", /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        value: draft,
+        placeholder: "\uC608: B_\uB4F1\uB77D\uC728 > 15.68",
+        spellCheck: "false",
+        onChange: (event) => setDraft(event.target.value),
+        onKeyDown: (event) => {
+          if (event.key === "Enter") addInterval();
+        }
+      }
+    )), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: addInterval }, "AND \uB85C \uCD94\uAC00"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: commitClause, disabled: !pending.length }, "\uC808\uB85C \uD655\uC815"), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: run, disabled: !clauses.length || busy }, busy ? "\uACC4\uC0B0 \uC911\u2026" : "\uC989\uC2DC \uACC4\uC0B0"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => {
+      setCart([]);
+      setPending([]);
+      setPayload(null);
+      setError("");
+    } }, "\uBE44\uC6B0\uAE30"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: suggest, disabled: busy }, "\uD6C4\uBCF4 \uC790\uB3D9 \uC0DD\uC131")), /* @__PURE__ */ React.createElement("div", { className: "tp-rs-cart" }, cart.map((clause, index2) => /* @__PURE__ */ React.createElement("span", { key: index2, className: "tp-rs-chip" }, /* @__PURE__ */ React.createElement("code", null, clause.terms[0].map(_rsLabel).join(" and ")), /* @__PURE__ */ React.createElement("button", { "aria-label": "\uC774 \uC808 \uC81C\uAC70", onClick: () => setCart(cart.filter((_, at) => at !== index2)) }, "\xD7"))), pending.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "tp-rs-chip pending" }, /* @__PURE__ */ React.createElement("code", null, pending.map(_rsLabel).join(" and ")), /* @__PURE__ */ React.createElement("button", { "aria-label": "\uC870\uB9BD \uCDE8\uC18C", onClick: () => setPending([]) }, "\xD7")), clauses.length === 0 && /* @__PURE__ */ React.createElement("small", null, "\uB2F4\uAE34 \uC81C\uAC70 \uAD6C\uAC04\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uD504\uB85C\uD30C\uC77C\uB7EC\xB7\uD3EC\uCF13 \uC9C0\uB3C4\uC5D0\uC11C \uBCF8 \uAD6C\uAC04\uC744 \uC785\uB825\uD558\uC138\uC694.")), error && /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, error), autos && autos.available && /* @__PURE__ */ React.createElement("div", { className: "tp-rs-autos" }, /* @__PURE__ */ React.createElement("b", null, "\uC790\uB3D9 \uC0DD\uC131 \uD6C4\uBCF4 \u2014 \uC190\uC2E4 \uAD6C\uAC04 ", autos.profiles_tested, "\uBCC0\uC218 \xB7 2D \uD3EC\uCF13 ", autos.pockets_found, "\uAC74\uC5D0\uC11C"), (autos.candidates || []).map((candidate) => /* @__PURE__ */ React.createElement("article", { key: candidate.candidate_id, className: `tp-rs-auto ${candidate.budget}` }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("b", null, candidate.candidate_id), /* @__PURE__ */ React.createElement("span", { className: "mono" }, "\uC720\uC9C0 ", _rsPct(candidate.design_retention), "/", _rsPct(candidate.holdout_retention), " \xB7 \uC124\uACC4 ", _rsNum(candidate.design_per_trade_after - candidate.design_per_trade_before, 0), " \xB7 \uD640\uB4DC ", _rsNum(candidate.holdout_per_trade_after - candidate.holdout_per_trade_before, 0), "\uC6D0/\uAC74"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => adopt(candidate) }, "\uC7A5\uBC14\uAD6C\uB2C8\uC5D0 \uB2F4\uAE30")), (candidate.clauses || []).map((clause, index2) => /* @__PURE__ */ React.createElement("div", { key: index2, className: "tp-rs-auto-clause" }, /* @__PURE__ */ React.createElement("code", null, clause.expression), /* @__PURE__ */ React.createElement("small", null, clause.source))))), (autos.candidates || []).length === 0 && /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC608\uC0B0 \uC548\uC5D0\uC11C \uB9CC\uB4E4 \uC218 \uC788\uB294 \uD6C4\uBCF4\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 \uC774\uAC83\uB3C4 \uACB0\uACFC\uC785\uB2C8\uB2E4."), (autos.skipped || []).length > 0 && /* @__PURE__ */ React.createElement("details", { className: "tp-bf-skipped" }, /* @__PURE__ */ React.createElement("summary", null, "\uC81C\uC678 ", autos.skipped.length, "\uAC74"), autos.skipped.slice(0, 20).map((item, index2) => /* @__PURE__ */ React.createElement("small", { key: index2 }, item.item, " \u2014 ", item.reason)))), payload && payload.available && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "tp-rs-gauge", role: "img", "aria-label": `\uC124\uACC4 \uC720\uC9C0\uC728 ${gauge}%` }, /* @__PURE__ */ React.createElement("i", { style: { width: `${gauge}%` }, className: retention < floor ? "danger" : "" }), /* @__PURE__ */ React.createElement("b", { className: "mono" }, "\uC124\uACC4 \uC720\uC9C0\uC728 ", _rsPct(payload.design_retention), " \xB7 \uD640\uB4DC ", _rsPct(payload.holdout_retention)), /* @__PURE__ */ React.createElement("span", { className: "floor", style: { left: `${Math.round(floor * 100)}%` }, title: `\uB204\uC801 \uD558\uD55C ${Math.round(floor * 100)}%` })), /* @__PURE__ */ React.createElement("div", { className: `tp-rs-budget ${payload.budget}` }, "\uC608\uC0B0 ", payload.budget === "ok" ? "\uC5EC\uC720 \uC788\uC74C" : "\uCD08\uACFC \u2014 \uC774 \uC870\uD569\uC740 \uD6C4\uBCF4\uB85C \uC4F0\uC9C0 \uB9C8\uC138\uC694"), /* @__PURE__ */ React.createElement("div", { className: "tp-rs-kpis" }, /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uC124\uACC4 \uAC74\uB2F9"), /* @__PURE__ */ React.createElement("b", null, _rsNum(payload.design_per_trade_before), " \u2192 ", _rsNum(payload.design_per_trade_after)), /* @__PURE__ */ React.createElement("span", { className: payload.design_per_trade_after >= payload.design_per_trade_before ? "pos" : "neg" }, payload.design_per_trade_after >= payload.design_per_trade_before ? "+" : "", _rsNum(payload.design_per_trade_after - payload.design_per_trade_before), "\uC6D0")), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uD640\uB4DC\uC544\uC6C3 \uAC74\uB2F9"), /* @__PURE__ */ React.createElement("b", null, _rsNum(payload.holdout_per_trade_before), " \u2192 ", _rsNum(payload.holdout_per_trade_after)), /* @__PURE__ */ React.createElement("span", { className: payload.holdout_per_trade_after >= payload.holdout_per_trade_before ? "pos" : "neg" }, payload.holdout_per_trade_after >= payload.holdout_per_trade_before ? "+" : "", _rsNum(payload.holdout_per_trade_after - payload.holdout_per_trade_before), "\uC6D0")), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uC81C\uAC70\uB41C \uC190\uC775"), /* @__PURE__ */ React.createElement("b", null, _rsNum(payload.design_removed_pnl), "\uC6D0"), /* @__PURE__ */ React.createElement("span", null, "\uD640\uB4DC ", _rsNum(payload.holdout_removed_pnl), "\uC6D0"))), /* @__PURE__ */ React.createElement("details", { className: "tp-rs-code", open: true }, /* @__PURE__ */ React.createElement("summary", null, "\uC0DD\uC131\uB420 STOM \uB9E4\uC218\uC2DD (intent gate \uD1B5\uACFC\uBD84)"), /* @__PURE__ */ React.createElement("pre", { className: "mono" }, payload.stom_code)), /* @__PURE__ */ React.createElement("div", { className: "tp-entry-guard" }, payload.caveat)));
+  }
+  Object.assign(window, { BtRemovalSim });
+
+  // ai_strategy_loop/dashboard/frontend/bt-generation-curve.jsx
+  var { useState: useState_gc, useEffect: useEffect_gc } = React;
+  var _gcVERDICT = {
+    not_started: ["\uC2DC\uC791 \uC804", "neutral"],
+    running: ["\uC9C4\uD589 \uAC00\uB2A5", "ok"],
+    converged: ["\uC218\uB834", "done"],
+    budget_exhausted: ["\uC608\uC0B0 \uC18C\uC9C4", "warn"],
+    diverged: ["\uBC1C\uC0B0 \u2014 \uB864\uBC31 \uD544\uC694", "danger"]
+  };
+  function _gcNum(value, digits = 0) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number.toLocaleString(void 0, { maximumFractionDigits: digits }) : "\u2014";
+  }
+  function _gcPct(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? (number * 100).toFixed(1) + "%" : "\u2014";
+  }
+  function _gcLines({ rows }) {
+    const all = rows.flatMap((row) => [Number(row.design_per_trade) || 0, Number(row.holdout_per_trade) || 0]);
+    const low = Math.min(...all), high = Math.max(...all);
+    const span = high - low || 1;
+    const place = (value) => 100 - Math.round((Number(value) - low) / span * 100);
+    return /* @__PURE__ */ React.createElement("div", { className: "tp-gc-lines", role: "img", "aria-label": "\uC138\uB300\uBCC4 \uAC74\uB2F9 \uC190\uC775 \uCD94\uC774" }, rows.map((row, index2) => /* @__PURE__ */ React.createElement("div", { key: row.generation, className: "col", style: { left: `${index2 / Math.max(1, rows.length - 1) * 100}%` } }, /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "dot design",
+        style: { top: `${place(row.design_per_trade)}%` },
+        title: `${row.generation}\uC138\uB300 \uC124\uACC4 ${_gcNum(row.design_per_trade)}\uC6D0`
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "dot holdout",
+        style: { top: `${place(row.holdout_per_trade)}%` },
+        title: `${row.generation}\uC138\uB300 \uD640\uB4DC\uC544\uC6C3 ${_gcNum(row.holdout_per_trade)}\uC6D0`
+      }
+    ), /* @__PURE__ */ React.createElement("small", null, row.generation))));
+  }
+  function BtGenerationCurve({ baseUrl, lane }) {
+    const [payload, setPayload] = useState_gc(null);
+    const [error, setError] = useState_gc("");
+    useEffect_gc(() => {
+      if (!baseUrl) return void 0;
+      let alive = true;
+      setPayload(null);
+      setError("");
+      _btFetchJson(`${baseUrl}/bt/trade-path/generations?lane=${encodeURIComponent(lane)}`, 3e4).then((result) => {
+        if (alive) setPayload(result);
+      }).catch((reason) => {
+        if (alive) setError(String(reason.message || reason));
+      });
+      return () => {
+        alive = false;
+      };
+    }, [baseUrl, lane]);
+    if (error) return /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, "\uC138\uB300 \uC774\uB825 \uC870\uD68C \uC2E4\uD328: ", error);
+    if (!payload) return /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC138\uB300 \uC774\uB825\uC744 \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4\u2026");
+    const rows = payload.generations || [];
+    const [label, tone] = _gcVERDICT[payload.verdict] || [payload.verdict, "neutral"];
+    const deltas = rows.map((row) => Number(row.holdout_delta) || 0);
+    const peak = Math.max(1, ...deltas.map(Math.abs));
+    return /* @__PURE__ */ React.createElement("section", { className: "tp-subpanel tp-generation-curve", "aria-labelledby": "tp-gc-title" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", { id: "tp-gc-title" }, "\uC138\uB300 \uC9C4\uD589 \uACE1\uC120"), /* @__PURE__ */ React.createElement("small", null, payload.rule)), /* @__PURE__ */ React.createElement("span", { className: "tp-authority official" }, "\uC815\uBCF8")), /* @__PURE__ */ React.createElement("div", { className: `tp-gc-verdict ${tone}` }, /* @__PURE__ */ React.createElement("b", null, label), /* @__PURE__ */ React.createElement("span", null, payload.reason), payload.rollback_to && /* @__PURE__ */ React.createElement("em", null, "\u2192 ", payload.rollback_to, "\uC138\uB300\uB85C \uB864\uBC31\uD558\uC138\uC694")), rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC544\uC9C1 \uAE30\uB85D\uB41C \uC138\uB300\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. G-1 \uC5D0\uC11C \uAE30\uC900\uC120\uACFC 1\uC138\uB300 \uD6C4\uBCF4\uB97C \uACF5\uC2DD \uC2E4\uD589\uD558\uBA74 \uC5EC\uAE30\uC5D0 \uC313\uC785\uB2C8\uB2E4.") : /* @__PURE__ */ React.createElement(React.Fragment, null, _gcLines({ rows }), /* @__PURE__ */ React.createElement("div", { className: "tp-gc-legend mono" }, /* @__PURE__ */ React.createElement("span", { className: "design" }, "\u25CF \uC124\uACC4"), /* @__PURE__ */ React.createElement("span", { className: "holdout" }, "\u25CF \uD640\uB4DC\uC544\uC6C3")), /* @__PURE__ */ React.createElement("div", { className: "tp-gc-deltas", "aria-label": "\uC138\uB300\uBCC4 \uCD94\uAC00 \uAC1C\uC120\uD3ED" }, rows.map((row) => {
+      const value = Number(row.holdout_delta) || 0;
+      return /* @__PURE__ */ React.createElement("div", { key: row.generation, className: "bar" }, /* @__PURE__ */ React.createElement("i", { className: value >= 0 ? "pos" : "neg", style: { height: `${Math.round(Math.abs(value) / peak * 100)}%` } }), /* @__PURE__ */ React.createElement("small", { className: "mono" }, value >= 0 ? "+" : "", _gcNum(value)), /* @__PURE__ */ React.createElement("small", null, row.generation, "\uC138\uB300"));
+    })), /* @__PURE__ */ React.createElement("div", { className: "tp-gc-table", role: "table", "aria-label": "\uC138\uB300 \uC774\uB825" }, /* @__PURE__ */ React.createElement("div", { role: "row", className: "head" }, /* @__PURE__ */ React.createElement("span", null, "\uC138\uB300"), /* @__PURE__ */ React.createElement("span", null, "\uD6C4\uBCF4"), /* @__PURE__ */ React.createElement("span", null, "\uC124\uACC4 \uAC74\uB2F9"), /* @__PURE__ */ React.createElement("span", null, "\uD640\uB4DC \uAC74\uB2F9"), /* @__PURE__ */ React.createElement("span", null, "\uD640\uB4DC \uAC1C\uC120"), /* @__PURE__ */ React.createElement("span", null, "\uB204\uC801 \uC720\uC9C0\uC728"), /* @__PURE__ */ React.createElement("span", null, "\uAC8C\uC774\uD2B8")), rows.map((row) => /* @__PURE__ */ React.createElement("div", { role: "row", key: `${row.generation}-${row.candidate_id}` }, /* @__PURE__ */ React.createElement("b", null, row.generation), /* @__PURE__ */ React.createElement("code", { title: (row.clauses || []).join(" \xB7 ") }, row.candidate_id), /* @__PURE__ */ React.createElement("span", { className: "mono" }, _gcNum(row.design_per_trade)), /* @__PURE__ */ React.createElement("span", { className: "mono" }, _gcNum(row.holdout_per_trade)), /* @__PURE__ */ React.createElement("span", { className: `mono ${Number(row.holdout_delta) >= 0 ? "pos" : "neg"}` }, Number(row.holdout_delta) >= 0 ? "+" : "", _gcNum(row.holdout_delta)), /* @__PURE__ */ React.createElement("span", { className: `mono ${Number(row.cumulative_retention) < Number(payload.cumulative_floor) ? "neg" : ""}` }, _gcPct(row.cumulative_retention)), /* @__PURE__ */ React.createElement("span", null, row.gate_verdict || "\u2014")))), /* @__PURE__ */ React.createElement("div", { className: "tp-entry-guard" }, "\uB204\uC801 \uC720\uC9C0\uC728 \uD558\uD55C ", _gcPct(payload.cumulative_floor), " \xB7 \uC218\uB834 \uC784\uACC4 ", _gcNum(payload.epsilon), "\uC6D0/\uAC74 \xB7 \uCC44\uD0DD\uC740 \uC0AC\uB78C \uC2B9\uC778 \uC0AC\uD56D\uC785\uB2C8\uB2E4.")));
+  }
+  Object.assign(window, { BtGenerationCurve });
+
+  // ai_strategy_loop/dashboard/frontend/bt-split-diagnostics.jsx
+  var { useState: useState_sd, useEffect: useEffect_sd } = React;
+  function _sdNum(value, digits = 0) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number.toLocaleString(void 0, { maximumFractionDigits: digits }) : "\u2014";
+  }
+  function _sdPct(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? (number * 100).toFixed(1) + "%" : "\u2014";
+  }
+  function _sdDate(value) {
+    const text = String(value || "");
+    return text.length === 8 ? `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6)}` : text || "\u2014";
+  }
+  function _sdCard({ title, tone, row }) {
+    return /* @__PURE__ */ React.createElement("article", { className: `tp-sd-card ${tone}` }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("b", null, title), /* @__PURE__ */ React.createElement("small", null, _sdDate(row.first_date), " ~ ", _sdDate(row.last_date))), /* @__PURE__ */ React.createElement("div", { className: "tp-sd-kpis" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("small", null, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("b", null, _sdNum(row.trades))), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("small", null, "\uAC74\uB2F9 \uC190\uC775"), /* @__PURE__ */ React.createElement("b", { className: Number(row.per_trade_krw) >= 0 ? "pos" : "neg" }, _sdNum(row.per_trade_krw), "\uC6D0")), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("small", null, "\uCD1D\uC190\uC775"), /* @__PURE__ */ React.createElement("b", { className: Number(row.profit_krw) >= 0 ? "pos" : "neg" }, _sdNum(row.profit_krw), "\uC6D0")), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("small", null, "\uC2B9\uB960"), /* @__PURE__ */ React.createElement("b", null, _sdPct(row.win_rate)))));
+  }
+  function BtSplitDiagnostics({ baseUrl, jobId, lane }) {
+    const [payload, setPayload] = useState_sd(null);
+    const [error, setError] = useState_sd("");
+    useEffect_sd(() => {
+      if (!baseUrl || !jobId) return void 0;
+      let alive = true;
+      setPayload(null);
+      setError("");
+      _btFetchJson(`${baseUrl}/bt/trade-path/split-diagnostics?job_id=${encodeURIComponent(jobId)}&lane=${encodeURIComponent(lane)}`, 12e4).then((result) => {
+        if (alive) setPayload(result);
+      }).catch((reason) => {
+        if (alive) setError(String(reason.message || reason));
+      });
+      return () => {
+        alive = false;
+      };
+    }, [baseUrl, jobId, lane]);
+    if (!jobId) return /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC644\uB8CC\uB41C \uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uB97C \uBA3C\uC800 \uC120\uD0DD\uD558\uC138\uC694.");
+    if (error) return /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, "\uAD6C\uAC04 \uBD84\uD560 \uC9C4\uB2E8 \uC2E4\uD328: ", error);
+    if (!payload) return /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uAD6C\uAC04\uBCC4 \uC131\uC801\uC744 \uACC4\uC0B0 \uC911\uC785\uB2C8\uB2E4\u2026");
+    if (!payload.available) return /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uBD84\uD560 \uC9C4\uB2E8 \uBD88\uAC00: ", payload.reason);
+    const design = payload.design || {}, holdout = payload.holdout || {}, whole = payload.whole || {};
+    const total = Number(whole.trades) || 1;
+    const designShare = Math.round((Number(design.trades) || 0) / total * 100);
+    return /* @__PURE__ */ React.createElement("section", { className: "tp-subpanel tp-split-diagnostics", "aria-labelledby": "tp-sd-title" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", { id: "tp-sd-title" }, "\uAD6C\uAC04 \uBD84\uD560 \uC9C4\uB2E8"), /* @__PURE__ */ React.createElement("small", null, "\uC5F0\uC18D 1\uD68C \uB7F0\uC744 ", _sdDate(payload.split), " \uACBD\uACC4\uB85C \uB098\uB220 \uBE44\uAD50\uD569\uB2C8\uB2E4 (\uD6C4\uBCF4\uB2F9 \uBC31\uD14C\uC2A4\uD2B8 1\uD68C)")), /* @__PURE__ */ React.createElement("span", { className: "tp-authority official" }, "\uC815\uBCF8")), /* @__PURE__ */ React.createElement("div", { className: "tp-sd-warn", role: "note" }, "\u26A0 ", /* @__PURE__ */ React.createElement("b", null, "\uC790\uBCF8 \uC5F0\uC18D \xB7 \uB3C5\uB9BD OOS \uC544\uB2D8"), " \u2014 ", payload.caveat), /* @__PURE__ */ React.createElement("div", { className: "tp-sd-timeline", role: "img", "aria-label": `\uC124\uACC4 \uAD6C\uAC04 ${designShare}% \xB7 \uD640\uB4DC\uC544\uC6C3 \uAD6C\uAC04 ${100 - designShare}%` }, /* @__PURE__ */ React.createElement("i", { className: "design", style: { width: `${designShare}%` } }), /* @__PURE__ */ React.createElement("i", { className: "holdout", style: { width: `${100 - designShare}%` } }), /* @__PURE__ */ React.createElement("span", { className: "boundary", style: { left: `${designShare}%` }, title: `\uBD84\uD560 \uACBD\uACC4 ${_sdDate(payload.split)}` })), /* @__PURE__ */ React.createElement("div", { className: "tp-sd-cards" }, _sdCard({ title: "\uC124\uACC4 \uAD6C\uAC04", tone: "design", row: design }), _sdCard({ title: "\uD640\uB4DC\uC544\uC6C3 \uAD6C\uAC04", tone: "holdout", row: holdout }), _sdCard({ title: "\uC804\uCCB4 \uB7F0", tone: "whole", row: whole })), /* @__PURE__ */ React.createElement("div", { className: `tp-sd-recon ${payload.reconciled ? "ok" : "bad"}` }, payload.reconciled ? /* @__PURE__ */ React.createElement(React.Fragment, null, "\uAC80\uC0B0 \uD1B5\uACFC \u2014 \uC124\uACC4 ", _sdNum(design.trades), " + \uD640\uB4DC\uC544\uC6C3 ", _sdNum(holdout.trades), " = \uC804\uCCB4 ", _sdNum(whole.trades), "\uAC74") : /* @__PURE__ */ React.createElement(React.Fragment, null, "\u26A0 \uAC80\uC0B0 \uC2E4\uD328 \u2014 \uC124\uACC4 ", _sdNum(design.trades), " + \uD640\uB4DC\uC544\uC6C3 ", _sdNum(holdout.trades), " \u2260 \uC804\uCCB4 ", _sdNum(whole.trades), "\uAC74. \uBD84\uD560\uC774 \uAC70\uB798\uB97C \uBE60\uB728\uB838\uC2B5\uB2C8\uB2E4. \uC774 \uD310\uC815\uC740 \uC2E0\uB8B0\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "tp-sd-links" }, /* @__PURE__ */ React.createElement("b", null, "\uAD6C\uAC04\uBCC4 \uC790\uBCF8\uACE1\uC120\xB7\uC5B8\uB354\uC6CC\uD130\xB7\uD788\uD2B8\uB9F5"), /* @__PURE__ */ React.createElement("small", null, "\uAE30\uC874 \uBD84\uC11D \uD654\uBA74\uC5D0 \uAE30\uAC04\uC744 \uB118\uACA8 \uADF8\uB300\uB85C \uBD05\uB2C8\uB2E4(\uC2E0\uADDC \uCC28\uD2B8 \uC5C6\uC74C)."), Object.entries(payload.analysis_endpoints || {}).map(([name, url]) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: name,
+        className: "btn ghost sm",
+        onClick: () => window.open(`${baseUrl}${url}&t_start=${design.first_date}&t_end=${design.last_date}`, "_blank", "noopener")
+      },
+      "\uC124\uACC4 ",
+      name
+    )), Object.entries(payload.analysis_endpoints || {}).map(([name, url]) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: `h-${name}`,
+        className: "btn ghost sm",
+        onClick: () => window.open(`${baseUrl}${url}&t_start=${holdout.first_date}&t_end=${holdout.last_date}`, "_blank", "noopener")
+      },
+      "\uD640\uB4DC ",
+      name
+    ))));
+  }
+  Object.assign(window, { BtSplitDiagnostics });
+
   // ai_strategy_loop/dashboard/frontend/bt-tp-messages.jsx
   var _TP_REASON_KO = {
     // 데이터·잡 입력
@@ -38595,7 +39023,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const running = analysis && ["queued", "running"].includes(analysis.status);
     const proposalRows = proposals && proposals.proposals || [];
     const selectedProposal = proposalRows.find((row) => row.proposal_id === selectedProposalId) || null;
-    const pageTabs = [["data", "\uB370\uC774\uD130 \uACC4\uC57D"], ["entry", "\uB9E4\uC218 \uD574\uBD80"], ...totals ? [["summary", "\uB9E4\uB3C4 \uD574\uBD80"], ["path", "\uAC70\uB798 \uACBD\uB85C"], ...detail ? [["sell-trace", "\uB9E4\uB3C4\uC2DD \uCD94\uC801"]] : [], ["counterfactual", "\uAC00\uC0C1 \uB9E4\uB3C4"], ["insight", "\uD68C\uBCF5 \uD310\uBCC4"], [axis === "buy" ? "buy-filters" : "proposals", axis === "buy" ? "\uB9E4\uC218 \uD544\uD130 \uD6C4\uBCF4" : "\uC870\uAC74\uC2DD \uD6C4\uBCF4"], ["console", "\uD6C4\uBCF4 \uC2E4\uD589"], ["official", "\uACF5\uC2DD pair"], ["oos", "OOS \uCC44\uD0DD"], ["calibration", "\uCE98\uB9AC\uBE0C\uB808\uC774\uC158"]] : [], ["ledger", "\uC6D0\uC7A5"]];
+    const pageTabs = [["data", "\uB370\uC774\uD130 \uACC4\uC57D"], ["split", "\uAD6C\uAC04 \uBD84\uD560"], ["loss", "\uC190\uC2E4 \uD504\uB85C\uD30C\uC77C"], ["pockets", "\uD3EC\uCF13 \uC9C0\uB3C4"], ["removal", "\uC81C\uAC70 \uC2DC\uBBAC\uB808\uC774\uD130"], ["entry", "\uB9E4\uC218 \uD574\uBD80"], ...totals ? [["summary", "\uB9E4\uB3C4 \uD574\uBD80"], ["path", "\uAC70\uB798 \uACBD\uB85C"], ...detail ? [["sell-trace", "\uB9E4\uB3C4\uC2DD \uCD94\uC801"]] : [], ["counterfactual", "\uAC00\uC0C1 \uB9E4\uB3C4"], ["insight", "\uD68C\uBCF5 \uD310\uBCC4"], [axis === "buy" ? "buy-filters" : "proposals", axis === "buy" ? "\uB9E4\uC218 \uD544\uD130 \uD6C4\uBCF4" : "\uC870\uAC74\uC2DD \uD6C4\uBCF4"], ["console", "\uD6C4\uBCF4 \uC2E4\uD589"], ["official", "\uACF5\uC2DD pair"], ["oos", "\uCC44\uD0DD \uAC8C\uC774\uD2B8"], ["calibration", "\uCE98\uB9AC\uBE0C\uB808\uC774\uC158"]] : [], ["generations", "\uC138\uB300 \uACE1\uC120"], ["ledger", "\uC6D0\uC7A5"]];
     const manifestRow = laneManifest && laneManifest.manifest;
     return /* @__PURE__ */ React.createElement("section", { className: "panel tp-workbench", "aria-labelledby": "tp-title" }, /* @__PURE__ */ React.createElement("header", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "stom-section-label", id: "tp-title" }, "QSP7 \xB7 \uAC70\uB798 \uC5D0\uD53C\uC18C\uB4DC / \uB9E4\uB3C4 \uC5F0\uAD6C"), /* @__PURE__ */ React.createElement("div", { className: "mono" }, "\uC2E4\uC81C \uB9E4\uB3C4 \uB4A4\uB3C4 \uC804\uCCB4\uCCAD\uC0B0\uAE4C\uC9C0\uB9CC \uAD00\uCC30 \xB7 \uBBF8\uC2E4\uD589 \uAC70\uB798\uB294 \uACF5\uC2DD \uC5D4\uC9C4\uC73C\uB85C \uC7AC\uAC80\uC99D")), /* @__PURE__ */ React.createElement("div", { className: "tp-authority-strip" }, /* @__PURE__ */ React.createElement("span", { className: `tp-lane-badge ${lane}` }, lane), /* @__PURE__ */ React.createElement("span", { className: "tp-authority diagnostic" }, "\uC9C4\uB2E8"), /* @__PURE__ */ React.createElement("span", { className: "tp-authority advisory" }, "\uC790\uBB38"), /* @__PURE__ */ React.createElement("span", { className: "tp-authority official" }, "\uC815\uBCF8"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "tp-lane-bar", role: "tablist", "aria-label": "\uC5F0\uAD6C \uB808\uC778 \uC120\uD0DD" }, ["min", "tick"].map((name) => /* @__PURE__ */ React.createElement("button", { key: name, role: "tab", "aria-selected": lane === name, className: lane === name ? "active" : "", onClick: () => {
       if (name !== lane) {
@@ -38609,7 +39037,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         setSelectedFilter(null);
         setActiveView(key === "buy" ? "buy-filters" : "proposals");
       }
-    } }, label))), manifestRow && /* @__PURE__ */ React.createElement("span", { className: "tp-lane-manifest mono" }, "\uC124\uACC4 ", manifestRow.design.start, "~", manifestRow.design.end, " \xB7 OOS ", manifestRow.oos.start, "~", manifestRow.oos.end, " \xB7 \uC138\uC158 ~", String(manifestRow.session_end).padStart(6, "0"), laneManifest.baseline_registered ? "" : " \xB7 \u26A0 \uAE30\uC900\uC120 \uBBF8\uB4F1\uB85D")), /* @__PURE__ */ React.createElement("div", { className: "tp-source-bar" }, /* @__PURE__ */ React.createElement("label", null, "\uC644\uB8CC \uACB0\uACFC", /* @__PURE__ */ React.createElement("select", { value: jobId, onChange: (event) => {
+    } }, label))), manifestRow && /* @__PURE__ */ React.createElement("span", { className: "tp-lane-manifest mono" }, "\uD3C9\uAC00 ", manifestRow.evaluation ? `${manifestRow.evaluation.start}~${manifestRow.evaluation.end}` : `${manifestRow.design.start}~${manifestRow.oos.end}`, " \xB7 \uBD84\uD560 ", laneManifest.split_boundary || manifestRow.split_boundary, " \xB7 \uC124\uACC4 ", manifestRow.design.start, "~", manifestRow.design.end, " \xB7 \uD640\uB4DC\uC544\uC6C3 ", manifestRow.oos.start, "~", manifestRow.oos.end, " \xB7 \uC138\uC158 ~", String(manifestRow.session_end).padStart(6, "0"), laneManifest.baseline_registered ? "" : " \xB7 \u26A0 \uAE30\uC900\uC120 \uBBF8\uB4F1\uB85D")), /* @__PURE__ */ React.createElement("div", { className: "tp-source-bar" }, /* @__PURE__ */ React.createElement("label", null, "\uC644\uB8CC \uACB0\uACFC", /* @__PURE__ */ React.createElement("select", { value: jobId, onChange: (event) => {
       setJobId(event.target.value);
       setBoundaryTime("");
       setPreflight(null);
@@ -38625,13 +39053,13 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     }))), /* @__PURE__ */ React.createElement("label", null, "\uC804\uCCB4\uCCAD\uC0B0 (HHMMSS)", /* @__PURE__ */ React.createElement("input", { value: boundaryTime, inputMode: "numeric", maxLength: "6", placeholder: "\uC790\uB3D9 \uD310\uBCC4", onChange: (event) => {
       setBoundaryTime(event.target.value.replace(/\D/g, "").slice(0, 6));
       setPreflight(null);
-    } })), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: inspect, disabled: !jobId }, "\uC0AC\uC804 \uC810\uAC80"), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: start2, disabled: !jobId || !(preflight == null ? void 0 : preflight.available) || running }, "\uACBD\uB85C \uBD84\uC11D \uC2DC\uC791"), running && /* @__PURE__ */ React.createElement("button", { className: "btn danger sm", onClick: () => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" }).catch((reason) => setError(_tpKo(String(reason.message || reason)))) }, "\uCDE8\uC18C")), preflight && /* @__PURE__ */ React.createElement("div", { className: `tp-preflight ${preflight.available ? "ready" : "blocked"}` }, /* @__PURE__ */ React.createElement("b", null, preflight.available ? "\uBD84\uC11D \uAC00\uB2A5" : "\uBD84\uC11D \uBD88\uAC00"), /* @__PURE__ */ React.createElement("span", null, preflight.available ? `\uAC70\uB798 ${preflight.trade_count} \xB7 \uB0A0\uC9DC ${preflight.covered_date_count}/${preflight.date_count} \xB7 ${preflight.source.timeframe}` : `${_tpKo(preflight.reason)}${preflight.exit_after_boundary_count ? ` \xB7 \uACBD\uACC4 \uB4A4 \uC2E4\uC81C \uB9E4\uB3C4 ${preflight.exit_after_boundary_count}\uAC74` : ""}`), (preflight.uncovered_dates || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "tp-uncovered" }, "\u26A0 \uB370\uC774\uD130 \uC5C6\uB294 \uB0A0\uC9DC ", preflight.date_count - preflight.covered_date_count, "\uC77C: ", preflight.uncovered_dates.slice(0, 6).join(", "), preflight.uncovered_dates.length > 6 ? " \u2026" : ""), /* @__PURE__ */ React.createElement("small", null, "\uC804\uCCB4\uCCAD\uC0B0 ", String(preflight.forced_liquidation_time || "").padStart(6, "0"), " \xB7 ", preflight.boundary_source || "\uBBF8\uD655\uC778", " \xB7 \uC804\uCCB4\uCCAD\uC0B0 \uC774\uD6C4 \uB370\uC774\uD130\uB294 \uC874\uC7AC\uD574\uB3C4 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC74C")), dataContract && /* @__PURE__ */ React.createElement("nav", { className: "tp-view-tabs", "aria-label": "\uD1B5\uD569 \uBC31\uD14C\uC2A4\uD2B8 \uC5F0\uAD6C \uB2E8\uACC4" }, pageTabs.map(([key, label]) => /* @__PURE__ */ React.createElement("button", { key, className: activeView === key ? "active" : "", onClick: () => setActiveView(key) }, label))), dataContract && _tpNextHint(activeView) && /* @__PURE__ */ React.createElement("div", { className: "tp-next-hint" }, _tpNextHint(activeView)), dataContract && activeView === "data" && /* @__PURE__ */ React.createElement("div", { "aria-label": "\uB370\uC774\uD130 \uACC4\uC57D" }, /* @__PURE__ */ React.createElement(BtDataContract, { contract: dataContract })), dataContract && activeView === "entry" && /* @__PURE__ */ React.createElement(BtEntryAutopsy, { baseUrl, jobId, contract: dataContract }), running && /* @__PURE__ */ React.createElement("div", { className: "tp-progress", role: "progressbar", "aria-valuenow": Math.round((analysis.progress || 0) * 100) }, /* @__PURE__ */ React.createElement("i", { style: { width: `${Math.round((analysis.progress || 0) * 100)}%` } }), /* @__PURE__ */ React.createElement("span", null, analysis.processed || 0, "/", analysis.total || "?", " \xB7 ", Math.round((analysis.progress || 0) * 100), "%")), error && /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, error), totals && /* @__PURE__ */ React.createElement(React.Fragment, null, activeView === "summary" && /* @__PURE__ */ React.createElement("div", { className: "tp-summary" }, /* @__PURE__ */ React.createElement("div", { className: "tp-summary-actions" }, /* @__PURE__ */ React.createElement("span", { className: "tp-authority diagnostic" }, "\uC9C4\uB2E8"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => window.open(baseUrl + "/bt/trade-path/report?analysis_id=" + encodeURIComponent(analysisId), "_blank", "noopener") }, "\uC9C4\uB2E8 \uBCF4\uACE0\uC11C \uC5F4\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "tp-auto-summary" }, cohorts.slice(0, 4).map((row) => /* @__PURE__ */ React.createElement("small", { key: row.key }, "\u2022 ", row.key, " ", row.count, "\uAC74\uC5D0\uC11C ", _tpMoney(row.actual_profit_krw), " \uC2E4\uD604 \xB7 \uACBD\uACC4 \uC804 \uD68C\uBCF5 \uAD00\uCE21 ", row.recovered_count, "\uAC74 \u2014 \uAD00\uCC30 \uACB0\uACFC\uC774\uBA70 \uC774 \uC870\uAC74\uC744 \uC81C\uAC70\uD55C \uD6A8\uACFC\uAC00 \uC544\uB2D9\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "tp-kpis" }, /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uBD84\uC11D \uAC70\uB798"), /* @__PURE__ */ React.createElement("b", null, totals.analyzed_count)), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uC81C\uC678"), /* @__PURE__ */ React.createElement("b", null, totals.excluded_count)), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uACBD\uACC4 \uC804 \uD68C\uBCF5"), /* @__PURE__ */ React.createElement("b", null, totals.recovered_count)), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uC2E4\uC81C \uC21C\uC190\uC775"), /* @__PURE__ */ React.createElement("b", null, _tpMoney(totals.actual_profit_krw)))), /* @__PURE__ */ React.createElement("div", { className: "tp-cohorts" }, cohorts.map((row) => /* @__PURE__ */ React.createElement("button", { key: row.key, onClick: () => {
+    } })), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: inspect, disabled: !jobId }, "\uC0AC\uC804 \uC810\uAC80"), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: start2, disabled: !jobId || !(preflight == null ? void 0 : preflight.available) || running }, "\uACBD\uB85C \uBD84\uC11D \uC2DC\uC791"), running && /* @__PURE__ */ React.createElement("button", { className: "btn danger sm", onClick: () => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" }).catch((reason) => setError(_tpKo(String(reason.message || reason)))) }, "\uCDE8\uC18C")), preflight && /* @__PURE__ */ React.createElement("div", { className: `tp-preflight ${preflight.available ? "ready" : "blocked"}` }, /* @__PURE__ */ React.createElement("b", null, preflight.available ? "\uBD84\uC11D \uAC00\uB2A5" : "\uBD84\uC11D \uBD88\uAC00"), /* @__PURE__ */ React.createElement("span", null, preflight.available ? `\uAC70\uB798 ${preflight.trade_count} \xB7 \uB0A0\uC9DC ${preflight.covered_date_count}/${preflight.date_count} \xB7 ${preflight.source.timeframe}` : `${_tpKo(preflight.reason)}${preflight.exit_after_boundary_count ? ` \xB7 \uACBD\uACC4 \uB4A4 \uC2E4\uC81C \uB9E4\uB3C4 ${preflight.exit_after_boundary_count}\uAC74` : ""}`), (preflight.uncovered_dates || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "tp-uncovered" }, "\u26A0 \uB370\uC774\uD130 \uC5C6\uB294 \uB0A0\uC9DC ", preflight.date_count - preflight.covered_date_count, "\uC77C: ", preflight.uncovered_dates.slice(0, 6).join(", "), preflight.uncovered_dates.length > 6 ? " \u2026" : ""), /* @__PURE__ */ React.createElement("small", null, "\uC804\uCCB4\uCCAD\uC0B0 ", String(preflight.forced_liquidation_time || "").padStart(6, "0"), " \xB7 ", preflight.boundary_source || "\uBBF8\uD655\uC778", " \xB7 \uC804\uCCB4\uCCAD\uC0B0 \uC774\uD6C4 \uB370\uC774\uD130\uB294 \uC874\uC7AC\uD574\uB3C4 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC74C")), dataContract && /* @__PURE__ */ React.createElement("nav", { className: "tp-view-tabs", "aria-label": "\uD1B5\uD569 \uBC31\uD14C\uC2A4\uD2B8 \uC5F0\uAD6C \uB2E8\uACC4" }, pageTabs.map(([key, label]) => /* @__PURE__ */ React.createElement("button", { key, className: activeView === key ? "active" : "", onClick: () => setActiveView(key) }, label))), dataContract && _tpNextHint(activeView) && /* @__PURE__ */ React.createElement("div", { className: "tp-next-hint" }, _tpNextHint(activeView)), dataContract && activeView === "data" && /* @__PURE__ */ React.createElement("div", { "aria-label": "\uB370\uC774\uD130 \uACC4\uC57D" }, /* @__PURE__ */ React.createElement(BtDataContract, { contract: dataContract })), dataContract && activeView === "entry" && /* @__PURE__ */ React.createElement(BtEntryAutopsy, { baseUrl, jobId, contract: dataContract }), dataContract && activeView === "split" && /* @__PURE__ */ React.createElement(BtSplitDiagnostics, { baseUrl, jobId, lane }), dataContract && activeView === "loss" && /* @__PURE__ */ React.createElement(BtLossProfile, { baseUrl, jobId, lane }), dataContract && activeView === "pockets" && /* @__PURE__ */ React.createElement(BtLossPockets, { baseUrl, jobId, lane }), dataContract && activeView === "removal" && /* @__PURE__ */ React.createElement(BtRemovalSim, { baseUrl, jobId, lane }), running && /* @__PURE__ */ React.createElement("div", { className: "tp-progress", role: "progressbar", "aria-valuenow": Math.round((analysis.progress || 0) * 100) }, /* @__PURE__ */ React.createElement("i", { style: { width: `${Math.round((analysis.progress || 0) * 100)}%` } }), /* @__PURE__ */ React.createElement("span", null, analysis.processed || 0, "/", analysis.total || "?", " \xB7 ", Math.round((analysis.progress || 0) * 100), "%")), error && /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, error), totals && /* @__PURE__ */ React.createElement(React.Fragment, null, activeView === "summary" && /* @__PURE__ */ React.createElement("div", { className: "tp-summary" }, /* @__PURE__ */ React.createElement("div", { className: "tp-summary-actions" }, /* @__PURE__ */ React.createElement("span", { className: "tp-authority diagnostic" }, "\uC9C4\uB2E8"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => window.open(baseUrl + "/bt/trade-path/report?analysis_id=" + encodeURIComponent(analysisId), "_blank", "noopener") }, "\uC9C4\uB2E8 \uBCF4\uACE0\uC11C \uC5F4\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "tp-auto-summary" }, cohorts.slice(0, 4).map((row) => /* @__PURE__ */ React.createElement("small", { key: row.key }, "\u2022 ", row.key, " ", row.count, "\uAC74\uC5D0\uC11C ", _tpMoney(row.actual_profit_krw), " \uC2E4\uD604 \xB7 \uACBD\uACC4 \uC804 \uD68C\uBCF5 \uAD00\uCE21 ", row.recovered_count, "\uAC74 \u2014 \uAD00\uCC30 \uACB0\uACFC\uC774\uBA70 \uC774 \uC870\uAC74\uC744 \uC81C\uAC70\uD55C \uD6A8\uACFC\uAC00 \uC544\uB2D9\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "tp-kpis" }, /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uBD84\uC11D \uAC70\uB798"), /* @__PURE__ */ React.createElement("b", null, totals.analyzed_count)), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uC81C\uC678"), /* @__PURE__ */ React.createElement("b", null, totals.excluded_count)), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uACBD\uACC4 \uC804 \uD68C\uBCF5"), /* @__PURE__ */ React.createElement("b", null, totals.recovered_count)), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uC2E4\uC81C \uC21C\uC190\uC775"), /* @__PURE__ */ React.createElement("b", null, _tpMoney(totals.actual_profit_krw)))), /* @__PURE__ */ React.createElement("div", { className: "tp-cohorts" }, cohorts.map((row) => /* @__PURE__ */ React.createElement("button", { key: row.key, onClick: () => {
       const hit = trades.find((trade) => trade.exit_reason === row.key);
       if (hit) openTrade(hit);
     } }, /* @__PURE__ */ React.createElement("b", null, row.key), /* @__PURE__ */ React.createElement("span", null, row.count, "\uAC74 \xB7 \uD68C\uBCF5 ", row.recovered_count, " \xB7 ", _tpMoney(row.actual_profit_krw))))), /* @__PURE__ */ React.createElement("div", { className: "tp-trade-list" }, trades.slice(0, 30).map((row) => /* @__PURE__ */ React.createElement("button", { key: row.trade_key, onClick: () => openTrade(row) }, /* @__PURE__ */ React.createElement("span", null, row.name), /* @__PURE__ */ React.createElement("code", null, String(row.buy_time).slice(8), " \u2192 ", String(row.sell_time).slice(8)), /* @__PURE__ */ React.createElement("b", { className: row.actual_profit_krw >= 0 ? "pos" : "neg" }, _tpMoney(row.actual_profit_krw)))))), activeView === "path" && (detail ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(BtTradePathChart, { episode: detail }), /* @__PURE__ */ React.createElement("div", { className: "tp-path-actions" }, /* @__PURE__ */ React.createElement("span", { className: "tp-authority diagnostic" }, "\uC9C4\uB2E8"), /* @__PURE__ */ React.createElement("span", null, "\uAC00\uC0C1 horizon\uC740 \uC2E4\uC81C \uD2F1 \uC9C0\uC5F0\uACFC \uAC80\uC5F4 \uC0AC\uC720\uB97C \uD568\uAED8 \uBCF4\uC874\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: replay }, "\uC774 \uAC70\uB798\uB97C Replay\uC5D0\uC11C \uC5F4\uAE30"))) : /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC694\uC57D\uC5D0\uC11C \uAC70\uB798\uB97C \uC120\uD0DD\uD558\uC138\uC694.")), activeView === "sell-trace" && /* @__PURE__ */ React.createElement(BtSellDslTrace, { baseUrl, analysisId, episode: detail }), activeView === "counterfactual" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(BtExitCounterfactual, { baseUrl, analysisId, onResult: setCf }), cf && /* @__PURE__ */ React.createElement("div", { className: "tp-cf-result" }, /* @__PURE__ */ React.createElement("b", null, "\uAC00\uC0C1 \uC21C\uC190\uC775 \uBCC0\uD654 ", _tpMoney(cf.total_delta_profit_krw)), /* @__PURE__ */ React.createElement("span", null, "\uD3C9\uAC00 ", ((_a = cf.outcomes) == null ? void 0 : _a.length) || 0, " \xB7 \uC81C\uC678 ", ((_b = cf.failures) == null ? void 0 : _b.length) || 0), (cf.transitions || []).map((row) => /* @__PURE__ */ React.createElement("small", { key: `${row.actual_reason}-${row.candidate_reason}` }, row.actual_reason, " \u2192 ", row.candidate_reason, ": ", row.count)))), activeView === "insight" && /* @__PURE__ */ React.createElement(BtRecoveryInsight, { baseUrl, analysisId }), activeView === "calibration" && /* @__PURE__ */ React.createElement(BtCalibration, { baseUrl, lane }), activeView === "proposals" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: generateProposals }, "\uADFC\uAC70 \uAE30\uBC18 \uD6C4\uBCF4 \uC0DD\uC131"), /* @__PURE__ */ React.createElement(BtConditionProposals, { proposals })), activeView === "buy-filters" && /* @__PURE__ */ React.createElement(BtBuyFilters, { baseUrl, analysisId, payload: buyFilters, onPayload: setBuyFilters, selectedId: selectedFilter && selectedFilter.proposal_id, onSelect: (row) => {
       setSelectedFilter(row);
       setActiveView("console");
-    } }), activeView === "console" && /* @__PURE__ */ React.createElement("div", null, axis === "sell" && proposalRows.length > 0 && /* @__PURE__ */ React.createElement("label", { className: "tp-cc-picker" }, "\uC2E4\uD589\uD560 \uD6C4\uBCF4", /* @__PURE__ */ React.createElement("select", { value: selectedProposalId, onChange: (event) => setSelectedProposalId(event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\uD6C4\uBCF4 \uC120\uD0DD"), proposalRows.map((row) => /* @__PURE__ */ React.createElement("option", { key: row.proposal_id, value: row.proposal_id }, row.family, " \xB7 ", row.title)))), axis === "buy" && /* @__PURE__ */ React.createElement("div", { className: "tp-cc-picker mono" }, selectedFilter ? `\uC120\uD0DD\uB41C \uB9E4\uC218 \uD544\uD130: ${selectedFilter.title} \xB7 \uAE30\uB300 \uC9C4\uC785 \uC720\uC9C0\uC728 ${(Number(selectedFilter.expected_retention) * 100).toFixed(1)}%` : "\uB9E4\uC218 \uD544\uD130 \uD6C4\uBCF4 \uD654\uBA74\uC5D0\uC11C [\uC774 \uD544\uD130\uB85C \uC2E4\uD589 \uC900\uBE44]\uB97C \uB204\uB974\uC138\uC694."), /* @__PURE__ */ React.createElement(BtCandidateConsole, { baseUrl, lane, manifest: laneManifest, axis, proposal: axis === "buy" ? selectedFilter : selectedProposal })), activeView === "official" && /* @__PURE__ */ React.createElement(BtExitTransition, { baseUrl, jobs, baselineJobId: jobId }), activeView === "oos" && /* @__PURE__ */ React.createElement(BtOosGate, { baseUrl, jobs, baselineJobId: jobId, lane, axis })), activeView === "ledger" && /* @__PURE__ */ React.createElement(BtLedgerBrowser, { baseUrl, lane })));
+    } }), activeView === "console" && /* @__PURE__ */ React.createElement("div", null, axis === "sell" && proposalRows.length > 0 && /* @__PURE__ */ React.createElement("label", { className: "tp-cc-picker" }, "\uC2E4\uD589\uD560 \uD6C4\uBCF4", /* @__PURE__ */ React.createElement("select", { value: selectedProposalId, onChange: (event) => setSelectedProposalId(event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\uD6C4\uBCF4 \uC120\uD0DD"), proposalRows.map((row) => /* @__PURE__ */ React.createElement("option", { key: row.proposal_id, value: row.proposal_id }, row.family, " \xB7 ", row.title)))), axis === "buy" && /* @__PURE__ */ React.createElement("div", { className: "tp-cc-picker mono" }, selectedFilter ? `\uC120\uD0DD\uB41C \uB9E4\uC218 \uD544\uD130: ${selectedFilter.title} \xB7 \uAE30\uB300 \uC9C4\uC785 \uC720\uC9C0\uC728 ${(Number(selectedFilter.expected_retention) * 100).toFixed(1)}%` : "\uB9E4\uC218 \uD544\uD130 \uD6C4\uBCF4 \uD654\uBA74\uC5D0\uC11C [\uC774 \uD544\uD130\uB85C \uC2E4\uD589 \uC900\uBE44]\uB97C \uB204\uB974\uC138\uC694."), /* @__PURE__ */ React.createElement(BtCandidateConsole, { baseUrl, lane, manifest: laneManifest, axis, proposal: axis === "buy" ? selectedFilter : selectedProposal })), activeView === "official" && /* @__PURE__ */ React.createElement(BtExitTransition, { baseUrl, jobs, baselineJobId: jobId }), activeView === "oos" && /* @__PURE__ */ React.createElement(BtOosGate, { baseUrl, jobs, baselineJobId: jobId, lane, axis, manifest: laneManifest })), activeView === "generations" && /* @__PURE__ */ React.createElement(BtGenerationCurve, { baseUrl, lane }), activeView === "ledger" && /* @__PURE__ */ React.createElement(BtLedgerBrowser, { baseUrl, lane })));
   }
   Object.assign(window, { BtTradePathTab });
 

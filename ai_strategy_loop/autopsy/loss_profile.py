@@ -691,9 +691,17 @@ def pocket_scan(
 
 # --------------------------------------------------------------------------- CSV 진입점
 
-def _read_columns(
-    csv_path: Path, variables: Sequence[str] | None,
-) -> tuple[dict[str, list[float | None]], list[float], list[str]]:
+@dataclass(frozen=True, slots=True)
+class RunColumns:
+    """공식 CSV 한 개를 열 단위로 읽어둔 것 — 분할·프로파일·포켓이 공유한다."""
+
+    columns: dict[str, list[float | None]]
+    pnls: list[float]
+    dates: list[int]
+    pool: list[str]
+
+
+def _read_run(csv_path: Path, variables: Sequence[str] | None) -> RunColumns:
     with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
         fieldnames = list(reader.fieldnames or ())
@@ -701,14 +709,65 @@ def _read_columns(
     pool = list(variables) if variables else _default_variables(fieldnames)
     columns: dict[str, list[float | None]] = {name: [] for name in pool}
     pnls: list[float] = []
+    dates: list[int] = []
     for row in rows:
         pnl = _number(row.get(PNL_COLUMN))
         if pnl is None:
             continue
         pnls.append(pnl)
+        dates.append(_buy_date(row.get(BUY_TIME_COLUMN)))
         for name in pool:
             columns[name].append(_derive(row, name))
-    return columns, pnls, pool
+    return RunColumns(columns=columns, pnls=pnls, dates=dates, pool=pool)
+
+
+def _buy_date(value: object) -> int:
+    text = str(value or "").strip()
+    return int(text[:8]) if len(text) >= 8 and text[:8].isdigit() else 0
+
+
+def split_run(run: RunColumns, split: int) -> tuple[RunColumns, RunColumns]:
+    """연속 1회 런을 매수일 기준으로 설계/홀드아웃으로 나눈다(경계일은 홀드아웃).
+
+    평가 프로토콜 v2 의 핵심 — 백테스트를 두 번 돌리지 않는다.
+    """
+    design_index = [index for index, date in enumerate(run.dates) if date < split]
+    holdout_index = [index for index, date in enumerate(run.dates) if date >= split]
+
+    def pick(indices: list[int]) -> RunColumns:
+        return RunColumns(
+            columns={
+                name: [values[index] for index in indices]
+                for name, values in run.columns.items()
+            },
+            pnls=[run.pnls[index] for index in indices],
+            dates=[run.dates[index] for index in indices],
+            pool=list(run.pool),
+        )
+
+    return pick(design_index), pick(holdout_index)
+
+
+def samples_from(run: RunColumns, variables: Sequence[str]) -> list[Sample]:
+    """열 묶음 → Sample 목록. 지정 변수 중 하나라도 결측이면 그 거래는 뺀다."""
+    out: list[Sample] = []
+    for index, pnl in enumerate(run.pnls):
+        values: dict[str, float] = {}
+        for name in variables:
+            value = run.columns.get(name, [])[index] if name in run.columns else None
+            if value is None:
+                break
+            values[name] = value
+        else:
+            out.append(Sample(values=values, pnl=pnl, date=run.dates[index]))
+    return out
+
+
+def _read_columns(
+    csv_path: Path, variables: Sequence[str] | None,
+) -> tuple[dict[str, list[float | None]], list[float], list[str]]:
+    run = _read_run(csv_path, variables)
+    return run.columns, run.pnls, run.pool
 
 
 def is_proposable(variable: str) -> bool:
@@ -753,8 +812,39 @@ def profile_payload(
     top: int = 40,
 ) -> dict[str, object]:
     """공식 CSV 두 개 → 변수별 손실 프로파일(진단 권위)."""
-    design_columns, design_pnls, pool = _read_columns(design_csv, variables)
-    holdout_columns, holdout_pnls, _ = _read_columns(holdout_csv, pool)
+    design = _read_run(design_csv, variables)
+    holdout = _read_run(holdout_csv, design.pool)
+    return profile_payload_from_runs(
+        design=design, holdout=holdout, min_bucket=min_bucket, top=top,
+    )
+
+
+def profile_payload_split(
+    *,
+    csv_path: Path,
+    split: int,
+    variables: Sequence[str] | None = None,
+    min_bucket: int | None = None,
+    top: int = 40,
+) -> dict[str, object]:
+    """평가 프로토콜 v2 — 연속 1회 런 CSV 하나를 날짜로 나눠 프로파일한다."""
+    design, holdout = split_run(_read_run(csv_path, variables), split)
+    payload = profile_payload_from_runs(
+        design=design, holdout=holdout, min_bucket=min_bucket, top=top,
+    )
+    payload["split"] = split
+    return payload
+
+
+def profile_payload_from_runs(
+    *,
+    design: RunColumns,
+    holdout: RunColumns,
+    min_bucket: int | None = None,
+    top: int = 40,
+) -> dict[str, object]:
+    design_columns, design_pnls, pool = design.columns, design.pnls, design.pool
+    holdout_columns, holdout_pnls = holdout.columns, holdout.pnls
     resolved = min_bucket or max(100, int(len(design_pnls) * 0.005))
     minimum_total = max(200, resolved * _MIN_TOTAL_FACTOR)
     if len(design_pnls) < minimum_total or len(holdout_pnls) < minimum_total:

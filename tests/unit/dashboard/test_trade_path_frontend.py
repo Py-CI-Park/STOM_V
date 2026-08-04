@@ -211,15 +211,28 @@ def test_sell_proposal_cards_disclose_family_and_timeframe() -> None:
 
 
 def test_oos_page_requires_two_official_non_overlapping_pairs() -> None:
+    """채택 게이트는 두 구간 공식 결과를 요구한다 — v2 분할 모드와 4-job 모드 모두."""
     source = _read("bt-oos-gate.jsx")
     tab = _read("bt-trade-path-tab.jsx")
     styles = _read("trade-path.css")
     assert "/bt/trade-path/promotion-gate" in source
-    assert "비중첩 OOS" in source
-    assert "설계/OOS 채택 판정" in source
-    assert '["oos","OOS 채택"]' in tab
+    assert "비중첩" in source                      # 4-job 모드의 비중첩 요구
+    assert "채택 판정" in source
+    assert '["oos","채택 게이트"]' in tab
     assert '· ${job.job_id}`' in source
     assert ".tp-oos-form select" in styles
+
+
+def test_oos_page_offers_both_v2_split_and_four_job_modes() -> None:
+    """v2 는 연속 1회 런을 날짜로 가른다 — 자본 연속 경고와 검산 표시가 함께 있어야 한다."""
+    source = _read("bt-oos-gate.jsx")
+    assert "design_period" in source and "holdout_period" in source
+    assert "baseline_job_id" in source and "candidate_job_id" in source
+    assert "design_baseline_job_id" in source     # 4-job 모드 유지
+    assert "홀드아웃" in source
+    assert "자본이 이어지므로" in source
+    assert "split_reconciled" in source
+    assert ".tp-oos-modes" in _read("trade-path.css")
 
 
 def test_trade_path_polling_continues_after_an_unchanged_progress_response() -> None:

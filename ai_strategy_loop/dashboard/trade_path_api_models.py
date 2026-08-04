@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
+from pydantic import (
+    BaseModel, ConfigDict, Field, StringConstraints, field_validator, model_validator,
+)
 
 
 ShortText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=128)]
@@ -93,19 +95,68 @@ class CandidateRunRequest(FrozenPayload):
 ResearchAxis = Annotated[str, StringConstraints(pattern="^(sell|buy)$")]
 
 
+class PeriodPayload(FrozenPayload):
+    """평가 프로토콜 v2 — 연속 1회 런 CSV 를 자르는 거래일 구간(양끝 포함)."""
+
+    t_start: int = Field(ge=19000101, le=29991231)
+    t_end: int = Field(ge=19000101, le=29991231)
+
+    @model_validator(mode="after")
+    def _ordered(self) -> "PeriodPayload":
+        if self.t_start > self.t_end:
+            raise ValueError("t_start must not exceed t_end")
+        return self
+
+
 class OfficialPairRequest(FrozenPayload):
     baseline_job_id: ShortText
     candidate_job_id: ShortText
     # 한 라운드 한 축(R2-1): 바꾼 축만 달라야 하고 반대 축은 고정이어야 한다.
     axis: ResearchAxis = "sell"
+    # v2: 지정하면 그 기간 거래만 비교한다. 미지정이면 런 전체.
+    period: PeriodPayload | None = None
 
 
 class PromotionGateRequest(FrozenPayload):
-    design_baseline_job_id: ShortText
-    design_candidate_job_id: ShortText
-    oos_baseline_job_id: ShortText
-    oos_candidate_job_id: ShortText
+    """두 모드를 지원한다 — 섞어 보내면 어떤 판정인지 모호하므로 거부한다.
+
+    - `4job_independent` (기존): 설계/OOS 를 **각각 독립 런**으로 돌린 4개 job.
+    - `2job_split` (v2): 연속 1회 런 job 한 쌍을 **기간으로 갈라** 판정한다.
+      연속 런은 자본이 이어지므로 "OOS" 가 아니라 **홀드아웃**이라 부른다.
+    """
+
+    design_baseline_job_id: ShortText | None = None
+    design_candidate_job_id: ShortText | None = None
+    oos_baseline_job_id: ShortText | None = None
+    oos_candidate_job_id: ShortText | None = None
+    baseline_job_id: ShortText | None = None
+    candidate_job_id: ShortText | None = None
+    design_period: PeriodPayload | None = None
+    holdout_period: PeriodPayload | None = None
     axis: ResearchAxis = "sell"
+
+    @property
+    def mode(self) -> str:
+        return "2job_split" if self.baseline_job_id else "4job_independent"
+
+    @model_validator(mode="after")
+    def _exactly_one_mode(self) -> "PromotionGateRequest":
+        four = (self.design_baseline_job_id, self.design_candidate_job_id,
+                self.oos_baseline_job_id, self.oos_candidate_job_id)
+        two = (self.baseline_job_id, self.candidate_job_id,
+               self.design_period, self.holdout_period)
+        if any(four) and any(two):
+            raise ValueError("do not mix 4-job and 2-job promotion gate fields")
+        if any(two):
+            if not all(two):
+                raise ValueError(
+                    "2-job mode needs baseline_job_id, candidate_job_id, "
+                    "design_period and holdout_period"
+                )
+            return self
+        if not all(four):
+            raise ValueError("4-job mode needs all four job ids")
+        return self
 
 
 class MatrixCellPayload(FrozenPayload):

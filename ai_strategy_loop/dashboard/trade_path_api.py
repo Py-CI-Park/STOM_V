@@ -29,6 +29,7 @@ from ai_strategy_loop.dashboard.trade_path_report import trade_path_report_route
 from ai_strategy_loop.dashboard.trade_path_source import resolve_job_source
 from ai_strategy_loop.dashboard.trade_contract_api import trade_contract_router
 from ai_strategy_loop.dashboard.lane_manifest import baseline_code, lane_manifest_payload
+from ai_strategy_loop.dashboard.loss_region_api import loss_region_router
 from ai_strategy_loop.dashboard.sell_dsl_api import sell_dsl_router
 from ai_strategy_loop.revision.sell_proposer import propose_sell_conditions
 from ai_strategy_loop.revision.variable_catalog import catalog_payload
@@ -39,6 +40,7 @@ trade_path_router.include_router(official_trade_path_router)
 trade_path_router.include_router(trade_path_report_router)
 trade_path_router.include_router(trade_contract_router)
 trade_path_router.include_router(sell_dsl_router)
+trade_path_router.include_router(loss_region_router)
 
 
 def _job_payload(job: TradePathJob | None) -> dict[str, object]:

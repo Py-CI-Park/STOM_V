@@ -43,12 +43,26 @@ class OfficialPair:
     delta_per_trade_krw: float = 0.0
 
 
+def _buy_date(buy_time: int) -> int:
+    """매수시간 앞 8자리 = 거래일. tick(14자리)/min(12자리) 모두 같은 규칙."""
+    return int(str(int(buy_time))[:8])
+
+
+def _within(rows, period: tuple[int, int] | None):
+    """평가 프로토콜 v2 — 연속 1회 런 CSV 를 매수일 기준으로 자른다(양끝 포함)."""
+    if period is None:
+        return list(rows)
+    start, end = period
+    return [row for row in rows if start <= _buy_date(row.buy_time) <= end]
+
+
 def compare_official_results(
     *, baseline_job_id: str, baseline_csv: Path,
     candidate_job_id: str, candidate_csv: Path, axis: str = "sell",
+    period: tuple[int, int] | None = None,
 ) -> OfficialPair:
-    baseline = read_trade_rows(baseline_csv)
-    candidate = read_trade_rows(candidate_csv)
+    baseline = _within(read_trade_rows(baseline_csv), period)
+    candidate = _within(read_trade_rows(candidate_csv), period)
     baseline_map = {(row.name, row.buy_time, row.entry_sequence): row for row in baseline}
     candidate_map = {(row.name, row.buy_time, row.entry_sequence): row for row in candidate}
     shared = sorted(set(baseline_map) & set(candidate_map))
