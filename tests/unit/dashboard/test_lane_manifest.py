@@ -53,6 +53,29 @@ def test_payload_reports_strategy_hash_from_actual_db(tmp_path: Path, monkeypatc
     assert payload["baseline_registered"] is False
 
 
+def test_evaluation_window_equals_design_plus_holdout() -> None:
+    """v2 — 평가 구간은 설계+홀드아웃 전체이고 분할 경계가 그 사이에 정확히 놓인다."""
+    for lane, manifest in LANE_MANIFESTS.items():
+        assert manifest.evaluation.start == manifest.design.start, lane
+        assert manifest.evaluation.end == manifest.oos.end, lane
+        assert manifest.design.end < manifest.split_boundary <= manifest.oos.start, lane
+
+
+def test_tick_lane_uses_latest_two_years() -> None:
+    """tick 은 v1(2022-04~) 이 아니라 최신 2년 창을 쓴다."""
+    tick = LANE_MANIFESTS["tick"]
+    assert tick.evaluation.start == 20240304
+    assert tick.evaluation.end == 20260227
+    assert tick.split_boundary == 20250825
+
+
+def test_payload_exposes_v2_protocol_fields() -> None:
+    payload = lane_manifest_payload("tick")
+    assert payload["evaluation_protocol"] == "v2_single_run_date_split"
+    assert payload["split_boundary"] == 20250825
+    assert payload["evaluation"] == {"start": 20240304, "end": 20260227}
+
+
 def test_unknown_lane_is_rejected_with_known_lanes() -> None:
     payload = lane_manifest_payload("hour")
     assert payload["available"] is False
