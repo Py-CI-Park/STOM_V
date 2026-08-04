@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-04T06:45:25.728554+00:00",
-  "source_fingerprint": "6067a1c129ac332a410079d5dc552be6208dd33fd73ca137aa883d5c0c66a92b",
-  "count": 971,
+  "generated_at": "2026-08-04T08:25:47.716750+00:00",
+  "source_fingerprint": "310b132407abd6d7f8e71de9f9fea145c2822c3ff5f6ac5ce9a5c1a8028b007f",
+  "count": 973,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6553,14 +6553,14 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_g0_loss_region_engine_design.md",
       "title": "QSP7 G-0 손실 영역 탐구 엔진 설계서",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T03:20:53.608676+00:00",
+      "updated_at": "2026-08-04T06:48:39.531395+00:00",
       "size": 22587
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_master_execution_plan.md",
       "title": "QSP7 마스터 실행 계획 — 페이지 세부 설계 · 브랜치 운영 · 기대 효과 · 도달 가능성",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T06:29:29.688092+00:00",
+      "updated_at": "2026-08-04T06:48:39.536912+00:00",
       "size": 19254
     },
     {
@@ -6574,22 +6574,29 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-04_qsp7_g0a_loss_profile_evidence.md",
       "title": "G-0a 손실 형태 프로파일러 — 구현 결과와 실데이터 검증",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T00:21:27.452981+00:00",
+      "updated_at": "2026-08-04T06:48:39.540976+00:00",
       "size": 5343
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-04_qsp7_g0b_region_proposer_evidence.md",
       "title": "G-0b 패턴 카드 + 구간 제거 생성기 — 구현 결과와 실데이터 검증",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T00:44:32.492096+00:00",
+      "updated_at": "2026-08-04T06:48:39.543482+00:00",
       "size": 5490
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-04_qsp7_g0cde_pages_protocol_v2.md",
       "title": "G-0c/0d/0e — 페이지 17~21 · 평가 프로토콜 v2 배선 · 세대 수렴 판정",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T02:15:26.854377+00:00",
+      "updated_at": "2026-08-04T06:48:39.548005+00:00",
       "size": 4067
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-04_qsp7_근본진단_왜_수익이_안나는가.md",
+      "title": "QSP7 근본 진단 — 왜 수익이 안 나는가, 프로세스가 문제인가",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-04T08:22:43.439146+00:00",
+      "size": 9901
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
@@ -6609,8 +6616,15 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-04_QSP7_G0_손실영역엔진.md",
       "title": "QSP7 G-0 핸드오프 — 손실 영역 탐구 엔진 착수",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T06:44:10.902798+00:00",
+      "updated_at": "2026-08-04T06:48:39.552011+00:00",
       "size": 11552
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-05_QSP8_기준선전환.md",
+      "title": "QSP8 핸드오프 — 기준선 전환과 매도 축 연구 착수",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-04T08:24:42.855446+00:00",
+      "size": 7724
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
@@ -6630,14 +6644,14 @@
       "id": "docs/research/quant_scoring_pipeline/lane_manifest_tick.md",
       "title": "tick 레인 manifest (정본)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T00:47:48.710668+00:00",
+      "updated_at": "2026-08-04T06:48:39.556536+00:00",
       "size": 1955
     },
     {
       "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
       "title": "QSP1 한계 원장 (Limitation Ledger)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T06:43:28.437982+00:00",
+      "updated_at": "2026-08-04T06:48:39.563066+00:00",
       "size": 18488
     },
     {
@@ -6735,7 +6749,7 @@
       "id": "docs/research/quant_scoring_pipeline/rounds/G_tick_20260804.md",
       "title": "G 라운드 — tick 레인 손실 영역 세대 루프 (2026-08-04)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T06:42:27.130098+00:00",
+      "updated_at": "2026-08-04T06:48:39.569118+00:00",
       "size": 6031
     },
     {
