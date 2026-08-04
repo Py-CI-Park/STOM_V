@@ -97,6 +97,51 @@ def test_derive_inserts_one_elif_pair_per_clause():
     rp.validate_region_code(code=code, base_code=BASE_CODE, clauses=clauses)
 
 
+def test_gate_accepts_stacking_onto_a_baseline_that_already_has_markers():
+    """2세대 이후 기준선에는 직전 세대 마커가 남아 있다 — 개수 비교로 세면 전량 차단된다.
+
+    G-2 실측에서 이 결함으로 후보가 0건이 됐다.
+    """
+    first = rp.RegionClause(kind="single", card_id="c1", terms=((_interval(high=1.0),),),
+                            source="s", design_share=0.1, holdout_share=0.1,
+                            design_per_trade=-9000.0, holdout_per_trade=-8000.0)
+    gen1 = rp.derive_region_code(BASE_CODE, (first,))
+    assert gen1.count(rp.MARKER) == 1
+
+    second = rp.RegionClause(kind="single", card_id="c2",
+                             terms=((_interval("B_체결강도", "체결강도", low=300.0),),),
+                             source="s", design_share=0.1, holdout_share=0.1,
+                             design_per_trade=-9000.0, holdout_per_trade=-8000.0)
+    gen2 = rp.derive_region_code(gen1, (second,))
+    assert gen2.count(rp.MARKER) == 2
+    rp.validate_region_code(code=gen2, base_code=gen1, clauses=(second,))
+
+    # 3세대까지 누적해도 동작해야 한다.
+    third = rp.RegionClause(kind="single", card_id="c3",
+                            terms=((_interval("B_회전율", "회전율", low=9.0),),),
+                            source="s", design_share=0.1, holdout_share=0.1,
+                            design_per_trade=-9000.0, holdout_per_trade=-8000.0)
+    gen3 = rp.derive_region_code(gen2, (third,))
+    rp.validate_region_code(code=gen3, base_code=gen2, clauses=(third,))
+    import ast as _ast
+    _ast.parse(gen3)
+
+
+def test_gate_still_rejects_body_change_on_a_stacked_baseline():
+    """누적 기준선에서도 기존 절을 건드리면 차단해야 한다."""
+    first = rp.RegionClause(kind="single", card_id="c1", terms=((_interval(high=1.0),),),
+                            source="s", design_share=0.1, holdout_share=0.1,
+                            design_per_trade=-9000.0, holdout_per_trade=-8000.0)
+    gen1 = rp.derive_region_code(BASE_CODE, (first,))
+    second = rp.RegionClause(kind="single", card_id="c2",
+                             terms=((_interval("B_체결강도", "체결강도", low=300.0),),),
+                             source="s", design_share=0.1, holdout_share=0.1,
+                             design_per_trade=-9000.0, holdout_per_trade=-8000.0)
+    tampered = rp.derive_region_code(gen1, (second,)).replace("등락율 <= 1", "등락율 <= 2")
+    with pytest.raises(rp.RegionValidationError, match="baseline_body_changed"):
+        rp.validate_region_code(code=tampered, base_code=gen1, clauses=(second,))
+
+
 def test_intent_gate_rejects_body_change():
     clauses = (rp.RegionClause(kind="single", card_id="c1", terms=((_interval(high=1.0),),),
                                source="s", design_share=0.1, holdout_share=0.1,

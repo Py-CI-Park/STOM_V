@@ -213,20 +213,27 @@ def validate_region_code(
             raise RegionValidationError("future_label_leakage")
     base_lines = base_code.splitlines()
     new_lines = code.splitlines()
-    if len(new_lines) != len(base_lines) + 2 * len(clauses):
+    size = 2 * len(clauses)
+    if len(new_lines) != len(base_lines) + size:
         raise RegionValidationError("unexpected_line_count")
-    marked = [index for index, line in enumerate(new_lines) if MARKER in line]
-    if len(marked) != len(clauses):
-        raise RegionValidationError("diff_not_region_clauses")
-    for index in marked:
-        if index + 1 >= len(new_lines) or new_lines[index + 1].strip() != "매수 = False":
-            raise RegionValidationError("diff_not_region_clauses")
-        if not new_lines[index].lstrip().startswith("elif "):
-            raise RegionValidationError("diff_not_region_clauses")
-    drop = set(marked) | {index + 1 for index in marked}
-    stripped = [line for index, line in enumerate(new_lines) if index not in drop]
-    if stripped != base_lines:
+
+    # 삽입 지점은 **위치 diff** 로 찾는다. 마커 개수로 세면 안 된다 —
+    # 2세대 이후 기준선에는 직전 세대가 남긴 ADD_REGION 마커가 이미 들어 있어서,
+    # 개수 비교는 항상 어긋나고 모든 후보가 차단된다(G-2 실측 결함).
+    prefix = 0
+    while prefix < len(base_lines) and new_lines[prefix] == base_lines[prefix]:
+        prefix += 1
+    inserted = new_lines[prefix:prefix + size]
+    if new_lines[:prefix] + new_lines[prefix + size:] != base_lines:
         raise RegionValidationError("baseline_body_changed")
+    if sum(1 for line in inserted if MARKER in line) != len(clauses):
+        raise RegionValidationError("diff_not_region_clauses")
+    for offset in range(0, size, 2):
+        head, tail = inserted[offset], inserted[offset + 1]
+        if MARKER not in head or not head.lstrip().startswith("elif "):
+            raise RegionValidationError("diff_not_region_clauses")
+        if tail.strip() != "매수 = False":
+            raise RegionValidationError("diff_not_region_clauses")
     allowed = {expr.split("(")[0] for expr in RUNTIME_EXPRESSION.values()}
     for expression in expressions:
         try:

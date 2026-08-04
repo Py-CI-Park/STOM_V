@@ -23,7 +23,9 @@ from pydantic import Field, StringConstraints, field_validator
 
 from ai_strategy_loop.autopsy import loss_profile as lp
 from ai_strategy_loop.dashboard.backtest_jobs import get_job_manager
-from ai_strategy_loop.dashboard.lane_manifest import LANE_MANIFESTS, baseline_code
+from ai_strategy_loop.dashboard.lane_manifest import (
+    LANE_MANIFESTS, baseline_code, strategy_code,
+)
 from ai_strategy_loop.dashboard.trade_path_api_models import FrozenPayload, ShortText
 from ai_strategy_loop.revision import region_proposer as rp
 from ai_strategy_loop.revision.buy_filter_proposer import RUNTIME_EXPRESSION
@@ -92,6 +94,8 @@ class RegionCandidateRequest(FrozenPayload):
     prior_retention: float = Field(default=1.0, gt=0.0, le=1.0)
     max_clauses: int = Field(default=4, ge=1, le=4)
     variables: str = ""
+    # 2세대 이후에는 직전 세대 채택 후보가 기준선이다. 미지정이면 manifest 기준선.
+    baseline_strategy: Annotated[str, StringConstraints(strip_whitespace=True, max_length=128)] = ""
 
 
 # --------------------------------------------------------------------------- 공통
@@ -284,9 +288,14 @@ def region_candidates(payload: RegionCandidateRequest) -> dict:
     if resolved is None:
         return _unavailable(reason or "unknown", "advisory")
     design, holdout, boundary, _ = resolved
-    base = baseline_code(payload.lane, "buy")
+    # 2세대 이후 기준선은 직전 세대 채택 후보다 — 지정되면 그 코드 위에 절을 쌓는다.
+    base = (strategy_code(payload.baseline_strategy, "buy") if payload.baseline_strategy
+            else baseline_code(payload.lane, "buy"))
     if not base:
-        return _unavailable("baseline_buy_missing", "advisory")
+        return _unavailable(
+            "baseline_strategy_missing" if payload.baseline_strategy else "baseline_buy_missing",
+            "advisory",
+        )
 
     profile = lp.profile_payload_from_runs(design=design, holdout=holdout)
     if not profile.get("available"):
@@ -332,6 +341,7 @@ def region_candidates(payload: RegionCandidateRequest) -> dict:
     return jsonable_encoder({
         "available": True, "authority": "advisory", "lane": payload.lane,
         "split": boundary, "generation": payload.generation,
+        "baseline_strategy": payload.baseline_strategy or LANE_MANIFESTS[payload.lane].baseline_buy,
         "candidates": [_candidate_payload(candidate) for candidate in candidates],
         "skipped": [dict(item) for item in skipped],
         "profiles_tested": len(profiles), "pockets_found": len(pockets),

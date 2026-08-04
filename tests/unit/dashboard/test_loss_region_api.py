@@ -209,6 +209,44 @@ def test_region_candidates_returns_bundles_with_budget(monkeypatch, tmp_path):
     assert "skipped" in body
 
 
+def test_region_candidates_can_build_on_a_named_baseline(monkeypatch, tmp_path):
+    """2세대 이후 기준선은 직전 세대 채택 후보다 — manifest 기준선이 아니다."""
+    client = _client(monkeypatch, tmp_path)
+    # 세대 2 기준선 = 세대 1 후보(절이 이미 하나 붙어 있다).
+    gen1_code = (
+        "매수 = True\n\n"
+        "if 관심종목 != 1:\n    매수 = False\n"
+        "elif not (0 < 등락율 <= 25):\n    매수 = False\n"
+        "elif 등락율 > 20:\n    매수 = False\n\n"
+        "if 매수:\n    self.Buy()\n"
+    )
+    seen = {}
+
+    def _fake_strategy_code(name, kind):
+        seen["name"] = name
+        return gen1_code
+
+    monkeypatch.setattr(loss_region_api, "strategy_code", _fake_strategy_code)
+    body = client.post("/bt/trade-path/region-candidates", json={
+        "job_id": "run1", "lane": "tick", "generation": 2,
+        "prior_retention": 0.88, "baseline_strategy": "QSP7_G1_tick_4절_20260804",
+    }).json()
+    assert body["available"] is True
+    assert body["baseline_strategy"] == "QSP7_G1_tick_4절_20260804"
+    assert seen["name"] == "QSP7_G1_tick_4절_20260804"
+
+
+def test_missing_named_baseline_is_reported_distinctly(monkeypatch, tmp_path):
+    client = _client(monkeypatch, tmp_path)
+    monkeypatch.setattr(loss_region_api, "strategy_code", lambda name, kind: "")
+    body = client.post("/bt/trade-path/region-candidates", json={
+        "job_id": "run1", "lane": "tick", "generation": 2,
+        "baseline_strategy": "없는전략",
+    }).json()
+    assert body["available"] is False
+    assert body["reason"] == "baseline_strategy_missing"
+
+
 # --------------------------------------------------------------------------- 21 분할 진단
 
 def test_split_diagnostics_reconciles_the_two_windows(monkeypatch, tmp_path):
@@ -228,6 +266,10 @@ def test_split_diagnostics_reconciles_the_two_windows(monkeypatch, tmp_path):
 # --------------------------------------------------------------------------- 20 세대
 
 def test_generations_returns_empty_history_gracefully(monkeypatch, tmp_path):
+    """이력이 없을 때의 응답 — 실제 운영 이력 파일에 의존하면 안 된다(격리)."""
+    from ai_strategy_loop.revision import generation_runner as gr
+
+    monkeypatch.setattr(gr, "_path", lambda: tmp_path / "no_generations.jsonl")
     client = _client(monkeypatch, tmp_path)
     body = client.get("/bt/trade-path/generations?lane=tick").json()
     assert body["available"] is True
