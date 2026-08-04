@@ -130,6 +130,19 @@ def _pick_variables(raw: str) -> tuple[str, ...]:
     return tuple(name.strip() for name in raw.split(",") if name.strip())
 
 
+def _candidate_payload(candidate: rp.RegionCandidate) -> dict[str, object]:
+    """`expression`·`columns` 는 @property 라 asdict 에 안 담긴다 — 명시적으로 넣는다.
+
+    화면(제거 시뮬레이터 자동 후보)이 이 필드를 읽으므로 빠지면 조용히 빈 칸이 된다.
+    """
+    body = asdict(candidate)
+    body["clauses"] = [
+        {**asdict(clause), "expression": clause.expression, "columns": list(clause.columns)}
+        for clause in candidate.clauses
+    ]
+    return body
+
+
 def _to_clause(payload: ClausePayload) -> rp.RegionClause | None:
     terms: list[tuple[rp.Interval, ...]] = []
     for group in payload.terms:
@@ -319,7 +332,7 @@ def region_candidates(payload: RegionCandidateRequest) -> dict:
     return jsonable_encoder({
         "available": True, "authority": "advisory", "lane": payload.lane,
         "split": boundary, "generation": payload.generation,
-        "candidates": [asdict(candidate) for candidate in candidates],
+        "candidates": [_candidate_payload(candidate) for candidate in candidates],
         "skipped": [dict(item) for item in skipped],
         "profiles_tested": len(profiles), "pockets_found": len(pockets),
         "caveat": REENTRY_CAVEAT,

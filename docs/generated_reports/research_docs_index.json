@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-04T02:25:10.777841+00:00",
-  "source_fingerprint": "1039ac6db8e414e9b5e14b078185aeb0f9dbdbf6a14008f074c6bf207502d990",
+  "generated_at": "2026-08-04T03:45:00.702547+00:00",
+  "source_fingerprint": "1886483003abd088421e6bde154baa7a8f620068249746e475a2336559620560",
   "count": 970,
   "docs": [
     {
@@ -6553,8 +6553,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_g0_loss_region_engine_design.md",
       "title": "QSP7 G-0 손실 영역 탐구 엔진 설계서",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T00:23:06.550972+00:00",
-      "size": 22083
+      "updated_at": "2026-08-04T03:20:53.608676+00:00",
+      "size": 22587
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_master_execution_plan.md",
@@ -6609,8 +6609,8 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-04_QSP7_G0_손실영역엔진.md",
       "title": "QSP7 G-0 핸드오프 — 손실 영역 탐구 엔진 착수",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T00:22:44.827902+00:00",
-      "size": 11193
+      "updated_at": "2026-08-04T03:33:02.925759+00:00",
+      "size": 11311
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
@@ -6637,8 +6637,8 @@
       "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
       "title": "QSP1 한계 원장 (Limitation Ledger)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-03T08:38:52.411113+00:00",
-      "size": 16684
+      "updated_at": "2026-08-04T03:20:11.804318+00:00",
+      "size": 17181
     },
     {
       "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/analysis_to_revision.md",

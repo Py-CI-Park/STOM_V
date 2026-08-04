@@ -201,6 +201,11 @@ def test_region_candidates_returns_bundles_with_budget(monkeypatch, tmp_path):
         assert candidate["budget"] == "ok"
         assert candidate["intent_gate"] == "pass"
         assert 1 <= len(candidate["clauses"]) <= 4
+        for clause in candidate["clauses"]:
+            # expression 은 @property 라 asdict 에 안 담긴다 — 빠지면 화면이 빈 칸이 된다.
+            assert clause["expression"], clause
+            assert clause["columns"]
+            assert clause["source"]
     assert "skipped" in body
 
 
