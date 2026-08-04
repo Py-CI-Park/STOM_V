@@ -14,13 +14,13 @@
 | 항목 | 내용 |
 |---|---|
 | 지금까지 | 플랫폼 P0~P6 완성(화면 16) → R1(매도 축, 채택 0) → R2(매수 필터 축, **adoptable 2건**) |
-| 지금 할 일 | **G-0: 손실 영역 탐구 엔진** — 조건식 문법을 1종 → 6종으로 넓히고, 세대 반복으로 누적 개선 |
+| 지금 할 일 | ~~G-0~~ ✅ **전 단계 완료(2026-08-04)** — G-0a/b/c/d/e + G-1~G-3 세대 루프 완주. 결과: [rounds/G_tick_20260804.md](./rounds/G_tick_20260804.md) |
 | 왜 | 현재 생성기는 `변수 ≥ 상수` 한 줄만 만든다. 사용자가 쓰는 문법 8종 중 1종. 골짜기·다중밴드 손실은 **표현 자체가 불가** |
-| 첫 작업 | ~~`G-0a`~~ ✅ **완료** → 다음은 `G-0b` 패턴 카드 + 구간 생성기 |
+| 최종 성과 | 챔피언 `QSP7_G2_tick_1절_20260804`(절 5개) — 건당 **−5,241 → −4,853원**(+388) · 총손익 **+97.2M**(21.5% 축소) · 거래 84.8% 유지 · gate `adoptable`(**사람 승인 대기**) |
 | 레인 우선순위 | **tick 먼저**(최신 2년 · **엔진 16 · 런 1회 10분 기준**) → min 나중 |
 | **평가 방식** | **v2: 최신 2년 단일 연속 런 + CSV 날짜 분할** (후보당 백테 2회 → **1회**) |
 | 기간 | 3.5~4일 (엔진 1.5일 + v2 배선 0.5일 + 화면 1일 + **세대 루프 약 2시간 50분** + 보고 0.5일) |
-| 기대/한계 | 홀드아웃 건당 −5,241 → **−4,400원대(약 15% 손실 축소)**. **흑자 전환은 안 된다** |
+| 한계 | **흑자 전환 아니다.** 손실 21.5% 축소일 뿐. G-3 에서 후보 1건이 홀드아웃 악화(−22원)로 차단되며 루프 종료 |
 
 ---
 
@@ -41,11 +41,11 @@
 
 | 검증 | 마지막 값 |
 |---|---|
-| QSP7 집중 테스트 | **1,023 passed** (2026-08-04 실측·6분 28초) — 이전 기재값 "146" 은 오기였다 |
+| QSP7 집중 테스트 | **1,127 passed** (2026-08-04 최종·11분 55초). 명령에 `test_pattern_cards` `test_region_proposer` `test_generation_runner` 추가됨 |
 | 전체 `tests/unit/` | 18 failed / 6,7xx passed — **18건은 전부 기존 실패**(limitation_ledger 2026-08-03 고정) |
 | nonrelease verifier | PASS |
-| runtime JSX | **113 JSX / 563 files PASS** |
-| 번들 | `app.js v=59373a0a` · `trade-path.css?v=20260803c` |
+| runtime JSX | **118 JSX / 568 files PASS** |
+| 번들 | `app.js v=69dce066` · `trade-path.css?v=20260804a` |
 
 ### 1.3 준비된 연구 자산 (재사용 — 재생성 불필요)
 
@@ -96,12 +96,11 @@ elif not (회전율 >= 5.67):
 | 단계 | 산출물 | 완료 게이트 | 예상 |
 |---|---|---|---|
 | ~~**G-0a**~~ ✅ | `ai_strategy_loop/autopsy/loss_profile.py` + 테스트 27건 — **완료(2026-08-04)**<br>결과·실데이터 검증·결함 4건: [2026-08-04_qsp7_g0a_loss_profile_evidence.md](./2026-08-04_qsp7_g0a_loss_profile_evidence.md) | ✅ 게이트 4종 통과 · 2D 포켓 5건 검출 | 완료 |
-| **G-0b** | `ai_strategy_loop/revision/pattern_cards.py`<br>`ai_strategy_loop/revision/region_proposer.py` | 사용자 문법 8종 카드 추출(임계값 미저장) · 복합 절 1~4개 생성 · intent gate(삽입 절 외 diff 0) | 1일 |
-| **G-0c** | 페이지 17~21 + 8b/11 강화 + API 6종 | JSX PASS · 한국어 안내 · 예산 게이지 · 재유입 편향 배지 · 시각화 명세 준수 | 1일 |
-| **G-0d** | **평가 프로토콜 v2 배선** — pair `period` 인자 · gate 2-job 모드 · lane_manifest v2 구간 갱신 · "홀드아웃" 명칭 통일 | 기존 4-job 모드 회귀 없음 · 두 구간 합계 = 전체(검산) | 0.5일 |
-| ~~**G-1**~~ 🔄 | tick 기준선 ✅ 536초(86,390건·−452,783,575원, CLI 기준선과 일치) + 후보 4개 실행 중 | 홀드아웃 동반 개선 · 예산 준수 | **9분 + 36분** |
-| **G-2~G-4** | tick 2~4세대 | 〃 | **세대당 ~40분** |
-| **G-5** | `rounds/G_tick_20260804.md` + 문서·원장 갱신 | 실패 포함 전량 기록 | 0.5일 |
+| ~~**G-0b**~~ ✅ | `pattern_cards.py` + `region_proposer.py` — 문법 9종 38카드 · 복합 절 1~4개<br>[증거 문서](./2026-08-04_qsp7_g0b_region_proposer_evidence.md) | ✅ 실데이터 결함 3건 교정 | 완료 |
+| ~~**G-0c/0d/0e**~~ ✅ | 페이지 17~21 + API 6종 · 평가 v2 배선 · `generation_runner.py`<br>[증거 문서](./2026-08-04_qsp7_g0cde_pages_protocol_v2.md) | ✅ JSX 118/568 · 4-job 회귀 없음 · 검산 내장 | 완료 |
+| ~~**G-1~G-3**~~ ✅ | 세대 루프 완주 — G-1 4절 adoptable · G-2 1절 adoptable · **G-3 게이트 차단 종료** | ✅ 공식 백테 9회 · 검산 전건 통과 | 완료 |
+| ~~**G-5**~~ ✅ | [rounds/G_tick_20260804.md](./rounds/G_tick_20260804.md) + 한계 원장 5건 등재 | ✅ 실패·차단 전량 기록 | 완료 |
+| **다음** | ① min 레인 동일 엔진 ② 예산 재설계 ③ 매도 축 병행 | — | 사용자 결정 |
 
 ### 3.1 G-0a 상세 (첫 작업 — 여기서 시작)
 
@@ -148,11 +147,11 @@ git status --short -- ai_strategy_loop tests docs
 
 python -m pytest tests/unit/autopsy tests/unit/dashboard tests/unit/test_sell_proposer.py `
   tests/unit/test_buy_filter_proposer.py tests/unit/test_hier_flat_adapter.py `
-  tests/unit/test_variable_catalog.py tests/unit/test_trade_path_pipeline.py -q   # 기대 1,023+ passed (약 6분 30초)
+  tests/unit/test_variable_catalog.py tests/unit/test_trade_path_pipeline.py -q   # 기대 1,127 passed (약 12분) — pattern_cards·region_proposer·generation_runner 포함
 
 python scripts/verify_nonrelease_sync.py
 node ai_strategy_loop/dashboard/webui-build/build-app.mjs
-node ai_strategy_loop/dashboard/webui-build/runtime-jsx-check.mjs                  # 기대 113/563 PASS
+node ai_strategy_loop/dashboard/webui-build/runtime-jsx-check.mjs                  # 기대 118/568 PASS
 ```
 
 대시보드가 필요할 때(전략 등록까지 하려면 env 필수):

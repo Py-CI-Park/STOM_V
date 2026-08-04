@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-04T06:32:27.872546+00:00",
-  "source_fingerprint": "0ea8a8ca6b1f3b6d207d0bf62f5a86eeb54bade5f1c2dbbc597a29e1caebd8f5",
+  "generated_at": "2026-08-04T06:45:25.728554+00:00",
+  "source_fingerprint": "6067a1c129ac332a410079d5dc552be6208dd33fd73ca137aa883d5c0c66a92b",
   "count": 971,
   "docs": [
     {
@@ -6609,8 +6609,8 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-04_QSP7_G0_손실영역엔진.md",
       "title": "QSP7 G-0 핸드오프 — 손실 영역 탐구 엔진 착수",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T03:33:02.925759+00:00",
-      "size": 11311
+      "updated_at": "2026-08-04T06:44:10.902798+00:00",
+      "size": 11552
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
@@ -6637,8 +6637,8 @@
       "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
       "title": "QSP1 한계 원장 (Limitation Ledger)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T03:20:11.804318+00:00",
-      "size": 17181
+      "updated_at": "2026-08-04T06:43:28.437982+00:00",
+      "size": 18488
     },
     {
       "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/analysis_to_revision.md",
@@ -6735,8 +6735,8 @@
       "id": "docs/research/quant_scoring_pipeline/rounds/G_tick_20260804.md",
       "title": "G 라운드 — tick 레인 손실 영역 세대 루프 (2026-08-04)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T05:58:03.498435+00:00",
-      "size": 5046
+      "updated_at": "2026-08-04T06:42:27.130098+00:00",
+      "size": 6031
     },
     {
       "id": "docs/research/quant_scoring_pipeline/rounds/R1_min_20260803.md",

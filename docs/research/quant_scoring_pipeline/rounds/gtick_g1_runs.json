@@ -1,0 +1,624 @@
+{
+ "G1_1절": {
+  "strategy": "QSP7_G1_tick_1절_20260804",
+  "job_id": "20260804_123234_QSP7G1tick1절20260804_54589",
+  "status": "success",
+  "elapsed_sec": 502,
+  "metrics": {
+   "trade_count": 79473,
+   "daily_avg_trades": 167.3,
+   "win_rate": 32.15,
+   "avg_profit_pct": -0.51,
+   "total_profit_pct": -1013.42,
+   "total_profit_krw": -403214354,
+   "cagr": -533.38,
+   "mdd_pct": 1011.95,
+   "mdd_amount": 0.0,
+   "tpi": 0.66,
+   "seed_capital": 39787671.0,
+   "max_hold_count": 40,
+   "avg_hold_time": 235.14,
+   "day_count": 475
+  },
+  "clauses": [
+   "(등락율 > 15.68) and (회전율 > 2.03)"
+  ],
+  "gate": {
+   "available": true,
+   "authority": "official",
+   "mode": "2job_split",
+   "axis": "buy",
+   "verdict": "adoptable",
+   "design": {
+    "available": true,
+    "pair": {
+     "baseline_job_id": "20260804_121900_ResearchTestTickB0900000_40424",
+     "candidate_job_id": "20260804_123234_QSP7G1tick1절20260804_54589",
+     "matched_count": 60429,
+     "baseline_only_count": 8605,
+     "candidate_only_count": 3318,
+     "baseline_profit_krw": -368726499,
+     "candidate_profit_krw": -328685064,
+     "delta_profit_krw": 40041435,
+     "transitions": [
+      {
+       "baseline_reason": "전략종료청산",
+       "candidate_reason": "전략종료청산",
+       "count": 60429,
+       "delta_profit_krw": 0
+      }
+     ],
+     "authority": "official",
+     "axis": "buy",
+     "baseline_trade_count": 69034,
+     "candidate_trade_count": 63747,
+     "baseline_per_trade_krw": -5341.23,
+     "candidate_per_trade_krw": -5156.09,
+     "delta_per_trade_krw": 185.14
+    },
+    "axis": "buy",
+    "authority": "official",
+    "period": {
+     "t_start": 20240304,
+     "t_end": 20250822
+    }
+   },
+   "holdout": {
+    "available": true,
+    "pair": {
+     "baseline_job_id": "20260804_121900_ResearchTestTickB0900000_40424",
+     "candidate_job_id": "20260804_123234_QSP7G1tick1절20260804_54589",
+     "matched_count": 14872,
+     "baseline_only_count": 2484,
+     "candidate_only_count": 854,
+     "baseline_profit_krw": -84057076,
+     "candidate_profit_krw": -74529290,
+     "delta_profit_krw": 9527786,
+     "transitions": [
+      {
+       "baseline_reason": "전략종료청산",
+       "candidate_reason": "전략종료청산",
+       "count": 14872,
+       "delta_profit_krw": 0
+      }
+     ],
+     "authority": "official",
+     "axis": "buy",
+     "baseline_trade_count": 17356,
+     "candidate_trade_count": 15726,
+     "baseline_per_trade_krw": -4843.11,
+     "candidate_per_trade_krw": -4739.24,
+     "delta_per_trade_krw": 103.87
+    },
+    "axis": "buy",
+    "authority": "official",
+    "period": {
+     "t_start": 20250825,
+     "t_end": 20260227
+    }
+   },
+   "whole_run": {
+    "available": true,
+    "pair": {
+     "baseline_job_id": "20260804_121900_ResearchTestTickB0900000_40424",
+     "candidate_job_id": "20260804_123234_QSP7G1tick1절20260804_54589",
+     "matched_count": 75301,
+     "baseline_only_count": 11089,
+     "candidate_only_count": 4172,
+     "baseline_profit_krw": -452783575,
+     "candidate_profit_krw": -403214354,
+     "delta_profit_krw": 49569221,
+     "transitions": [
+      {
+       "baseline_reason": "전략종료청산",
+       "candidate_reason": "전략종료청산",
+       "count": 75301,
+       "delta_profit_krw": 0
+      }
+     ],
+     "authority": "official",
+     "axis": "buy",
+     "baseline_trade_count": 86390,
+     "candidate_trade_count": 79473,
+     "baseline_per_trade_krw": -5241.16,
+     "candidate_per_trade_krw": -5073.6,
+     "delta_per_trade_krw": 167.56
+    },
+    "axis": "buy",
+    "authority": "official",
+    "period": null
+   },
+   "periods": {
+    "design": [
+     20240304,
+     20250822
+    ],
+    "holdout": [
+     20250825,
+     20260227
+    ]
+   },
+   "design_per_trade_delta": 185.14,
+   "holdout_per_trade_delta": 103.87,
+   "design_trade_ratio": 0.9234,
+   "holdout_trade_ratio": 0.9061,
+   "split_reconciled": true,
+   "split_trade_counts": {
+    "parts": 86390.0,
+    "whole": 86390.0
+   },
+   "min_trade_ratio": 0.4,
+   "blockers": [],
+   "rule": "연속 1회 런을 날짜로 나눠 설계·홀드아웃이 모두 개선될 때만 채택 가능 · 매수 축은 건당 엣지 개선과 거래 유지율도 함께 요구",
+   "caveat": "연속 런은 자본이 이어집니다. 홀드아웃은 독립 OOS 가 아니며 총손익보다 건당 손익으로 판단하세요."
+  }
+ },
+ "G1_2절": {
+  "strategy": "QSP7_G1_tick_2절_20260804",
+  "job_id": "20260804_124057_QSP7G1tick2절20260804_57027",
+  "status": "success",
+  "elapsed_sec": 502,
+  "metrics": {
+   "trade_count": 79079,
+   "daily_avg_trades": 166.5,
+   "win_rate": 32.19,
+   "avg_profit_pct": -0.51,
+   "total_profit_pct": -1000.46,
+   "total_profit_krw": -397768036,
+   "cagr": -526.56,
+   "mdd_pct": 999.42,
+   "mdd_amount": 0.0,
+   "tpi": 0.66,
+   "seed_capital": 39758601.0,
+   "max_hold_count": 40,
+   "avg_hold_time": 235.41,
+   "day_count": 475
+  },
+  "clauses": [
+   "(등락율 > 15.68) and (회전율 > 2.03)",
+   "(0.3 < 회전율 <= 2.03) and (시분초 <= 90122)"
+  ],
+  "gate": {
+   "available": true,
+   "authority": "official",
+   "mode": "2job_split",
+   "axis": "buy",
+   "verdict": "adoptable",
+   "design": {
+    "available": true,
+    "pair": {
+     "baseline_job_id": "20260804_121900_ResearchTestTickB0900000_40424",
+     "candidate_job_id": "20260804_124057_QSP7G1tick2절20260804_57027",
+     "matched_count": 49088,
+     "baseline_only_count": 19946,
+     "candidate_only_count": 14354,
+     "baseline_profit_krw": -368726499,
+     "candidate_profit_krw": -324498938,
+     "delta_profit_krw": 44227561,
+     "transitions": [
+      {
+       "baseline_reason": "전략종료청산",
+       "candidate_reason": "전략종료청산",
+       "count": 49088,
+       "delta_profit_krw": 0
+      }
+     ],
+     "authority": "official",
+     "axis": "buy",
+     "baseline_trade_count": 69034,
+     "candidate_trade_count": 63442,
+     "baseline_per_trade_krw": -5341.23,
+     "candidate_per_trade_krw": -5114.89,
+     "delta_per_trade_krw": 226.34
+    },
+    "axis": "buy",
+    "authority": "official",
+    "period": {
+     "t_start": 20240304,
+     "t_end": 20250822
+    }
+   },
+   "holdout": {
+    "available": true,
+    "pair": {
+     "baseline_job_id": "20260804_121900_ResearchTestTickB0900000_40424",
+     "candidate_job_id": "20260804_124057_QSP7G1tick2절20260804_57027",
+     "matched_count": 11963,
+     "baseline_only_count": 5393,
+     "candidate_only_count": 3674,
+     "baseline_profit_krw": -84057076,
+     "candidate_profit_krw": -73269098,
+     "delta_profit_krw": 10787978,
+     "transitions": [
+      {
+       "baseline_reason": "전략종료청산",
+       "candidate_reason": "전략종료청산",
+       "count": 11963,
+       "delta_profit_krw": 0
+      }
+     ],
+     "authority": "official",
+     "axis": "buy",
+     "baseline_trade_count": 17356,
+     "candidate_trade_count": 15637,
+     "baseline_per_trade_krw": -4843.11,
+     "candidate_per_trade_krw": -4685.62,
+     "delta_per_trade_krw": 157.49
+    },
+    "axis": "buy",
+    "authority": "official",
+    "period": {
+     "t_start": 20250825,
+     "t_end": 20260227
+    }
+   },
+   "whole_run": {
+    "available": true,
+    "pair": {
+     "baseline_job_id": "20260804_121900_ResearchTestTickB0900000_40424",
+     "candidate_job_id": "20260804_124057_QSP7G1tick2절20260804_57027",
+     "matched_count": 61051,
+     "baseline_only_count": 25339,
+     "candidate_only_count": 18028,
+     "baseline_profit_krw": -452783575,
+     "candidate_profit_krw": -397768036,
+     "delta_profit_krw": 55015539,
+     "transitions": [
+      {
+       "baseline_reason": "전략종료청산",
+       "candidate_reason": "전략종료청산",
+       "count": 61051,
+       "delta_profit_krw": 0
+      }
+     ],
+     "authority": "official",
+     "axis": "buy",
+     "baseline_trade_count": 86390,
+     "candidate_trade_count": 79079,
+     "baseline_per_trade_krw": -5241.16,
+     "candidate_per_trade_krw": -5030.01,
+     "delta_per_trade_krw": 211.15
+    },
+    "axis": "buy",
+    "authority": "official",
+    "period": null
+   },
+   "periods": {
+    "design": [
+     20240304,
+     20250822
+    ],
+    "holdout": [
+     20250825,
+     20260227
+    ]
+   },
+   "design_per_trade_delta": 226.34,
+   "holdout_per_trade_delta": 157.49,
+   "design_trade_ratio": 0.919,
+   "holdout_trade_ratio": 0.901,
+   "split_reconciled": true,
+   "split_trade_counts": {
+    "parts": 86390.0,
+    "whole": 86390.0
+   },
+   "min_trade_ratio": 0.4,
+   "blockers": [],
+   "rule": "연속 1회 런을 날짜로 나눠 설계·홀드아웃이 모두 개선될 때만 채택 가능 · 매수 축은 건당 엣지 개선과 거래 유지율도 함께 요구",
+   "caveat": "연속 런은 자본이 이어집니다. 홀드아웃은 독립 OOS 가 아니며 총손익보다 건당 손익으로 판단하세요."
+  }
+ },
+ "G1_3절": {
+  "strategy": "QSP7_G1_tick_3절_20260804",
+  "job_id": "20260804_124919_QSP7G1tick3절20260804_59191",
+  "status": "success",
+  "elapsed_sec": 477,
+  "metrics": {
+   "trade_count": 77233,
+   "daily_avg_trades": 162.6,
+   "win_rate": 32.13,
+   "avg_profit_pct": -0.5,
+   "total_profit_pct": -969.96,
+   "total_profit_krw": -384555295,
+   "cagr": -510.51,
+   "mdd_pct": 968.97,
+   "mdd_amount": 0.0,
+   "tpi": 0.66,
+   "seed_capital": 39646443.0,
+   "max_hold_count": 40,
+   "avg_hold_time": 236.77,
+   "day_count": 475
+  },
+  "clauses": [
+   "(등락율 > 15.68) and (회전율 > 2.03)",
+   "(0.3 < 회전율 <= 2.03) and (시분초 <= 90122)",
+   "(86.27 < 체결강도 <= 111.36) and (시가총액 <= 862)"
+  ],
+  "gate": {
+   "available": true,
+   "authority": "official",
+   "mode": "2job_split",
+   "axis": "buy",
+   "verdict": "adoptable",
+   "design": {
+    "available": true,
+    "pair": {
+     "baseline_job_id": "20260804_121900_ResearchTestTickB0900000_40424",
+     "candidate_job_id": "20260804_124919_QSP7G1tick3절20260804_59191",
+     "matched_count": 47152,
+     "baseline_only_count": 21882,
+     "candidate_only_count": 14752,
+     "baseline_profit_krw": -368726499,
+     "candidate_profit_krw": -313530248,
+     "delta_profit_krw": 55196251,
+     "transitions": [
+      {
+       "baseline_reason": "전략종료청산",
+       "candidate_reason": "전략종료청산",
+       "count": 47152,
+       "delta_profit_krw": 0
+      }
+     ],
+     "authority": "official",
+     "axis": "buy",
+     "baseline_trade_count": 69034,
+     "candidate_trade_count": 61904,
+     "baseline_per_trade_krw": -5341.23,
+     "candidate_per_trade_krw": -5064.78,
+     "delta_per_trade_krw": 276.45
+    },
+    "axis": "buy",
+    "authority": "official",
+    "period": {
+     "t_start": 20240304,
+     "t_end": 20250822
+    }
+   },
+   "holdout": {
+    "available": true,
+    "pair": {
+     "baseline_job_id": "20260804_121900_ResearchTestTickB0900000_40424",
+     "candidate_job_id": "20260804_124919_QSP7G1tick3절20260804_59191",
+     "matched_count": 11521,
+     "baseline_only_count": 5835,
+     "candidate_only_count": 3808,
+     "baseline_profit_krw": -84057076,
+     "candidate_profit_krw": -71025047,
+     "delta_profit_krw": 13032029,
+     "transitions": [
+      {
+       "baseline_reason": "전략종료청산",
+       "candidate_reason": "전략종료청산",
+       "count": 11521,
+       "delta_profit_krw": 0
+      }
+     ],
+     "authority": "official",
+     "axis": "buy",
+     "baseline_trade_count": 17356,
+     "candidate_trade_count": 15329,
+     "baseline_per_trade_krw": -4843.11,
+     "candidate_per_trade_krw": -4633.38,
+     "delta_per_trade_krw": 209.74
+    },
+    "axis": "buy",
+    "authority": "official",
+    "period": {
+     "t_start": 20250825,
+     "t_end": 20260227
+    }
+   },
+   "whole_run": {
+    "available": true,
+    "pair": {
+     "baseline_job_id": "20260804_121900_ResearchTestTickB0900000_40424",
+     "candidate_job_id": "20260804_124919_QSP7G1tick3절20260804_59191",
+     "matched_count": 58673,
+     "baseline_only_count": 27717,
+     "candidate_only_count": 18560,
+     "baseline_profit_krw": -452783575,
+     "candidate_profit_krw": -384555295,
+     "delta_profit_krw": 68228280,
+     "transitions": [
+      {
+       "baseline_reason": "전략종료청산",
+       "candidate_reason": "전략종료청산",
+       "count": 58673,
+       "delta_profit_krw": 0
+      }
+     ],
+     "authority": "official",
+     "axis": "buy",
+     "baseline_trade_count": 86390,
+     "candidate_trade_count": 77233,
+     "baseline_per_trade_krw": -5241.16,
+     "candidate_per_trade_krw": -4979.16,
+     "delta_per_trade_krw": 262.0
+    },
+    "axis": "buy",
+    "authority": "official",
+    "period": null
+   },
+   "periods": {
+    "design": [
+     20240304,
+     20250822
+    ],
+    "holdout": [
+     20250825,
+     20260227
+    ]
+   },
+   "design_per_trade_delta": 276.45,
+   "holdout_per_trade_delta": 209.74,
+   "design_trade_ratio": 0.8967,
+   "holdout_trade_ratio": 0.8832,
+   "split_reconciled": true,
+   "split_trade_counts": {
+    "parts": 86390.0,
+    "whole": 86390.0
+   },
+   "min_trade_ratio": 0.4,
+   "blockers": [],
+   "rule": "연속 1회 런을 날짜로 나눠 설계·홀드아웃이 모두 개선될 때만 채택 가능 · 매수 축은 건당 엣지 개선과 거래 유지율도 함께 요구",
+   "caveat": "연속 런은 자본이 이어집니다. 홀드아웃은 독립 OOS 가 아니며 총손익보다 건당 손익으로 판단하세요."
+  }
+ },
+ "G1_4절": {
+  "strategy": "QSP7_G1_tick_4절_20260804",
+  "job_id": "20260804_125716_QSP7G1tick4절20260804_36235",
+  "status": "success",
+  "elapsed_sec": 452,
+  "metrics": {
+   "trade_count": 75425,
+   "daily_avg_trades": 158.8,
+   "win_rate": 32.41,
+   "avg_profit_pct": -0.5,
+   "total_profit_pct": -960.2,
+   "total_profit_krw": -371516304,
+   "cagr": -505.37,
+   "mdd_pct": 959.2,
+   "mdd_amount": 0.0,
+   "tpi": 0.66,
+   "seed_capital": 38691379.0,
+   "max_hold_count": 39,
+   "avg_hold_time": 236.02,
+   "day_count": 475
+  },
+  "clauses": [
+   "(등락율 > 15.68) and (회전율 > 2.03)",
+   "(0.3 < 회전율 <= 2.03) and (시분초 <= 90122)",
+   "(86.27 < 체결강도 <= 111.36) and (시가총액 <= 862)",
+   "(체결강도 <= 61.86) and (3789 < 시가총액 <= 10003)"
+  ],
+  "gate": {
+   "available": true,
+   "authority": "official",
+   "mode": "2job_split",
+   "axis": "buy",
+   "verdict": "adoptable",
+   "design": {
+    "available": true,
+    "pair": {
+     "baseline_job_id": "20260804_121900_ResearchTestTickB0900000_40424",
+     "candidate_job_id": "20260804_125716_QSP7G1tick4절20260804_36235",
+     "matched_count": 45133,
+     "baseline_only_count": 23901,
+     "candidate_only_count": 15461,
+     "baseline_profit_krw": -368726499,
+     "candidate_profit_krw": -304136143,
+     "delta_profit_krw": 64590356,
+     "transitions": [
+      {
+       "baseline_reason": "전략종료청산",
+       "candidate_reason": "전략종료청산",
+       "count": 45133,
+       "delta_profit_krw": 0
+      }
+     ],
+     "authority": "official",
+     "axis": "buy",
+     "baseline_trade_count": 69034,
+     "candidate_trade_count": 60594,
+     "baseline_per_trade_krw": -5341.23,
+     "candidate_per_trade_krw": -5019.25,
+     "delta_per_trade_krw": 321.99
+    },
+    "axis": "buy",
+    "authority": "official",
+    "period": {
+     "t_start": 20240304,
+     "t_end": 20250822
+    }
+   },
+   "holdout": {
+    "available": true,
+    "pair": {
+     "baseline_job_id": "20260804_121900_ResearchTestTickB0900000_40424",
+     "candidate_job_id": "20260804_125716_QSP7G1tick4절20260804_36235",
+     "matched_count": 10863,
+     "baseline_only_count": 6493,
+     "candidate_only_count": 3968,
+     "baseline_profit_krw": -84057076,
+     "candidate_profit_krw": -67380161,
+     "delta_profit_krw": 16676915,
+     "transitions": [
+      {
+       "baseline_reason": "전략종료청산",
+       "candidate_reason": "전략종료청산",
+       "count": 10863,
+       "delta_profit_krw": 0
+      }
+     ],
+     "authority": "official",
+     "axis": "buy",
+     "baseline_trade_count": 17356,
+     "candidate_trade_count": 14831,
+     "baseline_per_trade_krw": -4843.11,
+     "candidate_per_trade_krw": -4543.2,
+     "delta_per_trade_krw": 299.92
+    },
+    "axis": "buy",
+    "authority": "official",
+    "period": {
+     "t_start": 20250825,
+     "t_end": 20260227
+    }
+   },
+   "whole_run": {
+    "available": true,
+    "pair": {
+     "baseline_job_id": "20260804_121900_ResearchTestTickB0900000_40424",
+     "candidate_job_id": "20260804_125716_QSP7G1tick4절20260804_36235",
+     "matched_count": 55996,
+     "baseline_only_count": 30394,
+     "candidate_only_count": 19429,
+     "baseline_profit_krw": -452783575,
+     "candidate_profit_krw": -371516304,
+     "delta_profit_krw": 81267271,
+     "transitions": [
+      {
+       "baseline_reason": "전략종료청산",
+       "candidate_reason": "전략종료청산",
+       "count": 55996,
+       "delta_profit_krw": 0
+      }
+     ],
+     "authority": "official",
+     "axis": "buy",
+     "baseline_trade_count": 86390,
+     "candidate_trade_count": 75425,
+     "baseline_per_trade_krw": -5241.16,
+     "candidate_per_trade_krw": -4925.64,
+     "delta_per_trade_krw": 315.52
+    },
+    "axis": "buy",
+    "authority": "official",
+    "period": null
+   },
+   "periods": {
+    "design": [
+     20240304,
+     20250822
+    ],
+    "holdout": [
+     20250825,
+     20260227
+    ]
+   },
+   "design_per_trade_delta": 321.99,
+   "holdout_per_trade_delta": 299.92,
+   "design_trade_ratio": 0.8777,
+   "holdout_trade_ratio": 0.8545,
+   "split_reconciled": true,
+   "split_trade_counts": {
+    "parts": 86390.0,
+    "whole": 86390.0
+   },
+   "min_trade_ratio": 0.4,
+   "blockers": [],
+   "rule": "연속 1회 런을 날짜로 나눠 설계·홀드아웃이 모두 개선될 때만 채택 가능 · 매수 축은 건당 엣지 개선과 거래 유지율도 함께 요구",
+   "caveat": "연속 런은 자본이 이어집니다. 홀드아웃은 독립 OOS 가 아니며 총손익보다 건당 손익으로 판단하세요."
+  }
+ }
+}
