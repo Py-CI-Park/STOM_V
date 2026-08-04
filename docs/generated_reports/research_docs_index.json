@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-04T06:04:01.193443+00:00",
-  "source_fingerprint": "0679a48c752537ee4bc474b5839877d4981a07c9e3609068d491a8a817b34e23",
+  "generated_at": "2026-08-04T06:32:27.872546+00:00",
+  "source_fingerprint": "0ea8a8ca6b1f3b6d207d0bf62f5a86eeb54bade5f1c2dbbc597a29e1caebd8f5",
   "count": 971,
   "docs": [
     {
@@ -6560,8 +6560,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_master_execution_plan.md",
       "title": "QSP7 마스터 실행 계획 — 페이지 세부 설계 · 브랜치 운영 · 기대 효과 · 도달 가능성",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-03T12:58:09.724548+00:00",
-      "size": 18240
+      "updated_at": "2026-08-04T06:29:29.688092+00:00",
+      "size": 19254
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-03_qsp7_platform_completion_roadmap.md",
