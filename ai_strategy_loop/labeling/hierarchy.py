@@ -25,6 +25,7 @@ import pandas as pd
 from scipy import stats
 
 from ai_strategy_loop.labeling.converge import MIN_DAYS, converge
+from ai_strategy_loop.labeling.entries import entry_mask
 from ai_strategy_loop.labeling.frontier import row_values
 
 #: 분기 축 정의 — 902/905 의 실제 구조(시간창 → 시총)를 따른다.
@@ -122,6 +123,10 @@ def search(frame: pd.DataFrame, *, variables: list[str], tp_pct: float, sl_pct: 
         ))
 
     if selected.any():
+        # **진입 단위 정합** — 조건이 참인 모든 초가 아니라 엔진이 실제로 진입하는 초만
+        #   센다. 이 교정 없이는 추정이 4.7배 부풀려져 부호까지 뒤집힌다(2026-08-06 실측).
+        selected = entry_mask(frame, selected, horizon=horizon,
+                              time_digits=14 if "시분초" in frame else 14)
         picked = values[selected]
         daily = _day_stats(picked, day_codes[selected], n_days)
         t_stat, p_two = stats.ttest_1samp(daily, 0.0) if len(daily) >= MIN_DAYS else (0.0, 1.0)
