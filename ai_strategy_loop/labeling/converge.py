@@ -10,9 +10,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+import numpy as np
 import pandas as pd
 from scipy import stats
 
+from ai_strategy_loop.labeling.frontier import row_values
 from ai_strategy_loop.labeling.universe import cluster_load, expectancy
 
 MIN_ROWS = 2_000          # 후보 조건의 최소 표본
@@ -76,11 +78,18 @@ def _day_significance(frame: pd.DataFrame, *, tp: str, sl: str, horizon: int,
     return float(p_two / 2 if t_stat > 0 else 1.0), len(daily)
 
 
-def _day_mean(frame: pd.DataFrame, **kwargs) -> float:
-    """일평균 기대값 — 게이트가 실제로 검정하는 값."""
-    daily = [expectancy(group, **kwargs)["expectancy_pct"]
-             for _, group in frame.groupby("일자")]
-    return float(sum(daily) / len(daily)) if daily else float("-inf")
+def _day_mean_fast(values: np.ndarray, day_index: np.ndarray, n_days: int) -> float:
+    """일평균 기대값 — bincount 로 벡터화.
+
+    후보마다 `groupby` 를 돌면 30변수×5분위×2방향×깊이 만큼 반복돼 실행이 불가능하다
+    (프런티어에서 이미 겪은 문제). 행별 실현 수익률을 한 번만 만들고 부분 집계한다.
+    """
+    if values.size == 0:
+        return float("-inf")
+    counts = np.bincount(day_index, minlength=n_days)
+    sums = np.bincount(day_index, weights=values, minlength=n_days)
+    active = counts > 0
+    return float((sums[active] / counts[active]).mean())
 
 
 def converge(frame: pd.DataFrame, *, variables: list[str], tp_pct: float, sl_pct: float,
@@ -104,41 +113,55 @@ def converge(frame: pd.DataFrame, *, variables: list[str], tp_pct: float, sl_pct
     result = ConvergeResult(rule={"tp_pct": tp_pct, "sl_pct": sl_pct, "horizon": horizon,
                                   "objective": objective, "base": base})
     used: set[str] = set()
-    # 수렴 비교는 **최적화 중인 목표값**으로 한다 — 합계로 최적화하면서 일평균으로
-    #   멈춤을 판단하면 종료 조건이 목적과 어긋난다.
-    incumbent = (base["expectancy_pct"] if objective == "pooled"
-                 else _day_mean(current, **base_kwargs))
+    # 사전 계산 — 규칙이 고정이므로 **행별 실현 수익률을 한 번만** 만든다.
+    #   이후 후보 평가는 위치 색인의 부분 집계라 DataFrame 을 만들지 않는다
+    #   (후보마다 subset/groupby 를 만들면 30변수×5분위×2방향×깊이만큼 반복돼 실행 불가).
+    day_codes, day_labels = pd.factorize(frame["일자"], sort=True)
+    n_days = len(day_labels)
+    row_value = row_values(frame, **base_kwargs)
+    columns = {name: frame[name].to_numpy(dtype=np.float64)
+               for name in variables if name in frame.columns}
+    current_pos = np.arange(len(frame))
+
+    def objective_value(positions: np.ndarray) -> float:
+        picked = row_value[positions]
+        return (float(picked.mean()) if objective == "pooled"
+                else _day_mean_fast(picked, day_codes[positions], n_days))
+
+    incumbent = objective_value(current_pos)
 
     for depth in range(1, max_depth + 1):
         best = None
-        for variable in variables:
-            if variable in used or variable not in current:
+        for variable, values in columns.items():
+            if variable in used:
                 continue
-            column = current[variable].dropna()
-            if column.empty:
+            column = values[current_pos]
+            finite = column[~np.isnan(column)]
+            if finite.size == 0:
                 continue
             for quantile in QUANTILE_GRID:
                 for operator in (">", "<="):
-                    threshold = float(column.quantile(quantile if operator == ">" else 1 - quantile))
-                    clause = Clause(variable, operator, threshold, quantile)
-                    subset = current[clause.mask(current)]
-                    if len(subset) < min_rows or subset["일자"].nunique() < MIN_DAYS:
+                    threshold = float(np.quantile(
+                        finite, quantile if operator == ">" else 1 - quantile))
+                    keep = column > threshold if operator == ">" else column <= threshold
+                    positions = current_pos[keep]
+                    if positions.size < min_rows:
                         continue
-                    rule_kwargs = dict(tp_pct=tp_pct, sl_pct=sl_pct, tp=tp, sl=sl,
-                                       horizon=horizon, timeout_label=timeout_label)
-                    score = expectancy(subset, **rule_kwargs)
-                    value = (score["expectancy_pct"] if objective == "pooled"
-                             else _day_mean(subset, **rule_kwargs))
+                    if np.unique(day_codes[positions]).size < MIN_DAYS:
+                        continue
+                    value = objective_value(positions)
                     if best is None or value > best[0]:
-                        best = (value, clause, score, subset)
+                        best = (value, Clause(variable, operator, threshold, quantile), positions)
         if best is None:
             break
-        value, clause, score, subset = best
+        value, clause, positions = best
         if value <= incumbent:     # 더 못 올리면 수렴
             break
         incumbent = value
         used.add(clause.variable)
-        current = subset
+        current_pos = positions
+        current = frame.iloc[current_pos]      # 채택된 절에서만 실체화한다
+        score = expectancy(current, **base_kwargs)
         p_value, clusters = _day_significance(current, tp=tp, sl=sl, horizon=horizon,
                                               tp_pct=tp_pct, sl_pct=sl_pct,
                                               timeout_label=timeout_label)
