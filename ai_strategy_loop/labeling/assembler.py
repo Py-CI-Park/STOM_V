@@ -52,9 +52,9 @@ def render_buy_expression(*, name: str, time_start: int, time_end: int,
         "VI아래5호가 = VI가격 - VI호가단위 * 5",
         "매수 = True",
         "",
-        "if not (관심종목 == 1):",
-        "    매수 = False",
-        f"elif not ({time_start} <= 시분초 < {time_end}):",
+        # 관심종목 게이트는 넣지 않는다 — 라벨 우주(수집 전 종목)와 어긋나면
+        #   엔진 실측이 지도 예측과 비교 불가능해진다.
+        f"if not ({time_start} <= 시분초 < {time_end}):",
         "    매수 = False",
         f"elif not ({price_floor} < 현재가 <= {price_cap}):",
         "    매수 = False",
