@@ -12,6 +12,7 @@
 | 1 | **`2026-08-05_qsp10_마스터_실행계획.md`** | **현행 프로그램** — 단계·게이트·UX/UI·예상 |
 | 2 | `2026-08-05_qsp10_지도시스템_설계.md` | 라벨 v2 명세·4계층 Map Store·자본 경로 의존성(§4.1) |
 | 3 | `2026-08-05_qsp9_정정_렌즈오류와_금맥발견.md` | **왜 방향이 바뀌었나** — 렌즈 오류 2건과 도달 기반 재계산 |
+| 3.5 | **`rounds/P_qsp10_20260805.md`** | **QSP10 실행 기록** (라벨 v2·우주·슬라이더·수렴/프런티어) |
 | 4 | `rounds/M_tick_qsp9_20260805.md` | QSP9 전 과정 실측 기록 (라벨 공장·QA·집행 우주·부검) |
 | 5 | `limitation_ledger.md` | 한계·결함 원장 (누적) |
 | 6 | `lane_manifest_tick.md` · min | 레인 정본 (기준선·기간·비용) |
@@ -35,10 +36,15 @@ HANDOFF 2부(QSP7 G0·QSP8) · `2026-08-04_qsp8r_손익비우선_넓은시간_�
 
 | 자산 | 위치 | 상태 |
 |---|---|---|
-| 라벨 공장 (tick/min LaneSpec) | `ai_strategy_loop/labeling/` | ✅ v1 — QSP10 P1 에서 v2 확장 |
-| QA 3종·정보력 랭킹·조립기 | 동일 | ✅ (info_rank 목표 함수는 P3 에서 교체) |
-| 라벨 데이터 | `state/labels/{design,min_design}/` (gitignore) | v1 — P1 재빌드 대상 |
-| 대시보드 연구 페이지 21종 | `dashboard/` | ✅ — P4 에서 3면 추가 |
+| 라벨 공장 v2 (봉투·배리어 도달) | `labeling/{lanes,label_spec,label_factory,build_labels}.py` | ✅ tick 355일·min 155일 |
+| 집행 우주·기대값·큐브·군집도 | `labeling/{universe,cube}.py` | ✅ 유일 입구(u1) |
+| 수렴 루프·프런티어 스캔 | `labeling/{converge,frontier}.py` + `run_p3/run_frontier` | ✅ |
+| 조립기(매수·배리어 매도) | `labeling/assembler.py` | ✅ |
+| 엔진 검증·전이율 | `labeling/run_p5.py` | ✅ |
+| QA 3종·정보력 랭킹 | `labeling/{label_qa,info_rank}.py` | ✅ (info_rank 는 고정 h 목표 — 참고용) |
+| 라벨 데이터 | `state/labels/{design_v2,min_design_v2}/` (gitignore) | ✅ v2 |
+| 도달 지도 API·화면 | `dashboard/reach_map_api.py` · `frontend/bt-reach-map.jsx` | ✅ 페이지 22~24 |
+| 대시보드 연구 페이지 24종 | `dashboard/` | ✅ (21 + 신규 3) |
 | 검증 게이트 (2job 분할·사다리) | promotion-gate | ✅ |
 
 ## 5. 기록 관리 규칙 (모든 라운드 공통)
