@@ -44,7 +44,9 @@ def _load(out_name: str, columns: list[str], warmup: int) -> pd.DataFrame:
     if not files:
         raise SystemExit(f"라벨이 없습니다: {directory}")
     sample = pd.read_parquet(files[0])
-    keep = [c for c in columns if c in sample.columns]
+    # 중복 열 이름은 반드시 제거한다 — 중복이 있으면 frame[name] 이 DataFrame 을 돌려주고
+    #   불리언 마스크 연산이 NotImplemented 로 죽는다(실측: spread_pct 가 기본·변수 양쪽에).
+    keep = list(dict.fromkeys(c for c in columns if c in sample.columns))
     frame = pd.concat([pd.read_parquet(f, columns=keep) for f in files], ignore_index=True)
     return apply_universe(frame, warmup=warmup)
 

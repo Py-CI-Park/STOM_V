@@ -27,6 +27,9 @@ ROUND_TRIP_COST_PCT: Final = (spec.COST_IN + spec.COST_OUT) * 100
 
 def apply_universe(frame: pd.DataFrame, *, warmup: int = DEFAULT_WARMUP) -> pd.DataFrame:
     """집행 우주 필터 — 순위권·워밍업·가격밴드·스프레드."""
+    duplicated = frame.columns[frame.columns.duplicated()].tolist()
+    if duplicated:
+        raise ValueError(f"중복 열이 있으면 마스크 연산이 깨진다: {duplicated}")
     mask = pd.Series(True, index=frame.index)
     if "관심종목" in frame:
         mask &= frame["관심종목"] == 1
