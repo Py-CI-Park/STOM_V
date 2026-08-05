@@ -16,6 +16,7 @@ import sqlite3
 import numpy as np
 import pandas as pd
 
+from ai_strategy_loop.labeling import derived
 from ai_strategy_loop.labeling import label_spec as spec
 from ai_strategy_loop.labeling.lanes import BARRIERS_DOWN, BARRIERS_UP, TICK, LaneSpec
 
@@ -187,6 +188,14 @@ def _label_one_stock(frame: pd.DataFrame, code: str, day: int,
          - rows[f"{lane.flow_prefix}매도수량"].to_numpy(dtype=np.float64))
         * buy_b / 1_000_000
     )
+
+    # ── v3 파생 특징(변화율·비율·누적·직전 대비). QSP10 근본 원인 교정 —
+    #    지도가 '현재 값'만 갖고 있어 902/905 류 신호를 볼 수 없었다.
+    #    창은 관측 시계열 위에서 계산하고, 진입 행만 잘라낸다(미래 미참조).
+    derived_all = derived.build(frame, flow_prefix=lane.flow_prefix)
+    entry_rows = np.flatnonzero(entry_mask)
+    for name, series in derived_all.items():
+        out[name] = series[entry_rows]
 
     result = pd.DataFrame(out, index=rows.index)
     for column in lane.snapshot_columns:
