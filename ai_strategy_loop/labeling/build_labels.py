@@ -19,15 +19,16 @@ import time
 import pandas as pd
 
 from ai_strategy_loop.labeling.label_factory import build_day_labels
+from ai_strategy_loop.labeling.lanes import LANES, LaneSpec, TICK
 
 _DB_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "_database")
 _OUT_DIR = os.path.join(os.path.dirname(__file__), "..", "state", "labels")
-_HOLDOUT_START = 20250825
 
 
-def _tick_days(start: int, end: int) -> list[int]:
-    files = glob.glob(os.path.join(_DB_DIR, "stock_tick_2*.db"))
-    days = sorted(int(os.path.basename(f)[11:19]) for f in files)
+def _lane_days(lane: LaneSpec, start: int, end: int) -> list[int]:
+    files = glob.glob(os.path.join(_DB_DIR, f"{lane.db_pattern}2*.db"))
+    prefix = len(lane.db_pattern)
+    days = sorted(int(os.path.basename(f)[prefix:prefix + 8]) for f in files)
     return [d for d in days if start <= d <= end]
 
 
@@ -38,15 +39,16 @@ def _downcast(frame: pd.DataFrame) -> pd.DataFrame:
     return frame
 
 
-def run(start: int, end: int, *, allow_holdout: bool = False, out_name: str = "design") -> dict:
-    if end >= _HOLDOUT_START and not allow_holdout:
+def run(start: int, end: int, *, allow_holdout: bool = False, out_name: str = "design",
+        lane: LaneSpec = TICK) -> dict:
+    if end >= lane.holdout_start and not allow_holdout:
         raise SystemExit(
-            f"홀드아웃({_HOLDOUT_START}~) 라벨 생성은 규율 L2 로 봉인되어 있다. "
+            f"{lane.name} 홀드아웃({lane.holdout_start}~) 라벨 생성은 규율 L2 로 봉인되어 있다. "
             "M-5 검증 단계에서만 --allow-holdout 으로 해제한다."
         )
     out_dir = os.path.abspath(os.path.join(_OUT_DIR, out_name))
     os.makedirs(out_dir, exist_ok=True)
-    days = _tick_days(start, end)
+    days = _lane_days(lane, start, end)
     done, skipped, failed = [], [], []
     t0 = time.time()
     for i, day in enumerate(days):
@@ -55,7 +57,8 @@ def run(start: int, end: int, *, allow_holdout: bool = False, out_name: str = "d
             skipped.append(day)
             continue
         try:
-            frame = build_day_labels(os.path.join(_DB_DIR, f"stock_tick_{day}.db"), day=day)
+            frame = build_day_labels(os.path.join(_DB_DIR, f"{lane.db_pattern}{day}.db"),
+                                     day=day, lane=lane)
             if frame.empty:
                 failed.append({"day": day, "reason": "empty"})
                 continue
@@ -83,8 +86,10 @@ def main() -> None:
     parser.add_argument("--end", type=int, required=True)
     parser.add_argument("--allow-holdout", action="store_true")
     parser.add_argument("--out-name", default="design")
+    parser.add_argument("--lane", choices=sorted(LANES), default="tick")
     args = parser.parse_args()
-    run(args.start, args.end, allow_holdout=args.allow_holdout, out_name=args.out_name)
+    run(args.start, args.end, allow_holdout=args.allow_holdout, out_name=args.out_name,
+        lane=LANES[args.lane])
 
 
 if __name__ == "__main__":
