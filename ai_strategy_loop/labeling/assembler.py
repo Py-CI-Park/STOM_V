@@ -10,7 +10,9 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-_BUCKETS = 10
+# 스냅 격자는 100분위 — 10분위는 꼬리 임계를 파괴한다(실측: 트리 임계 736.5 가
+#   10분위 스냅으로 1.0 이 되어 C1 후보가 엔진에서 0건이 됐다, 2026-08-05).
+_BUCKETS = 100
 _ALLOWED_OPERATORS = {">", ">=", "<", "<="}
 _LEAKY_PREFIXES = ("R_", "S_")
 _LEAKY_NAMES = {"매도시간", "보유시간", "수익률", "최고수익률", "매도조건"}

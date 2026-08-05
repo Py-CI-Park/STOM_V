@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import urllib.parse
 import urllib.request
 
 import numpy as np
@@ -126,12 +127,15 @@ def main() -> None:
             jobs = client.call("GET", "/bt/jobs").get("jobs", [])
             row = next((j for j in jobs if j.get("job_id") == job_id), None)
             status = (row or {}).get("status", "?")
-            if status in ("done", "success", "error", "failed", "canceled"):
+            # no_trades 도 종결 상태다(2026-08-05 실측 — C1 0건).
+            if status in ("done", "success", "error", "failed", "canceled", "no_trades"):
                 break
             if time.time() - t0 > 3600:
                 status = "timeout"
                 break
-        outcome = client.call("GET", f"/bt/result?job_id={job_id}")
+        # job_id 에 한글이 들어가므로 URL 인코딩 필수(ascii 강제 크래시 실측).
+        quoted = urllib.parse.quote(str(job_id))
+        outcome = client.call("GET", f"/bt/result?job_id={quoted}")
         metrics = outcome.get("metrics") or {}
         results.append({"name": candidate["name"], "job_id": job_id, "status": status,
                         "metrics": metrics})

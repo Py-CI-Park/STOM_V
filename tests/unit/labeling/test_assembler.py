@@ -24,10 +24,13 @@ def _frame(n: int = 10_000, seed: int = 5) -> pd.DataFrame:
 def test_snap_threshold_lands_on_quantile_edge_only() -> None:
     frame = _frame()
     snapped = snap_threshold(frame, "체결강도", raw=151.7)
-    edges = np.quantile(frame["체결강도"], np.linspace(0, 1, 11))
+    # 격자는 100분위 — 10분위는 꼬리 임계를 파괴한다(C1 0건 실측 결함).
+    edges = np.quantile(frame["체결강도"], np.linspace(0, 1, 101))
     assert any(abs(snapped - e) < 1e-9 for e in edges), "분위 경계가 아닌 임계"
     # 원값에서 가장 가까운 경계로 스냅.
     assert abs(snapped - 151.7) == min(abs(e - 151.7) for e in edges)
+    # 100분위 해상도면 원값에서 1% 스텝 이상 벗어나지 않는다.
+    assert abs(snapped - 151.7) < 10.0
 
 
 def test_render_buy_expression_is_parseable_and_follows_grammar() -> None:
