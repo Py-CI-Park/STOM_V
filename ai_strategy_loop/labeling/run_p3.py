@@ -14,6 +14,7 @@ import time
 
 import pandas as pd
 
+from ai_strategy_loop.labeling import derived
 from ai_strategy_loop.labeling.converge import converge
 from ai_strategy_loop.labeling.lanes import LANES
 from ai_strategy_loop.labeling.universe import apply_universe
@@ -30,12 +31,15 @@ RULES = (
     (5.0, 3.0, "hit_up_5", "hit_dn_3"),
 )
 
-TICK_VARIABLES = [
+#: 원값(level) 변수 — QSP10 은 이것만 썼고 흑자 구역을 찾지 못했다.
+TICK_LEVELS = [
     "등락율", "체결강도", "초당거래대금", "초당순매수금액", "당일거래대금", "거래대금증감",
     "전일비", "회전율", "전일동시간비", "시가총액", "고저평균대비등락율", "저가대비고가등락율",
     "매도총잔량", "매수총잔량", "시가등락율", "시가대비등락율", "spread_pct", "일중위치", "분",
 ]
-MIN_VARIABLES = [v.replace("초당", "분당") for v in TICK_VARIABLES]
+#: v3 파생(변화율·비율·누적) — QSP11 에서 추가한 재료. 902/905 가 실제로 쓰는 계열이다.
+TICK_VARIABLES = TICK_LEVELS + derived.feature_names("초당")
+MIN_VARIABLES = [v.replace("초당", "분당") for v in TICK_LEVELS] + derived.feature_names("분당")
 
 
 def _load(out_name: str, columns: list[str], warmup: int) -> pd.DataFrame:
