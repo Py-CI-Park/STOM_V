@@ -43,6 +43,32 @@ def _validate(clauses: list[dict]) -> None:
             raise ValueError(f"허용되지 않은 연산자: {clause['연산자']}")
 
 
+def render_sell_expression(*, name: str, tp_pct: float, sl_pct: float, horizon: int,
+                           forced_exit: int = 92800) -> str:
+    """배리어 청산 규칙(익절/손절/시간) → STOM 매도 DSL.
+
+    지도에서 평가한 규칙을 **그대로** 엔진에 옮긴다 — 지도와 엔진이 다른 규칙을 쓰면
+    전이율 비교가 무의미해진다(QSP10 P5 전이율 기록의 전제).
+    """
+    if tp_pct <= 0 or sl_pct <= 0:
+        raise ValueError("익절·손절은 양수여야 한다")
+    return "\n".join([
+        f"# {name} — QSP10 배리어 청산 (익절 +{tp_pct}% / 손절 -{sl_pct}% / 시간 {horizon}초)",
+        "매도 = False",
+        f"if 수익률 >= {tp_pct}:",
+        "    매도 = True",
+        f"elif 수익률 <= -{sl_pct}:",
+        "    매도 = True",
+        f"elif 보유시간 >= {horizon}:",
+        "    매도 = True",
+        f"elif 시분초 >= {forced_exit}:",
+        "    매도 = True",
+        "",
+        "if 매도:",
+        "    self.Sell()",
+    ])
+
+
 def render_buy_expression(*, name: str, time_start: int, time_end: int,
                           clauses: list[dict], price_floor: int = 1000,
                           price_cap: int = 50000) -> str:

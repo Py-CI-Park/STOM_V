@@ -13,7 +13,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ai_strategy_loop.labeling.assembler import render_buy_expression, snap_threshold
+from ai_strategy_loop.labeling.assembler import (
+    render_buy_expression, render_sell_expression, snap_threshold,
+)
 
 
 def _frame(n: int = 10_000, seed: int = 5) -> pd.DataFrame:
@@ -57,3 +59,19 @@ def test_render_rejects_leaky_or_unknown_operator() -> None:
     with pytest.raises(ValueError):
         render_buy_expression(name="X", time_start=90000, time_end=90500,
                               clauses=[{"변수": "체결강도", "연산자": "!=", "임계": 1.0}])
+
+
+def test_render_sell_expression_mirrors_the_map_rule() -> None:
+    code = render_sell_expression(name="QSP10_S", tp_pct=2.0, sl_pct=1.0, horizon=300)
+    ast.parse(code)
+    # 지도에서 쓴 규칙 3종(익절·손절·시간)이 그대로 들어가야 전이율 비교가 성립한다.
+    assert "수익률 >= 2.0" in code
+    assert "수익률 <= -1.0" in code
+    assert "보유시간 >= 300" in code
+    assert "시분초 >= 92800" in code
+    assert code.strip().endswith("self.Sell()")
+
+
+def test_render_sell_rejects_nonpositive_barriers() -> None:
+    with pytest.raises(ValueError):
+        render_sell_expression(name="X", tp_pct=0.0, sl_pct=1.0, horizon=300)
