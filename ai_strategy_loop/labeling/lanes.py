@@ -7,8 +7,14 @@ min 레인 수치는 lane_manifest(v2: 평가 20250407~20260227·경계 20251201
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Final
 
 from ai_strategy_loop.labeling import label_spec as _tick
+
+
+#: 배리어 그리드(%) — 라벨 v2. 사전 고정(사후에 "잘 나오는 값"을 고르는 것 자체가 과최적).
+BARRIERS_UP: Final = (1.0, 2.0, 3.0, 5.0)
+BARRIERS_DOWN: Final = (1.0, 2.0, 3.0)
 
 
 @dataclass(frozen=True)
@@ -27,6 +33,13 @@ class LaneSpec:
     design: tuple[int, int]
     holdout_start: int
     snapshot_columns: tuple[str, ...] = field(default=())
+    #: v2 — 봉투 체크포인트(시간 단위). 마지막 값이 배리어 탐색 창이기도 하다.
+    checkpoints: tuple[int, ...] = field(default=())
+
+    @property
+    def barrier_horizon(self) -> int:
+        """배리어 탐색 창 = 마지막 체크포인트. 미도달 표기값으로도 쓴다."""
+        return self.checkpoints[-1]
 
     def unit_of_day(self, clock: int) -> int:
         """HHMMSS→초 / HHMM→분 — 시각 산술 함정 차단."""
@@ -48,6 +61,7 @@ TICK = LaneSpec(
     path_window=_tick.PATH_WINDOW_SEC, flow_prefix="초당",
     db_pattern="stock_tick_", design=(20240304, 20250822), holdout_start=20250825,
     snapshot_columns=_TICK_SNAPSHOT,
+    checkpoints=(30, 60, 120, 300, 600),
 )
 
 # min 레인 — 전일장. horizon 은 분 단위 {5,10,30,60,close}, 진입은 15:00 까지(청산 여유),
@@ -59,6 +73,7 @@ MIN = LaneSpec(
     path_window=60, flow_prefix="분당",
     db_pattern="stock_min_", design=(20250407, 20251128), holdout_start=20251201,
     snapshot_columns=_MIN_SNAPSHOT,
+    checkpoints=(5, 10, 30, 60),
 )
 
 LANES = {"tick": TICK, "min": MIN}

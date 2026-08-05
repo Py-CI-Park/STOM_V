@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from ai_strategy_loop.labeling import label_spec as spec
-from ai_strategy_loop.labeling.lanes import TICK, LaneSpec
+from ai_strategy_loop.labeling.lanes import BARRIERS_DOWN, BARRIERS_UP, TICK, LaneSpec
 
 _SKIP_TABLES = frozenset({"moneytop", "sqlite_sequence"})
 
@@ -42,6 +42,46 @@ def _forward_extreme(values: np.ndarray, window: int, mode: str) -> np.ndarray:
     out[:-1] = shifted[1:]
     out[-1] = np.nan
     return out
+
+
+def _barrier_hits(out: dict, *, price: np.ndarray, bid: np.ndarray, buy_ask: np.ndarray,
+                  entry_pos: np.ndarray, end_pos: int, horizon: int) -> None:
+    """배리어 최초 도달 시각(진입 후 경과 단위). 미도달은 `horizon` 으로 표기.
+
+    체결 가능 기준: 매수는 `매도호가1`, 청산은 `매수호가1` — QA-1 로 검증된 엔진 모델.
+    비용은 배리어 정의에서 제외한다(임계는 **가격 기준 %** 이고, 비용은 기대값 계산에서 뺀다).
+    """
+    n_entries = len(entry_pos)
+    ups = {level: np.full(n_entries, horizon, dtype=np.int32) for level in BARRIERS_UP}
+    downs = {level: np.full(n_entries, horizon, dtype=np.int32) for level in BARRIERS_DOWN}
+
+    for index in range(n_entries):
+        start = int(entry_pos[index])
+        entry_price = buy_ask[index]
+        if not np.isfinite(entry_price) or entry_price <= 0:
+            continue
+        stop = min(start + horizon, end_pos)
+        if stop <= start:
+            continue
+        path = bid[start + 1:stop + 1]
+        if path.size == 0:
+            continue
+        ratio = (path / entry_price - 1.0) * 100.0
+        running_max = np.maximum.accumulate(ratio)
+        running_min = np.minimum.accumulate(ratio)
+        for level in BARRIERS_UP:
+            pos = int(np.searchsorted(running_max, level, side="left"))
+            if pos < ratio.size:
+                ups[level][index] = pos + 1
+        for level in BARRIERS_DOWN:
+            pos = int(np.searchsorted(-running_min, level, side="left"))
+            if pos < ratio.size:
+                downs[level][index] = pos + 1
+
+    for level, values in ups.items():
+        out[f"hit_up_{int(level)}"] = values
+    for level, values in downs.items():
+        out[f"hit_dn_{int(level)}"] = values
 
 
 def _label_one_stock(frame: pd.DataFrame, code: str, day: int,
@@ -100,8 +140,26 @@ def _label_one_stock(frame: pd.DataFrame, code: str, day: int,
     with np.errstate(invalid="ignore", divide="ignore"):
         out[f"mfe_{window}"] = (fmax[entry_pos] / buy_b - 1) * 100
         out[f"mae_{window}"] = (fmin[entry_pos] / buy_b - 1) * 100
-    if lane.name == "tick":       # 기존 소비자 호환 별칭
-        out["mfe_300"], out["mae_300"] = out.pop("mfe_300"), out.pop("mae_300")
+
+    # ── v2 ① 봉투: 체크포인트마다 "그때까지의" 최고/최저 (누적 → 단조 보장).
+    for point in lane.checkpoints:
+        if point == window:
+            continue
+        cmax = _forward_extreme(price, point, "max")
+        cmin = _forward_extreme(price, point, "min")
+        with np.errstate(invalid="ignore", divide="ignore"):
+            out[f"mfe_{point}"] = (cmax[entry_pos] / buy_b - 1) * 100
+            out[f"mae_{point}"] = (cmin[entry_pos] / buy_b - 1) * 100
+
+    # ── v2 ② 배리어 도달 시각: **실현 가능 경로**(매도호가1 매수 → 매수호가1 청산) 기준.
+    #    누적 최대/최소 bid 가 임계를 처음 넘은 시점을 이분 탐색으로 찾는다.
+    horizon = lane.barrier_horizon
+    with np.errstate(invalid="ignore", divide="ignore"):
+        ret_path = (bid * (1 - spec.COST_OUT)) / (ask * (1 + spec.COST_IN)) - 1.0
+    # ret_path 는 "지금 팔면"의 수익률. 진입 시점 ask 기준으로 다시 계산해야 하므로
+    #   각 진입에 대해 bid 경로를 훑는다 — 누적 max/min 을 O(n) 으로 만들고 위치를 찾는다.
+    _barrier_hits(out, price=price, bid=bid, buy_ask=buy_a, entry_pos=entry_pos,
+                  end_pos=end_pos, horizon=horizon)
 
     flow_tv = f"{lane.flow_prefix}거래대금"
     tv = rows[flow_tv].to_numpy(dtype=np.float64)
