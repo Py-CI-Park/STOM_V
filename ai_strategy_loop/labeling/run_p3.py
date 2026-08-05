@@ -60,6 +60,8 @@ def main() -> None:
     parser.add_argument("--lane", choices=sorted(LANES), default="tick")
     parser.add_argument("--out-name", default="design_v2")
     parser.add_argument("--warmup", type=int, default=60)
+    parser.add_argument("--objective", choices=("pooled", "day_mean"), default="pooled",
+                        help="day_mean: 게이트가 검정하는 값을 그대로 최적화(날 편중 회피)")
     args = parser.parse_args()
 
     lane = LANES[args.lane]
@@ -80,7 +82,7 @@ def main() -> None:
             continue
         outcome = converge(frame, variables=available, tp_pct=tp_pct, sl_pct=sl_pct,
                            tp=tp, sl=sl, horizon=lane.barrier_horizon,
-                           timeout_label=timeout_label)
+                           timeout_label=timeout_label, objective=args.objective)
         final = outcome.steps[-1] if outcome.steps else None
         record = {
             "rule": f"TP{tp_pct}/SL{sl_pct}",

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from ai_strategy_loop.labeling.converge import converge
 
@@ -101,3 +102,48 @@ def test_day_significance_uses_every_day_with_trades() -> None:
                                           timeout_label="frA_300")
     assert clusters == 120, "거래가 있는 날이 전부 클러스터로 잡히지 않았다"
     assert p_value < 0.05, "실제 양수 엣지인데 p 가 계산되지 않았다"
+
+
+def test_day_mean_objective_avoids_day_concentrated_solutions() -> None:
+    """목표값 정렬 — 게이트가 일평균을 검정하므로 탐욕도 일평균을 최적화할 수 있어야 한다.
+
+    실측 배경(QSP10/11): 합계(pooled) 최적화는 거래가 몰린 소수 날에 가중돼
+    거래일 64~77일짜리 해를 골랐고, 그 해는 일 검정에서 전부 탈락했다.
+    """
+    rng = np.random.default_rng(23)
+    rows = []
+    for day in range(150):
+        # 'burst' 는 소수 날에만 대량 발생하며 그 날엔 승률이 높다 → 합계 최적화가 선호.
+        burst_day = day % 10 == 0
+        count = 200 if burst_day else 20
+        burst = np.where(rng.random(count) < (0.9 if burst_day else 0.05), 1.0, 0.0)
+        # 'steady' 는 매일 고르게 발생하며 완만하게 유리 → 일평균 최적화가 선호.
+        steady = rng.uniform(0, 1, count)
+        win = rng.random(count) < np.where(burst > 0, 0.75, np.where(steady > 0.7, 0.5, 0.2))
+        rows.append(pd.DataFrame({
+            "일자": 20240300 + day,
+            "시분초": rng.integers(90000, 92000, count),
+            "종목코드": rng.integers(1000, 1010, count).astype(str),
+            "burst": burst, "steady": steady,
+            "hit_up_2": np.where(win, rng.integers(10, 200, count), NO_HIT),
+            "hit_dn_1": np.where(win, NO_HIT, rng.integers(10, 200, count)),
+            "frA_300": rng.normal(-0.3, 0.3, count),
+        }))
+    frame = pd.concat(rows, ignore_index=True)
+
+    common = dict(variables=["burst", "steady"], tp_pct=2.0, sl_pct=1.0,
+                  tp="hit_up_2", sl="hit_dn_1", horizon=NO_HIT,
+                  timeout_label="frA_300", min_rows=500)
+    pooled = converge(frame, objective="pooled", **common)
+    day_mean = converge(frame, objective="day_mean", **common)
+
+    assert pooled.rule["objective"] == "pooled"
+    assert day_mean.rule["objective"] == "day_mean"
+    assert day_mean.steps, "일평균 목표에서 절을 못 찾았다"
+    # 일평균 목표는 매일 발생하는 신호를 골라 거래일이 더 많아야 한다.
+    assert day_mean.steps[-1].day_clusters >= pooled.steps[-1].day_clusters
+
+
+def test_unknown_objective_is_rejected() -> None:
+    with pytest.raises(ValueError):
+        _run(_planted(), objective="sharpe")

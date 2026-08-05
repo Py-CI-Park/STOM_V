@@ -76,16 +76,38 @@ def _day_significance(frame: pd.DataFrame, *, tp: str, sl: str, horizon: int,
     return float(p_two / 2 if t_stat > 0 else 1.0), len(daily)
 
 
+def _day_mean(frame: pd.DataFrame, **kwargs) -> float:
+    """일평균 기대값 — 게이트가 실제로 검정하는 값."""
+    daily = [expectancy(group, **kwargs)["expectancy_pct"]
+             for _, group in frame.groupby("일자")]
+    return float(sum(daily) / len(daily)) if daily else float("-inf")
+
+
 def converge(frame: pd.DataFrame, *, variables: list[str], tp_pct: float, sl_pct: float,
              tp: str, sl: str, horizon: int, timeout_label: str,
-             max_depth: int = MAX_DEPTH, min_rows: int = MIN_ROWS) -> ConvergeResult:
-    """탐욕 필터 스태킹 — 매 단계 기대값을 가장 크게 올리는 절 1개를 채택."""
+             max_depth: int = MAX_DEPTH, min_rows: int = MIN_ROWS,
+             objective: str = "pooled") -> ConvergeResult:
+    """탐욕 필터 스태킹 — 매 단계 목표값을 가장 크게 올리는 절 1개를 채택.
+
+    `objective`:
+      - `pooled`(기존): 전체 합계 기대값. **거래가 몰린 날에 가중**되므로 탐욕이
+        소수 날에 집중된 해를 고르는 편향이 있다(QSP10·11 실측: 거래일 64~77일).
+      - `day_mean`: **일평균 기대값** — 게이트가 검정하는 바로 그 값. 최적화 대상과
+        판정 대상을 일치시켜 날 편중 해를 구조적으로 피한다.
+    """
+    if objective not in ("pooled", "day_mean"):
+        raise ValueError(f"objective 는 pooled|day_mean: {objective!r}")
     current = frame
-    base = expectancy(current, tp_pct=tp_pct, sl_pct=sl_pct, tp=tp, sl=sl,
-                      horizon=horizon, timeout_label=timeout_label)
+    base_kwargs = dict(tp_pct=tp_pct, sl_pct=sl_pct, tp=tp, sl=sl,
+                       horizon=horizon, timeout_label=timeout_label)
+    base = expectancy(current, **base_kwargs)
     result = ConvergeResult(rule={"tp_pct": tp_pct, "sl_pct": sl_pct, "horizon": horizon,
-                                  "base": base})
+                                  "objective": objective, "base": base})
     used: set[str] = set()
+    # 수렴 비교는 **최적화 중인 목표값**으로 한다 — 합계로 최적화하면서 일평균으로
+    #   멈춤을 판단하면 종료 조건이 목적과 어긋난다.
+    incumbent = (base["expectancy_pct"] if objective == "pooled"
+                 else _day_mean(current, **base_kwargs))
 
     for depth in range(1, max_depth + 1):
         best = None
@@ -102,17 +124,19 @@ def converge(frame: pd.DataFrame, *, variables: list[str], tp_pct: float, sl_pct
                     subset = current[clause.mask(current)]
                     if len(subset) < min_rows or subset["일자"].nunique() < MIN_DAYS:
                         continue
-                    score = expectancy(subset, tp_pct=tp_pct, sl_pct=sl_pct, tp=tp, sl=sl,
+                    rule_kwargs = dict(tp_pct=tp_pct, sl_pct=sl_pct, tp=tp, sl=sl,
                                        horizon=horizon, timeout_label=timeout_label)
-                    value = score["expectancy_pct"]
+                    score = expectancy(subset, **rule_kwargs)
+                    value = (score["expectancy_pct"] if objective == "pooled"
+                             else _day_mean(subset, **rule_kwargs))
                     if best is None or value > best[0]:
                         best = (value, clause, score, subset)
         if best is None:
             break
         value, clause, score, subset = best
-        previous = result.steps[-1].stats["expectancy_pct"] if result.steps else base["expectancy_pct"]
-        if value <= previous:      # 더 못 올리면 수렴
+        if value <= incumbent:     # 더 못 올리면 수렴
             break
+        incumbent = value
         used.add(clause.variable)
         current = subset
         p_value, clusters = _day_significance(current, tp=tp, sl=sl, horizon=horizon,
