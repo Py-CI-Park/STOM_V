@@ -38837,6 +38837,190 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { BtSplitDiagnostics });
 
+  // ai_strategy_loop/dashboard/frontend/bt-reach-map.jsx
+  var { useState: useState_rm, useEffect: useEffect_rm, useCallback: useCallback_rm } = React;
+  var BT_MAP_BARRIERS = [
+    { tp: 1, sl: 1 },
+    { tp: 2, sl: 1 },
+    { tp: 3, sl: 1 },
+    { tp: 2, sl: 2 },
+    { tp: 3, sl: 2 },
+    { tp: 5, sl: 3 }
+  ];
+  function btMapPost(path, body) {
+    return fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }).then((r) => r.json());
+  }
+  function BtReachMapBadge({ text }) {
+    return /* @__PURE__ */ React.createElement("span", { className: "badge warn", title: "\uB77C\uBCA8 \uC9C0\uB3C4 \uC704\uC758 \uCD94\uC815\uC785\uB2C8\uB2E4. \uACF5\uC2DD \uD310\uC815\uC740 \uC5D4\uC9C4 \uC2E4\uCE21\uACFC \uAC80\uC99D \uC0AC\uB2E4\uB9AC\uC5D0\uC11C\uB9CC \uD569\uB2C8\uB2E4." }, text || "\uD0D0\uC0C9\uC6A9 \xB7 \uACF5\uC2DD \uC544\uB2D8");
+  }
+  function BtReachMapStat({ label, value, sample, good, hint }) {
+    const tone = good === void 0 ? "" : good ? "pos" : "neg";
+    return /* @__PURE__ */ React.createElement("div", { className: "stat-card", title: hint || "" }, /* @__PURE__ */ React.createElement("div", { className: "stat-label" }, label), /* @__PURE__ */ React.createElement("div", { className: "stat-value mono " + tone }, value), sample !== void 0 && /* @__PURE__ */ React.createElement("div", { className: "stat-sub mono" }, "\uD45C\uBCF8 ", Number(sample).toLocaleString(), "\uAC74"));
+  }
+  function BtReachMapTerrain({ lane, rule }) {
+    const [variable, setVariable] = useState_rm("\uCCB4\uACB0\uAC15\uB3C4");
+    const [cells, setCells] = useState_rm([]);
+    const [vars, setVars] = useState_rm([]);
+    const [error, setError] = useState_rm("");
+    useEffect_rm(() => {
+      fetch(`/bt/map/universe?lane=${lane}`).then((r) => r.json()).then((d) => {
+        if (d && d.available) setVars(d.variables || []);
+        else setError(d && d.message || "\uC9C0\uB3C4\uB97C \uBD88\uB7EC\uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.");
+      }).catch(() => setError("\uC9C0\uB3C4 \uC694\uCCAD\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4."));
+    }, [lane]);
+    const load = useCallback_rm(() => {
+      const q = `/bt/map/cube?lane=${lane}&variable=${encodeURIComponent(variable)}&tp_pct=${rule.tp}&sl_pct=${rule.sl}&buckets=20`;
+      fetch(q).then((r) => r.json()).then((d) => {
+        if (d && d.available) {
+          setCells(d.cells || []);
+          setError("");
+        } else setError(d && d.message || "\uD050\uBE0C \uC5C6\uC74C");
+      }).catch(() => setError("\uD050\uBE0C \uC694\uCCAD \uC2E4\uD328"));
+    }, [lane, variable, rule.tp, rule.sl]);
+    useEffect_rm(() => {
+      if (variable) load();
+    }, [load, variable]);
+    const maxAbs = cells.reduce((m, c) => Math.max(m, Math.abs(c.expectancy_pct || 0)), 0.01);
+    return /* @__PURE__ */ React.createElement("section", { className: "panel" }, /* @__PURE__ */ React.createElement("header", { className: "panel-head" }, /* @__PURE__ */ React.createElement("h3", null, "\uD398\uC774\uC9C0 22 \xB7 \uB3C4\uB2EC \uC9C0\uB3C4 ", /* @__PURE__ */ React.createElement(BtReachMapBadge, null)), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        value: variable,
+        onChange: (e) => setVariable(e.target.value),
+        title: "\uBD84\uC704\uBCC4 \uBC30\uB9AC\uC5B4 \uC131\uC801\uC744 \uBCFC \uBCC0\uC218"
+      },
+      vars.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))
+    )), error && /* @__PURE__ */ React.createElement("p", { className: "hint warn" }, error), /* @__PURE__ */ React.createElement("div", { className: "reach-bars" }, cells.map((c) => {
+      const w = Math.abs(c.expectancy_pct || 0) / maxAbs * 100;
+      const pos = (c.expectancy_pct || 0) > 0;
+      return /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          className: "reach-bar-row",
+          key: c.\uBD84\uC704,
+          title: `\uBD84\uC704 ${c.\uBD84\uC704} \xB7 \uAD6C\uAC04 ${Number(c.\uD558\uD55C).toFixed(3)}~${Number(c.\uC0C1\uD55C).toFixed(3)} \xB7 \uD45C\uBCF8 ${Number(c.n).toLocaleString()}\uAC74 \xB7 \uC2B9\uB960 ${(c.win_rate * 100).toFixed(1)}%`
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "mono reach-bar-idx" }, c.\uBD84\uC704),
+        /* @__PURE__ */ React.createElement("span", { className: "reach-bar-track" }, /* @__PURE__ */ React.createElement("span", { className: "reach-bar-fill " + (pos ? "pos" : "neg"), style: { width: w + "%" } })),
+        /* @__PURE__ */ React.createElement("span", { className: "mono reach-bar-val" }, (c.expectancy_pct || 0).toFixed(3), "%"),
+        /* @__PURE__ */ React.createElement("span", { className: "mono reach-bar-n" }, "n=", Number(c.n).toLocaleString())
+      );
+    })), !cells.length && !error && /* @__PURE__ */ React.createElement("p", { className: "hint" }, "\uB370\uC774\uD130\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4."));
+  }
+  function BtReachMapWorkbench({ lane, rule, onRule }) {
+    const [status, setStatus] = useState_rm(null);
+    const [clauses, setClauses] = useState_rm([]);
+    const [result, setResult] = useState_rm(null);
+    const [busy, setBusy] = useState_rm(false);
+    const [name, setName] = useState_rm("QSP10_\uD6C4\uBCF4_1");
+    const [saved, setSaved] = useState_rm("");
+    useEffect_rm(() => {
+      fetch(`/bt/map/universe?lane=${lane}`).then((r) => r.json()).then(setStatus).catch(() => setStatus({ available: false, message: "\uC0C1\uD0DC \uC870\uD68C \uC2E4\uD328" }));
+    }, [lane]);
+    const run = useCallback_rm(() => {
+      setBusy(true);
+      btMapPost("/bt/map/slider", {
+        lane,
+        tp_pct: rule.tp,
+        sl_pct: rule.sl,
+        clauses: clauses.filter((c) => c.variable && Number.isFinite(Number(c.value))).map((c) => ({ variable: c.variable, operator: c.operator, value: Number(c.value) }))
+      }).then(setResult).catch(() => setResult({ available: false, message: "\uC9C8\uC758 \uC2E4\uD328" })).finally(() => setBusy(false));
+    }, [lane, rule.tp, rule.sl, clauses]);
+    useEffect_rm(() => {
+      run();
+    }, [run]);
+    const m = result && result.metrics || null;
+    const over = m && m.win_rate > m.breakeven_win_rate;
+    return /* @__PURE__ */ React.createElement("section", { className: "panel" }, /* @__PURE__ */ React.createElement("header", { className: "panel-head" }, /* @__PURE__ */ React.createElement("h3", null, "\uD398\uC774\uC9C0 23 \xB7 \uC2AC\uB77C\uC774\uB354 \uC791\uC5C5\uB300 ", /* @__PURE__ */ React.createElement(BtReachMapBadge, null)), /* @__PURE__ */ React.createElement("span", { className: "mono hint" }, status && status.available ? `\uC9D1\uD589 \uC6B0\uC8FC ${Number(status.rows).toLocaleString()}\uD589 \xB7 ${status.days}\uC77C \xB7 ${status.universe_version}` : status && status.message || "")), /* @__PURE__ */ React.createElement("div", { className: "row gap" }, /* @__PURE__ */ React.createElement("label", null, "\uC775\uC808/\uC190\uC808", /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        value: `${rule.tp}/${rule.sl}`,
+        title: "\uBC30\uB9AC\uC5B4 \uADDC\uCE59(\uC0AC\uC804 \uACE0\uC815 \uADF8\uB9AC\uB4DC)",
+        onChange: (e) => {
+          const [tp, sl] = e.target.value.split("/").map(Number);
+          onRule({ tp, sl });
+        }
+      },
+      BT_MAP_BARRIERS.map((b) => /* @__PURE__ */ React.createElement("option", { key: `${b.tp}/${b.sl}`, value: `${b.tp}/${b.sl}` }, "+", b.tp, "% / -", b.sl, "%"))
+    )), /* @__PURE__ */ React.createElement("button", { className: "btn sm", onClick: () => setClauses(clauses.concat([{ variable: status && status.variables && status.variables[0] || "", operator: ">", value: 0 }])) }, "\uC870\uAC74 \uCD94\uAC00"), /* @__PURE__ */ React.createElement("button", { className: "btn sm ghost", onClick: () => setClauses([]) }, "\uCD08\uAE30\uD654")), clauses.map((c, i) => /* @__PURE__ */ React.createElement("div", { className: "row gap clause-row", key: i }, /* @__PURE__ */ React.createElement("select", { value: c.variable, onChange: (e) => {
+      const n = clauses.slice();
+      n[i] = { ...c, variable: e.target.value };
+      setClauses(n);
+    } }, (status && status.variables || []).map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))), /* @__PURE__ */ React.createElement("select", { value: c.operator, onChange: (e) => {
+      const n = clauses.slice();
+      n[i] = { ...c, operator: e.target.value };
+      setClauses(n);
+    } }, [">", ">=", "<", "<="].map((o) => /* @__PURE__ */ React.createElement("option", { key: o, value: o }, o))), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "number",
+        step: "any",
+        value: c.value,
+        className: "mono",
+        onChange: (e) => {
+          const n = clauses.slice();
+          n[i] = { ...c, value: e.target.value };
+          setClauses(n);
+        }
+      }
+    ), /* @__PURE__ */ React.createElement("button", { className: "btn sm ghost", onClick: () => setClauses(clauses.filter((_, j) => j !== i)) }, "\uC0AD\uC81C"))), result && !result.available && /* @__PURE__ */ React.createElement("p", { className: "hint warn" }, result.message), m && /* @__PURE__ */ React.createElement("div", { className: "stat-grid" }, /* @__PURE__ */ React.createElement(
+      BtReachMapStat,
+      {
+        label: "\uAE30\uB300\uAC12(\uAC74\uB2F9)",
+        value: `${m.expectancy_pct.toFixed(4)}%`,
+        sample: result.rows,
+        good: m.expectancy_pct > 0,
+        hint: "\uBE44\uC6A9 \uCC28\uAC10 \uD6C4 1\uAC74\uB2F9 \uD3C9\uADE0 \uC218\uC775\uB960"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      BtReachMapStat,
+      {
+        label: "\uC2B9\uB960(\uACB0\uC815 \uAC74)",
+        value: `${(m.win_rate * 100).toFixed(1)}%`,
+        sample: m.win_n + m.loss_n,
+        good: over,
+        hint: "\uC775\uC808\uC774 \uC190\uC808\uBCF4\uB2E4 \uBA3C\uC800 \uB2FF\uC740 \uBE44\uC728"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      BtReachMapStat,
+      {
+        label: "\uC190\uC775\uBD84\uAE30 \uC2B9\uB960",
+        value: `${(m.breakeven_win_rate * 100).toFixed(1)}%`,
+        hint: "\uC774 \uC775\uC808/\uC190\uC808 \uC870\uD569\uC5D0\uC11C \uBCF8\uC804\uC774 \uB418\uB294 \uC2B9\uB960"
+      }
+    ), /* @__PURE__ */ React.createElement(BtReachMapStat, { label: "\uC190\uC775\uBE44", value: m.payoff.toFixed(3), hint: "\uC774\uAE38 \uB54C \uBC8C\uC5B4\uB4E4\uC774\uB294 \uD06C\uAE30 \xF7 \uC9C8 \uB54C \uC783\uB294 \uD06C\uAE30" }), /* @__PURE__ */ React.createElement(BtReachMapStat, { label: "\uD558\uB8E8 \uAE30\uD68C", value: result.per_day.toFixed(1), sample: result.rows }), /* @__PURE__ */ React.createElement(
+      BtReachMapStat,
+      {
+        label: "\uB3D9\uC2DC\uC2E0\uD638(\uD3C9\uADE0/\uCD5C\uB300)",
+        value: `${result.cluster.mean_simultaneous.toFixed(2)} / ${result.cluster.max_simultaneous}`,
+        hint: "\uAC19\uC740 \uC21C\uAC04\uC5D0 \uACB9\uCE58\uB294 \uC2E0\uD638 \uC218 \u2014 \uD074\uC218\uB85D \uC790\uBCF8 \uD55C\uB3C4 \uB54C\uBB38\uC5D0 \uC5D4\uC9C4 \uC2E4\uCE21\uC774 \uC9C0\uB3C4\uBCF4\uB2E4 \uB098\uBE60\uC9D1\uB2C8\uB2E4"
+      }
+    ), /* @__PURE__ */ React.createElement(BtReachMapStat, { label: "\uC751\uB2F5", value: `${result.elapsed_ms}ms`, hint: "\uC5D4\uC9C4 \uC2E4\uD589 \uC5C6\uC774 \uC9C0\uB3C4\uC5D0\uC11C \uACC4\uC0B0\uD588\uC2B5\uB2C8\uB2E4" })), /* @__PURE__ */ React.createElement("div", { className: "row gap" }, /* @__PURE__ */ React.createElement("input", { value: name, onChange: (e) => setName(e.target.value), className: "mono" }), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn sm",
+        disabled: busy || !m,
+        onClick: () => btMapPost("/bt/map/candidate", { name, query: { lane, tp_pct: rule.tp, sl_pct: rule.sl, clauses: clauses.map((c) => ({ variable: c.variable, operator: c.operator, value: Number(c.value) })) }, metrics: m }).then((d) => setSaved(d.status === "ok" ? `\uC800\uC7A5\uB428: ${d.saved}` : "\uC800\uC7A5 \uC2E4\uD328"))
+      },
+      "\uD6C4\uBCF4 \uC800\uC7A5(\uADFC\uAC70 \uD3EC\uD568)"
+    ), saved && /* @__PURE__ */ React.createElement("span", { className: "hint" }, saved)), /* @__PURE__ */ React.createElement("p", { className: "hint" }, "\uC800\uC7A5\uC740 \uCC44\uD0DD\uC774 \uC544\uB2D9\uB2C8\uB2E4. \uC5D4\uC9C4 \uC2E4\uCE21\uACFC \uAC80\uC99D \uC0AC\uB2E4\uB9AC\uB97C \uD1B5\uACFC\uD574\uC57C \uC2B9\uC778 \uC694\uCCAD\uC774 \uB429\uB2C8\uB2E4."));
+  }
+  function BtReachMapVerify() {
+    const [rows, setRows] = useState_rm([]);
+    useEffect_rm(() => {
+      fetch("/bt/map/candidates").then((r) => r.json()).then((d) => setRows(d.candidates || [])).catch(() => setRows([]));
+    }, []);
+    return /* @__PURE__ */ React.createElement("section", { className: "panel" }, /* @__PURE__ */ React.createElement("header", { className: "panel-head" }, /* @__PURE__ */ React.createElement("h3", null, "\uD398\uC774\uC9C0 24 \xB7 \uAC80\uC99D \uD604\uD669\uD310")), !rows.length && /* @__PURE__ */ React.createElement("p", { className: "hint" }, "\uC800\uC7A5\uB41C \uD6C4\uBCF4\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. \uD398\uC774\uC9C0 23\uC5D0\uC11C \uC870\uAC74\uC744 \uB9CC\uB4E4\uACE0 \uC800\uC7A5\uD558\uC138\uC694."), rows.length > 0 && /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uD6C4\uBCF4"), /* @__PURE__ */ React.createElement("th", null, "\uADDC\uCE59"), /* @__PURE__ */ React.createElement("th", null, "\uC870\uAC74"), /* @__PURE__ */ React.createElement("th", null, "\uAE30\uB300\uAC12"), /* @__PURE__ */ React.createElement("th", null, "\uB2E4\uC74C \uB2E8\uACC4"))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((r, i) => /* @__PURE__ */ React.createElement("tr", { key: i }, /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.name), /* @__PURE__ */ React.createElement("td", { className: "mono" }, "+", r.query.tp_pct, "% / -", r.query.sl_pct, "%"), /* @__PURE__ */ React.createElement("td", { className: "mono" }, (r.query.clauses || []).map((c) => `${c.variable}${c.operator}${c.value}`).join(" & ") || "(\uBB34\uC870\uAC74)"), /* @__PURE__ */ React.createElement("td", { className: "mono" }, r.metrics && r.metrics.expectancy_pct !== void 0 ? Number(r.metrics.expectancy_pct).toFixed(4) + "%" : "-"), /* @__PURE__ */ React.createElement("td", null, "\uC5D4\uC9C4 \uC2E4\uCE21 \u2192 \uC804\uC774\uC728 \uAE30\uB85D \u2192 \uD640\uB4DC\uC544\uC6C3 \u2192 \uC0AC\uB2E4\uB9AC 6\uC885 \u2192 \uC0AC\uB78C \uC2B9\uC778"))))));
+  }
+  function BtReachMapTab() {
+    const [lane, setLane] = useState_rm("tick");
+    const [rule, setRule] = useState_rm({ tp: 2, sl: 1 });
+    return /* @__PURE__ */ React.createElement("div", { className: "reach-map-tab" }, /* @__PURE__ */ React.createElement("div", { className: "row gap" }, /* @__PURE__ */ React.createElement("label", null, "\uB808\uC778", /* @__PURE__ */ React.createElement("select", { value: lane, onChange: (e) => setLane(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "tick" }, "tick (\uC2DC\uCD08 30\uBD84)"), /* @__PURE__ */ React.createElement("option", { value: "min" }, "min (\uC804\uC77C\uC7A5)"))), /* @__PURE__ */ React.createElement(BtReachMapBadge, { text: "\uC9C0\uB3C4=\uD0D0\uC0C9 \xB7 \uC5D4\uC9C4=\uC2EC\uD310 \xB7 \uC18C\uC561 \uC2E4\uC804=\uCD5C\uC885 \uD655\uC778" })), /* @__PURE__ */ React.createElement(BtReachMapWorkbench, { lane, rule, onRule: setRule }), /* @__PURE__ */ React.createElement(BtReachMapTerrain, { lane, rule }), /* @__PURE__ */ React.createElement(BtReachMapVerify, null));
+  }
+
   // ai_strategy_loop/dashboard/frontend/bt-tp-messages.jsx
   var _TP_REASON_KO = {
     // 데이터·잡 입력
@@ -38927,6 +39111,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [dataContract, setDataContract] = useState_tpt(null);
     const [boundaryTime, setBoundaryTime] = useState_tpt("");
     const [activeView, setActiveView] = useState_tpt("data");
+    const [showReachMap, setShowReachMap] = useState_tpt(false);
     const [lane, setLane] = useState_tpt("min");
     const [laneManifest, setLaneManifest] = useState_tpt(null);
     const [selectedProposalId, setSelectedProposalId] = useState_tpt("");
@@ -39037,7 +39222,15 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         setSelectedFilter(null);
         setActiveView(key === "buy" ? "buy-filters" : "proposals");
       }
-    } }, label))), manifestRow && /* @__PURE__ */ React.createElement("span", { className: "tp-lane-manifest mono" }, "\uD3C9\uAC00 ", manifestRow.evaluation ? `${manifestRow.evaluation.start}~${manifestRow.evaluation.end}` : `${manifestRow.design.start}~${manifestRow.oos.end}`, " \xB7 \uBD84\uD560 ", laneManifest.split_boundary || manifestRow.split_boundary, " \xB7 \uC124\uACC4 ", manifestRow.design.start, "~", manifestRow.design.end, " \xB7 \uD640\uB4DC\uC544\uC6C3 ", manifestRow.oos.start, "~", manifestRow.oos.end, " \xB7 \uC138\uC158 ~", String(manifestRow.session_end).padStart(6, "0"), laneManifest.baseline_registered ? "" : " \xB7 \u26A0 \uAE30\uC900\uC120 \uBBF8\uB4F1\uB85D")), /* @__PURE__ */ React.createElement("div", { className: "tp-source-bar" }, /* @__PURE__ */ React.createElement("label", null, "\uC644\uB8CC \uACB0\uACFC", /* @__PURE__ */ React.createElement("select", { value: jobId, onChange: (event) => {
+    } }, label))), manifestRow && /* @__PURE__ */ React.createElement("span", { className: "tp-lane-manifest mono" }, "\uD3C9\uAC00 ", manifestRow.evaluation ? `${manifestRow.evaluation.start}~${manifestRow.evaluation.end}` : `${manifestRow.design.start}~${manifestRow.oos.end}`, " \xB7 \uBD84\uD560 ", laneManifest.split_boundary || manifestRow.split_boundary, " \xB7 \uC124\uACC4 ", manifestRow.design.start, "~", manifestRow.design.end, " \xB7 \uD640\uB4DC\uC544\uC6C3 ", manifestRow.oos.start, "~", manifestRow.oos.end, " \xB7 \uC138\uC158 ~", String(manifestRow.session_end).padStart(6, "0"), laneManifest.baseline_registered ? "" : " \xB7 \u26A0 \uAE30\uC900\uC120 \uBBF8\uB4F1\uB85D")), /* @__PURE__ */ React.createElement("div", { className: "tp-map-bar" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn sm" + (showReachMap ? " active" : " ghost"),
+        onClick: () => setShowReachMap(!showReachMap),
+        title: "\uB77C\uBCA8 \uC9C0\uB3C4 \uC704\uC5D0\uC11C \uC870\uAC74\uC744 \uC989\uC2DC \uD3C9\uAC00\uD569\uB2C8\uB2E4(\uD398\uC774\uC9C0 22~24). \uBC31\uD14C\uC2A4\uD2B8 job \uC774 \uC5C6\uC5B4\uB3C4 \uC5F4\uB9BD\uB2C8\uB2E4."
+      },
+      showReachMap ? "\uB3C4\uB2EC \uC9C0\uB3C4 \uB2EB\uAE30" : "\uB3C4\uB2EC \uC9C0\uB3C4 \uC5F4\uAE30 (QSP10 \xB7 \uD398\uC774\uC9C0 22~24)"
+    )), showReachMap && /* @__PURE__ */ React.createElement(BtReachMapTab, null), /* @__PURE__ */ React.createElement("div", { className: "tp-source-bar" }, /* @__PURE__ */ React.createElement("label", null, "\uC644\uB8CC \uACB0\uACFC", /* @__PURE__ */ React.createElement("select", { value: jobId, onChange: (event) => {
       setJobId(event.target.value);
       setBoundaryTime("");
       setPreflight(null);
