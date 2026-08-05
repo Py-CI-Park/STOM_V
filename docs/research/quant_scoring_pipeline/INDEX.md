@@ -9,7 +9,8 @@
 
 | 순서 | 문서 | 내용 |
 |---:|---|---|
-| **0** | **`rounds/Q_qsp11_20260806.md`** | **최신 결과(QSP11)** — 엔진 창 함수 역산·파생 특징 기여 실증·3축 종합·다음 후보 |
+| **0** | **`rounds/R_qsp12_20260806.md`** | **최신 결과(QSP12)** — 계층 구조 탐색·**진입 단위 불일치 결함 규명과 교정**·지도 적정성 검증 |
+| 0.3 | `rounds/Q_qsp11_20260806.md` | QSP11 — 엔진 창 함수 역산·파생 특징 기여 실증·3축 종합 |
 | 0.5 | `2026-08-06_qsp10_결과보고.md` | QSP10 결과 — 게이트 FAIL·근본 원인(변화율 재료 부재) 규명 |
 | 1 | `2026-08-05_qsp10_마스터_실행계획.md` | QSP10 계획 (P1·P2·P4·P5 완료, P3 게이트 FAIL) |
 | 2 | `2026-08-05_qsp10_지도시스템_설계.md` | 라벨 v2 명세·4계층 Map Store·자본 경로 의존성(§4.1) |
@@ -41,6 +42,10 @@ HANDOFF 2부(QSP7 G0·QSP8) · `2026-08-04_qsp8r_손익비우선_넓은시간_�
 | 라벨 공장 v2 (봉투·배리어 도달) | `labeling/{lanes,label_spec,label_factory,build_labels}.py` | ✅ tick 355일·min 155일 |
 | 집행 우주·기대값·큐브·군집도 | `labeling/{universe,cube}.py` | ✅ 유일 입구(u1) |
 | 수렴 루프·프런티어 스캔 | `labeling/{converge,frontier}.py` + `run_p3/run_frontier` | ✅ |
+| **진입 단위 정합** (필수 교정) | `labeling/entries.py` | ✅ converge·hierarchy 배선 · frontier 미적용 |
+| 계층 구조 탐색 | `labeling/hierarchy.py` + `run_hierarchy` | ✅ |
+| 파생 특징(엔진 정의 역산) | `labeling/derived.py` | ✅ |
+| 지도 적정성 검증 | `labeling/verify_human_strategy.py` | ✅ |
 | 조립기(매수·배리어 매도) | `labeling/assembler.py` | ✅ |
 | 엔진 검증·전이율 | `labeling/run_p5.py` | ✅ |
 | QA 3종·정보력 랭킹 | `labeling/{label_qa,info_rank}.py` | ✅ (info_rank 는 고정 h 목표 — 참고용) |
