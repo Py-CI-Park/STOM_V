@@ -7,9 +7,14 @@
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import os
+import sys
 import time
+
+# Windows 콘솔(cp949)에서 유니코드 기호가 깨져 죽는 것을 막는다 — 계산이 아니라 출력 문제다.
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 import numpy as np
 
