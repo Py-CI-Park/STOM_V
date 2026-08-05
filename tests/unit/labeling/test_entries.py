@@ -72,3 +72,46 @@ def test_minute_lane_uses_minute_arithmetic() -> None:
 
     clock = frame["시분초"].to_numpy()[positions]
     assert clock.tolist() == [959, 1030]      # 10:00 은 보유 중(959+30분=10:29)
+
+
+def test_deduper_matches_exact_on_simple_runs() -> None:
+    """단순한 연속 구간에서는 벡터화 근사가 정확판과 같아야 한다."""
+    from ai_strategy_loop.labeling.entries import EntryDeduper
+
+    frame = _frame([(20240304, "A", 90000 + i) for i in range(10)]
+                   + [(20240304, "B", 90000 + i) for i in range(5)]
+                   + [(20240305, "A", 90000)])
+    mask = np.ones(len(frame), bool)
+    exact = entry_mask(frame, mask, horizon=300)
+    fast = EntryDeduper(frame, horizon=300).apply(mask)
+
+    assert fast.sum() == exact.sum() == 3        # (A,3/4일) + (B,3/4일)
+    assert np.array_equal(fast, exact)
+
+
+def test_deduper_respects_mask_and_is_idempotent() -> None:
+    from ai_strategy_loop.labeling.entries import EntryDeduper
+
+    frame = _frame([(20240304, "A", 90000 + i) for i in range(20)])
+    deduper = EntryDeduper(frame, horizon=300)
+    mask = np.zeros(len(frame), bool)
+    mask[5:15] = True
+
+    first = deduper.apply(mask)
+    assert first.sum() == 1
+    assert np.flatnonzero(first).tolist() == [5]        # 마스크 통과 중 첫 행
+    assert np.array_equal(deduper.apply(first), first)  # 이미 걸러진 것은 그대로
+
+
+def test_deduper_never_selects_more_than_mask() -> None:
+    from ai_strategy_loop.labeling.entries import EntryDeduper
+
+    rng = np.random.default_rng(5)
+    rows = [(20240300 + d, chr(65 + s), 90000 + t)
+            for d in range(3) for s in range(2) for t in range(0, 60, 3)]
+    frame = _frame(rows)
+    mask = rng.random(len(frame)) < 0.5
+    fast = EntryDeduper(frame, horizon=300).apply(mask)
+
+    assert fast.sum() <= mask.sum()
+    assert (fast & ~mask).sum() == 0        # 마스크 밖을 고르지 않는다

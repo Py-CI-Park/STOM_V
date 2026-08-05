@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from ai_strategy_loop.labeling.entries import EntryDeduper
 from ai_strategy_loop.labeling.frontier import row_values
 from ai_strategy_loop.labeling.universe import cluster_load, expectancy
 
@@ -95,7 +96,7 @@ def _day_mean_fast(values: np.ndarray, day_index: np.ndarray, n_days: int) -> fl
 def converge(frame: pd.DataFrame, *, variables: list[str], tp_pct: float, sl_pct: float,
              tp: str, sl: str, horizon: int, timeout_label: str,
              max_depth: int = MAX_DEPTH, min_rows: int = MIN_ROWS,
-             objective: str = "pooled") -> ConvergeResult:
+             objective: str = "pooled", entry_unit: bool = True) -> ConvergeResult:
     """탐욕 필터 스태킹 — 매 단계 목표값을 가장 크게 올리는 절 1개를 채택.
 
     `objective`:
@@ -122,8 +123,15 @@ def converge(frame: pd.DataFrame, *, variables: list[str], tp_pct: float, sl_pct
     columns = {name: frame[name].to_numpy(dtype=np.float64)
                for name in variables if name in frame.columns}
     current_pos = np.arange(len(frame))
+    # **진입 단위 정합** — 조건이 참인 모든 초가 아니라 엔진이 진입하는 초만 센다.
+    #   이 교정 없이는 추정이 배로 부풀려져 부호까지 뒤집힌다(2026-08-06 실측).
+    deduper = EntryDeduper(frame, horizon=horizon) if entry_unit else None
 
     def objective_value(positions: np.ndarray) -> float:
+        if deduper is not None:
+            positions = deduper.apply_positions(positions)
+            if positions.size == 0:
+                return float("-inf")
         picked = row_value[positions]
         return (float(picked.mean()) if objective == "pooled"
                 else _day_mean_fast(picked, day_codes[positions], n_days))

@@ -131,9 +131,12 @@ def test_day_mean_objective_avoids_day_concentrated_solutions() -> None:
         }))
     frame = pd.concat(rows, ignore_index=True)
 
+    # 목적 함수 자체의 성질을 보는 테스트이므로 진입 단위 교정은 끈다 —
+    #   교정이 켜지면 그것만으로도 편중이 상당 부분 줄어 두 목적의 차이가 흐려진다
+    #   (교정의 효과는 test_entry_unit_reduces_selected_rows 에서 따로 확인).
     common = dict(variables=["burst", "steady"], tp_pct=2.0, sl_pct=1.0,
                   tp="hit_up_2", sl="hit_dn_1", horizon=NO_HIT,
-                  timeout_label="frA_300", min_rows=500)
+                  timeout_label="frA_300", min_rows=500, entry_unit=False)
     pooled = converge(frame, objective="pooled", **common)
     day_mean = converge(frame, objective="day_mean", **common)
 
@@ -147,3 +150,27 @@ def test_day_mean_objective_avoids_day_concentrated_solutions() -> None:
 def test_unknown_objective_is_rejected() -> None:
     with pytest.raises(ValueError):
         _run(_planted(), objective="sharpe")
+
+
+def test_entry_unit_reduces_selected_rows_and_is_default() -> None:
+    """진입 단위 교정이 기본값이고, 켜면 조건 통과 초가 실제 진입 건수로 줄어든다.
+
+    실측 배경(2026-08-06): 이 교정이 없어 지도 추정이 4.7배 부풀려졌고 엔진에서
+    부호가 뒤집혔다.
+    """
+    import inspect
+
+    from ai_strategy_loop.labeling.converge import converge as converge_fn
+
+    assert inspect.signature(converge_fn).parameters["entry_unit"].default is True
+
+    frame = _planted()
+    common = dict(variables=["signal", "noise"], tp_pct=2.0, sl_pct=1.0,
+                  tp="hit_up_2", sl="hit_dn_1", horizon=NO_HIT,
+                  timeout_label="frA_300", min_rows=200)
+    raw = converge(frame, entry_unit=False, **common)
+    deduped = converge(frame, entry_unit=True, **common)
+
+    # 같은 데이터라도 진입 단위로 세면 표본이 줄어든다(같은 종목·같은 시간대 중복 제거).
+    assert deduped.steps and raw.steps
+    assert deduped.steps[-1].stats["n"] <= raw.steps[-1].stats["n"] * 1.0 + 1
