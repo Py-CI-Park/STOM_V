@@ -115,24 +115,49 @@ def _load_labels(columns: list[str], limit_days: int | None = None) -> pd.DataFr
 _USABLE = ["flag_no_trade", "flag_limit_up", "flag_vi_near"]
 
 
-def qa2_self_check() -> dict:
-    """902/905 창 자기 검증 — 거친 905 필터 영역이 무조건 평균보다 밝아야 통과."""
-    cols = ["분", "시분초", "frB_300", "시가총액", "등락율", "시가대비등락율", "체결강도", *_USABLE]
-    df = _load_labels(cols)
-    usable = df[(df[_USABLE].sum(axis=1) == 0) & df["frB_300"].notna()]
-    window = usable[(usable["시분초"] >= 90200) & (usable["시분초"] < 90500)]
-    coarse = window[
-        (window["시가총액"] < 3000) & (window["등락율"] > 2.0) & (window["등락율"] <= 15.0)
-        & (window["시가대비등락율"] >= 3.0) & (window["시가대비등락율"] < 8.0)
-        & (window["체결강도"] >= 50) & (window["체결강도"] <= 300)
-    ]
-    base_mean = float(window["frB_300"].mean())
-    coarse_mean = float(coarse["frB_300"].mean()) if len(coarse) else float("nan")
+_STUDY_CSV = os.path.join(
+    _DB_DIR, "..", "backtest", "csv", "stock_bt_Tick_B_902_905_Study_2_20260804171941.csv")
+
+
+def qa2_self_check(csv_path: str | None = None) -> dict:
+    """자기 검증 — **실제 902/905 체결 지점**에서 지도가 밝아야 통과.
+
+    통과 기준(2026-08-05 개정): 거친 필터 근사는 실전 조건식보다 수십 배 넓은 조악한
+    대리라 판정 기준으로 부적합(전 구간에서 −0.02%p 로 실측됨). 대신 흑자가 검증된
+    전략의 실체결 진입 시점 라벨이 (a) 평균 양수 (b) 실현 수익률과 상관 > 0.3 이어야 한다.
+    """
+    trades = pd.read_csv(os.path.abspath(csv_path or _STUDY_CSV), encoding="utf-8-sig",
+                         usecols=["종목명", "매수시간", "수익률"])
+    codes = _name_to_code()
+    trades["일자"] = trades["매수시간"] // 1_000_000
+    trades["시분초"] = trades["매수시간"] % 1_000_000
+
+    matched: list[tuple[float, float]] = []
+    missing = 0
+    for day, group in trades.groupby("일자"):
+        path = os.path.join(_LABEL_DIR, f"day={day}.parquet")
+        if not os.path.exists(path):        # 홀드아웃 거래 — 설계 라벨엔 없음(정상)
+            missing += len(group)
+            continue
+        labels = pd.read_parquet(path, columns=["종목코드", "시분초", "frA_close"])
+        for trade in group.itertuples():
+            code = codes.get(trade.종목명)
+            row = labels[(labels["종목코드"] == code) & (labels["시분초"] == trade.시분초)] \
+                if code else pd.DataFrame()
+            if row.empty or pd.isna(row["frA_close"].iloc[0]):
+                missing += 1
+                continue
+            matched.append((float(row["frA_close"].iloc[0]), float(trade.수익률)))
+
+    frame = pd.DataFrame(matched, columns=["label", "realized"])
+    label_mean = float(frame["label"].mean()) if len(frame) else float("nan")
+    corr = float(frame.corr().iloc[0, 1]) if len(frame) > 10 else float("nan")
     return {
-        "window_rows": int(len(window)), "coarse_rows": int(len(coarse)),
-        "window_mean_pp": round(base_mean, 4),
-        "coarse_mean_pp": round(coarse_mean, 4),
-        "pass": bool(len(coarse) >= 300 and coarse_mean > base_mean and coarse_mean > 0),
+        "trades": int(len(trades)), "matched": int(len(frame)), "missing": missing,
+        "label_mean_pp": round(label_mean, 4),
+        "realized_mean_pp": round(float(frame["realized"].mean()), 4) if len(frame) else None,
+        "corr_label_realized": round(corr, 3),
+        "pass": bool(len(frame) >= 100 and label_mean > 0 and corr > 0.3),
     }
 
 
