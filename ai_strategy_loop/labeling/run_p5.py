@@ -66,15 +66,20 @@ def main() -> None:
     lane = LANES[args.lane]
     path = os.path.join(_LABEL_ROOT, args.report, "_p3_report.json")
     report = json.load(open(path, encoding="utf-8"))
-    ranked = sorted(report["results"], key=lambda r: r["final"]["expectancy_pct"], reverse=True)
+    # 게이트를 통과한 규칙만 엔진에 올린다 — 일평균이 음수인 조합을 실측하는 것은
+    #   엔진 시간 낭비이고, 통과 표시가 없는 후보를 공식 런에 올리면 규율 위반이다.
+    passed = [r for r in report["results"]
+              if r["final"]["expectancy_pct"] > 0 and r["day_p_value"] < 0.05]
+    if not passed:
+        raise SystemExit("게이트를 통과한 규칙이 없습니다 — P5 엔진 검증 대상이 없습니다.")
+    ranked = sorted(passed, key=lambda r: r["final"]["expectancy_pct"], reverse=True)
     picks = ranked[:args.top]
 
     client = Client()
     outcomes = []
     for index, pick in enumerate(picks, start=1):
-        tp_pct, sl_pct = pick["base"] and 0, 0  # placeholder, replaced below
-        tp_pct = float(pick["rule"].split("/")[0].replace("TP", ""))
-        sl_pct = float(pick["rule"].split("/")[1].replace("SL", ""))
+        tp_pct = float(pick["rule"].split("/")[0].removeprefix("TP"))
+        sl_pct = float(pick["rule"].split("/")[1].removeprefix("SL"))
         buy_name = f"QSP10_P5_{args.lane}_C{index}"
         sell_name = f"QSP10_P5_{args.lane}_S{index}"
         buy_code = render_buy_expression(
