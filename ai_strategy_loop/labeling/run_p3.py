@@ -104,11 +104,13 @@ def main() -> None:
                if r["final"]["expectancy_pct"] > 0 and r["day_p_value"] < 0.05]
     report = {"lane": lane.name, "universe_rows": int(len(frame)),
               "universe_version": frame.attrs.get("universe_version"),
-              "warmup": args.warmup, "results": results,
+              "warmup": args.warmup, "objective": args.objective, "results": results,
               "gate_breakeven_passed": bool(passing),
               "passing_rules": [r["rule"] for r in passing],
               "elapsed_sec": round(time.time() - t0, 1)}
-    path = os.path.join(_LABEL_ROOT, args.out_name, "_p3_report.json")
+    # 목표별로 파일을 나눈다 — 같은 이름에 쓰면 앞선 실행 결과를 덮어써 비교가 불가능해진다.
+    suffix = "" if args.objective == "pooled" else f"_{args.objective}"
+    path = os.path.join(_LABEL_ROOT, args.out_name, f"_p3_report{suffix}.json")
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(report, fh, ensure_ascii=False, indent=2, default=float)
     print(json.dumps({"gate": report["gate_breakeven_passed"],
