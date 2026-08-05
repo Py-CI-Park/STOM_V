@@ -13,8 +13,6 @@ import os
 import sys
 import time
 
-# Windows 콘솔(cp949)에서 유니코드 기호가 깨져 죽는 것을 막는다 — 계산이 아니라 출력 문제다.
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 import numpy as np
 
@@ -26,6 +24,10 @@ _LABEL_ROOT = os.path.join(os.path.dirname(__file__), "..", "state", "labels")
 
 
 def main() -> None:
+    # Windows 콘솔(cp949)에서 유니코드가 깨져 죽는 것을 막는다. **임포트 시점이
+    #   아니라 실행 시점에** 바꾼다 — 모듈 임포트가 전역 stdout 을 갈아치우면
+    #   그 모듈을 불러 쓰는 다른 스크립트의 출력이 끊긴다(실측 결함).
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser()
     parser.add_argument("--lane", choices=sorted(LANES), default="tick")
     parser.add_argument("--out-name", default="design_v2")

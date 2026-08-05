@@ -14,6 +14,7 @@ import pandas as pd
 import pytest
 
 from ai_strategy_loop.labeling.assembler import (
+    render_hierarchical_buy,
     render_buy_expression, render_sell_expression, snap_threshold,
 )
 
@@ -75,3 +76,32 @@ def test_render_sell_expression_mirrors_the_map_rule() -> None:
 def test_render_sell_rejects_nonpositive_barriers() -> None:
     with pytest.raises(ValueError):
         render_sell_expression(name="X", tp_pct=0.0, sl_pct=1.0, horizon=300)
+
+
+def test_render_hierarchical_buy_branches_and_derived_expansion() -> None:
+    branches = [
+        {"name": "a", "spec": {"time": [90000, 90200], "cap_max": 3000.0},
+         "clauses": [{"변수": "초당거래대금배율_30", "연산자": ">", "임계": 3.0}]},
+        {"name": "b", "spec": {"time": [90200, 90500], "cap_min": 3000.0},
+         "clauses": [{"변수": "체결강도", "연산자": ">", "임계": 150.0}]},
+    ]
+    code = render_hierarchical_buy(name="QSP12_T", branches=branches)
+    ast.parse(code)
+
+    # 분기별 시간창·시총 게이트가 각각 들어간다.
+    assert "90000 <= 시분초 < 90200" in code and "시가총액 < 3000" in code
+    assert "90200 <= 시분초 < 90500" in code and "시가총액 >= 3000" in code
+    # 파생 이름은 엔진 수식으로 전개되고 분모 0 가드가 붙는다.
+    assert "초당거래대금평균(30)" in code and "if 초당거래대금평균(30) > 0 else 0" in code
+    assert "초당거래대금배율_30" not in code          # 지도 전용 이름이 남으면 안 된다
+    assert code.count("매수 = True") == 2
+    assert code.strip().endswith("self.Buy()")
+
+
+def test_render_hierarchical_buy_rejects_empty_and_leaky() -> None:
+    with pytest.raises(ValueError):
+        render_hierarchical_buy(name="X", branches=[])
+    with pytest.raises(ValueError):
+        render_hierarchical_buy(name="X", branches=[
+            {"name": "a", "spec": {"time": [90000, 90200]},
+             "clauses": [{"변수": "R_MFE", "연산자": ">", "임계": 1.0}]}])

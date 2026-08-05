@@ -17,12 +17,15 @@ from ai_strategy_loop.labeling.hierarchy import search
 from ai_strategy_loop.labeling.lanes import LANES
 from ai_strategy_loop.labeling.run_p3 import MIN_VARIABLES, RULES, TICK_VARIABLES, _load
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 _LABEL_ROOT = os.path.join(os.path.dirname(__file__), "..", "state", "labels")
 
 
 def main() -> None:
+    # Windows 콘솔(cp949)에서 유니코드가 깨져 죽는 것을 막는다. **임포트 시점이
+    #   아니라 실행 시점에** 바꾼다 — 모듈 임포트가 전역 stdout 을 갈아치우면
+    #   그 모듈을 불러 쓰는 다른 스크립트의 출력이 끊긴다(실측 결함).
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser()
     parser.add_argument("--lane", choices=sorted(LANES), default="tick")
     parser.add_argument("--out-name", default="design_v3")
@@ -69,8 +72,13 @@ def main() -> None:
               f"양수일 {combined['day_positive_ratio']*100:.1f}% · "
               f"p={combined['p_value']:.4f} · {time.time()-t0:.0f}s", flush=True)
 
+    # 게이트는 **일평균과 합계 둘 다 양수**를 요구한다. 일평균만 양수면 "거래가 적은 날은
+    #   좋고 많은 날은 나쁘다"는 뜻이라, 실제로 모든 신호를 체결하는 운용에서는 손실이다
+    #   (TP5/SL3 실측: 일평균 +0.3842% 인데 합계 −0.0311%).
     passing = [r for r in report["rules"]
-               if r["combined"]["day_mean_pct"] > 0 and r["combined"]["p_value"] < 0.05]
+               if r["combined"]["day_mean_pct"] > 0
+               and r["combined"]["expectancy_pct"] > 0
+               and r["combined"]["p_value"] < 0.05]
     report["gate_passed"] = bool(passing)
     report["passing_rules"] = [r["rule"] for r in passing]
     path = os.path.join(_LABEL_ROOT, args.out_name, "_hierarchy_report.json")
