@@ -1,9 +1,11 @@
 """QSP10 프런티어 스캔 — 심어둔 흑자 구역을 규모대별로 찾고, 없으면 없다고 말한다."""
 
+
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from ai_strategy_loop.labeling.frontier import scan
 
@@ -41,9 +43,10 @@ def test_scan_finds_planted_region_with_band_and_evidence() -> None:
     best = max(result["frontier"], key=lambda row: row["expectancy_pct"])
     assert "signal" in best["description"]
     assert best["expectancy_pct"] > 0
-    assert best["win_rate"] > best["breakeven"]      # 손익분기 돌파
+    assert best["day_mean_pct"] > 0                  # 일평균도 양수여야 진짜다
+    assert best["day_positive_ratio"] > 0.5          # 과반의 날이 흑자
     assert best["q_value"] <= 0.10                   # FDR 통과
-    assert best["cluster"]["days"] > 0               # 자본 경로 경고 동반
+    assert best["days"] >= 60                        # 일 클러스터 하한
 
 
 def test_scan_reports_nothing_when_there_is_no_edge() -> None:
@@ -58,3 +61,23 @@ def test_frontier_bands_are_disjoint_and_sample_backed() -> None:
     bands = [row["band"] for row in result["frontier"]]
     assert len(bands) == len(set(bands)), "같은 규모대가 중복 보고됐다"
     assert all(row["n"] > 0 and row["per_day"] > 0 for row in result["frontier"])
+
+
+def test_fast_path_matches_reference_expectancy() -> None:
+    """벡터 경로(row_values)가 기준 구현(universe.expectancy)과 일치해야 한다.
+
+    전수 스캔은 전적으로 이 빠른 길에 의존하므로, 어긋나면 스캔 결과 전체가 무의미해진다.
+    """
+    from ai_strategy_loop.labeling.frontier import row_values
+    from ai_strategy_loop.labeling.universe import expectancy
+
+    frame = _make(win_prob_good=0.6, seed=21)
+    values = row_values(frame, **RULE)
+    reference = expectancy(frame, **RULE)
+
+    assert values.mean() == pytest.approx(reference["expectancy_pct"], abs=1e-9)
+
+    # 부분집합에서도 일치해야 한다(구역 평가가 곧 부분 평균이므로).
+    subset_mask = (frame["signal"] > 0.8).to_numpy()
+    assert values[subset_mask].mean() == pytest.approx(
+        expectancy(frame[subset_mask], **RULE)["expectancy_pct"], abs=1e-9)

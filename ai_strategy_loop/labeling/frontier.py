@@ -17,10 +17,11 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from ai_strategy_loop.labeling.universe import cluster_load, expectancy
+from ai_strategy_loop.labeling.universe import ROUND_TRIP_COST_PCT
 
 FDR_ALPHA = 0.10
 MIN_DAYS = 60
+MIN_ROWS = 1_000
 #: 표본 규모대(하루 평균 건수) — 각 밴드의 최고 구역을 따로 보고한다.
 BANDS = ((1, 5), (5, 20), (20, 100), (100, 1_000), (1_000, 10_000_000))
 
@@ -36,59 +37,93 @@ class Region:
     cluster: dict
 
 
-def _day_p_value(frame: pd.DataFrame, **kwargs) -> float:
-    """거래가 1건이라도 있는 날은 전부 클러스터로 쓴다 — 하루 최소 건수를 두면
-    표본이 작은 구역에서 p 가 계산되지 않고 1.0 으로 기본 반환된다(converge 와 동일 결함)."""
-    daily = [expectancy(group, **kwargs)["expectancy_pct"]
-             for _, group in frame.groupby("일자")]
+def row_values(frame: pd.DataFrame, *, tp_pct: float, sl_pct: float, tp: str, sl: str,
+               horizon: int, timeout_label: str) -> np.ndarray:
+    """행별 실현 수익률(%) — 배리어 규칙을 한 번만 벡터로 푼다.
+
+    이후 모든 구역 평가는 이 배열의 **부분 평균**이라 O(구역 크기) 로 끝난다.
+    (파이썬 루프로 구역마다 groupby 하면 수만 배 느려 스캔이 불가능하다.)
+    """
+    tp_time = frame[tp].to_numpy()
+    sl_time = frame[sl].to_numpy()
+    win_ret = tp_pct - ROUND_TRIP_COST_PCT
+    loss_ret = -(sl_pct + ROUND_TRIP_COST_PCT)
+    timeout = np.nan_to_num(frame[timeout_label].to_numpy(dtype=np.float64))
+    # 동시 도달은 보수적으로 손절 — universe.barrier_outcome 과 같은 규약.
+    values = np.where(tp_time < sl_time, win_ret,
+                      np.where(sl_time < tp_time, loss_ret,
+                               np.where(tp_time < horizon, loss_ret, timeout)))
+    return values.astype(np.float64)
+
+
+def _day_stats(values: np.ndarray, day_index: np.ndarray, n_days: int) -> np.ndarray:
+    """일별 평균 — bincount 로 벡터화. 거래가 있는 날만 남긴다."""
+    counts = np.bincount(day_index, minlength=n_days)
+    sums = np.bincount(day_index, weights=values, minlength=n_days)
+    active = counts > 0
+    return sums[active] / counts[active]
+
+
+def _p_value(daily: np.ndarray) -> float:
     if len(daily) < MIN_DAYS:
         return 1.0
     t_stat, p_two = stats.ttest_1samp(daily, 0.0)
     return float(p_two / 2 if t_stat > 0 else 1.0)
 
 
-def _evaluate(frame: pd.DataFrame, subset: pd.DataFrame, spec: list[dict], kind: str,
-              description: str, days: int, **kwargs) -> Region | None:
-    if subset.empty or subset["일자"].nunique() < MIN_DAYS:
+def _evaluate(mask: np.ndarray, values: np.ndarray, day_index: np.ndarray, n_days: int,
+              spec: list[dict], kind: str, description: str) -> Region | None:
+    """마스크 하나를 평가 — 전부 벡터 연산."""
+    count = int(mask.sum())
+    if count < MIN_ROWS:
         return None
-    score = expectancy(subset, **kwargs)
-    if score["expectancy_pct"] <= 0:
+    picked = values[mask]
+    mean = float(picked.mean())
+    if mean <= 0:
+        return None
+    daily = _day_stats(picked, day_index[mask], n_days)
+    if len(daily) < MIN_DAYS:
         return None
     return Region(
-        kind=kind, description=description, mask_spec=spec, stats=score,
-        day_p_value=_day_p_value(subset, **kwargs),
-        per_day=len(subset) / max(days, 1), cluster=cluster_load(subset),
+        kind=kind, description=description, mask_spec=spec,
+        stats={"n": count, "expectancy_pct": mean, "day_positive_ratio": float((daily > 0).mean()),
+               "day_mean_pct": float(daily.mean()), "days": int(len(daily))},
+        day_p_value=_p_value(daily),
+        per_day=count / max(n_days, 1), cluster={"days": int(len(daily))},
     )
 
 
 def scan(frame: pd.DataFrame, *, variables: list[str], buckets: int = 20,
          pair_limit: int = 10, corr_cap: float = 0.6, **rule) -> dict:
     """1D 구간 + 2D 셀 전수 스캔 → FDR 통과 흑자 구역의 규모대별 프런티어."""
-    days = int(frame["일자"].nunique())
+    day_index, day_labels = pd.factorize(frame["일자"], sort=True)
+    n_days = len(day_labels)
+    values = row_values(frame, **rule)
+
     usable = [v for v in variables if v in frame.columns and frame[v].notna().any()]
-    codes: dict[str, pd.Series] = {}
+    codes: dict[str, np.ndarray] = {}
     edges: dict[str, np.ndarray] = {}
     for variable in usable:
         code, edge = pd.qcut(frame[variable], buckets, labels=False,
                              duplicates="drop", retbins=True)
-        codes[variable], edges[variable] = code, edge
+        codes[variable], edges[variable] = code.to_numpy(), edge
 
     regions: list[Region] = []
-    # 1D — 인접 분위 묶음(1~4칸 연속)까지 본다. 고립 1칸 금지 규율에 맞춰 2칸 이상 우선.
+    # 1D — 인접 분위 묶음(2~6칸 연속). 고립 1칸 금지 규율.
     for variable in usable:
         code = codes[variable]
-        top = int(code.max())
+        top = int(np.nanmax(code))
         for start in range(top + 1):
             for width in (2, 3, 4, 6):
                 stop = start + width - 1
                 if stop > top:
                     continue
-                subset = frame[(code >= start) & (code <= stop)]
+                mask = (code >= start) & (code <= stop)
                 low, high = float(edges[variable][start]), float(edges[variable][stop + 1])
                 spec = [{"변수": variable, "연산자": ">", "임계": low},
                         {"변수": variable, "연산자": "<=", "임계": high}]
-                region = _evaluate(frame, subset, spec, "1d",
-                                   f"{variable} ∈ ({low:.4g}, {high:.4g}]", days, **rule)
+                region = _evaluate(mask, values, day_index, n_days, spec, "1d",
+                                   f"{variable} ∈ ({low:.4g}, {high:.4g}]")
                 if region:
                     regions.append(region)
 
@@ -99,20 +134,21 @@ def scan(frame: pd.DataFrame, *, variables: list[str], buckets: int = 20,
                  if correlation.loc[a, b] < corr_cap][:pair_limit]
         for var_x, var_y in pairs:
             cx, cy = codes[var_x], codes[var_y]
-            top_x, top_y = int(cx.max()), int(cy.max())
+            top_x, top_y = int(np.nanmax(cx)), int(np.nanmax(cy))
             for x in range(0, top_x, 2):
                 for y in range(0, top_y, 2):
-                    subset = frame[(cx >= x) & (cx <= x + 1) & (cy >= y) & (cy <= y + 1)]
+                    mask = (cx >= x) & (cx <= x + 1) & (cy >= y) & (cy <= y + 1)
                     spec = [
                         {"변수": var_x, "연산자": ">", "임계": float(edges[var_x][x])},
                         {"변수": var_x, "연산자": "<=", "임계": float(edges[var_x][min(x + 2, top_x + 1)])},
                         {"변수": var_y, "연산자": ">", "임계": float(edges[var_y][y])},
                         {"변수": var_y, "연산자": "<=", "임계": float(edges[var_y][min(y + 2, top_y + 1)])},
                     ]
-                    region = _evaluate(frame, subset, spec, "2d",
-                                       f"{var_x}[{x},{x+1}] × {var_y}[{y},{y+1}]", days, **rule)
+                    region = _evaluate(mask, values, day_index, n_days, spec, "2d",
+                                       f"{var_x}[{x},{x+1}] × {var_y}[{y},{y+1}]")
                     if region:
                         regions.append(region)
+    days = n_days
 
     if not regions:
         return {"regions": 0, "survivors": 0, "frontier": [], "days": days}
@@ -139,10 +175,10 @@ def scan(frame: pd.DataFrame, *, variables: list[str], buckets: int = 20,
             "band": f"하루 {low}~{high}건", "kind": best.kind,
             "description": best.description, "clauses": best.mask_spec,
             "n": best.stats["n"], "per_day": round(best.per_day, 2),
-            "win_rate": best.stats["win_rate"],
-            "breakeven": best.stats["breakeven_win_rate"],
             "expectancy_pct": best.stats["expectancy_pct"],
+            "day_mean_pct": best.stats["day_mean_pct"],
+            "day_positive_ratio": best.stats["day_positive_ratio"],
+            "days": best.stats["days"],
             "q_value": best.stats.get("q_value"),
-            "cluster": best.cluster,
         })
     return {"regions": total, "survivors": len(survivors), "frontier": frontier, "days": days}
