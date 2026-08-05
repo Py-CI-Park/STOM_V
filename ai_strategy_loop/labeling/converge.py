@@ -44,6 +44,7 @@ class Step:
     stats: dict
     cluster: dict
     day_p_value: float
+    day_clusters: int = 0
 
 
 @dataclass
@@ -56,18 +57,23 @@ class ConvergeResult:
 
 
 def _day_significance(frame: pd.DataFrame, *, tp: str, sl: str, horizon: int,
-                      tp_pct: float, sl_pct: float, timeout_label: str) -> float:
-    """일별 기대값의 부호 검정 — 겹침 표본을 일 클러스터로 흡수(단측)."""
-    daily = []
-    for _, group in frame.groupby("일자"):
-        if len(group) < 5:
-            continue
-        daily.append(expectancy(group, tp_pct=tp_pct, sl_pct=sl_pct, tp=tp, sl=sl,
-                                horizon=horizon, timeout_label=timeout_label)["expectancy_pct"])
+                      tp_pct: float, sl_pct: float, timeout_label: str) -> tuple[float, int]:
+    """일별 기대값의 부호 검정 — 겹침 표본을 일 클러스터로 흡수(단측).
+
+    **거래가 1건이라도 있는 날은 전부 클러스터로 쓴다.** 하루 최소 건수를 두면
+    표본이 작은 후보에서 클러스터 수가 급감해 p 가 계산되지 않고 1.0 으로 기본
+    반환된다 — 실측 결함(2026-08-05): n≈3,000 후보의 p 가 전부 1.0 으로 찍혀
+    '증거 없음'처럼 보였으나 사실은 '계산 불가'였다. 사용한 일수를 함께 돌려준다.
+    """
+    daily = [
+        expectancy(group, tp_pct=tp_pct, sl_pct=sl_pct, tp=tp, sl=sl,
+                   horizon=horizon, timeout_label=timeout_label)["expectancy_pct"]
+        for _, group in frame.groupby("일자")
+    ]
     if len(daily) < MIN_DAYS:
-        return 1.0
+        return 1.0, len(daily)
     t_stat, p_two = stats.ttest_1samp(daily, 0.0)
-    return float(p_two / 2 if t_stat > 0 else 1.0)
+    return float(p_two / 2 if t_stat > 0 else 1.0), len(daily)
 
 
 def converge(frame: pd.DataFrame, *, variables: list[str], tp_pct: float, sl_pct: float,
@@ -109,11 +115,11 @@ def converge(frame: pd.DataFrame, *, variables: list[str], tp_pct: float, sl_pct
             break
         used.add(clause.variable)
         current = subset
+        p_value, clusters = _day_significance(current, tp=tp, sl=sl, horizon=horizon,
+                                              tp_pct=tp_pct, sl_pct=sl_pct,
+                                              timeout_label=timeout_label)
         result.steps.append(Step(
             depth=depth, clause=clause.as_dict(), stats=score,
-            cluster=cluster_load(current),
-            day_p_value=_day_significance(current, tp=tp, sl=sl, horizon=horizon,
-                                          tp_pct=tp_pct, sl_pct=sl_pct,
-                                          timeout_label=timeout_label),
+            cluster=cluster_load(current), day_p_value=p_value, day_clusters=clusters,
         ))
     return result

@@ -76,3 +76,28 @@ def test_sample_floor_blocks_overfit_slices() -> None:
     # 표본 하한을 아주 크게 두면 어떤 절도 통과하지 못한다.
     result = _run(_planted(), min_rows=10_000_000)
     assert result.steps == []
+
+
+def test_day_significance_uses_every_day_with_trades() -> None:
+    """회귀: 하루 건수가 적어도 그 날은 클러스터로 세어야 한다.
+
+    실측 결함(2026-08-05) — '하루 5건 미만 제외' 규칙 탓에 n≈3,000 후보의 일수가
+    60 아래로 떨어져 p 가 계산되지 않고 1.0 으로 기본 반환됐다. '증거 없음'이 아니라
+    '계산 불가'였고, 진짜 후보를 걸러낼 수 있었다.
+    """
+    from ai_strategy_loop.labeling.converge import _day_significance
+
+    # 120일 × 하루 2건 — 옛 규칙(5건 미만 제외)이면 클러스터 0개가 된다.
+    rng = np.random.default_rng(17)
+    rows = []
+    for day in range(120):
+        rows.append({"일자": 20240300 + day, "hit_up_2": 30, "hit_dn_1": NO_HIT, "frA_300": 0.0})
+        rows.append({"일자": 20240300 + day, "hit_up_2": NO_HIT, "hit_dn_1": 40,
+                     "frA_300": float(rng.normal(0, 0.1))})
+    frame = pd.DataFrame(rows)
+
+    p_value, clusters = _day_significance(frame, tp="hit_up_2", sl="hit_dn_1",
+                                          horizon=NO_HIT, tp_pct=2.0, sl_pct=1.0,
+                                          timeout_label="frA_300")
+    assert clusters == 120, "거래가 있는 날이 전부 클러스터로 잡히지 않았다"
+    assert p_value < 0.05, "실제 양수 엣지인데 p 가 계산되지 않았다"

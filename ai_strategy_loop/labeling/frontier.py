@@ -37,11 +37,10 @@ class Region:
 
 
 def _day_p_value(frame: pd.DataFrame, **kwargs) -> float:
-    daily = []
-    for _, group in frame.groupby("일자"):
-        if len(group) < 3:
-            continue
-        daily.append(expectancy(group, **kwargs)["expectancy_pct"])
+    """거래가 1건이라도 있는 날은 전부 클러스터로 쓴다 — 하루 최소 건수를 두면
+    표본이 작은 구역에서 p 가 계산되지 않고 1.0 으로 기본 반환된다(converge 와 동일 결함)."""
+    daily = [expectancy(group, **kwargs)["expectancy_pct"]
+             for _, group in frame.groupby("일자")]
     if len(daily) < MIN_DAYS:
         return 1.0
     t_stat, p_two = stats.ttest_1samp(daily, 0.0)

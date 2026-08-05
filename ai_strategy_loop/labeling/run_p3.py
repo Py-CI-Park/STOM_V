@@ -85,13 +85,14 @@ def main() -> None:
             "final": final.stats if final else outcome.rule["base"],
             "cluster": final.cluster if final else None,
             "day_p_value": final.day_p_value if final else 1.0,
+            "day_clusters": final.day_clusters if final else 0,
         }
         results.append(record)
         stats_ = record["final"]
         print(f"{record['rule']}: 절 {len(record['clauses'])}개 · n={stats_['n']:,} · "
               f"승률 {stats_['win_rate']:.3f} (분기 {stats_['breakeven_win_rate']:.3f}) · "
-              f"기대값 {stats_['expectancy_pct']:+.4f}%/건 · p={record['day_p_value']:.4f} · "
-              f"{time.time()-t0:.0f}s", flush=True)
+              f"기대값 {stats_['expectancy_pct']:+.4f}%/건 · p={record['day_p_value']:.4f} "
+              f"(일수 {record['day_clusters']}) · {time.time()-t0:.0f}s", flush=True)
 
     passing = [r for r in results
                if r["final"]["expectancy_pct"] > 0 and r["day_p_value"] < 0.05]
