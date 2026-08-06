@@ -10,6 +10,7 @@
 // dual-safe ESM import. KEEP each on ONE physical line.
 import { CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel, AutopsyPanel, AutopsyFocusCard, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner } from "./panels.jsx";
 import { HypothesisPanel } from "./hypothesis.jsx";
+import { LoopAutonomyPanel } from "./loop-autonomy.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
 import { ResearchImprovementCard } from "./research-improvement.jsx";
@@ -604,6 +605,11 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <section className="v6-stage-lab v54-span-all" aria-label="세대 진화 분석(전폭)">
               <h3 className="stom-section-label">세대 진화 분석 · 개별 그래프</h3>
               <EvolutionAnalysisPanel baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+            </section>
+            {/* 페이지 26 — 자율 루프 관제: 가정·판정·수정 예산 (사람 승인 없이 도는 루프의 관측면) */}
+            <section className="v6-stage-lab v54-span-all" aria-label="자율 루프 관제(페이지 26)">
+              <h3 className="stom-section-label">자율 루프 관제 · 가정 판정과 수정 예산</h3>
+              <LoopAutonomyPanel />
             </section>
           </div>
         )}
