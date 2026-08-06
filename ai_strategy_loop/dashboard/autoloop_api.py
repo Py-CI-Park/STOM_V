@@ -203,3 +203,47 @@ def autonomy_budget(run_id: RunId = "") -> dict[str, Any]:
         "bias_adjusted_pct": (design_pct - SELECTION_BIAS_PCT) if design_pct is not None else None,
         "note": "설계 구간 성적은 선택 편의 0.6225%p 를 뺀 값으로 읽는다 (QSP13 30폴드 실측).",
     }
+
+
+@autoloop_router.get("/loop/standing")
+def standing(out_name: str = "design_v4", lane: str = "tick",
+             today: int = 0, max_age_days: int = 0) -> dict[str, Any]:
+    """상설화 현황 (W5) — 백필 계획 + 후보 재검증 계획.
+
+    `today` 를 인자로 받는 이유: 서버 시각을 함수 안에서 읽으면 화면이 무엇을
+    기준으로 "오래됐다"고 말하는지 검증할 수 없다. 0 이면 재검증 계획을 만들지
+    않고 백필만 답한다.
+    """
+    from ai_strategy_loop.controller import standing as st  # noqa: PLC0415
+
+    if lane not in ("tick", "min"):
+        return {"available": False, "reason": "unknown_lane", "lane": lane}
+
+    records = _standing_candidates()
+    payload = st.standing_status(out_name, lane, records=records, today=today)
+    if today and max_age_days:
+        payload["revalidation"] = st.revalidation_plan(
+            records, today=today, max_age_days=max_age_days)
+    payload["available"] = True
+    payload["candidate_count"] = len(records)
+    return payload
+
+
+def _standing_candidates() -> list[dict[str, Any]]:
+    """재검증 대상 후보 — 루프가 남긴 run 기록에서 뽑는다.
+
+    기록이 없으면 빈 목록이다. 후보를 지어내지 않는다.
+    """
+    rows = _rows(
+        "SELECT run_id, MAX(created_at) AS last_at FROM runs GROUP BY run_id "
+        "ORDER BY last_at DESC LIMIT 50"
+    )
+    candidates: list[dict[str, Any]] = []
+    for row in rows:
+        stamp = str(row.get("last_at") or "")
+        digits = "".join(ch for ch in stamp if ch.isdigit())[:8]
+        candidates.append({
+            "name": row.get("run_id"),
+            "last_verdict_day": int(digits) if len(digits) == 8 else None,
+        })
+    return candidates
