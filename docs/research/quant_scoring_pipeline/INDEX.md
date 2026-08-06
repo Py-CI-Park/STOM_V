@@ -1,6 +1,6 @@
 # QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙
 
-> 갱신일: 2026-08-05 · **새 세션은 반드시 여기서 시작한다.**
+> 갱신일: 2026-08-06 · **새 세션은 반드시 여기서 시작한다.**
 > 규칙: 문서는 삭제·소급 수정하지 않는다. 오류는 **정정 문서**로 바로잡고 원문에 무효 표시를 단다.
 
 ---
@@ -10,7 +10,7 @@
 | 순서 | 문서 | 내용 |
 |---:|---|---|
 | **0** | **`HANDOFF_2026-08-06_웨이브_자율루프.md`** | **여기서 시작** — 재개 지점·다음 한 걸음(엔진 실측)·헌법 8항·코드 자산 지도 |
-| 0.01 | `2026-08-06_wave_w09_w4_results.md` | **여기서 시작** — W0.9~W4 실행 결과·**재현 게이트 PASS**·매도축 워크포워드·다음=엔진 실측 |
+| 0.01 | `2026-08-06_wave_w09_w4_results.md` | W0.9~W4 실행 결과·**재현 게이트 PASS**·매도축 워크포워드·다음=엔진 실측 |
 | 0.02 | `2026-08-06_master_wave_plan.md` | 웨이브 W0~W5 계획·페이지 25~27·헌법 |
 | 0.05 | `2026-08-06_program_reassessment.md` | 프로그램 재평가 — 왜 실패하는가(산수)·아이디어 108셀 실증·성숙도 L3 |
 | 0.07 | `2026-08-06_loop_pipeline_audit.md` | 개선 루프 감사 — 조립 공백 5건·배선 계획·자율화 개정 |
@@ -46,7 +46,7 @@ HANDOFF 2부(QSP7 G0·QSP8) · `2026-08-04_qsp8r_손익비우선_넓은시간_�
 
 | 자산 | 위치 | 상태 |
 |---|---|---|
-| 라벨 공장 v2 (봉투·배리어 도달) | `labeling/{lanes,label_spec,label_factory,build_labels}.py` | ✅ tick 355일·min 155일 |
+| 라벨 공장 **v4** (봉투·배리어 도달·파생·**트레일링 실현값**) | `labeling/{lanes,label_spec,label_factory,build_labels,trailing}.py` | ✅ tick 355일(3.9GB)·min 155일 |
 | 집행 우주·기대값·큐브·군집도 | `labeling/{universe,cube}.py` | ✅ 유일 입구(u1) |
 | 수렴 루프·프런티어 스캔 | `labeling/{converge,frontier}.py` + `run_p3/run_frontier` | ✅ |
 | **진입 단위 정합** (필수 교정) | `labeling/entries.py` | ✅ converge·hierarchy 배선 · frontier 미적용 |
@@ -56,10 +56,17 @@ HANDOFF 2부(QSP7 G0·QSP8) · `2026-08-04_qsp8r_손익비우선_넓은시간_�
 | 조립기(매수·배리어 매도) | `labeling/assembler.py` | ✅ |
 | 엔진 검증·전이율 | `labeling/run_p5.py` | ✅ |
 | QA 3종·정보력 랭킹 | `labeling/{label_qa,info_rank}.py` | ✅ (info_rank 는 고정 h 목표 — 참고용) |
-| 라벨 데이터 | `state/labels/{design_v2,min_design_v2}/` (gitignore) | ✅ v2 |
+| 라벨 데이터 | `state/labels/{design_v4,design_v3,min_design_v2}/` (gitignore) | ✅ **정본=design_v4** |
 | 도달 지도 API·화면 | `dashboard/reach_map_api.py` · `frontend/bt-reach-map.jsx` | ✅ 페이지 22~24 |
-| 대시보드 연구 페이지 24종 | `dashboard/` | ✅ (21 + 신규 3) |
-| 검증 게이트 (2job 분할·사다리) | promotion-gate | ✅ |
+| 대시보드 연구 페이지 **27종** | `dashboard/` | ✅ (21 + 22~24 + **25·26·27**, 12 강화) |
+| 검증 게이트 (2job 분할·사다리) | promotion-gate · `labeling/ladder.py` | ✅ |
+| **매도 축 평가기** (정확/하한/상한) | `labeling/exit_axis.py` + `run_exit_axis` | ✅ W3 |
+| **챔피언 재현 게이트** (통과 전 탐색 금지) | `labeling/run_reproduction_gate.py` | ✅ **PASS** |
+| **매도 축 워크포워드** | `labeling/run_exit_walkforward.py` | ✅ 약한 PASS |
+| **가설 원장**(예산·표본밖·편의차감) | `controller/hypothesis_ledger.py` | ✅ W2 |
+| **Claude 뇌**(스풀 왕복) · p5 프롬프트 | `provider/claude_direct.py` · `brain/prompt_p5.py` | ✅ W1 |
+| GPT OAuth (v0.68 이식·Codex 폴백) | `provider/chatgpt_oauth/` | ✅ 로그인 정상 |
+| 관측면 API·화면 4면 | `dashboard/{analysis_card,autoloop,provider_status,transfer_ledger}_api.py` | ✅ 페이지 25·26·27·12 |
 
 ## 5. 기록 관리 규칙 (모든 라운드 공통)
 
