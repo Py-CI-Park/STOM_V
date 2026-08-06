@@ -1,8 +1,25 @@
 {
  "schema_version": "stom-research-report-v1",
  "generated_at": "2026-08-06T00:00:00Z",
- "count": 7,
+ "count": 8,
  "reports": [
+  {
+   "schema_version": "stom-research-report-v1",
+   "report_id": "program_reassessment_20260806",
+   "report_type": "reassessment",
+   "research_id": "program_reassessment",
+   "status": "complete",
+   "publication_status": "published",
+   "generator": "claude-session-program-reassessment",
+   "path": "reports/2026-08-06_program_reassessment_report.html",
+   "content_sha256": "0ebdfad3791a87d2cf6926b4fddab3db80a14c27ca8bd2baf05e06d8d26ed518",
+   "bytes": 14359,
+   "generated_at": "2026-08-06T00:00:00Z",
+   "trust": "verified",
+   "provenance": "docs/research/quant_scoring_pipeline/2026-08-06_program_reassessment.md",
+   "decision": "구조 교체 후 계속 — 매도축(R1) 우선, 가설 예산제 상시",
+   "limitations": "108셀은 진입축 진단 — 매도축은 R1~R2 에서 평가"
+  },
   {
    "schema_version": "stom-research-report-v1",
    "report_id": "qsp10_13_audit_20260806",

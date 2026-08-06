@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STOM 프로그램 재평가 — 왜 실패했고 어떻게 계속하는가</title>
+</head>
+<body>
+<style>
+:root{
+  --bg:#FAFAF7; --ink:#1A2332; --muted:#5A6B7D; --surface:#F0F1EC; --border:#D5D9D2;
+  --accent:#B7791F; --pass:#0B7A5C; --fail:#B42318; --link:#075DC4; --code:#EDEFE8;
+  color-scheme:light dark;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#12181F; --ink:#E4EAEF; --muted:#9FAEBC; --surface:#1A222B; --border:#33404D;
+  --accent:#D9A441; --pass:#4CC49A; --fail:#E0776A; --link:#7FB3F5; --code:#1F2933;
+}}
+:root[data-theme="dark"]{
+  --bg:#12181F; --ink:#E4EAEF; --muted:#9FAEBC; --surface:#1A222B; --border:#33404D;
+  --accent:#D9A441; --pass:#4CC49A; --fail:#E0776A; --link:#7FB3F5; --code:#1F2933;
+}
+:root[data-theme="light"]{
+  --bg:#FAFAF7; --ink:#1A2332; --muted:#5A6B7D; --surface:#F0F1EC; --border:#D5D9D2;
+  --accent:#B7791F; --pass:#0B7A5C; --fail:#B42318; --link:#075DC4; --code:#EDEFE8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.65 system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:clamp(16px,4vw,48px)}
+.cover{background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--accent);
+  border-radius:10px;padding:clamp(18px,3vw,36px);margin-bottom:26px}
+.eyebrow{color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+h1{font-size:clamp(23px,3.6vw,36px);line-height:1.2;margin:.35em 0 .3em;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:64ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;font-size:13px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 30px}
+.kpi{border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:12px 14px}
+.kpi b{display:block;font-size:21px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi span{font-size:12px;color:var(--muted)}
+.kpi.warn b{color:var(--fail)} .kpi.ok b{color:var(--pass)} .kpi.amber b{color:var(--accent)}
+h2{font-size:20px;margin:44px 0 6px;scroll-margin-top:16px}
+h2 .no{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:6px}
+h3{font-size:15.5px;margin:26px 0 8px}
+.sub{color:var(--muted);margin:0 0 14px;max-width:70ch}
+.tw{overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin:12px 0}
+table{width:100%;min-width:560px;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 11px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:none}
+th{background:var(--surface);font-weight:600;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pass{color:var(--pass);font-weight:600}.fail{color:var(--fail);font-weight:600}
+.warn{color:var(--accent);font-weight:600}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid var(--border)}
+.pill.p{color:var(--pass);border-color:var(--pass)} .pill.f{color:var(--fail);border-color:var(--fail)}
+.pill.w{color:var(--accent);border-color:var(--accent)}
+.callout{border:1px solid var(--border);border-left:4px solid var(--accent);background:var(--surface);
+  border-radius:8px;padding:14px 18px;margin:16px 0}
+.callout.red{border-left-color:var(--fail)}
+.callout p{margin:.3em 0}
+.flow{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:14px 18px;
+  overflow-x:auto;font:13px/1.7 ui-monospace,Consolas,monospace;white-space:pre;margin:12px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:14px 0}
+.card{border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:14px 16px}
+.card h4{margin:0 0 8px;font-size:14px}
+.card ul{margin:0;padding-left:18px}
+.card li{margin:4px 0}
+.ladder{display:flex;flex-direction:column;gap:6px;margin:14px 0}
+.rung{display:flex;align-items:center;gap:12px;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface);padding:10px 14px}
+.rung b{min-width:36px;font-variant-numeric:tabular-nums}
+.rung.done{border-left:4px solid var(--pass)}
+.rung.here{border-left:4px solid var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.rung.todo{border-left:4px solid var(--border);color:var(--muted)}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)}
+a{color:var(--link)}
+</style>
+
+<div class="wrap">
+<div class="cover">
+  <div class="eyebrow">STOM · 프로그램 재평가 · 2026-08-06</div>
+  <h1>알파 공장으로는 실패, 측정 플랫폼으로는 성공 — 그리고 계속하는 법</h1>
+  <p class="lede">QSP1~13·알파랩 13연구·신규 실측 108셀을 근거로 한 프로그램 전면 재평가.
+  실패의 원인은 노력이나 도구가 아니라 <b>탐색 구조(수백만 가설 × 고정 355일 표본)</b>이며,
+  인간이 이기는 구조(작은 걸음 × 매일 새 표본)를 시스템에 옮기는 로드맵을 제시한다.</p>
+  <div class="meta">
+    <span>브랜치 <b>research/program-reassessment-20260806</b></span>
+    <span>정본 <b>2026-08-06_program_reassessment.md</b></span>
+    <span>판정 <b class="warn">구조 교체 후 계속</b></span>
+  </div>
+</div>
+
+<div class="kpis">
+  <div class="kpi warn"><b>0건</b><span>시스템 발 실전 후보</span></div>
+  <div class="kpi ok"><b>8건</b><span>실측 확정 지식</span></div>
+  <div class="kpi amber"><b>0.62%p</b><span>선택 편의 (실측)</span></div>
+  <div class="kpi warn"><b>108/108</b><span>아이디어 실증 셀 전부 음수</span></div>
+  <div class="kpi ok"><b>L2 완료</b><span>성숙도 (측정 규율까지)</span></div>
+  <div class="kpi amber"><b>R1~R4</b><span>로드맵 (매도축 우선)</span></div>
+</div>
+
+<h2 id="s1"><span class="no">1</span>성과 판정 — 있는가, 없는가</h2>
+<div class="tw"><table>
+<tr><th>축</th><th>판정</th><th>근거</th></tr>
+<tr><td>거래 가능한 알파 생산</td><td class="fail">0건</td><td>시스템 발 후보 중 표본 밖 생존 0 — 유일한 실전 이관(B1)은 챔피언 근방 수동 연구 출신</td></tr>
+<tr><td>측정 플랫폼 구축</td><td class="pass">완성</td><td>라벨 공장(tick 355일+min 155일) · 엔진 정합 지도 · 통계 규율 스택 · 슬라이더 UI · 워크포워드</td></tr>
+<tr><td>지식 생산</td><td class="pass">8건 확정</td><td>"수익원=매도" · "선택 편의 0.62%p" 등 — 이후 모든 연구의 전제</td></tr>
+<tr><td>부정적 결과의 확정</td><td class="pass">완료</td><td>tick 시초 진입축 소진 증명 — 같은 곳 재탐사 낭비 차단</td></tr>
+</table></div>
+<div class="callout"><p><b>비유</b>: 금광 회사로 치면 — 금은 아직 못 캤지만 ① 세계 수준의 시추 장비를 갖췄고
+② 한 광구(진입축)가 비었음을 증명했으며 ③ 금이 실제로 나오는 광맥(챔피언의 매도 규칙) 위치를 확인했다.
+회사를 접을 단계가 아니라 <b>시추 지점을 옮길 단계</b>다.</p></div>
+
+<h2 id="s2"><span class="no">2</span>왜 "인간처럼 찾는 시스템"이 계속 실패하는가 — 산수</h2>
+<p class="sub">유효 표본은 행 수가 아니라 일수(355)다. 가설 M개를 시험하면 식별 문턱이 √(2 ln M)배로 오른다.</p>
+<div class="flow">단일 가설:   +0.2%p/일 엣지 검출에 ~100일이면 충분
+수백만 가설: 문턱 z ≈ 5.5  →  식별 가능 최소 엣지 ≈ 5.5 × 1.2%p / √355 ≈ 0.35~0.6%p
+관측된 최고 엣지(설계 +0.43%) &lt; 문턱  →  아무리 잘 탐색해도 원리적으로 식별 불가
+QSP13 실측 선택 편의 0.6225%p 가 이 산수를 확인</div>
+<div class="tw"><table>
+<tr><th></th><th>인간 (902/905 를 만든 과정)</th><th>시스템 (QSP10~13)</th></tr>
+<tr><td>스텝당 가설 수</td><td class="pass">몇 개 (절 하나 조정)</td><td class="fail">수백만 (격자 전수)</td></tr>
+<tr><td>검증 표본</td><td class="pass">매일 새 데이터 (실전=매일이 표본 밖)</td><td class="fail">고정 355일 재사용</td></tr>
+<tr><td>선택 편의</td><td class="pass">스텝당 ≈ 0</td><td class="fail">0.62%p (측정값)</td></tr>
+<tr><td>수익 구조</td><td class="pass">매도 8규칙 + 진입</td><td class="fail">진입 + 고정 배리어</td></tr>
+<tr><td>개선 방식</td><td class="pass">국소 등반 (챔피언 ± 1절)</td><td class="fail">전역 재탐색 (매번 백지)</td></tr>
+</table></div>
+<div class="callout"><p><b>핵심</b>: 인간이 이기는 것은 직관이 뛰어나서가 아니라 <b>탐색 구조가 통계적으로 유리</b>해서다.
+작은 가설 공간 × 항상 새로운 표본 = 선택 편의가 쌓일 수 없는 구조.</p></div>
+
+<h2 id="s3"><span class="no">3</span>브레인스토밍 실증 — 사전 고정 108셀, 전부 음수</h2>
+<p class="sub">탐색·튜닝 없이 사전 고정 격자 전셀 보고(선택 편의 원천 차단) · 진입 단위 교정 적용 ·
+필터 임계는 902/905 실전값(3.0) 그대로.</p>
+<div class="tw"><table>
+<tr><th>아이디어</th><th>최선 셀 (일평균)</th><th>판정</th></tr>
+<tr><td><b>첫 2분 이내만 매수</b></td><td class="num">−0.415%</td><td class="fail">첫 2분이 가장 나쁜 창 (스프레드·변동성 극대)</td></tr>
+<tr><td><b>첫 5/10분 이내만</b></td><td class="num">−0.41~−0.43%</td><td class="fail">전체 창과 차이 미미 — 시간창 단독은 정보 없음</td></tr>
+<tr><td><b>급증 필터 단독 (배율≥3)</b></td><td class="num">무필터보다 악화</td><td class="fail">급등 순간 매수 = 더 나쁜 체결 지점</td></tr>
+<tr><td><b>소수 종목 (일별 상위 1)</b></td><td class="num"><b>−0.365%</b> ← 108셀 중 최선</td><td class="warn">방향은 옳음(덜 나쁨), 부호는 못 바꿈</td></tr>
+<tr><td><b>높은 손익비 (rr=3)</b></td><td class="num">전 창 일관 최상위</td><td class="warn">방향은 옳음, 부호는 못 바꿈</td></tr>
+</table></div>
+<div class="callout"><p>사용자 직관의 <b>방향(선별·높은 손익비)은 전부 데이터와 일치</b>했다 — 다만 진입 쪽 단일 축으로는
+우주 기저(−0.5%)를 넘지 못한다. 남은 미개척 축은 <b>매도(청산)</b> — 챔피언이 실제로 돈을 버는 곳 — 뿐이다.
+이 판정을 홀드아웃 소모 없이 3시간 안에 끝낸 것이 재정비된 프로세스의 첫 실증이다.</p></div>
+
+<h2 id="s4"><span class="no">4</span>성숙도 재평가</h2>
+<div class="ladder">
+  <div class="rung done"><b>L1</b><span>인프라 — 라벨 공장 · 집행 우주 · 엔진 정합 · UI</span><span class="pill p">완료</span></div>
+  <div class="rung done"><b>L2</b><span>측정 규율 — 통계 스택 · 진입 단위 · 워크포워드 · 편의 예산</span><span class="pill p">완료</span></div>
+  <div class="rung here"><b>L3</b><span>가설 공간 설계 — 진입축 소진 증명 ✓ · 매도축 미착수</span><span class="pill w">현재 위치</span></div>
+  <div class="rung todo"><b>L4</b><span>알파 생산 — 표본 밖 생존 후보</span><span class="pill">미달</span></div>
+  <div class="rung todo"><b>L5</b><span>운용 — 실전 정합 · 포트폴리오</span><span class="pill">미착수</span></div>
+</div>
+
+<h2 id="s5"><span class="no">5</span>해법 4기둥과 로드맵</h2>
+<div class="grid2">
+<div class="card"><h4>① 가설 예산제 (헌법)</h4><ul><li>라운드당 사전 등록 격자 ≤ 수백 셀 · 전셀 보고</li><li>워크포워드 내장 · 성적은 편의 0.62%p 차감 후 판독</li><li>홀드아웃 재개봉 금지</li></ul></div>
+<div class="card"><h4>② 챔피언 근방 탐색</h4><ul><li>902/905 ± 1절 자동 심사 — B1 패턴의 시스템화</li><li>유일하게 실증된 양성 경로(ΣΔ+1.54M)</li></ul></div>
+<div class="card"><h4>③ 매도 축 연구 (최우선)</h4><ul><li>봉투(30초~10분)로 트레일링·시간단계·상태 조건부 청산 평가</li><li>수익원이 매도임이 실측됨 · 데이터 이미 보유</li></ul></div>
+<div class="card"><h4>④ 시간을 데이터로</h4><ul><li>신규 거래일 백필 → 상설 워크포워드 재검증</li><li>감독 소액 실전 = 매일 새 표본 밖 (인간의 구조 이식)</li></ul></div>
+</div>
+
+<div class="flow">R0 재평가 확정(본 세션 ✓) ─▶ R1 매도축 설계 + 재현 게이트     ─▶ R2 청산 격자 + 워크포워드
+                                (챔피언 엔진 성적을 지도가 재현)        │통과            │소진
+                                                                       ▼                ▼
+                          R4 상설화(백필·재검증·소액 실전) ◀───── R3 챔피언+1절 자동 심사
+장기 옵션: min 레인 재판독(QSP10 누락 회수) · 수집 우주 재설계(대공사)</div>
+
+<div class="tw"><table>
+<tr><th>라운드</th><th>내용</th><th>게이트 (사전 정의)</th><th>예상</th></tr>
+<tr><td><b>R1</b></td><td>매도축 설계서 + 봉투 기반 청산 평가기</td><td>챔피언 902/905 엔진 성적(+3,479원/건)을 지도가 부호·크기 재현 — 재현 전 탐색 금지</td><td>1세션</td></tr>
+<tr><td><b>R2</b></td><td>청산 family 사전 고정 격자(≤200셀) × 챔피언 진입</td><td>표본 밖 양수 + 과반 폴드 + 편의 차감 후 양수</td><td>1~2세션</td></tr>
+<tr><td><b>R3</b></td><td>챔피언+1절 심사 파이프라인 (B1 일반화)</td><td>절당 워크포워드 PASS 만 사용자 게이트로</td><td>1세션</td></tr>
+<tr><td><b>R4</b></td><td>백필 + 상설 재검증 + 감독 소액 실전</td><td>실전-백테 정합 (사용자 판정)</td><td>상시</td></tr>
+</table></div>
+
+<footer>
+정본: docs/research/quant_scoring_pipeline/2026-08-06_program_reassessment.md ·
+실측 도구: run_idea_scan.py(84셀) · run_idea_topk.py(24셀) ·
+근거: QSP1~13 라운드 로그 · 알파랩 13연구 · 감사 보고서 (2026-08-06) ·
+이 보고서는 정적·자가완결이며 외부 요청이 없다.
+</footer>
+</div>
+
+</body>
+</html>
