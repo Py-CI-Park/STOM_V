@@ -14,6 +14,7 @@ import http.cookiejar
 import json
 import os
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -25,14 +26,22 @@ _LABEL_ROOT = os.path.join(os.path.dirname(__file__), "..", "state", "labels")
 
 
 class Client:
-    """세션 클라이언트 — 쿠키는 HTML 진입점(307 리다이렉트)에서만 발급된다."""
+    """세션 클라이언트 — 쿠키는 HTML 진입점(307 리다이렉트)에서만 발급된다.
+
+    긴 러너는 엔진 job 하나가 수십 분이라 그 사이 세션이 만료된다. 만료를 예측하지
+    않고 **401 을 받으면 세션을 새로 열어 한 번 재시도**한다 — 예측은 틀리지만
+    재시도는 틀리지 않는다(실측: 두 번째 전략 등록에서 401 로 러너가 죽었다).
+    """
 
     def __init__(self) -> None:
+        self._open_session()
+
+    def _open_session(self) -> None:
         jar = http.cookiejar.CookieJar()
         self._opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
         self._opener.open(f"{_BASE}/ui/v4", timeout=30).read(64)
 
-    def call(self, method: str, path: str, body: dict | None = None) -> dict:
+    def _request(self, method: str, path: str, body: dict | None) -> dict:
         data = json.dumps(body).encode() if body is not None else None
         request = urllib.request.Request(f"{_BASE}{path}", data=data, method=method)
         request.add_header("Origin", _BASE)      # mutation 은 same-origin 필수
@@ -40,6 +49,15 @@ class Client:
             request.add_header("Content-Type", "application/json")
         with self._opener.open(request, timeout=180) as response:
             return json.loads(response.read().decode())
+
+    def call(self, method: str, path: str, body: dict | None = None) -> dict:
+        try:
+            return self._request(method, path, body)
+        except urllib.error.HTTPError as exc:
+            if exc.code != 401:
+                raise
+        self._open_session()
+        return self._request(method, path, body)
 
 
 def wait_for(client: Client, job_id: str, timeout: int = 3600) -> str:

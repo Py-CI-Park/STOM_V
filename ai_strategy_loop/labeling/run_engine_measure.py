@@ -81,11 +81,12 @@ def _assert_owned(name: str) -> None:
 
 
 def _run_arm(client: Client, *, buy: str, sell: str, lane, engines: int,
-             timeout: int) -> dict:
+             timeout: int, period: tuple[int, int] | None = None) -> dict:
     """한 팔을 엔진에 올리고 끝날 때까지 기다린다."""
+    start, end = period or lane.design
     started = client.call("POST", "/bt/run", {
         "buy": buy, "sell": sell,
-        "start": lane.design[0], "end": lane.design[1],
+        "start": start, "end": end,
         "start_time": lane.entry_start if lane.name == "min" else 90000,
         "end_time": lane.forced_exit,
         "timeframe": lane.name, "engines": engines, "timeout": timeout,
@@ -112,9 +113,14 @@ def main() -> None:
     parser.add_argument("--timeout", type=int, default=5400)
     parser.add_argument("--skip-baseline", action="store_true",
                         help="기준선(A) 재측정을 건너뛴다 — 비교가 약해지므로 기본 아님")
+    parser.add_argument("--start", type=int, default=None,
+                        help="구간 시작(YYYYMMDD). 연기 시험용 — 기본은 레인 설계 구간")
+    parser.add_argument("--end", type=int, default=None)
+    parser.add_argument("--tag", default="", help="리포트 파일 접미(연기 시험 분리용)")
     args = parser.parse_args()
 
     lane = LANES[args.lane]
+    period = (args.start, args.end) if (args.start and args.end) else None
     gate, cells = _gate_cells(args.out_name)
     if gate.get("verdict") != "PASS":
         raise SystemExit(f"재현 게이트가 {gate.get('verdict')} 다 — 엔진 실측 대상이 아니다.")
@@ -125,13 +131,34 @@ def main() -> None:
     client = Client()
     t0 = time.time()
     outcomes: list[dict] = []
+    span = period or lane.design
+    out_path = os.path.join(_LABEL_ROOT, args.out_name, f"_p5_engine_report{args.tag}.json")
+
+    def _save(baseline: dict) -> None:
+        """팔 하나가 끝날 때마다 저장한다 — 엔진 시간은 시간 단위라 잃으면 아프다.
+
+        실측: 두 번째 등록에서 세션 만료(401)로 죽었을 때 A·B1 결과가 통째로
+        날아갔다. 부분 결과라도 남는 것이 다시 도는 것보다 언제나 낫다.
+        """
+        with open(out_path, "w", encoding="utf-8") as handle:
+            json.dump({
+                "lane": lane.name,
+                "design": list(span),
+                "champion_buy": CHAMPION_BUY,
+                "baseline_sell": CHAMPION_SELL,
+                "baseline_metrics": {k: baseline.get(k) for k in _METRIC_KEYS},
+                "outcomes": outcomes,
+                "complete": len(outcomes) == len(picks) + (0 if args.skip_baseline else 1),
+                "note": ("진입 고정 A/B — 매도만 바꿨다. 전이율은 지도(재현 게이트) 대비 "
+                         "엔진 실측 비율이며, 부호가 뒤집히면 감쇠가 아니라 구조 불일치다."),
+            }, handle, ensure_ascii=False, indent=1, default=float)
 
     # --- A: 기준선(챔피언 원본 매도) ------------------------------------------
     baseline_metrics: dict = {}
     if not args.skip_baseline:
         print(f"[A] 기준선 {CHAMPION_BUY} + {CHAMPION_SELL} 재측정 …", flush=True)
         arm = _run_arm(client, buy=CHAMPION_BUY, sell=CHAMPION_SELL, lane=lane,
-                       engines=args.engines, timeout=args.timeout)
+                       engines=args.engines, timeout=args.timeout, period=period)
         baseline_metrics = arm["metrics"]
         outcomes.append({
             "name": "W4_A_champion_baseline",
@@ -146,6 +173,7 @@ def main() -> None:
         })
         print(f"    → {arm['status']} 거래={baseline_metrics.get('trade_count')} "
               f"건당={baseline_metrics.get('avg_profit_pct')}%", flush=True)
+        _save(baseline_metrics)
 
     # --- B~: 도전자(렌더된 트레일링) ------------------------------------------
     for index, cell in enumerate(picks, start=1):
@@ -162,7 +190,7 @@ def main() -> None:
         print(f"[B{index}] 매도 등록 {sell_name} {saved.get('status')}", flush=True)
 
         run = _run_arm(client, buy=CHAMPION_BUY, sell=sell_name, lane=lane,
-                       engines=args.engines, timeout=args.timeout)
+                       engines=args.engines, timeout=args.timeout, period=period)
         metrics = run["metrics"]
         map_pct = float(cell["expectancy_pct"])
         engine_pct = metrics.get("avg_profit_pct")
@@ -181,10 +209,11 @@ def main() -> None:
         })
         print(f"    → {run['status']} 거래={metrics.get('trade_count')} "
               f"건당={engine_pct}% 전이율={transfer}", flush=True)
+        _save(baseline_metrics)
 
     # --- 요약 ------------------------------------------------------------------
     base_pct = baseline_metrics.get("avg_profit_pct")
-    print(f"\n=== 엔진 실측 요약 (설계 {lane.design[0]}~{lane.design[1]}) ===", flush=True)
+    print(f"\n=== 엔진 실측 요약 (구간 {span[0]}~{span[1]}) ===", flush=True)
     for row in outcomes:
         engine = row["engine"]
         delta = ""
@@ -195,11 +224,11 @@ def main() -> None:
               f"건당={engine.get('avg_profit_pct')}% CAGR={engine.get('cagr')} "
               f"MDD={engine.get('mdd_pct')}{delta}", flush=True)
 
-    out_path = os.path.join(_LABEL_ROOT, args.out_name, "_p5_engine_report.json")
+    out_path = os.path.join(_LABEL_ROOT, args.out_name, f"_p5_engine_report{args.tag}.json")
     with open(out_path, "w", encoding="utf-8") as handle:
         json.dump({
             "lane": lane.name,
-            "design": list(lane.design),
+            "design": list(span),
             "champion_buy": CHAMPION_BUY,
             "baseline_sell": CHAMPION_SELL,
             "baseline_metrics": {k: baseline_metrics.get(k) for k in _METRIC_KEYS},
