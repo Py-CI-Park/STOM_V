@@ -194,13 +194,20 @@ class TestStartControlStubbed:
 
 
 class TestStaticFrontendServing:
-    """US-007 — 프론트엔드를 같은 origin(/ui/)에서 서빙하고, /는 거기로 리다이렉트."""
+    """US-007 — 프론트엔드를 같은 origin 에서 서빙한다.
 
-    def test_root_redirects_to_ui(self, client):
-        # 리다이렉트를 따라가지 않고 3xx + Location 헤더를 직접 검증한다.
+    d84012e3 에서 진입 주소를 정본 루트 하나로 통합했다: / 가 리다이렉트 없이
+    셸을 직접 서빙하고, 구 주소(/ui/)가 반대로 / 로 307 이동한다.
+    """
+
+    def test_root_serves_shell_and_legacy_ui_redirects_to_root(self, client):
+        # 리다이렉트를 따라가지 않고 상태·Location 을 직접 검증한다.
         resp = client.get("/", follow_redirects=False)
-        assert resp.status_code in (302, 307)
-        assert resp.headers["location"] == "/ui/"
+        assert resp.status_code == 200
+        assert "/ui/bundle/app.js" in resp.text
+        legacy = client.get("/ui/", follow_redirects=False)
+        assert legacy.status_code in (302, 307)
+        assert legacy.headers["location"] == "/"
 
     def test_ui_serves_dashboard_html(self, client):
         resp = client.get("/ui/")

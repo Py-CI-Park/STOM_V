@@ -26,7 +26,10 @@ def test_app_wires_generation_actions_to_code_modal_and_detail_chart() -> None:
     assert "const [codeViewGen, setCodeViewGen]" in src
     assert "const [selectedDetailGen, setSelectedDetailGen]" in src
     assert "onViewCode={(g) => setCodeViewGen(g)}" in src
-    assert "onSelectDetail={(genNo) => setSelectedDetailGen(genNo)}" in src
+    # v5.13.0(D1)에서 한 줄 화살표가 블록 본문(선택 반영 + 차트로 스크롤)으로
+    #   바뀌었다. 문자열 형태가 아니라 **배선**을 단정한다.
+    assert "onSelectDetail={(genNo) => {" in src
+    assert "setSelectedDetailGen(genNo);" in src
     assert "externalSelGen={selectedDetailGen}" in src
     assert "generation={codeViewGen}" in src
     assert "runId={state.run_id}" in src

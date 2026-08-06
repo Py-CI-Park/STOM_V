@@ -60,8 +60,9 @@ def test_static_html_direct_fetch_is_no_store() -> None:
 
 
 def test_canonical_shell_html_route_is_no_store() -> None:
-    # 정본 셸 라우트(/ui/)는 핸들러가 직접 no-store 로 서빙한다(캐시 시 stale 셸 위험).
+    # 정본 셸 라우트(/)는 핸들러가 직접 no-store 로 서빙한다(캐시 시 stale 셸 위험).
+    #   d84012e3 이후 정본 진입점은 / 이고 /ui/ 는 쿼리를 보존한 307 이다.
     client = _client()
-    r = client.get("/ui/", follow_redirects=False)
+    r = client.get("/", follow_redirects=False)
     assert r.status_code == 200
     assert "no-store" in r.headers.get("cache-control", "")

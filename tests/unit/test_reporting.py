@@ -14,7 +14,12 @@ if PROJECT_ROOT not in sys.path:
 
 import re  # noqa: E402
 
+from pathlib import Path  # noqa: E402
+
+from tests.unit._strategy_db_precondition import requires_strategy_row  # noqa: E402
 from alpha_lab.reporting import loaders, registry  # noqa: E402
+
+_STRATEGY_DB = Path(__file__).resolve().parents[2] / "_database" / "strategy.db"
 from alpha_lab.reporting.build_html import build, build_all, build_detail  # noqa: E402
 from alpha_lab.reporting.util import escape, highlight_code  # noqa: E402
 
@@ -71,10 +76,16 @@ def test_build_hub_5_tabs():
     for tid in ("overview", "studies", "reports", "conditions", "ledger"):
         assert f'id="tab-{tid}"' in h
     assert "prefers-color-scheme:dark" in h            # 다크 토큰 이중 정의.
-    assert 'body.js .tabpanel' in h                    # JS 폴백 규칙.
+    # 구 설계는 JS 로 패널을 숨겼다가 body.js 규칙으로 폴백했다. 현재는 앵커
+    #   스크롤 방식이라 JS 없이도 전 패널이 보인다 — 지켜야 할 계약을 직접 단정한다.
+    assert 'display:none' not in h                     # 패널을 숨기지 않는다.
+    for tid in ("overview", "studies", "reports", "conditions", "ledger"):
+        assert f'href="#tab-{tid}"' in h               # 탭 버튼 = 순수 앵커.
 
 
+@requires_strategy_row(_STRATEGY_DB, "stockbuy", "ALP_V4_RR8_12")
 def test_build_conditions_sha_and_escape():
+    """조건식 전문 탭은 strategy.db 원문에서 sha 를 추출한다 — 행이 없으면 검증 불가."""
     h = build()
     assert "348c5181" in h                             # 매수 sha 접두.
     assert "&lt;" in h                                 # 조건식 이스케이프.
@@ -132,7 +143,9 @@ def test_build_all_hub_plus_details():
 def test_hub_detail_link_integrity():
     files = build_all(commit="test")
     hub = files["research_lab_report.html"]
-    links = set(re.findall(r'href="(research/\w+\.html)"', hub))
+    # 링크가 상대 경로에서 대시보드 뷰어 경로(/reports/view?path=...)로 바뀌었다.
+    #   형식이 아니라 **무결성**(가리키는 파일이 실제로 생성됐는가)을 단정한다.
+    links = set(re.findall(r'href="[^"]*?(research/\w+\.html)"', hub))
     assert links, "허브에 상세 링크 없음"
     for l in links:
         assert l in files, f"깨진 링크: {l}"        # 링크 대상 파일 전부 생성됨.
@@ -146,7 +159,7 @@ def test_detail_6_tabs_and_backlink():
         assert d.count('class="tabpanel') == 6 and d.count('class="tabbtn') == 6
         for tid in ("overview", "method", "results", "fulltable", "verdict", "evidence"):
             assert f'id="tab-{tid}"' in d, (s.id, tid)
-        assert "../research_lab_report.html" in d       # ← 허브로 상대 링크.
+        assert "research_lab_report.html" in d          # ← 허브로 돌아가는 링크(뷰어 경로).
 
 
 def test_detail_graceful_missing(monkeypatch):

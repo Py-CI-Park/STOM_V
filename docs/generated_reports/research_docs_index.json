@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-04T08:25:47.716750+00:00",
-  "source_fingerprint": "310b132407abd6d7f8e71de9f9fea145c2822c3ff5f6ac5ce9a5c1a8028b007f",
-  "count": 973,
+  "generated_at": "2026-08-06T11:09:02.314343+00:00",
+  "source_fingerprint": "20ffd16c15227f0d371f8fce9fdc3a76485d53354f214d9c4f902c8531fa9598",
+  "count": 991,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6599,6 +6599,90 @@
       "size": 9901
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-04_qsp8r_손익비우선_넓은시간_계획.md",
+      "title": "QSP8-R 계획 — 손익비 우선 · 넓은 시간 · 사람 패턴 전이",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-04T15:00:30.166751+00:00",
+      "size": 7240
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-04_qsp9_map_first_전문가_연구방법론.md",
+      "title": "QSP9 — 맵 퍼스트(지도 우선) 연구 방법론: 전문가라면 이렇게 한다",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T02:19:50.034371+00:00",
+      "size": 11073
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-05_qsp10_마스터_실행계획.md",
+      "title": "QSP10 마스터 실행계획 — 도달 지도·수렴 루프·슬라이더 시스템",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T10:21:31.486616+00:00",
+      "size": 5796
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-05_qsp10_지도시스템_설계.md",
+      "title": "QSP10 설계 — 도달 지도(라벨 v2)와 지도 시스템(Map Store)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T10:05:10.722987+00:00",
+      "size": 5060
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-05_qsp9_마스터_실행계획.md",
+      "title": "QSP9 마스터 실행계획 v2 — 목적·전체 프로세스·라벨 명세·페이지 전체·AI 프롬프트",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T03:23:08.449318+00:00",
+      "size": 7288
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-05_qsp9_정정_렌즈오류와_금맥발견.md",
+      "title": "QSP9 정정 — \"금이 없다\"는 오판이었다: 렌즈 오류와 금맥 발견",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T09:43:56.345191+00:00",
+      "size": 4470
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-05_qsp_전체회고_1-9.md",
+      "title": "QSP 전체 회고 (QSP1~9) — 파이프라인·소프트웨어 개선 연구의 체계적 정리",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T09:44:42.557584+00:00",
+      "size": 5117
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-06_loop_pipeline_audit.md",
+      "title": "개선 루프 파이프라인 감사 — \"부품은 다 있는데 조립이 안 됐다\"",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-06T02:20:52.763671+00:00",
+      "size": 4023
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-06_master_wave_plan.md",
+      "title": "마스터 웨이브 계획 — 자율 루프 완성형으로 가는 전체 로드맵",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-06T05:19:26.536740+00:00",
+      "size": 5546
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-06_program_reassessment.md",
+      "title": "프로그램 재평가 — 연구·프로세스·성숙도 판정과 전체 로드맵",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-06T01:25:15.148793+00:00",
+      "size": 8273
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-06_qsp10_13_세션종합.md",
+      "title": "QSP10~13 세션 종합 — 지도 시스템 구축부터 탐색 공간 소진 증명까지",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T20:05:53.781029+00:00",
+      "size": 4007
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-06_qsp10_결과보고.md",
+      "title": "QSP10 결과 보고 — 도달 지도·수렴 루프·슬라이더 시스템",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T15:25:17.971968+00:00",
+      "size": 5353
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
       "title": "핸드오프 — QSP7 매도식 연구 (2026-08-01)",
       "category": "quant_scoring_pipeline",
@@ -6623,8 +6707,15 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-05_QSP8_기준선전환.md",
       "title": "QSP8 핸드오프 — 기준선 전환과 매도 축 연구 착수",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T08:24:42.855446+00:00",
-      "size": 7724
+      "updated_at": "2026-08-04T14:39:18.315310+00:00",
+      "size": 7987
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/INDEX.md",
+      "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-06T05:19:26.541743+00:00",
+      "size": 3625
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
@@ -6651,8 +6742,8 @@
       "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
       "title": "QSP1 한계 원장 (Limitation Ledger)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-04T06:48:39.563066+00:00",
-      "size": 18488
+      "updated_at": "2026-08-05T20:05:31.579611+00:00",
+      "size": 20228
     },
     {
       "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/analysis_to_revision.md",
@@ -6753,6 +6844,27 @@
       "size": 6031
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/rounds/M_tick_qsp9_20260805.md",
+      "title": "QSP9 M 라운드 로그 — tick 라벨 공장·지형도 (2026-08-05 착수)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T07:42:02.794661+00:00",
+      "size": 9636
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/rounds/P_qsp10_20260805.md",
+      "title": "QSP10 라운드 로그 — 도달 지도·수렴 루프·슬라이더 (2026-08-05)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T15:18:10.819964+00:00",
+      "size": 5872
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/rounds/Q_qsp11_20260806.md",
+      "title": "QSP11 라운드 로그 — 파생 특징 주입 (2026-08-06)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T17:17:14.907106+00:00",
+      "size": 6137
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/rounds/R1_min_20260803.md",
       "title": "R1 — min 레인 첫 공식 연구 라운드 (2026-08-03)",
       "category": "quant_scoring_pipeline",
@@ -6765,6 +6877,20 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-08-03T12:56:56.066698+00:00",
       "size": 3913
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/rounds/R_qsp12_20260806.md",
+      "title": "QSP12 라운드 로그 — 계층 구조 탐색 (2026-08-06)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T19:06:01.628827+00:00",
+      "size": 8274
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/rounds/S_qsp13_20260806.md",
+      "title": "QSP13 라운드 로그 — 워크포워드: 선택 편의를 숫자로 (2026-08-06)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-05T20:05:03.126176+00:00",
+      "size": 2368
     },
     {
       "id": "docs/update_log/2026-06-02_analysis_capability_audit.md",

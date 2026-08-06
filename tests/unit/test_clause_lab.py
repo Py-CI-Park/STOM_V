@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from tests.unit._strategy_db_precondition import requires_strategy_row
 from alpha_lab.clause_lab import clauses, gate, judge, pair_report, parser, report
 from alpha_lab.clause_lab.clauses import (
     CLAUSE_SPECS, FAMILIES, PURE_DUPLICATE_PAIRS, RAW_EXPR,
@@ -201,7 +202,8 @@ def test_judge_all_fdr_and_sanity():
 # 파서 — 원문 sha + 50/39/카테고리(파일 존재 시만).
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not _STRAT.exists(), reason="strategy.db 없음")
+# 파일이 아니라 **행** 존재가 전제다(행이 있으면 반드시 실행 — 봉인의 존재 이유).
+@requires_strategy_row(_STRAT, "stockbuy", parser.CHAMPION_BUY_STRATEGY_NAME)
 def test_parser_validates_sealed_buy_code():
     text = parser.load_champion_buy(str(_STRAT))
     assert hashlib.sha256(text.encode("utf-8")).hexdigest() == clauses.CHAMPION_BUY_SHA256

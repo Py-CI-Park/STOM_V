@@ -373,8 +373,16 @@ def test_trade_date_unparsable_becomes_missing(ledger):
 
 
 def test_schema_columns_cover_ledger_contract():
-    """정본 스키마에 진입(B_*)/청산(S_*)/결과(R_*) 컬럼이 모두 포함된다."""
-    assert sum(c.startswith("B_") for c in LEDGER_COLUMNS) == 14
+    """정본 스키마에 진입(B_*)/청산(S_*)/결과(R_*) 컬럼이 모두 포함된다.
+
+    B_* 는 개수를 박아두지 않는다 — QSP1 P1(737d3cde)이 엔진 B_* 를 14 → 31 로
+    확장했듯 추가는 계속 일어난다. 지켜야 할 계약은 "원장이 엔진이 기록하는
+    진입 컬럼을 **빠짐없이 그대로** 담는가"다(누락이 곧 부검 불가).
+    """
+    from ai_strategy_loop.autopsy.analyze import B_COLUMNS
+
+    ledger_b = tuple(c for c in LEDGER_COLUMNS if c.startswith("B_"))
+    assert ledger_b == tuple(B_COLUMNS), "원장 B_* 가 엔진 진입 컬럼과 어긋난다"
     assert sum(c.startswith("S_") for c in LEDGER_COLUMNS) == 5
     assert sum(c.startswith("R_") for c in LEDGER_COLUMNS) == 4
     assert FULL_COLUMNS[0] == "schema_version"
