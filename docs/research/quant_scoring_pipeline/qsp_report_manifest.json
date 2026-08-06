@@ -1,8 +1,25 @@
 {
  "schema_version": "stom-research-report-v1",
  "generated_at": "2026-08-06T00:00:00Z",
- "count": 8,
+ "count": 9,
  "reports": [
+  {
+   "schema_version": "stom-research-report-v1",
+   "report_id": "wave_w05_execution_20260806",
+   "report_type": "execution",
+   "research_id": "master_wave_plan",
+   "status": "complete",
+   "publication_status": "published",
+   "generator": "claude-session-wave-w05",
+   "path": "reports/2026-08-06_wave_w05_execution_report.html",
+   "content_sha256": "9947e7f2a434df66d3609168847d8a7a026441cf19faa0f9384ef89e5f10104d",
+   "bytes": 11596,
+   "generated_at": "2026-08-06T00:00:00Z",
+   "trust": "verified",
+   "provenance": "docs/research/quant_scoring_pipeline/2026-08-06_master_wave_plan.md",
+   "decision": "관측면 4면 완료 — 다음 W1 뇌 배선",
+   "limitations": "화면은 관측 전용 · 루프 자체 배선은 W1~W2"
+  },
   {
    "schema_version": "stom-research-report-v1",
    "report_id": "program_reassessment_20260806",
