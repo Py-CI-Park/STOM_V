@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QSP10~13 감사 보고 — 계획 대비 이행·누락·실패 원인</title>
+</head>
+<body>
+<style>
+:root{
+  --bg:#FAFAF7; --ink:#1A2332; --muted:#5A6B7D; --surface:#F0F1EC; --border:#D5D9D2;
+  --accent:#B7791F; --pass:#0B7A5C; --fail:#B42318; --link:#075DC4; --code:#EDEFE8;
+  color-scheme:light dark;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#12181F; --ink:#E4EAEF; --muted:#9FAEBC; --surface:#1A222B; --border:#33404D;
+  --accent:#D9A441; --pass:#4CC49A; --fail:#E0776A; --link:#7FB3F5; --code:#1F2933;
+}}
+:root[data-theme="dark"]{
+  --bg:#12181F; --ink:#E4EAEF; --muted:#9FAEBC; --surface:#1A222B; --border:#33404D;
+  --accent:#D9A441; --pass:#4CC49A; --fail:#E0776A; --link:#7FB3F5; --code:#1F2933;
+}
+:root[data-theme="light"]{
+  --bg:#FAFAF7; --ink:#1A2332; --muted:#5A6B7D; --surface:#F0F1EC; --border:#D5D9D2;
+  --accent:#B7791F; --pass:#0B7A5C; --fail:#B42318; --link:#075DC4; --code:#EDEFE8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.65 system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:clamp(16px,4vw,48px)}
+.cover{border-top:4px solid var(--accent);background:var(--surface);
+  border:1px solid var(--border);border-top-width:4px;border-top-color:var(--accent);
+  border-radius:10px;padding:clamp(18px,3vw,36px);margin-bottom:26px}
+.eyebrow{color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+h1{font-size:clamp(23px,3.6vw,36px);line-height:1.2;margin:.35em 0 .3em;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;font-size:13px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 30px}
+.kpi{border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:12px 14px}
+.kpi b{display:block;font-size:21px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi span{font-size:12px;color:var(--muted)}
+.kpi.warn b{color:var(--fail)} .kpi.ok b{color:var(--pass)} .kpi.amber b{color:var(--accent)}
+h2{font-size:20px;margin:44px 0 6px;scroll-margin-top:16px}
+h2 .no{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:6px}
+h3{font-size:15.5px;margin:26px 0 8px}
+.sub{color:var(--muted);margin:0 0 14px;max-width:70ch}
+.tw{overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin:12px 0}
+table{width:100%;min-width:560px;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 11px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:none}
+th{background:var(--surface);font-weight:600;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pass{color:var(--pass);font-weight:600}.fail{color:var(--fail);font-weight:600}
+.part{color:var(--accent);font-weight:600}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid var(--border)}
+.pill.p{color:var(--pass);border-color:var(--pass)} .pill.f{color:var(--fail);border-color:var(--fail)}
+.pill.w{color:var(--accent);border-color:var(--accent)}
+.callout{border:1px solid var(--border);border-left:4px solid var(--accent);background:var(--surface);
+  border-radius:8px;padding:14px 18px;margin:16px 0}
+.callout.red{border-left-color:var(--fail)}
+.callout p{margin:.3em 0}
+.flow{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:14px 18px;
+  overflow-x:auto;font:13px/1.7 ui-monospace,Consolas,monospace;white-space:pre;margin:12px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:14px 0}
+.card{border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:14px 16px}
+.card h4{margin:0 0 8px;font-size:14px}
+.card ul{margin:0;padding-left:18px}
+.card li{margin:4px 0}
+small.src{color:var(--muted)}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)}
+footer ul{margin:6px 0;padding-left:18px}
+a{color:var(--link)}
+</style>
+
+<div class="wrap">
+<div class="cover">
+  <div class="eyebrow">STOM · Quant Scoring Pipeline · 감사 보고</div>
+  <h1>QSP10~13 계획 대비 감사 — 무엇을 했고, 무엇을 빠뜨렸고, 왜 실패했나</h1>
+  <p class="lede">브랜치 <b>feature/qsp10-reach-map</b> 전 기록(계획서·커밋 48건·라운드 로그 4건·세션 종합)을
+  계획서 원문과 항목별 대조한 감사 결과. 결론: <b>P1~P5 전 단계 수행, 그러나 P5 검증 사다리를
+  6종 중 3종만 구현한 채 홀드아웃을 개봉</b>했으며, 빠뜨린 계단(전진분석)이 바로 그 실패를 예방할 도구였다.</p>
+  <div class="meta">
+    <span>작성 <b>2026-08-06</b></span>
+    <span>대상 기간 <b>QSP10 → QSP13</b></span>
+    <span>기준 문서 <b>2026-08-05_qsp10_마스터_실행계획.md</b></span>
+    <span>판정 <b class="fail">연구 게이트 FAIL</b> · <b class="pass">도구 구축 완료</b></span>
+  </div>
+</div>
+
+<div class="kpis">
+  <div class="kpi ok"><b>5 / 5</b><span>계획 단계 수행 (P1~P5)</span></div>
+  <div class="kpi warn"><b>5건</b><span>계획 대비 누락</span></div>
+  <div class="kpi warn"><b>6건</b><span>발견·교정한 측정 결함</span></div>
+  <div class="kpi amber"><b>0.62%p</b><span>선택 편의 (실측)</span></div>
+  <div class="kpi amber"><b>+0.021</b><span>학습↔표본밖 상관 (무관)</span></div>
+  <div class="kpi ok"><b>76종+</b><span>회귀 테스트 GREEN</span></div>
+</div>
+
+<h2 id="s1"><span class="no">1</span>계획 대비 이행</h2>
+<p class="sub">계획서(2026-08-05 마스터 실행계획) 단계별 정의와 실제 수행의 항목별 대조.</p>
+<div class="tw"><table>
+<tr><th>단계</th><th>계획 내용</th><th>실제 수행</th><th>판정</th></tr>
+<tr><td><b>P1</b> 라벨 v2</td><td>체크포인트 5종 · 배리어 7종 · 봉투+도달시각 · 불변식 QA · 양 레인 재빌드</td>
+<td>전부 수행 + <b>v3(파생 11종)</b>까지 확장. tick 355일 + min 155일</td><td><span class="pill p">초과 달성</span></td></tr>
+<tr><td><b>P2</b> 우주·큐브</td><td>유일 입구 뷰 · 큐브 · 군집도</td><td>전부 수행 (759만 행 · 버전 u1)</td><td><span class="pill p">완료</span></td></tr>
+<tr><td><b>P3</b> 수렴 루프 ◆</td><td>탐욕 스태킹 · 통계 규율 · 게이트 판정</td><td>수행 + 프런티어 전수 스캔(계획 외 보강). 게이트 FAIL</td><td><span class="pill p">수행</span> <span class="pill f">게이트 FAIL</span></td></tr>
+<tr><td><b>P4</b> 슬라이더 UI</td><td>API 4종 · 페이지 22~24</td><td>API 5종 · 페이지 3면. 번들 미재빌드를 막판 자체 발견·교정</td><td><span class="pill p">완료</span></td></tr>
+<tr><td><b>P5</b> 엔진·사다리</td><td>렌더러 · 전이율 · <b>2-job 분할 → 사다리 6종</b> → 홀드아웃</td>
+<td>렌더러·전이율 수행 / <b>사다리 3종만</b> / 2-job 생략 / 홀드아웃 개봉</td><td><span class="pill w">절반 이행</span></td></tr>
+<tr><td>P6 실전</td><td>사용자 수행</td><td>후보 없어 미도달</td><td><span class="pill">올바른 미도달</span></td></tr>
+</table></div>
+
+<h2 id="s2"><span class="no">2</span>누락 — 5건</h2>
+<div class="tw"><table>
+<tr><th class="num">#</th><th>누락</th><th>계획 근거</th><th>실제 비용</th></tr>
+<tr><td class="num">1</td><td><b>검증 사다리 6종 중 3종 누락</b> — 계획 정의(QSP9 M-5): 2-job 분할 · <b>전진분석</b> · 비용×1.5 · 고원 · 국면 절단. 구현은 뒤의 3종만</td>
+<td>계획서 §0 · §2-P5</td><td class="fail">홀드아웃(1회용)을 태운 직접 원인</td></tr>
+<tr><td class="num">2</td><td>2-job 분할 게이트 생략 — 곧바로 전체 구간 연속 런</td><td>계획서 §2-P5</td><td>1번의 일부</td></tr>
+<tr><td class="num">3</td><td><b>min 레인 P3 재판독 미수행</b> — 계획의 "P3 미돌파 시 대응 경로". min 라벨 v2를 만들고(155일) 한 번도 분석에 쓰지 않음</td>
+<td>계획서 §2-P3 게이트</td><td>min 우주는 지금도 미탐색 — "탐색 공간 소진" 결론은 엄밀히 <b>tick 레인 한정</b></td></tr>
+<tr><td class="num">4</td><td>페이지 12 강화(전이율 누적 원장 UI) 미구현 — 계수 0.34는 문서에만 등재</td><td>계획서 §3</td><td>소</td></tr>
+<tr><td class="num">5</td><td>엔진 "16 설계 런" 절차 생략</td><td>계획서 §2-P5</td><td>소</td></tr>
+</table></div>
+
+<h3>가장 뼈아픈 지점 — 누락 1번의 경위</h3>
+<div class="flow">계획:  사다리 6종(전진분석 포함) 전부 통과  →  그 다음에야 홀드아웃 개봉
+실행:  사다리 3종만 구현·통과  →  홀드아웃 개봉  →  탈락
+    →  탈락 원인 규명 위해 QSP13에서 워크포워드를 "새로" 구현
+    →  즉시 판정: 양수 폴드 1/30 — 애초에 가짜 후보였음</div>
+<div class="callout red"><p><b>QSP13의 "새 해법"은 계획에 이미 있던 빠진 계단이었다.</b>
+계획대로 사다리를 완성한 뒤 홀드아웃을 열었다면, 워크포워드가 설계 구간 안에서 후보를 죽였을 것이고
+1회용 검증 카드는 아직 살아 있었다. 같은 지식(선택 편의 0.62%p)에 도달했지만, 비싼 값을 치르고 도달했다.</p></div>
+
+<h2 id="s3"><span class="no">3</span>연구 방법 오류 — 실행 결함과 설계 결함</h2>
+<h3>3-1. 실행 결함 6건 (진행 중 발견·교정 — 회귀 테스트로 고정)</h3>
+<div class="tw"><table>
+<tr><th class="num">#</th><th>결함</th><th>못 잡았다면</th></tr>
+<tr><td class="num">1</td><td>일 클러스터 검정이 계산 불가 상태로 p=1.0 반환</td><td>진짜 후보를 전부 폐기</td></tr>
+<tr><td class="num">2</td><td>중복 열(spread_pct)로 마스크 연산 크래시</td><td>—</td></tr>
+<tr><td class="num">3</td><td>목적 함수(합계) ≠ 판정 기준(일평균)</td><td>편중 해만 계속 선택</td></tr>
+<tr><td class="num">4</td><td><b>진입 단위 불일치</b> — 지도는 조건 참인 전 초, 엔진은 첫 초만 (4.7배 부풀림)</td><td class="fail">부호 반전 (−0.10% ↔ +0.12%)</td></tr>
+<tr><td class="num">5</td><td>고원 검사가 임계 28개를 동시 이동</td><td>모든 후보를 잘못 탈락</td></tr>
+<tr><td class="num">6</td><td>JSX 번들 미재빌드 — 신규 화면이 서비스에 미노출</td><td>페이지 22~24 부재</td></tr>
+</table></div>
+
+<h3>3-2. 설계 결함 4건 (더 근본적 — 계획서 자체의 결함 포함)</h3>
+<div class="tw"><table>
+<tr><th class="num">#</th><th>설계 결함</th><th>내용</th></tr>
+<tr><td class="num">1</td><td><b>선택 후 검정</b></td><td>수백만 조합에서 최고를 고른 <b>뒤에</b> 그 하나만 p값 검정. p값이 탐색 규모를 반영하지 않으므로
+게이트가 가짜를 통과시키게 설계됨. <b>계획서의 게이트 정의 자체의 결함</b></td></tr>
+<tr><td class="num">2</td><td><b>검증 순서 역전</b></td><td>싼 검증(설계 구간 내 워크포워드)을 비싼 검증(1회용 홀드아웃)보다 뒤에 실행</td></tr>
+<tr><td class="num">3</td><td><b>지도 적정성 검증을 마지막에</b></td><td>902/905를 지도에 얹는 검사를 QSP12에야 수행. P2 직후 했다면 ① 변화율 재료 부재(컬럼 대조만으로
+<b>첫날, 계산 없이</b> 발견 가능) ② 배리어 청산으로 902/905 수익 표현 불가를 탐색 3라운드 전에 알 수 있었음</td></tr>
+<tr><td class="num">4</td><td>측정기 미검증 상태로 탐색 병행</td><td>진입 단위 불일치는 QSP9부터 존재 — 그 위의 모든 지도 수치가 부풀려진 채 의사결정에 사용됨</td></tr>
+</table></div>
+
+<h2 id="s4"><span class="no">4</span>실패 원인 — 3층 구조</h2>
+<div class="tw"><table>
+<tr><th>층</th><th>원인</th><th>증거</th></tr>
+<tr><td>표층</td><td>홀드아웃 탈락</td><td>승률 45% → 27.8% · CAGR −39.8%</td></tr>
+<tr><td>중층</td><td><b>선택 편의 0.6225%p</b></td><td>30폴드: 학습 +0.31% → 표본 밖 −0.31% · 학습↔표본밖 상관 +0.021(무관)</td></tr>
+<tr><td><b>심층</b></td><td><b>문제 설정 자체</b> — ① 우주가 깊게 음수 ② 진입×고정배리어 가설이 실제 흑자 전략의
+수익 구조(8종 매도 규칙)를 표현 못 함</td><td>라벨 18.25M점 실측(전 시간대 −0.43~−0.71%/건) · 902/905 지도 얹기 실측</td></tr>
+</table></div>
+<div class="callout"><p><b>심층이 진짜 답이다.</b> 깊게 음수인 바다에서 진입 필터만으로 양수 웅덩이를 찾는 문제였고,
+그 웅덩이가 (30특징 × 계층 임계 공간에는) 없다는 것이 홀드아웃·워크포워드 두 독립 설계로 증명됐다.
+최고 기록 +0.43% &lt; 필요치 +0.62%(편의 보정) — 산수로 불가능한 구조.</p></div>
+
+<h2 id="s5"><span class="no">5</span>종합 판정</h2>
+<div class="tw"><table>
+<tr><th>관점</th><th>판정</th><th>비고</th></tr>
+<tr><td>문제 설정</td><td class="fail">부적정</td><td>진입 중심 + 고정 배리어 — 검증된 흑자 전략(902/905)의 수익 원천(매도)과 불일치. 연구 시작 전 대조 가능했던 사실</td></tr>
+<tr><td>통계 설계</td><td class="fail">결함</td><td>게이트가 탐색 규모(선택 편의)를 미반영 — 계획서부터의 결함</td></tr>
+<tr><td>프로세스</td><td class="part">부분 이행</td><td>계획된 방어(사다리 6종)의 절반 생략 · min 재판독 생략</td></tr>
+<tr><td>기록·정직성</td><td class="pass">준수</td><td>실패 전량 기록 · 결함 발견 시 이전 결론 소급 무효화 · INDEX 정본 관리</td></tr>
+<tr><td>도구 구축</td><td class="pass">초과 달성</td><td>테스트 76종+ · 전 모듈 완비 · 계획 외 자산 4종</td></tr>
+</table></div>
+
+<h2 id="s6"><span class="no">6</span>P1~P5로 무엇이 가능해졌나</h2>
+<div class="tw"><table>
+<tr><th>능력</th><th>계획 예상</th><th>실제 달성</th><th>지금 가능한 것</th></tr>
+<tr><td>조건 1개 평가</td><td>7~10분 → 1초</td><td class="pass">달성</td><td>페이지 23 슬라이더로 직접 탐색</td></tr>
+<tr><td>청산 규칙 탁상 평가</td><td>TP/SL/T 그리드</td><td class="pass">달성 + 봉투(30초~10분) 보유</td><td><b>트레일링·시간단계 매도 연구를 재빌드 없이 즉시 시작</b></td></tr>
+<tr><td>단일 렌즈 오판 차단</td><td>화면 구조로</td><td class="pass">달성</td><td>페이지 22 전 지평×전 배리어 패널</td></tr>
+<tr><td>자본 충돌 예고</td><td>군집도</td><td class="pass">달성</td><td>실측 1.00~1.06</td></tr>
+<tr><td>지식 축적</td><td>INDEX·큐브·계보</td><td class="pass">달성</td><td>세션종합 1문서로 재개 가능</td></tr>
+</table></div>
+
+<h3>계획에 없었는데 추가로 얻은 능력 4종</h3>
+<div class="grid2">
+<div class="card"><h4>① 엔진 창 함수 정의 역산</h4><ul><li>60틱 기본 창 · round 적용 · 각도 공식 — 100% 일치</li><li>지도와 엔진이 같은 수식 — 영구 자산</li></ul></div>
+<div class="card"><h4>② 진입 단위 정합 (entries.py)</h4><ul><li>지도 수치가 엔진과 같은 단위</li><li>이후 모든 탐색의 전제 조건</li></ul></div>
+<div class="card"><h4>③ 워크포워드 (walkforward.py)</h4><ul><li><b>홀드아웃을 태우지 않고</b> 후보 진위 판정</li><li>원래 계획의 빠진 계단이 이제 채워짐</li></ul></div>
+<div class="card"><h4>④ 선택 편의 예산 0.62%p</h4><ul><li>설계 구간 성적의 판독 기준</li><li>표본 밖 예상 = 설계 성적 − 0.62%p</li></ul></div>
+</div>
+
+<h2 id="s7"><span class="no">7</span>다음 방향</h2>
+<div class="tw"><table>
+<tr><th class="num">#</th><th>방향</th><th>근거</th></tr>
+<tr><td class="num">1</td><td><b>매도 축 확장</b> — 배리어 → 트레일링·시간단계·상태 조건부</td><td>902/905 수익이 매도에서 나옴(실측) · 봉투 데이터 이미 보유</td></tr>
+<tr><td class="num">2</td><td>프로그램 성숙도 재평가 + 인간형 조건식 탐색이 왜 실패하는지 근본 연구</td><td>본 감사의 후속 — 별도 라운드로 진행</td></tr>
+<tr><td class="num">3</td><td>시초 첫 2/5/10분 한정 진입 · 소수 종목 · 높은 손익비 아이디어 실증</td><td>사용자 브레인스토밍 — P1 라벨로 즉시 평가 가능</td></tr>
+</table></div>
+
+<footer>
+근거 문서:
+<ul>
+<li>docs/research/quant_scoring_pipeline/2026-08-05_qsp10_마스터_실행계획.md (계획 정본)</li>
+<li>docs/research/quant_scoring_pipeline/2026-08-06_qsp10_13_세션종합.md (실행 종합)</li>
+<li>rounds/P_qsp10 · Q_qsp11 · R_qsp12 · S_qsp13 (라운드 로그 4건)</li>
+<li>limitation_ledger.md (한계 원장)</li>
+</ul>
+생성: 2026-08-06 · 브랜치 feature/qsp10-reach-map (HEAD 487cb5dc 기준 감사) · 이 보고서는 정적·자가완결이며 외부 요청이 없다.
+</footer>
+</div>
+
+</body>
+</html>
