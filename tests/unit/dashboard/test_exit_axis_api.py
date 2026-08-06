@@ -99,7 +99,8 @@ def test_joins_three_sources_on_rule_name(labels):
 
     payload = ea.exit_axis()
     assert payload["available"] is True
-    assert payload["sources"] == {"reproduction_gate": True, "walkforward": True, "engine": True}
+    assert payload["sources"] == {"reproduction_gate": True, "walkforward": True,
+                                  "engine": True, "ladder": False}
 
     row = next(r for r in payload["rows"] if r["rule"] == "trailing(arm+3/give1.5)")
     assert row["map_expectancy_pct"] == pytest.approx(0.2493)      # 지도
@@ -180,3 +181,65 @@ def test_reading_rules_are_always_shipped(labels):
     rules = ea.exit_axis()["reading_rules"]
     assert any("상한" in r for r in rules)
     assert any("나누지" in r for r in rules)
+
+
+# ---------------------------------------------------------------------------
+# 사다리 — 엔진보다 앞선 관문
+# ---------------------------------------------------------------------------
+
+def _ladder(rule, verdict, regime_verdict="FAIL"):
+    return {
+        "rule": rule, "verdict": verdict,
+        "plateau": {"verdict": "PASS"},
+        "cost_stress": {"verdict": "PASS"},
+        "regime": {"verdict": regime_verdict, "segments": [
+            {"segment": 1, "day_from": 20240304, "day_to": 20240719,
+             "days": 56, "n": 79, "day_mean_pct": 0.4870},
+            {"segment": 2, "day_from": 20240722, "day_to": 20241129,
+             "days": 56, "n": 79, "day_mean_pct": -0.2511},
+        ]},
+    }
+
+
+def test_ladder_verdict_sits_next_to_engine_value(labels):
+    """★ 엔진 수치가 좋아도 사다리가 FAIL 이면 같은 줄에서 보여야 한다."""
+    _write(labels, ea._GATE, _gate())
+    _write(labels, ea._ENGINE, _engine())
+    _write(labels, "_exit_ladder_3_1.5.json", _ladder("trailing(arm+3/give1.5)", "FAIL"))
+
+    payload = ea.exit_axis()
+    row = next(r for r in payload["rows"] if r["rule"] == "trailing(arm+3/give1.5)")
+    assert row["engine_avg_profit_pct"] == pytest.approx(0.18)   # 엔진은 양수인데
+    assert row["ladder_verdict"] == "FAIL"                        # 사다리는 탈락
+    assert row["ladder_rungs"]["regime"] == "FAIL"
+    assert row["ladder_rungs"]["plateau"] == "PASS"
+    assert payload["sources"]["ladder"] is True
+
+
+def test_rules_without_ladder_report_none_not_pass(labels):
+    """안 태운 것과 통과한 것을 구분한다 — None 을 PASS 로 읽으면 관문이 사라진다."""
+    _write(labels, ea._GATE, _gate())
+    payload = ea.exit_axis()
+    for row in payload["rows"]:
+        assert row["ladder_verdict"] is None
+        assert row["ladder_rungs"] is None
+
+
+def test_regime_segments_are_carried_for_display(labels):
+    _write(labels, ea._GATE, _gate())
+    _write(labels, "_exit_ladder_3_1.5.json", _ladder("trailing(arm+3/give1.5)", "FAIL"))
+    row = next(r for r in ea.exit_axis()["rows"] if r["rule"] == "trailing(arm+3/give1.5)")
+    assert len(row["ladder_regime_segments"]) == 2
+    assert row["ladder_regime_segments"][1]["day_mean_pct"] == pytest.approx(-0.2511)
+
+
+def test_corrupt_ladder_file_is_skipped(labels):
+    _write(labels, ea._GATE, _gate())
+    (labels / "_exit_ladder_bad.json").write_text("{not json", encoding="utf-8")
+    payload = ea.exit_axis()
+    assert payload["sources"]["ladder"] is False
+
+
+def test_reading_rules_mention_ladder_precedence(labels):
+    _write(labels, ea._GATE, _gate())
+    assert any("사다리" in rule for rule in ea.exit_axis()["reading_rules"])

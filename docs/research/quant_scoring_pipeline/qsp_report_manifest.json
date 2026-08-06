@@ -12,13 +12,13 @@
    "publication_status": "published",
    "generator": "claude-session-wave-w4-w5",
    "path": "reports/2026-08-07_wave_w4_w5_report.html",
-   "content_sha256": "2e1f4b8732b6dd97bff48ad054ab14ba64c301b61f393d6d5deaa1028f9a727c",
-   "bytes": 19616,
+   "content_sha256": "c16213dcfaaea54f30c0415dc09f531aeb43487d18ba99fbfc60524610f112ee",
+   "bytes": 26031,
    "generated_at": "2026-08-07T00:00:00Z",
    "trust": "verified",
    "provenance": "docs/research/quant_scoring_pipeline/2026-08-07_wave_w4_w5_results.md",
-   "decision": "엔진 A/B 3종 전부 기준선 상회 — 채택은 사다리 통과 후 사람 게이트",
-   "limitations": "설계 구간 in-sample · B1/B2 는 CAGR 손실 · 넓은 격자 실험은 빌드 중"
+   "decision": "엔진 A/B 3종 상회했으나 사다리 국면절단 FAIL — 승격 0",
+   "limitations": "설계 구간 in-sample · 고정 청산 전체가 국면 의존 · 넓은 격자 실험은 빌드 중"
   },
   {
    "schema_version": "stom-research-report-v1",

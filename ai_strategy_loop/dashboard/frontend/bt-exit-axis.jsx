@@ -38,6 +38,59 @@ function BtEaExactness({ value }) {
   return <span className={"badge " + tone} title={hint}>{label}</span>;
 }
 
+/* 사다리 배지 — 엔진보다 **앞선** 관문이다.
+   실측 2026-08-07: 엔진 A/B 3종이 전부 기준선을 넘었는데 국면 절단에서 전부 탈락했다.
+   그래서 사다리 판정은 엔진 값 바로 옆에 있어야 한다. */
+function BtEaLadder({ verdict, rungs }) {
+  if (!verdict) return <span className="mono" title="아직 사다리를 태우지 않았습니다">—</span>;
+  const failed = rungs
+    ? Object.keys(rungs).filter((k) => rungs[k] === "FAIL")
+    : [];
+  const names = { plateau: "격자 고원", cost_stress: "비용 스트레스", regime: "국면 절단" };
+  const hint = verdict === "PASS"
+    ? "세 단을 모두 통과했습니다 — 그래도 채택은 사람 결정입니다."
+    : `탈락: ${failed.map((k) => names[k] || k).join(", ")}. 엔진 수치와 무관하게 승격 대상이 아닙니다.`;
+  return (
+    <span className={"badge " + (verdict === "PASS" ? "" : "warn")} title={hint}>
+      {verdict === "PASS" ? "사다리 통과" : `사다리 탈락${failed.length ? ` · ${names[failed[0]] || failed[0]}` : ""}`}
+    </span>
+  );
+}
+
+/* 국면 절단 상세 — 평균 하나로는 "어느 구간이 다 벌었는지"가 안 보인다. */
+function BtEaRegime({ rows }) {
+  const withSegments = (rows || []).filter((r) => (r.ladder_regime_segments || []).length);
+  if (!withSegments.length) return null;
+  return (
+    <section className="panel" style={{ marginTop: 12 }}>
+      <div className="panel-hd"><div className="panel-hd-title">국면 절단 — 기간을 나눠도 일관되는가</div>
+        <small className="v4s-en">한 구간이 전체를 벌어 주는 규칙은 국면에 기댄 것이다</small></div>
+      <div className="panel-bd">
+        <p className="v4s-note">전체 평균이 양수여도 <b>구간별로 갈라 보면</b> 한두 구간이 나머지를
+          떠받치고 있는 경우가 있습니다. 그런 규칙은 그 국면이 끝나면 함께 끝납니다.</p>
+        <div className="table-wrap">
+          <table className="tbl">
+            <thead><tr><th>청산 규칙</th><th>구간</th><th>기간</th>
+              <th className="num">일수</th><th className="num">건수</th><th className="num">일평균</th></tr></thead>
+            <tbody>
+              {withSegments.map((row) => row.ladder_regime_segments.map((seg, i) => (
+                <tr key={`${row.rule}-${seg.segment}`} className={seg.day_mean_pct < 0 ? "row-warn" : ""}>
+                  {i === 0 && <td className="mono" rowSpan={row.ladder_regime_segments.length}>{row.rule}</td>}
+                  <td className="num mono">{seg.segment}</td>
+                  <td className="mono">{seg.day_from} ~ {seg.day_to}</td>
+                  <td className="num mono">{btEaNum(seg.days)}</td>
+                  <td className="num mono">{btEaNum(seg.n)}</td>
+                  <td className={"num mono " + btEaSign(seg.day_mean_pct)}>{btEaNum(seg.day_mean_pct, 4)}%</td>
+                </tr>
+              )))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* 게이트 · 워크포워드 요약 — 표를 읽기 전에 '어떤 자로 쟀는지'부터 본다. */
 function BtEaHeadline({ gate, walkforward, baseline }) {
   return (
@@ -175,6 +228,7 @@ export function BtExitAxisPanel({ outName }) {
                   <th>청산 규칙</th><th>정확도</th>
                   <th className="num">지도 건당</th><th className="num">지도 일평균</th>
                   <th className="num">폴드 선택</th>
+                  <th>사다리</th>
                   <th className="num">엔진 건당</th><th className="num">기준선 Δ</th>
                   <th className="num">전이율</th>
                   <th className="num">엔진 CAGR</th><th className="num">엔진 MDD</th>
@@ -189,6 +243,7 @@ export function BtExitAxisPanel({ outName }) {
                       <td className={"num mono " + btEaSign(row.map_expectancy_pct)}>{btEaNum(row.map_expectancy_pct, 4)}%</td>
                       <td className={"num mono " + btEaSign(row.map_day_mean_pct)}>{btEaNum(row.map_day_mean_pct, 4)}%</td>
                       <td className="num mono">{row.walkforward_chosen_count || "—"}</td>
+                      <td><BtEaLadder verdict={row.ladder_verdict} rungs={row.ladder_rungs}/></td>
                       <td className={"num mono " + btEaSign(row.engine_avg_profit_pct)}>
                         {row.engine_avg_profit_pct === null || row.engine_avg_profit_pct === undefined
                           ? "미실측" : btEaNum(row.engine_avg_profit_pct, 4) + "%"}</td>
@@ -207,6 +262,7 @@ export function BtExitAxisPanel({ outName }) {
         </section>
       )}
 
+      <BtEaRegime rows={(payload && payload.rows) || []}/>
       <BtEaFolds folds={payload && payload.walkforward && payload.walkforward.folds}/>
     </div>
   );

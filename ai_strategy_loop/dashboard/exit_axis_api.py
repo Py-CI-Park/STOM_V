@@ -37,6 +37,7 @@ JUDGEABLE: Final = ("exact", "lower_bound")
 _GATE: Final = "_reproduction_gate.json"
 _WALKFORWARD: Final = "_exit_walkforward.json"
 _ENGINE: Final = "_p5_engine_report.json"
+_LADDER_GLOB: Final = "_exit_ladder_*.json"
 
 
 def _read(out_name: str, filename: str) -> dict[str, Any] | None:
@@ -63,6 +64,29 @@ def _engine_by_rule(engine: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
     return indexed
 
 
+def _ladders(out_name: str) -> dict[str, dict[str, Any]]:
+    """규칙 이름 → 사다리 판정.
+
+    사다리는 엔진 승격 **전에** 거르는 단계다. 엔진 수치가 좋아도 사다리가 FAIL
+    이면 승격 대상이 아니므로, 표에서 엔진 값 옆에 나란히 보여야 한다
+    (실측 2026-08-07: 엔진 A/B 3종 전부 통과했는데 국면 절단에서 전부 탈락).
+    """
+    import glob  # noqa: PLC0415
+
+    found: dict[str, dict[str, Any]] = {}
+    pattern = os.path.join(_LABEL_ROOT, out_name, _LADDER_GLOB)
+    for path in sorted(glob.glob(pattern)):
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                payload = json.load(handle)
+        except (OSError, ValueError):
+            continue
+        rule = (payload or {}).get("rule")
+        if rule:
+            found[str(rule)] = payload
+    return found
+
+
 def _chosen_counts(walkforward: dict[str, Any] | None) -> dict[str, int]:
     """폴드가 각 규칙을 몇 번 골랐는가 — 안정성의 가장 단순한 지표."""
     counts: dict[str, int] = {}
@@ -82,6 +106,7 @@ def exit_axis(out_name: str = "design_v4") -> dict[str, Any]:
 
     engine_rules = _engine_by_rule(engine)
     chosen = _chosen_counts(walkforward)
+    ladders = _ladders(out_name)
     reproducing = set((gate or {}).get("reproducing") or [])
 
     rows: list[dict[str, Any]] = []
@@ -91,7 +116,17 @@ def exit_axis(out_name: str = "design_v4") -> dict[str, Any]:
         rule = str(cell.get("rule") or "")
         engine_row = engine_rules.get(rule)
         engine_metrics = (engine_row or {}).get("engine") or {}
+        ladder = ladders.get(rule)
         rows.append({
+            # 사다리 — 엔진보다 **앞선** 관문이다. FAIL 이면 엔진 수치와 무관하게
+            #   승격 대상이 아니다.
+            "ladder_verdict": (ladder or {}).get("verdict"),
+            "ladder_rungs": {
+                "plateau": ((ladder or {}).get("plateau") or {}).get("verdict"),
+                "cost_stress": ((ladder or {}).get("cost_stress") or {}).get("verdict"),
+                "regime": ((ladder or {}).get("regime") or {}).get("verdict"),
+            } if ladder else None,
+            "ladder_regime_segments": ((ladder or {}).get("regime") or {}).get("segments"),
             "rule": rule,
             "family": cell.get("family"),
             "exactness": cell.get("exactness"),
@@ -137,6 +172,7 @@ def exit_axis(out_name: str = "design_v4") -> dict[str, Any]:
             "reproduction_gate": gate is not None,
             "walkforward": walkforward is not None,
             "engine": engine is not None,
+            "ladder": bool(ladders),
         },
         "gate": {
             "verdict": (gate or {}).get("verdict"),
@@ -166,5 +202,7 @@ def exit_axis(out_name: str = "design_v4") -> dict[str, Any]:
             "지도는 건당 %, 워크포워드는 일평균 % 입니다. 나란히 두되 나누지 않습니다.",
             "엔진 값이 없으면 전이율도 없습니다 — 추정치를 채우지 않습니다.",
             "기준선 대비 Δ는 같은 런에서 잰 값끼리만 뺍니다.",
+            "사다리가 FAIL 이면 엔진 수치가 좋아도 승격 대상이 아닙니다 "
+            "(2026-08-07: 엔진 A/B 3종 전부 통과했으나 국면 절단에서 전부 탈락).",
         ],
     }
