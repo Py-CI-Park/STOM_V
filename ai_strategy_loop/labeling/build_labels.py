@@ -20,6 +20,7 @@ import pandas as pd
 
 from ai_strategy_loop.labeling.label_factory import build_day_labels
 from ai_strategy_loop.labeling.lanes import LANES, LaneSpec, TICK
+from ai_strategy_loop.labeling.trailing import TRAILING_GRID, resolve_grid
 
 _DB_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "_database")
 _OUT_DIR = os.path.join(os.path.dirname(__file__), "..", "state", "labels")
@@ -40,7 +41,8 @@ def _downcast(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def run(start: int, end: int, *, allow_holdout: bool = False, out_name: str = "design",
-        lane: LaneSpec = TICK) -> dict:
+        lane: LaneSpec = TICK,
+        trailing_grid: tuple[tuple[float, float], ...] = TRAILING_GRID) -> dict:
     if end >= lane.holdout_start and not allow_holdout:
         raise SystemExit(
             f"{lane.name} 홀드아웃({lane.holdout_start}~) 라벨 생성은 규율 L2 로 봉인되어 있다. "
@@ -58,7 +60,7 @@ def run(start: int, end: int, *, allow_holdout: bool = False, out_name: str = "d
             continue
         try:
             frame = build_day_labels(os.path.join(_DB_DIR, f"{lane.db_pattern}{day}.db"),
-                                     day=day, lane=lane)
+                                     day=day, lane=lane, trailing_grid=trailing_grid)
             if frame.empty:
                 failed.append({"day": day, "reason": "empty"})
                 continue
@@ -73,6 +75,9 @@ def run(start: int, end: int, *, allow_holdout: bool = False, out_name: str = "d
         "start": start, "end": end, "days": len(days), "done": len(done),
         "skipped": len(skipped), "failed": failed, "elapsed_sec": round(time.time() - t0, 1),
         "out_dir": out_dir,
+        # 어떤 트레일링 격자로 구웠는지 기록한다 — 나중에 열 이름만 보고
+        #   격자를 역추정하는 일이 없도록.
+        "trailing_grid": [list(pair) for pair in trailing_grid],
     }
     with open(os.path.join(out_dir, "_build_summary.json"), "w", encoding="utf-8") as fh:
         json.dump(summary, fh, ensure_ascii=False, indent=2)
@@ -87,9 +92,11 @@ def main() -> None:
     parser.add_argument("--allow-holdout", action="store_true")
     parser.add_argument("--out-name", default="design")
     parser.add_argument("--lane", choices=sorted(LANES), default="tick")
+    parser.add_argument("--trailing-grid", default="default",
+                        help="default(6쌍) | wide(36쌍). 격자는 실행 전에 고른다")
     args = parser.parse_args()
     run(args.start, args.end, allow_holdout=args.allow_holdout, out_name=args.out_name,
-        lane=LANES[args.lane])
+        lane=LANES[args.lane], trailing_grid=resolve_grid(args.trailing_grid))
 
 
 if __name__ == "__main__":

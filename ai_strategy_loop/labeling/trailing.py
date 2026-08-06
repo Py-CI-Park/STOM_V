@@ -33,6 +33,34 @@ TRAILING_GRID: tuple[tuple[float, float], ...] = (
     (1.0, 0.5), (1.5, 0.5), (2.0, 1.0), (3.0, 1.0), (3.0, 1.5), (5.0, 2.0),
 )
 
+#: 넓은 격자 (W4-d) — **승자 주변을 세밀하게 파는 것이 아니라 격자를 통째로 채운다.**
+#:
+#: 목적은 더 좋은 셀 찾기가 아니라 실험이다: 후보를 6개에서 36개로 늘리면
+#: 선택 편의가 얼마나 커지는가. W2 헌법("가설 예산제")이 주장하는 바를 그 자신의
+#: 척도로 시험한다. 격자를 실행 **전에** 선언하고 전셀을 보고한다(헌법 2항).
+#:
+#: 승자(arm3/give1.5) 주변만 촘촘하게 만들면 그것이 곧 사후 미세조정이므로,
+#: arm·give 를 각각 균등 격자로 깔고 교집합을 전부 넣는다.
+_WIDE_ARMS: tuple[float, ...] = (2.0, 3.0, 4.0, 5.0, 6.0, 7.0)
+_WIDE_GIVES: tuple[float, ...] = (0.5, 1.0, 1.5, 2.0, 2.5, 3.0)
+WIDE_TRAILING_GRID: tuple[tuple[float, float], ...] = tuple(
+    (arm, give) for arm in _WIDE_ARMS for give in _WIDE_GIVES
+)
+
+#: 이름 → 격자. 러너가 `--grid` 로 고른다. 기본은 언제나 사전 고정 격자다.
+GRIDS: dict[str, tuple[tuple[float, float], ...]] = {
+    "default": TRAILING_GRID,
+    "wide": WIDE_TRAILING_GRID,
+}
+
+
+def resolve_grid(name: str) -> tuple[tuple[float, float], ...]:
+    """격자 이름을 격자로. 모르는 이름은 조용히 기본으로 흘리지 않고 거부한다."""
+    try:
+        return GRIDS[name]
+    except KeyError:
+        raise ValueError(f"알 수 없는 트레일링 격자: {name} (가능: {sorted(GRIDS)})") from None
+
 
 @njit(cache=True)
 def _trailing_kernel(bid, ask, entry_pos, horizon, arm, give, stale_ok):

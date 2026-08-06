@@ -35,7 +35,7 @@ from ai_strategy_loop.labeling.exit_axis import default_grid, evaluate
 from ai_strategy_loop.labeling.lanes import LANES
 from ai_strategy_loop.labeling.run_p3 import RULES, _load
 from ai_strategy_loop.labeling.run_reproduction_gate import _champion_columns
-from ai_strategy_loop.labeling.trailing import TRAILING_GRID
+from ai_strategy_loop.labeling.trailing import TRAILING_GRID, resolve_grid
 from ai_strategy_loop.labeling.verify_human_strategy import _mask_902, _mask_905
 from ai_strategy_loop.labeling.walkforward import MIN_TRAIN_DAYS, MIN_VALID_DAYS, make_folds
 
@@ -61,6 +61,8 @@ def main() -> None:
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser()
     parser.add_argument("--out-name", default="design_v4")
+    parser.add_argument("--grid", default="default",
+                        help="트레일링 격자: default(6쌍) | wide(36쌍)")
     parser.add_argument("--warmup", type=int, default=60)
     parser.add_argument("--folds", type=int, default=5)
     args = parser.parse_args()
@@ -69,7 +71,8 @@ def main() -> None:
     hits = sorted({c for rule in RULES for c in rule[2:]})
     envelopes = [f"mfe_{h}" for h in (30, 60, 120, 300, 600)]
     horizons = [f"frA_{h}" for h in lane.horizons] + [f"frB_{h}" for h in lane.horizons]
-    trail_cols = [f"trail_{a:g}_{g:g}" for a, g in TRAILING_GRID]
+    grid = resolve_grid(args.grid)
+    trail_cols = [f"trail_{a:g}_{g:g}" for a, g in grid]
     base = ["일자", "종목코드", "시분초", "경과", "관심종목", "spread_pct",
             "flag_no_trade", "flag_limit_up", "flag_vi_near"]
 
@@ -91,7 +94,7 @@ def main() -> None:
 
     # 판정 가능한 셀만 후보로 둔다 — 상한(미래 참조)은 선택지에서 제외.
     candidates = []
-    for rule in default_grid():
+    for rule in default_grid(trailing_grid=grid):
         if rule.exactness == "upper_bound":
             continue
         try:

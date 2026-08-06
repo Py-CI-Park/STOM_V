@@ -188,7 +188,9 @@ def evaluate(frame: pd.DataFrame, rule: ExitRule) -> np.ndarray:
     raise ValueError(f"알 수 없는 규칙군: {rule.family}")
 
 
-def default_grid(horizons: Sequence[int] = ENVELOPE_HORIZONS) -> list[ExitRule]:
+def default_grid(horizons: Sequence[int] = ENVELOPE_HORIZONS,
+                 trailing_grid: Sequence[tuple[float, float]] = TRAILING_GRID,
+                 ) -> list[ExitRule]:
     """사전 고정 청산 격자 — 실행 전에 확정하고 전셀 보고한다(웨이브 헌법 2항).
 
     탐색이 아니라 **지도**다. 셀을 고른 뒤 보고하는 것이 아니라 전부 보고한다.
@@ -207,7 +209,9 @@ def default_grid(horizons: Sequence[int] = ENVELOPE_HORIZONS) -> list[ExitRule]:
             rules.append(ExitRule("trailing", horizon=horizon, arm_pct=arm, give_pct=give))
             rules.append(ExitRule("trailing_ceiling", horizon=horizon, arm_pct=arm, give_pct=give))
     # 라벨 v4 실현값 — 열이 있으면 정확 계열로 평가된다(없으면 unavailable 로 보고).
-    for arm, give in TRAILING_GRID:
+    #   격자는 인자로 받는다: 넓은 격자(W4-d)로 "후보 수 → 편의" 실험을 하기 위함이며,
+    #   기본값은 언제나 사전 고정 격자다(사후 확장이 기본이 되면 그게 편의다).
+    for arm, give in trailing_grid:
         rules.append(ExitRule("trailing_exact", arm_pct=arm, give_pct=give))
     return rules
 
