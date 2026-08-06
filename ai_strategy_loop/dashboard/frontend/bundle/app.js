@@ -39206,6 +39206,57 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     return /* @__PURE__ */ React.createElement("div", { className: "bt-analysis-card", "aria-label": "\uBD84\uC11D \uCE74\uB4DC \uBDF0\uC5B4 (\uD398\uC774\uC9C0 25)" }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uBD84\uC11D \uCE74\uB4DC v2 ", /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uD398\uC774\uC9C0 25 \xB7 \uAD00\uCE21 \uC804\uC6A9")), /* @__PURE__ */ React.createElement("span", { className: "badge warn", title: "\uC5F0\uAD6C \uBD84\uC11D \uC804\uC6A9 \uCE74\uB4DC\uC785\uB2C8\uB2E4. \uC2B9\uACA9\xB7\uC2E4\uC804 \uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }, "research_analysis_card_only")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uC758 ", /* @__PURE__ */ React.createElement("b", null, "\uADFC\uBCF8\uC6D0\uC778"), "\uACFC ", /* @__PURE__ */ React.createElement("b", null, "\uBCC0\uC774\uCD95"), "\uC744 \uD55C \uD654\uBA74\uC5D0\uC11C \uBD05\uB2C8\uB2E4. \uC790\uC728 \uB8E8\uD504\uB294 \uAC19\uC740 \uCE74\uB4DC\uB97C \uC77D\uC5B4 \uB2E4\uC74C \uC218\uC815 1\uC808\uC744 \uACB0\uC815\uD569\uB2C8\uB2E4 \u2014 \uC774 \uD654\uBA74\uC740 \uADF8 \uD310\uB2E8\uC744 \uAD00\uCE21\uD558\uAE30 \uC704\uD55C \uAC83\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4s-log-controls" }, /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", type: "button", onClick: load, disabled: loading || !jobId }, loading ? "\uCE74\uB4DC \uC0DD\uC131 \uC911\u2026" : "\uBD84\uC11D \uCE74\uB4DC \uC5F4\uAE30"), payload && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11.5 } }, "\uAC70\uB798 ", btCardNum(payload.trade_count), "\uAC74 \xB7 ", payload.cached ? "\uCE90\uC2DC" : "\uC0C8\uB85C \uACC4\uC0B0")), error && /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, error))), card && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BtCardRootCause, { card }), /* @__PURE__ */ React.createElement(BtCardEdge, { card }), /* @__PURE__ */ React.createElement(BtCardFeatures, { card }), /* @__PURE__ */ React.createElement(BtCardZones, { card }), /* @__PURE__ */ React.createElement(BtCardLosers, { jobId })));
   }
 
+  // ai_strategy_loop/dashboard/frontend/bt-transfer-ledger.jsx
+  var { useState: useState_tl, useEffect: useEffect_tl, useCallback: useCallback_tl } = React;
+  function btTlGet(path) {
+    return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+  }
+  function btTlNum(value, digits) {
+    if (value === null || value === void 0 || Number.isNaN(Number(value))) return "\u2014";
+    return Number(value).toLocaleString(void 0, {
+      minimumFractionDigits: digits === void 0 ? 0 : digits,
+      maximumFractionDigits: digits === void 0 ? 0 : digits
+    });
+  }
+  function BtTlEstimator({ coefficient, status }) {
+    const [input, setInput] = useState_tl("0.35");
+    const value = Number(input);
+    const estimate = coefficient !== null && coefficient !== void 0 && !Number.isNaN(value) ? value * coefficient : null;
+    return /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-grid" }, /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "\uC9C0\uB3C4 \uCD94\uC815 \uAC74\uB2F9(%)"), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        className: "mono",
+        value: input,
+        inputMode: "decimal",
+        onChange: (e) => setInput(e.target.value.replace(/[^0-9.\-]/g, "")),
+        style: { width: 90 },
+        "aria-label": "\uC9C0\uB3C4 \uCD94\uC815 \uAC74\uB2F9 \uC218\uC775\uB960"
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "\uBCF4\uC218 \uACC4\uC218"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, coefficient === null || coefficient === void 0 ? "\u2014" : btTlNum(coefficient, 3))), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "\uC5D4\uC9C4 \uC608\uC0C1 \uAC74\uB2F9(%)"), /* @__PURE__ */ React.createElement("span", { className: "mono " + (estimate > 0 ? "pos" : "neg") }, estimate === null ? "\u2014" : btTlNum(estimate, 4))), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "\uACC4\uC218 \uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, status === "ready" ? "\uC0AC\uC6A9 \uAC00\uB2A5" : "\uCD95\uC801 \uC911")));
+  }
+  function BtTransferLedgerPanel() {
+    const [payload, setPayload] = useState_tl(null);
+    const [error, setError] = useState_tl("");
+    const load = useCallback_tl(() => {
+      btTlGet("/bt/transfer-ledger").then((d) => {
+        setPayload(d);
+        setError(d && d.available ? "" : "\uC804\uC774\uC728 \uAE30\uB85D\uC774 \uC544\uC9C1 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 P5 \uC5D4\uC9C4 \uAC80\uC99D\uC744 \uD55C \uBC88 \uB3CC\uB9AC\uBA74 \uCC44\uC6CC\uC9D1\uB2C8\uB2E4.");
+      }).catch(() => setError("\uC6D0\uC7A5 \uC694\uCCAD \uC2E4\uD328"));
+    }, []);
+    useEffect_tl(() => {
+      load();
+    }, [load]);
+    const records = payload && payload.records || [];
+    const flips = payload && payload.sign_flip_count || 0;
+    return /* @__PURE__ */ React.createElement("div", { className: "bt-transfer-ledger", "aria-label": "\uC804\uC774\uC728 \uB204\uC801 \uC6D0\uC7A5 (\uD398\uC774\uC9C0 12 \uAC15\uD654)" }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uC804\uC774\uC728 \uB204\uC801 \uC6D0\uC7A5 ", /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uD398\uC774\uC9C0 12 \uAC15\uD654 \xB7 \uC9C0\uB3C4 \u2192 \uC5D4\uC9C4")), /* @__PURE__ */ React.createElement("span", { className: "badge warn", title: "\uC9C4\uB2E8\uC6A9\uC785\uB2C8\uB2E4. \uACF5\uC2DD \uD310\uC815\uC740 \uC5D4\uC9C4 \uC2E4\uCE21\uC5D0\uC11C\uB9CC \uD569\uB2C8\uB2E4." }, "diagnostic")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uC9C0\uB3C4\uB294 ", /* @__PURE__ */ React.createElement("b", null, "\uD0D0\uC0C9\uC6A9 \uCD94\uC815"), ", \uC5D4\uC9C4\uC774 ", /* @__PURE__ */ React.createElement("b", null, "\uC2EC\uD310"), "\uC785\uB2C8\uB2E4. \uB458\uC758 \uBE44\uC728\uC744 \uC313\uC544 \uB450\uBA74 \uC9C0\uB3C4 \uC218\uCE58\uB97C \uADF8\uB300\uB85C \uBBFF\uB294 \uB300\uC2E0 ", /* @__PURE__ */ React.createElement("b", null, "\uAE4E\uC544\uC11C"), " \uC77D\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(
+      BtTlEstimator,
+      {
+        coefficient: payload && payload.conservative_coefficient,
+        status: payload && payload.status
+      }
+    ), payload && /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, payload.note), /* @__PURE__ */ React.createElement("div", { className: "v4s-log-controls" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", type: "button", onClick: load }, "\uC0C8\uB85C\uACE0\uCE68"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11.5 } }, "\uAE30\uB85D ", btTlNum(payload && payload.record_count), "\uAC74 \xB7 \uBD80\uD638 \uC77C\uCE58 ", btTlNum(payload && payload.aligned_count), "\uAC74 \xB7 \uCD5C\uC18C ", btTlNum(payload && payload.minimum_for_coefficient), "\uAC74 \uD544\uC694")), flips > 0 && /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, "\u26A0 \uBD80\uD638 \uBC18\uC804 ", flips, "\uAC74 \u2014 \uAC10\uC1E0\uAC00 \uC544\uB2C8\uB77C ", /* @__PURE__ */ React.createElement("b", null, "\uAD6C\uC870 \uBD88\uC77C\uCE58"), " \uC2E0\uD638\uC785\uB2C8\uB2E4(\uC9C0\uB3C4\uC640 \uC5D4\uC9C4\uC774 \uC11C\uB85C \uB2E4\uB978 \uAC83\uC744 \uC138\uACE0 \uC788\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4)."), error && /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, error))), records.length > 0 && /* @__PURE__ */ React.createElement("section", { className: "panel", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uD6C4\uBCF4\uBCC4 \uAE30\uB85D"), /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uC9C0\uB3C4 \uCD94\uC815 \u2194 \uC5D4\uC9C4 \uC2E4\uCE21")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uD6C4\uBCF4"), /* @__PURE__ */ React.createElement("th", null, "\uADDC\uCE59"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uC9C0\uB3C4 \uAC74\uB2F9"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uC5D4\uC9C4 \uAC74\uB2F9"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uC804\uC774\uC728"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uAC70\uB798\uC218 \uC9C0\uB3C4/\uC5D4\uC9C4"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "CAGR"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "MDD"))), /* @__PURE__ */ React.createElement("tbody", null, records.map((row, index2) => /* @__PURE__ */ React.createElement("tr", { key: `${row.job_id || index2}`, className: row.sign_flip ? "row-warn" : "" }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("b", null, row.name || "\u2014"), /* @__PURE__ */ React.createElement("br", null), /* @__PURE__ */ React.createElement("small", { className: "mono" }, row.lane)), /* @__PURE__ */ React.createElement("td", { className: "mono" }, row.rule || "\u2014"), /* @__PURE__ */ React.createElement("td", { className: "num mono " + (row.map_expectancy_pct >= 0 ? "pos" : "neg") }, btTlNum(row.map_expectancy_pct, 4), "%"), /* @__PURE__ */ React.createElement("td", { className: "num mono " + (row.engine_avg_profit_pct >= 0 ? "pos" : "neg") }, btTlNum(row.engine_avg_profit_pct, 4), "%"), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, btTlNum(row.transfer_ratio, 3), row.sign_flip && /* @__PURE__ */ React.createElement("span", { className: "badge warn", title: "\uBD80\uD638 \uBC18\uC804 \u2014 \uACC4\uC218\uB85C \uC4F0\uC9C0 \uC54A\uB294\uB2E4" }, "\uBC18\uC804")), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, btTlNum(row.map_trades), " / ", btTlNum(row.engine_trades)), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, btTlNum(row.engine_cagr, 2), "%"), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, btTlNum(row.engine_mdd_pct, 2), "%")))))))));
+  }
+
   // ai_strategy_loop/dashboard/frontend/bt-tp-messages.jsx
   var _TP_REASON_KO = {
     // 데이터·잡 입력
@@ -39298,6 +39349,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [activeView, setActiveView] = useState_tpt("data");
     const [showReachMap, setShowReachMap] = useState_tpt(false);
     const [showAnalysisCard, setShowAnalysisCard] = useState_tpt(false);
+    const [showTransferLedger, setShowTransferLedger] = useState_tpt(false);
     const [lane, setLane] = useState_tpt("min");
     const [laneManifest, setLaneManifest] = useState_tpt(null);
     const [selectedProposalId, setSelectedProposalId] = useState_tpt("");
@@ -39425,7 +39477,15 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         title: "\uC120\uD0DD\uD55C job \uC758 \uBD80\uAC80 \uCE74\uB4DC(\uADFC\uBCF8\uC6D0\uC778\xB7\uBCC0\uC774\uCD95)\uB97C \uBD05\uB2C8\uB2E4. \uC790\uC728 \uB8E8\uD504\uAC00 \uC77D\uB294 \uAC83\uACFC \uAC19\uC740 \uCE74\uB4DC\uC785\uB2C8\uB2E4."
       },
       showAnalysisCard ? "\uBD84\uC11D \uCE74\uB4DC \uB2EB\uAE30" : "\uBD84\uC11D \uCE74\uB4DC \uC5F4\uAE30 (\uD398\uC774\uC9C0 25)"
-    )), showReachMap && /* @__PURE__ */ React.createElement(BtReachMapTab, null), showAnalysisCard && /* @__PURE__ */ React.createElement(BtAnalysisCardTab, { jobId }), /* @__PURE__ */ React.createElement("div", { className: "tp-source-bar" }, /* @__PURE__ */ React.createElement("label", null, "\uC644\uB8CC \uACB0\uACFC", /* @__PURE__ */ React.createElement("select", { value: jobId, onChange: (event) => {
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn sm" + (showTransferLedger ? " active" : " ghost"),
+        onClick: () => setShowTransferLedger(!showTransferLedger),
+        title: "\uC9C0\uB3C4 \uCD94\uC815\uACFC \uC5D4\uC9C4 \uC2E4\uCE21\uC758 \uBE44\uC728(\uC804\uC774\uC728)\uC744 \uB204\uC801\uD574 \uBCF4\uC218 \uACC4\uC218\uB85C \uC501\uB2C8\uB2E4. job \uC120\uD0DD \uC5C6\uC774\uB3C4 \uC5F4\uB9BD\uB2C8\uB2E4."
+      },
+      showTransferLedger ? "\uC804\uC774\uC728 \uC6D0\uC7A5 \uB2EB\uAE30" : "\uC804\uC774\uC728 \uC6D0\uC7A5 \uC5F4\uAE30 (\uD398\uC774\uC9C0 12)"
+    )), showReachMap && /* @__PURE__ */ React.createElement(BtReachMapTab, null), showAnalysisCard && /* @__PURE__ */ React.createElement(BtAnalysisCardTab, { jobId }), showTransferLedger && /* @__PURE__ */ React.createElement(BtTransferLedgerPanel, null), /* @__PURE__ */ React.createElement("div", { className: "tp-source-bar" }, /* @__PURE__ */ React.createElement("label", null, "\uC644\uB8CC \uACB0\uACFC", /* @__PURE__ */ React.createElement("select", { value: jobId, onChange: (event) => {
       setJobId(event.target.value);
       setBoundaryTime("");
       setPreflight(null);
