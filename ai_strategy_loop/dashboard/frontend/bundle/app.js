@@ -39021,6 +39021,113 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     return /* @__PURE__ */ React.createElement("div", { className: "reach-map-tab" }, /* @__PURE__ */ React.createElement("div", { className: "row gap" }, /* @__PURE__ */ React.createElement("label", null, "\uB808\uC778", /* @__PURE__ */ React.createElement("select", { value: lane, onChange: (e) => setLane(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "tick" }, "tick (\uC2DC\uCD08 30\uBD84)"), /* @__PURE__ */ React.createElement("option", { value: "min" }, "min (\uC804\uC77C\uC7A5)"))), /* @__PURE__ */ React.createElement(BtReachMapBadge, { text: "\uC9C0\uB3C4=\uD0D0\uC0C9 \xB7 \uC5D4\uC9C4=\uC2EC\uD310 \xB7 \uC18C\uC561 \uC2E4\uC804=\uCD5C\uC885 \uD655\uC778" })), /* @__PURE__ */ React.createElement(BtReachMapWorkbench, { lane, rule, onRule: setRule }), /* @__PURE__ */ React.createElement(BtReachMapTerrain, { lane, rule }), /* @__PURE__ */ React.createElement(BtReachMapVerify, null));
   }
 
+  // ai_strategy_loop/dashboard/frontend/bt-analysis-card.jsx
+  var { useState: useState_ac2, useEffect: useEffect_ac2, useCallback: useCallback_ac } = React;
+  function btCardGet(path) {
+    return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+  }
+  function btCardNum(value, digits) {
+    if (value === null || value === void 0 || Number.isNaN(Number(value))) return "\u2014";
+    return Number(value).toLocaleString(void 0, {
+      minimumFractionDigits: digits === void 0 ? 0 : digits,
+      maximumFractionDigits: digits === void 0 ? 0 : digits
+    });
+  }
+  function BtCardStatus({ status, note }) {
+    if (status === "ok") return null;
+    return /* @__PURE__ */ React.createElement("p", { className: "tp-next-hint", role: "note" }, "\uB370\uC774\uD130 \uBD80\uC871 \u2014 ", note || "\uC774 \uC139\uC158\uC740 \uD45C\uBCF8\uC774 \uBAA8\uC790\uB77C \uACC4\uC0B0\uD558\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.");
+  }
+  function BtCardSection({ title, section, children: children2, hint }) {
+    const status = section && section.status;
+    return /* @__PURE__ */ React.createElement("section", { className: "panel", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, title), hint && /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, hint)), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(BtCardStatus, { status, note: section && section.note }), status === "ok" ? children2 : null));
+  }
+  function BtCardRootCause({ card }) {
+    const root2 = card && card.root_cause || {};
+    const items = root2.items || root2.causes || [];
+    const axis = card && card.mutation_axis || {};
+    const axes = axis.items || axis.axes || [];
+    return /* @__PURE__ */ React.createElement(
+      BtCardSection,
+      {
+        title: "\uADFC\uBCF8\uC6D0\uC778 \xB7 \uBCC0\uC774\uCD95",
+        section: root2,
+        hint: "\uB2E4\uC74C \uC218\uC815 1\uC808\uC774 \uC5EC\uAE30\uC11C \uB098\uC628\uB2E4"
+      },
+      items.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uBCF4\uACE0\uB41C \uADFC\uBCF8\uC6D0\uC778\uC774 \uC5C6\uC2B5\uB2C8\uB2E4."),
+      /* @__PURE__ */ React.createElement("ol", { className: "tp-cause-list" }, items.map((item, index2) => /* @__PURE__ */ React.createElement("li", { key: index2 }, /* @__PURE__ */ React.createElement("b", null, item.title || item.kind || `\uC6D0\uC778 ${index2 + 1}`), item.detail && /* @__PURE__ */ React.createElement("span", null, " \u2014 ", item.detail), item.evidence && /* @__PURE__ */ React.createElement("small", { className: "mono" }, " \xB7 \uADFC\uAC70 ", String(item.evidence))))),
+      axes.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h4", null, "\uBCC0\uC774\uCD95 (\uC218\uC815 \uD6C4\uBCF4)"), /* @__PURE__ */ React.createElement("ul", { className: "tp-cause-list" }, axes.map((item, index2) => /* @__PURE__ */ React.createElement("li", { key: index2 }, /* @__PURE__ */ React.createElement("span", { className: "badge" }, item.axis || item.kind || "\uCD95"), " ", item.detail || item.hint || ""))))
+    );
+  }
+  function BtCardFeatures({ card }) {
+    const section = card && card.feature_importance || {};
+    const rows = section.features || section.items || [];
+    return /* @__PURE__ */ React.createElement(BtCardSection, { title: "\uC2B9\xB7\uD328 \uD310\uBCC4 \uC9C0\uD45C", section, hint: "Cohen's d \xB7 FDR \uBCF4\uC815" }, /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC9C0\uD45C"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uC2B9\uC790 \uD3C9\uADE0"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uD328\uC790 \uD3C9\uADE0"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uD6A8\uACFC\uD06C\uAE30 d"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "q"))), /* @__PURE__ */ React.createElement("tbody", null, rows.slice(0, 20).map((row, index2) => /* @__PURE__ */ React.createElement("tr", { key: index2 }, /* @__PURE__ */ React.createElement("td", null, row.feature || row.name), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, btCardNum(row.winner_mean, 3)), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, btCardNum(row.loser_mean, 3)), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, btCardNum(row.cohens_d, 3)), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, btCardNum(row.q_value !== void 0 ? row.q_value : row.qvalue, 4))))))));
+  }
+  function BtCardZones({ card }) {
+    const avoid = card && card.avoid_zones || {};
+    const prefer = card && card.prefer_zones || {};
+    const render2 = (section, label) => {
+      const rows = section.zones || section.items || [];
+      return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", null, label), /* @__PURE__ */ React.createElement(BtCardStatus, { status: section.status, note: section.note }), section.status === "ok" && /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uAD6C\uC5ED"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uD45C\uBCF8"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uD3C9\uADE0 \uC218\uC775\uB960"))), /* @__PURE__ */ React.createElement("tbody", null, rows.slice(0, 12).map((row, index2) => /* @__PURE__ */ React.createElement("tr", { key: index2 }, /* @__PURE__ */ React.createElement("td", { className: "mono" }, row.segment || row.cell || row.label), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, btCardNum(row.n || row.samples)), /* @__PURE__ */ React.createElement("td", { className: "num mono " + (Number(row.mean_return || row.mean) >= 0 ? "pos" : "neg") }, btCardNum(row.mean_return !== void 0 ? row.mean_return : row.mean, 3), "%")))))));
+    };
+    return /* @__PURE__ */ React.createElement("section", { className: "panel", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uAD6C\uC5ED \uB300\uC870 (\uD53C\uD560 \uACF3 \xB7 \uC120\uD638\uD560 \uACF3)"), /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uC2DC\uAC04\uB300 \xD7 \uC2DC\uCD1D")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd v4s-probe-grid" }, render2(avoid, "\uC190\uC2E4 \uC9D1\uC911"), render2(prefer, "\uC774\uC775 \uC9D1\uC911")));
+  }
+  function BtCardEdge({ card }) {
+    const mfeMae = card && card.mfe_mae || {};
+    const edge = card && card.edge_ratio || {};
+    return /* @__PURE__ */ React.createElement(
+      BtCardSection,
+      {
+        title: "MFE \xB7 MAE \xB7 \uC5E3\uC9C0\uBE44",
+        section: mfeMae,
+        hint: "\uCCAD\uC0B0 \uCD95(\uB9E4\uB3C4 \uADDC\uCE59) \uAC1C\uC120 \uC5EC\uC9C0"
+      },
+      /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-grid" }, /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "\uD3C9\uADE0 MFE"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, btCardNum(mfeMae.mean_mfe, 3), "%")), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "\uD3C9\uADE0 MAE"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, btCardNum(mfeMae.mean_mae, 3), "%")), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "\uC5E3\uC9C0\uBE44 (MFE/|MAE|)"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, btCardNum(edge.value !== void 0 ? edge.value : edge.edge_ratio, 3)))),
+      /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uC5E3\uC9C0\uBE44\uAC00 1\uBCF4\uB2E4 \uD06C\uBA74 \u201C\uBA39\uC744 \uC218 \uC788\uC5C8\uB358 \uD3ED\u201D\uC774 \u201C\uB9DE\uC740 \uD3ED\u201D\uBCF4\uB2E4 \uD06C\uB2E4\uB294 \uB73B\uC774\uB2E4 \u2014 \uC9C4\uC785\uC740 \uB9DE\uC558\uACE0 ", /* @__PURE__ */ React.createElement("b", null, "\uCCAD\uC0B0\uC774 \uB2A6\uAC70\uB098 \uC774\uB974\uB2E4"), "\uB294 \uC2E0\uD638\uC77C \uC218 \uC788\uB2E4.")
+    );
+  }
+  function BtCardLosers({ jobId }) {
+    const [rows, setRows] = useState_ac2([]);
+    const [error, setError] = useState_ac2("");
+    useEffect_ac2(() => {
+      if (!jobId) return;
+      btCardGet(`/bt/analysis-card/losers?job_id=${encodeURIComponent(jobId)}&limit=20`).then((d) => {
+        if (d && d.available) setRows(d.rows || []);
+        else setError(d && d.reason || "\uC190\uC2E4 \uAC70\uB798\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.");
+      }).catch(() => setError("\uC190\uC2E4 \uAC70\uB798 \uC694\uCCAD \uC2E4\uD328"));
+    }, [jobId]);
+    if (error) return /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, error);
+    if (rows.length === 0) return null;
+    const columns = Object.keys(rows[0]);
+    return /* @__PURE__ */ React.createElement("section", { className: "panel", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uCD5C\uC545 \uC190\uC2E4 \uAC70\uB798 20\uAC74"), /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uADFC\uBCF8\uC6D0\uC778\uC744 \uB208\uC73C\uB85C \uD655\uC778")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, columns.map((c) => /* @__PURE__ */ React.createElement("th", { key: c }, c)))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((row, index2) => /* @__PURE__ */ React.createElement("tr", { key: index2 }, columns.map((c) => /* @__PURE__ */ React.createElement("td", { key: c, className: "mono" }, row[c] === null ? "\u2014" : String(row[c]))))))))));
+  }
+  function BtAnalysisCardTab({ jobId }) {
+    const [payload, setPayload] = useState_ac2(null);
+    const [error, setError] = useState_ac2("");
+    const [loading, setLoading] = useState_ac2(false);
+    const load = useCallback_ac(() => {
+      if (!jobId) {
+        setError("\uC644\uB8CC\uB41C \uBC31\uD14C\uC2A4\uD2B8 job \uC744 \uBA3C\uC800 \uC120\uD0DD\uD558\uC138\uC694.");
+        return;
+      }
+      setLoading(true);
+      setError("");
+      btCardGet(`/bt/analysis-card?job_id=${encodeURIComponent(jobId)}`).then((d) => {
+        setLoading(false);
+        if (d && d.available) setPayload(d);
+        else setError(`\uCE74\uB4DC\uB97C \uB9CC\uB4E4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 ${d && d.reason || "\uC54C \uC218 \uC5C6\uB294 \uC774\uC720"}`);
+      }).catch(() => {
+        setLoading(false);
+        setError("\uBD84\uC11D \uCE74\uB4DC \uC694\uCCAD \uC2E4\uD328");
+      });
+    }, [jobId]);
+    useEffect_ac2(() => {
+      if (jobId) load();
+    }, [jobId, load]);
+    const card = payload && payload.card;
+    return /* @__PURE__ */ React.createElement("div", { className: "bt-analysis-card", "aria-label": "\uBD84\uC11D \uCE74\uB4DC \uBDF0\uC5B4 (\uD398\uC774\uC9C0 25)" }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uBD84\uC11D \uCE74\uB4DC v2 ", /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uD398\uC774\uC9C0 25 \xB7 \uAD00\uCE21 \uC804\uC6A9")), /* @__PURE__ */ React.createElement("span", { className: "badge warn", title: "\uC5F0\uAD6C \uBD84\uC11D \uC804\uC6A9 \uCE74\uB4DC\uC785\uB2C8\uB2E4. \uC2B9\uACA9\xB7\uC2E4\uC804 \uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }, "research_analysis_card_only")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uC758 ", /* @__PURE__ */ React.createElement("b", null, "\uADFC\uBCF8\uC6D0\uC778"), "\uACFC ", /* @__PURE__ */ React.createElement("b", null, "\uBCC0\uC774\uCD95"), "\uC744 \uD55C \uD654\uBA74\uC5D0\uC11C \uBD05\uB2C8\uB2E4. \uC790\uC728 \uB8E8\uD504\uB294 \uAC19\uC740 \uCE74\uB4DC\uB97C \uC77D\uC5B4 \uB2E4\uC74C \uC218\uC815 1\uC808\uC744 \uACB0\uC815\uD569\uB2C8\uB2E4 \u2014 \uC774 \uD654\uBA74\uC740 \uADF8 \uD310\uB2E8\uC744 \uAD00\uCE21\uD558\uAE30 \uC704\uD55C \uAC83\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4s-log-controls" }, /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", type: "button", onClick: load, disabled: loading || !jobId }, loading ? "\uCE74\uB4DC \uC0DD\uC131 \uC911\u2026" : "\uBD84\uC11D \uCE74\uB4DC \uC5F4\uAE30"), payload && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11.5 } }, "\uAC70\uB798 ", btCardNum(payload.trade_count), "\uAC74 \xB7 ", payload.cached ? "\uCE90\uC2DC" : "\uC0C8\uB85C \uACC4\uC0B0")), error && /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, error))), card && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BtCardRootCause, { card }), /* @__PURE__ */ React.createElement(BtCardEdge, { card }), /* @__PURE__ */ React.createElement(BtCardFeatures, { card }), /* @__PURE__ */ React.createElement(BtCardZones, { card }), /* @__PURE__ */ React.createElement(BtCardLosers, { jobId })));
+  }
+
   // ai_strategy_loop/dashboard/frontend/bt-tp-messages.jsx
   var _TP_REASON_KO = {
     // 데이터·잡 입력
@@ -39112,6 +39219,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [boundaryTime, setBoundaryTime] = useState_tpt("");
     const [activeView, setActiveView] = useState_tpt("data");
     const [showReachMap, setShowReachMap] = useState_tpt(false);
+    const [showAnalysisCard, setShowAnalysisCard] = useState_tpt(false);
     const [lane, setLane] = useState_tpt("min");
     const [laneManifest, setLaneManifest] = useState_tpt(null);
     const [selectedProposalId, setSelectedProposalId] = useState_tpt("");
@@ -39230,7 +39338,16 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         title: "\uB77C\uBCA8 \uC9C0\uB3C4 \uC704\uC5D0\uC11C \uC870\uAC74\uC744 \uC989\uC2DC \uD3C9\uAC00\uD569\uB2C8\uB2E4(\uD398\uC774\uC9C0 22~24). \uBC31\uD14C\uC2A4\uD2B8 job \uC774 \uC5C6\uC5B4\uB3C4 \uC5F4\uB9BD\uB2C8\uB2E4."
       },
       showReachMap ? "\uB3C4\uB2EC \uC9C0\uB3C4 \uB2EB\uAE30" : "\uB3C4\uB2EC \uC9C0\uB3C4 \uC5F4\uAE30 (QSP10 \xB7 \uD398\uC774\uC9C0 22~24)"
-    )), showReachMap && /* @__PURE__ */ React.createElement(BtReachMapTab, null), /* @__PURE__ */ React.createElement("div", { className: "tp-source-bar" }, /* @__PURE__ */ React.createElement("label", null, "\uC644\uB8CC \uACB0\uACFC", /* @__PURE__ */ React.createElement("select", { value: jobId, onChange: (event) => {
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn sm" + (showAnalysisCard ? " active" : " ghost"),
+        onClick: () => setShowAnalysisCard(!showAnalysisCard),
+        disabled: !jobId,
+        title: "\uC120\uD0DD\uD55C job \uC758 \uBD80\uAC80 \uCE74\uB4DC(\uADFC\uBCF8\uC6D0\uC778\xB7\uBCC0\uC774\uCD95)\uB97C \uBD05\uB2C8\uB2E4. \uC790\uC728 \uB8E8\uD504\uAC00 \uC77D\uB294 \uAC83\uACFC \uAC19\uC740 \uCE74\uB4DC\uC785\uB2C8\uB2E4."
+      },
+      showAnalysisCard ? "\uBD84\uC11D \uCE74\uB4DC \uB2EB\uAE30" : "\uBD84\uC11D \uCE74\uB4DC \uC5F4\uAE30 (\uD398\uC774\uC9C0 25)"
+    )), showReachMap && /* @__PURE__ */ React.createElement(BtReachMapTab, null), showAnalysisCard && /* @__PURE__ */ React.createElement(BtAnalysisCardTab, { jobId }), /* @__PURE__ */ React.createElement("div", { className: "tp-source-bar" }, /* @__PURE__ */ React.createElement("label", null, "\uC644\uB8CC \uACB0\uACFC", /* @__PURE__ */ React.createElement("select", { value: jobId, onChange: (event) => {
       setJobId(event.target.value);
       setBoundaryTime("");
       setPreflight(null);
