@@ -37,6 +37,7 @@ import pandas as pd
 from ai_strategy_loop.labeling.entries import entry_positions
 from ai_strategy_loop.labeling.exit_axis import default_grid, evaluate
 from ai_strategy_loop.labeling.lanes import LANES
+from ai_strategy_loop.labeling.trailing import TRAILING_GRID
 from ai_strategy_loop.labeling.run_p3 import RULES, _load
 from ai_strategy_loop.labeling.verify_human_strategy import _mask_902, _mask_905
 
@@ -98,9 +99,10 @@ def main() -> None:
     variables = sorted(_champion_columns())
     base = ["일자", "종목코드", "시분초", "경과", "관심종목", "spread_pct",
             "flag_no_trade", "flag_limit_up", "flag_vi_near"]
+    trail_cols = [f"trail_{a:g}_{g:g}" for a, g in TRAILING_GRID]
 
     t0 = time.time()
-    columns = base + hits + envelopes + horizons + variables
+    columns = base + hits + envelopes + horizons + variables + trail_cols
     frame = _load(args.out_name, columns, args.warmup)
     frame = frame.reset_index(drop=True)
     print(f"집행 우주 {len(frame):,}행 · 로딩 {time.time()-t0:.0f}s", flush=True)

@@ -23,6 +23,7 @@ import time
 
 from ai_strategy_loop.labeling.exit_axis import default_grid, evaluate_grid
 from ai_strategy_loop.labeling.lanes import LANES
+from ai_strategy_loop.labeling.trailing import TRAILING_GRID
 from ai_strategy_loop.labeling.run_p3 import RULES, _load
 
 _LABEL_ROOT = os.path.join(os.path.dirname(__file__), "..", "state", "labels")
@@ -42,9 +43,11 @@ def main() -> None:
     horizons = [f"frA_{h}" for h in lane.horizons] + [f"frB_{h}" for h in lane.horizons]
     base = ["일자", "종목코드", "시분초", "경과", "관심종목", "현재가", "spread_pct",
             "flag_no_trade", "flag_limit_up", "flag_vi_near"]
+    trail_cols = [f"trail_{a:g}_{g:g}" for a, g in TRAILING_GRID]
 
     t0 = time.time()
-    frame = _load(args.out_name, base + hits + envelopes + horizons, args.warmup)
+    frame = _load(args.out_name, base + hits + envelopes + horizons + trail_cols,
+                  args.warmup)
     frame = frame.reset_index(drop=True)
     print(f"집행 우주 {len(frame):,}행 · 로딩 {time.time()-t0:.0f}s", flush=True)
 
