@@ -55,6 +55,9 @@ HTTP_CAPABILITIES: Final = {
     ("POST", "/bt/trade-path/removal-simulate"): Capability.SAFE_BACKTEST,
     ("POST", "/bt/trade-path/region-candidates"): Capability.SAFE_BACKTEST,
     ("GET", "/sim/signals"): Capability.SAFE_BACKTEST,
+    # QSP10 도달 지도 — 읽기 전용 탐색이지만 POST 라 분류가 필요하다(미분류는 403).
+    ("POST", "/bt/map/slider"): Capability.SAFE_BACKTEST,
+    ("POST", "/bt/map/candidate"): Capability.SAFE_BACKTEST,
     ("POST", "/bt/strategy"): Capability.STRATEGY_WRITE,
     ("POST", "/bt/strategy/delete"): Capability.STRATEGY_WRITE,
     ("POST", "/bt/extract_vars"): Capability.STRATEGY_WRITE,

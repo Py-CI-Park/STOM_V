@@ -79,6 +79,7 @@ from ai_strategy_loop.dashboard.security_controls import (  # noqa: E402
 )
 from ai_strategy_loop.dashboard.alpha_api import alpha_router  # noqa: E402
 from ai_strategy_loop.dashboard.trade_path_api import trade_path_router  # noqa: E402
+from ai_strategy_loop.dashboard.reach_map_api import reach_map_router  # noqa: E402
 from ai_strategy_loop.fitness.research_criteria import normalize_research_oos_mode, research_mode_payload  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
@@ -3568,6 +3569,7 @@ def create_app(
     app.include_router(simulation_router)
     app.include_router(alpha_router)
     app.include_router(trade_path_router)
+    app.include_router(reach_map_router)
 
     @app.get("/", response_class=HTMLResponse)
     def root(request: Request) -> HTMLResponse:

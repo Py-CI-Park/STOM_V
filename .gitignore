@@ -124,3 +124,6 @@ credentials/
 # GJC 에이전트 세션 런타임 상태(신규 잡음 방지 — 기존 tracked 파일은 영향 없음)
 .gjc/_session-*/
 .gjc.local-backup-*/
+
+# QSP9 라벨 공장 산출물(대용량 parquet) — 커밋 금지
+ai_strategy_loop/state/labels/
