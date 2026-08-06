@@ -25,8 +25,10 @@ import pytest
 from alpha_lab import registry
 from alpha_lab.dataset.cache import to_arrays
 from alpha_lab.dataset.labels import adverse_fill, net_rate
+from tests.unit._strategy_db_precondition import requires_strategy_row
 from alpha_lab.dataset.labels_v2 import (
     CHAMPION_SELL_SHA256,
+    CHAMPION_SELL_STRATEGY_NAME,
     L3_NOMINAL_BETTING,
     SellExprMismatch,
     _vector_sp,
@@ -104,9 +106,9 @@ class TestSellExprGate:
         with pytest.raises(SellExprMismatch):
             build_l3_labels({}, [], SYNTH_SELL_TEXT)  # 기대 sha=봉인 챔피언.
 
-    @pytest.mark.skipif(
-        not _REAL_STRATEGY_DB.exists(), reason="local strategy.db not present"
-    )
+    # DB 파일 존재만 보면 "파일은 있고 행이 없는" 워크트리에서 ValueError 로 죽는다
+    #   — 검증 불가를 검증 실패로 보고하던 결함. 행이 있으면 반드시 실행된다.
+    @requires_strategy_row(_REAL_STRATEGY_DB, "stocksell", CHAMPION_SELL_STRATEGY_NAME)
     def test_real_incumbent_matches_sealed_sha(self):
         text = load_champion_sell_expr(_REAL_STRATEGY_DB)
         assert verify_sell_expr(text) == CHAMPION_SELL_SHA256

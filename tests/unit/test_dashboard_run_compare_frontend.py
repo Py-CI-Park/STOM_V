@@ -20,7 +20,10 @@ def test_enriched_run_compare_component_exists_and_uses_compare_routes() -> None
     assert "/runs" in src
     assert "/runs/compare" in src
     assert "Seed vs AI" in src
-    assert "Sort: Total Profit" in src
+    # 라벨이 한국어로 바뀌었다("Sort: Total Profit" → "정렬: 수익금").
+    #   문구가 아니라 정렬 키 배선을 함께 단정해 회귀 가드를 유지한다.
+    assert "정렬: 수익금" in src
+    assert 'setSortKey("final_profit")' in src
     assert "final_profit" in src
     assert "total_profit_pct" in src
     assert "period" in src

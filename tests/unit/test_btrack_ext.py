@@ -16,6 +16,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+from tests.unit._strategy_db_precondition import requires_strategy_row  # noqa: E402
 from alpha_lab.btrack import ext_judge, ext_parse, ext_select, judge_b  # noqa: E402
 from alpha_lab.btrack.branches import BRANCH_902_NUMS, BRANCH_905_NUMS  # noqa: E402
 
@@ -75,7 +76,9 @@ def test_parse_bare_kill_guard_negated():
 # 2. 챔피언 재현 + 매핑.
 # --------------------------------------------------------------------------
 
-@_has_db
+# 파일이 아니라 **행** 존재가 전제다 — 파일만 보면 KeyError 로 죽으며 "검증 불가"가
+#   "검증 실패"로 보고된다. 행이 있으면 반드시 실행된다(봉인 대조 유지).
+@requires_strategy_row(_DB, "stockbuy", "ALP_V4_RR8_12")
 def test_champion_branches_reproduce_seal():
     from alpha_lab.dataset.reader import connect_ro
     conn = connect_ro(_DB)

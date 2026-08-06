@@ -22,12 +22,23 @@ def _client():
 
 
 def test_ui_default_serves_v4_shell_bundle() -> None:
+    # d84012e3 — 정본 진입점은 / 하나로 통합됐다. 구 주소(/ui/)는 아래 테스트에서
+    #   쿼리 보존 307 로 따로 단언한다(북마크 보존 계약).
     client = _client()
-    for path in ["/ui/", "/ui/evolution", "/ui/backtest"]:
+    for path in ["/", "/ui/evolution", "/ui/backtest"]:
         r = client.get(path, follow_redirects=False)
         assert r.status_code == 200, path
         assert r.headers["x-stom-dashboard-version"] == "v4-ops", path
         assert "/ui/bundle/app.js" in r.text, path
+
+
+def test_legacy_ui_entry_redirects_to_canonical_root() -> None:
+    """구 진입점 보존 계약 — /ui/ 는 쿼리를 보존한 채 / 로 307."""
+    client = _client()
+    r = client.get("/ui/?tab=backtest", follow_redirects=False)
+    assert r.status_code == 307
+    assert r.headers["location"].startswith("/")
+    assert "tab=backtest" in r.headers["location"]
 
 
 def test_v4_shell_declares_safety_boundary_strip() -> None:

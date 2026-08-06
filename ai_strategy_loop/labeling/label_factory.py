@@ -19,6 +19,7 @@ import pandas as pd
 from ai_strategy_loop.labeling import derived
 from ai_strategy_loop.labeling import label_spec as spec
 from ai_strategy_loop.labeling.lanes import BARRIERS_DOWN, BARRIERS_UP, TICK, LaneSpec
+from ai_strategy_loop.labeling.trailing import trailing_columns
 
 _SKIP_TABLES = frozenset({"moneytop", "sqlite_sequence"})
 
@@ -161,6 +162,14 @@ def _label_one_stock(frame: pd.DataFrame, code: str, day: int,
     #   각 진입에 대해 bid 경로를 훑는다 — 누적 max/min 을 O(n) 으로 만들고 위치를 찾는다.
     _barrier_hits(out, price=price, bid=bid, buy_ask=buy_a, entry_pos=entry_pos,
                   end_pos=end_pos, horizon=horizon)
+
+    # ── v4: 트레일링 **실현값**. 경로를 그대로 시뮬레이션하므로 근사가 아니라
+    #    계산이다(러닝 최고만 사용 — 구간 최종 최고를 쓰면 미래 참조가 된다).
+    #    W3 재현 게이트가 "청산 표현력 부족"으로 멈춘 지점을 여는 열이다.
+    out.update(trailing_columns(
+        bid=bid, ask=ask, entry_pos=entry_pos, horizon=horizon,
+        stale_ok=(age <= lane.stale_tolerance).astype(np.int8),
+    ))
 
     flow_tv = f"{lane.flow_prefix}거래대금"
     tv = rows[flow_tv].to_numpy(dtype=np.float64)

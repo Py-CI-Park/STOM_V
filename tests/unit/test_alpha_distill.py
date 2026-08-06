@@ -84,10 +84,22 @@ def _write_gate_csv(path: Path, rows: list) -> None:
 # ---------------------------------------------------------------------------
 
 def test_columns_match_engine_sources():
+    """봉인된 게이트런 스키마(37컬럼)와 현재 엔진 컬럼의 계약.
+
+    B_* 는 **등가가 아니라 접두**여야 한다. QSP1 P1(737d3cde)이 엔진 B_* 를
+    14 → 31 로 확장했는데, 그건 **추가**이지 기존 열의 순서·의미 변경이 아니다
+    (back_static: 구버전 행은 normalize_trade_result_rows 가 0-패딩).
+    등가를 요구하면 엔진이 열을 하나 더 기록할 때마다 과거 원장이 깨진 것처럼
+    보인다 — 실제로 지켜야 할 불변식은 "봉인된 열이 같은 자리에 같은 의미로
+    남아 있는가"다.
+    """
     from ai_strategy_loop.autopsy.analyze import B_COLUMNS, MAE_COLUMN, MFE_COLUMN
     from ai_strategy_loop.autopsy.trade_ledger import R_COLUMNS, S_COLUMNS
 
-    assert tuple(GATE_CSV_B_COLUMNS) == tuple(B_COLUMNS)
+    sealed_b = tuple(GATE_CSV_B_COLUMNS)
+    assert sealed_b == tuple(B_COLUMNS)[: len(sealed_b)], (
+        "봉인된 B_* 열이 현재 엔진 열의 접두가 아니다 — 열 순서/의미가 바뀌었다"
+    )
     assert tuple(GATE_CSV_S_COLUMNS) == tuple(S_COLUMNS)
     assert tuple(GATE_CSV_R_COLUMNS) == tuple(R_COLUMNS)
     assert GATE_CSV_R_COLUMNS[0] == MFE_COLUMN

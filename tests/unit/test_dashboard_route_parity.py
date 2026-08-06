@@ -160,7 +160,10 @@ def test_canonical_path_precedes_conflicting_tab_and_frontend_normalizes_url(mon
     assert source.index("const fromPath = v4TabFromPathname(window.location.pathname);") < source.index(
         'const t = new URLSearchParams(window.location.search).get("tab");'
     )
-    assert 'url.searchParams.delete("tab");' in source
+    # d84012e3 — 정본 주소가 /?tab=<탭> 이 되면서 셸은 tab 을 지우는 대신
+    #   경로에서 파생해 **설정**한다. 지키려는 계약(주소창 정규화)은 그대로다.
+    assert 'url.searchParams.set("tab", v4TabFromPathname(window.location.pathname)' in source
+    assert 'window.history.replaceState(null, "", url.pathname + url.search);' in source
 
 
 def test_dashboard_legacy_ui_aliases_redirect_to_evolution_subtabs(monkeypatch, tmp_path: Path) -> None:
@@ -184,9 +187,11 @@ def test_dashboard_ui_v4_no_slash_redirect_preserves_query(monkeypatch, tmp_path
     cross-origin data link (?base=http://127.0.0.1:8791) silently reverted to the local backend
     and the RUN archive selector rendered empty (사용자 신고 2026-07-05)."""
     client = _client(monkeypatch, tmp_path)
+    # d84012e3 이후 목적지는 /ui/v4/ 가 아니라 정본 루트 / 다. 이 테스트가 지키는
+    #   회귀(쿼리 유실로 cross-origin base 가 로컬로 되돌아감)는 그대로 단정한다.
     r = client.get("/ui/v4?base=http://127.0.0.1:8791&tab=research", follow_redirects=False)
     assert r.status_code in {307, 308}
-    assert r.headers["location"] == "/ui/v4/?base=http://127.0.0.1:8791&tab=research"
+    assert r.headers["location"] == "/?base=http://127.0.0.1:8791&tab=research"
     bare = client.get("/ui/v4", follow_redirects=False)
     assert bare.status_code in {307, 308}
-    assert bare.headers["location"] == "/ui/v4/"
+    assert bare.headers["location"] == "/"

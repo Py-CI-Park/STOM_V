@@ -18,7 +18,8 @@ def test_canonical_dashboard_routes_keep_v4_ops_default_and_explicit_v3_selector
     from ai_strategy_loop.dashboard.app import create_app
 
     client = authorized_dashboard_client(create_app())
-    for path in ["/ui/", "/ui/evolution", "/ui/evolution/process", "/ui/backtest", "/ui/chart-replay"]:
+    # d84012e3 — 정본 진입점이 /ui/ 에서 / 로 통합됐다(구 주소는 307 로 보존).
+    for path in ["/", "/ui/evolution", "/ui/evolution/process", "/ui/backtest", "/ui/chart-replay"]:
         response = client.get(path, follow_redirects=False)
         assert response.status_code == 200, path
         assert "STOM AI · V4 조건식 자율 진화 대시보드" in response.text
@@ -38,7 +39,7 @@ def test_legacy_selector_serves_legacy_shell_for_one_response() -> None:
     from ai_strategy_loop.dashboard.app import create_app
 
     client = authorized_dashboard_client(create_app())
-    for path in ["/ui/", "/ui/evolution", "/ui/backtest"]:
+    for path in ["/", "/ui/evolution", "/ui/backtest"]:
         legacy = client.get(path, params={"dashboard_version": "legacy"}, follow_redirects=False)
         assert legacy.status_code == 200, path
         assert "STOM AI · 조건식 자율 진화 대시보드 (Legacy)" in legacy.text
