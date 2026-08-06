@@ -1,8 +1,21 @@
-"""ChatGPT OAuth Proxy 모듈 (Newsletter_AI 이식, STOM 격리판).
+"""ChatGPT OAuth Proxy 모듈 (Newsletter_AI v0.68 이식, STOM 격리판).
 
 ChatGPT 구독(Plus/Pro)을 이용하여 OpenAI API 호출을 대체한다.
 로컬 aiohttp 프록시 + 환경변수 주입으로 OpenAI 호환 클라이언트가 그대로
 프록시를 사용하게 한다.
+
+v0.68 동기화 핵심:
+  - OA-2: 기동 프로브를 실제 chat/completions 호출(쿼터 소모·오판)에서
+    `/health` 신원 확인으로 교체.
+  - RC-2: 프록시 소비자 refcount + 외부 소유 플래그 — 먼저 끝난 소비자가
+    공용 리스너를 내려 다른 실행의 AI 호출을 죽이는 것을 방지.
+  - 인증원 이원화(auth_sources): 파일 기반(newsletter) + Codex CLI 읽기 전용.
+
+STOM 적응:
+  - get_status() 는 신규 `auth`(개요)와 함께 기존 대시보드 계약인
+    `token`{loaded, expired, has_refresh_token, expires_in_seconds} 을
+    **파일 기준으로** 유지한다. ★이전엔 메모리 기준이라 유효 토큰 파일이
+    있어도 "로그인 없음"으로 표시되던 결함의 수정.
 
 사용법:
     from ai_strategy_loop.provider.chatgpt_oauth import (
@@ -41,6 +54,13 @@ _original_api_key: Optional[str] = None
 _env_injected: bool = False
 _proxy_loop: Optional[asyncio.AbstractEventLoop] = None
 _proxy_thread: Optional[threading.Thread] = None
+
+# RC-2: 프록시 소비자 refcount. 대시보드와 루프 실행기가 같은 프로세스에서
+# 공존할 수 있으므로, 먼저 끝난 쪽이 리스너를 내리지 않도록 한다.
+# `_proxy_externally_owned` 는 다른 프로세스가 띄운 프록시를 재사용한 경우.
+_proxy_refcount: int = 0
+_proxy_externally_owned: bool = False
+_proxy_state_lock = threading.Lock()
 
 
 def is_chatgpt_oauth_mode() -> bool:
@@ -93,23 +113,24 @@ def clear_env() -> None:
     logger.info("환경변수 복원 완료")
 
 
+#: `/health` 응답이 우리 프록시임을 식별하는 값(`proxy_server._handle_health`).
+_HEALTH_PROXY_IDENTITY = "chatgpt-oauth"
+
+
+def _health_url() -> str:
+    # get_proxy_base_url() 은 `.../v1` 로 끝나고 /health 는 루트에 등록돼 있다.
+    return f"{get_proxy_base_url().rsplit('/v1', 1)[0]}/health"
+
+
 def _probe_existing_proxy_sync(timeout_seconds: float = 3.0) -> bool:
-    """기존 로컬 프록시가 OpenAI Chat Completions처럼 응답하는지 확인."""
+    """기존 로컬 프록시가 살아 있는지 `/health` 로 확인한다 (OA-2).
+
+    이전 구현은 실제 `chat/completions` 요청을 보내 매 기동마다 ChatGPT 쿼터를
+    소모했고, 프로브 실패 시 멀쩡한 프록시를 두고 "시작 실패"를 보고했다.
+    `/health` 는 업스트림을 건드리지 않으므로 과금도 오판도 없다.
+    """
     try:
-        response = requests.post(
-            f"{get_proxy_base_url()}/chat/completions",
-            headers={
-                "Authorization": f"Bearer {PROXY_OPENAI_API_KEY_PLACEHOLDER}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": "gpt-5.5",
-                "messages": [{"role": "user", "content": "OK"}],
-                "max_tokens": 8,
-                "stream": False,
-            },
-            timeout=timeout_seconds,
-        )
+        response = requests.get(_health_url(), timeout=timeout_seconds)
     except requests.RequestException as e:
         logger.debug("기존 프록시 probe 실패: %s", e)
         return False
@@ -127,25 +148,26 @@ def _probe_existing_proxy_sync(timeout_seconds: float = 3.0) -> bool:
     if not isinstance(payload, dict):
         return False
 
-    choices = payload.get("choices")
-    if not isinstance(choices, list) or not choices:
+    # 같은 포트를 다른 서비스가 점유했을 수 있으므로 신원까지 확인한다.
+    if payload.get("proxy") != _HEALTH_PROXY_IDENTITY:
+        logger.debug(
+            "포트를 다른 리스너가 점유: %s", payload.get("proxy"),
+        )
         return False
 
-    first_choice = choices[0]
-    if not isinstance(first_choice, dict):
-        return False
+    return payload.get("status") == "ok"
 
-    message = first_choice.get("message")
-    if not isinstance(message, dict):
-        return False
 
-    content = message.get("content")
-    return isinstance(content, str) and bool(content)
+def is_proxy_healthy_sync(timeout_seconds: float = 3.0) -> bool:
+    """동기 컨텍스트용 프리플라이트 — 첫 AI 호출 전에 리스너 생존을 확인한다."""
+    return _probe_existing_proxy_sync(timeout_seconds=timeout_seconds)
 
 
 async def start_proxy() -> bool:
     """ChatGPT OAuth 프록시 서버 시작."""
-    from .proxy_server import is_running, start
+    from .proxy_server import start, is_running
+
+    global _proxy_externally_owned
 
     if is_running():
         logger.info("프록시가 이미 실행 중")
@@ -153,18 +175,18 @@ async def start_proxy() -> bool:
 
     if await asyncio.to_thread(_probe_existing_proxy_sync):
         logger.info("기존 정상 프록시 재사용: %s", get_proxy_base_url())
+        with _proxy_state_lock:
+            _proxy_externally_owned = True
         return True
 
-    # 토큰 사전 확인
-    from .token_manager import get_token_manager
+    # 선택한 인증원(파일 기반 로그인/Codex 읽기 전용 재사용)을 사전 확인한다.
+    from .auth_sources import resolve_auth_context
 
-    token_mgr = get_token_manager()
-    access_token = await token_mgr.get_access_token()
-
-    if not access_token:
+    auth_context = await resolve_auth_context()
+    if auth_context is None:
         logger.error(
-            "ChatGPT OAuth 토큰을 가져올 수 없습니다. "
-            "먼저 로그인하세요: python -m ai_strategy_loop.provider.chatgpt_oauth.oauth_login login"
+            "ChatGPT 구독 인증을 사용할 수 없습니다. 대시보드 설정 > GPT 로그인에서 "
+            "파일 기반 로그인 또는 Codex 로그인을 확인하세요."
         )
         return False
 
@@ -177,6 +199,8 @@ async def start_proxy() -> bool:
             logger.info(
                 "프록시 bind 실패, 기존 정상 프록시 재사용: %s", get_proxy_base_url()
             )
+            with _proxy_state_lock:
+                _proxy_externally_owned = True
             return True
         logger.error("ChatGPT OAuth 프록시 시작 실패")
 
@@ -221,19 +245,43 @@ def _ensure_proxy_loop() -> asyncio.AbstractEventLoop:
 
 
 def start_proxy_sync(timeout_seconds: float = 15.0) -> bool:
-    """동기 컨텍스트에서 프록시를 시작한다.
+    """동기 컨텍스트에서 프록시를 시작하고 소비자 수를 1 늘린다 (RC-2, 멱등).
 
     임시 이벤트 루프를 만들고 닫으면 aiohttp 수신 태스크가 파괴되므로,
-    별도 백그라운드 루프에서 프록시 생명주기를 유지한다.
+    별도 백그라운드 루프에서 프록시 생명주기를 유지한다. 호출 횟수만큼
+    `stop_proxy_sync()` 를 불러야 실제로 정지된다.
     """
+    global _proxy_refcount
+
     loop = _ensure_proxy_loop()
     future = asyncio.run_coroutine_threadsafe(start_proxy(), loop)
-    return future.result(timeout=timeout_seconds)
+    started = future.result(timeout=timeout_seconds)
+
+    if started:
+        with _proxy_state_lock:
+            _proxy_refcount += 1
+    return started
 
 
 def stop_proxy_sync(timeout_seconds: float = 15.0) -> None:
-    """동기 컨텍스트에서 프록시를 정지하고 백그라운드 루프를 정리한다."""
-    global _proxy_loop, _proxy_thread
+    """소비자 수를 1 줄이고, 마지막 소비자일 때만 프록시를 정지한다 (RC-2)."""
+    global _proxy_loop, _proxy_thread, _proxy_refcount, _proxy_externally_owned
+
+    with _proxy_state_lock:
+        if _proxy_refcount > 0:
+            _proxy_refcount -= 1
+        remaining = _proxy_refcount
+        externally_owned = _proxy_externally_owned
+
+    if remaining > 0:
+        logger.debug("프록시 소비자 %d명 남음 — 정지하지 않음", remaining)
+        return
+
+    if externally_owned:
+        logger.debug("외부 프로세스 소유 프록시 — 정지하지 않음")
+        with _proxy_state_lock:
+            _proxy_externally_owned = False
+        return
 
     if _proxy_loop is None:
         return
@@ -249,19 +297,40 @@ def stop_proxy_sync(timeout_seconds: float = 15.0) -> None:
     _proxy_thread = None
 
 
-async def get_status() -> dict:
-    """현재 상태 반환."""
-    from .proxy_server import is_running
-    from .token_manager import get_token_manager
+def reset_proxy_refcount_for_test() -> None:
+    """테스트 전용 — refcount 와 외부 소유 플래그를 초기화한다."""
+    global _proxy_refcount, _proxy_externally_owned
+    with _proxy_state_lock:
+        _proxy_refcount = 0
+        _proxy_externally_owned = False
 
-    token_mgr = get_token_manager()
+
+async def get_status() -> dict:
+    """현재 상태 반환.
+
+    STOM 적응: 기존 대시보드 계약(`token`{loaded,...})을 **파일 기준**으로 유지.
+    이전엔 TokenManager 메모리 상태만 보고해, 유효 토큰 파일이 있어도
+    "로그인 없음"으로 표시됐다(실측 결함).
+    """
+    from .proxy_server import is_running
+    from .auth_sources import get_auth_overview
+
+    overview = await get_auth_overview(query_codex_account=False)
 
     return {
         "mode": "chatgpt_oauth",
         "env_injected": _env_injected,
         "proxy_running": is_running(),
         "proxy_url": get_proxy_base_url() if is_running() else None,
-        "token": token_mgr.get_status(),
+        # 기존 프런트 계약 (v4-settings/v4-shell 이 읽는 필드) — 파일 기준으로 산출
+        "token": {
+            "loaded": bool(overview.get("authenticated")),
+            "expired": bool(overview.get("expired")),
+            "has_refresh_token": bool(overview.get("has_refresh_token")),
+            "expires_in_seconds": int(overview.get("expires_in_seconds") or 0),
+        },
+        # 신규 명시 계약 (인증원 이원화 상세)
+        "auth": overview,
     }
 
 
@@ -269,10 +338,12 @@ __all__ = [
     "inject_env",
     "clear_env",
     "is_chatgpt_oauth_mode",
+    "is_proxy_healthy_sync",
     "start_proxy",
     "stop_proxy",
     "start_proxy_sync",
     "stop_proxy_sync",
+    "reset_proxy_refcount_for_test",
     "get_status",
     "get_proxy_base_url",
 ]

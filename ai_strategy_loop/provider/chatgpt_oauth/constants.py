@@ -1,4 +1,4 @@
-"""ChatGPT OAuth Proxy - 상수 정의 (Newsletter_AI 이식, STOM 격리판).
+"""ChatGPT OAuth Proxy - 상수 정의 (Newsletter_AI v0.68 이식, STOM 격리판).
 
 Newsletter_AI processors/chatgpt_oauth/constants.py 를 STOM용으로 적응.
 핵심 적응:
@@ -7,6 +7,13 @@ Newsletter_AI processors/chatgpt_oauth/constants.py 를 STOM용으로 적응.
     재로그인 없이 그대로 쓴다.
   - 프록시 포트 기본값을 STOM 전용 18761로 둔다 (Newsletter_AI의 18741과 충돌 회피).
     STOM_AILOOP_PROXY_PORT 환경변수로 오버라이드 가능.
+  - 인증원 선택은 STOM_AILOOP_AUTH_SOURCE (auto|newsletter|codex, 기본 auto —
+    newsletter 파일 우선, 불가 시 Codex CLI 로그인 읽기 전용 재사용).
+
+v0.68 동기화 (2026-08-06):
+  - gpt-5.6-luna 는 codex /responses 미지원(실측 "Model not found") → terra 로 fallback.
+  - 프로바이더→프록시 타임아웃을 프록시→업스트림보다 길게 분리(CLIENT_REQUEST_TIMEOUT_SECONDS)
+    — 동시 만료 레이스로 같은 요청이 두 번 과금되는 것을 방지(OA-6).
 """
 
 import os
@@ -65,16 +72,20 @@ TOKEN_FILE_PERMISSION = 0o600
 # 토큰 갱신 여유 시간 (초) - 만료 N초 전에 미리 갱신
 TOKEN_REFRESH_MARGIN_SECONDS = 300  # 5분
 
+# 인증원 선택 환경변수 (auto|newsletter|codex)
+ENV_AUTH_SOURCE = "STOM_AILOOP_AUTH_SOURCE"
+
 # =============================================================================
 # 모델 매핑
 # =============================================================================
 
 # OpenAI Chat Completions 모델명 -> ChatGPT Codex 호환 모델명
+# v0.68 동기화: luna 는 codex /responses 실측 미지원 → terra fallback.
 MODEL_MAPPING = {
-    "gpt-5.5": "gpt-5.5",
-    "gpt-5.6-luna": "gpt-5.6-luna",
     "gpt-5.6-sol": "gpt-5.6-sol",
     "gpt-5.6-terra": "gpt-5.6-terra",
+    "gpt-5.6-luna": "gpt-5.6-terra",
+    "gpt-5.5": "gpt-5.5",
     "gpt-5.5-mini": "gpt-5.5-mini",
     "gpt-5.4": "gpt-5.4",
     "gpt-5.4-mini": "gpt-5.4-mini",
@@ -86,10 +97,10 @@ MODEL_MAPPING = {
     "gpt-5.1-codex-max": "gpt-5.1-codex-max",
     "gpt-5.1-codex-mini": "gpt-5.1-codex-mini",
     # Codex CLI 표기 -> bare codex 모델명 정규화
-    "openai-codex/gpt-5.5": "gpt-5.5",
-    "openai-codex/gpt-5.6-luna": "gpt-5.6-luna",
     "openai-codex/gpt-5.6-sol": "gpt-5.6-sol",
     "openai-codex/gpt-5.6-terra": "gpt-5.6-terra",
+    "openai-codex/gpt-5.6-luna": "gpt-5.6-terra",
+    "openai-codex/gpt-5.5": "gpt-5.5",
     "openai-codex/gpt-5.5-mini": "gpt-5.5-mini",
     "openai-codex/gpt-5.4": "gpt-5.4",
     "openai-codex/gpt-5.4-mini": "gpt-5.4-mini",
@@ -134,15 +145,16 @@ DEFAULT_MODEL = "gpt-5.6-terra"
 ENV_AUTH_MODE = "STOM_AILOOP_OPENAI_AUTH_MODE"
 ENV_AUTH_MODE_VALUE = "chatgpt_oauth"
 
-# 타임아웃 설정
-REQUEST_TIMEOUT_SECONDS = 300  # 5분
+# 타임아웃 설정 (v0.68 — OA-6: 두 계층을 분리해 동시 만료 레이스를 막는다)
+REQUEST_TIMEOUT_SECONDS = 300          # 프록시 → 업스트림 (5분)
+CLIENT_REQUEST_TIMEOUT_SECONDS = 330   # 프로바이더 → 프록시 (+30초 여유)
 PROXY_STARTUP_TIMEOUT_SECONDS = 10
 
 # =============================================================================
 # 로깅
 # =============================================================================
 
-# 토큰 마스킹: 로그에 출력할 때 앞 N자만 표시
+# 토큰 마스킹: 로그에 출력할 때 앞 N자만 표시 (레거시 호환 — 신규 코드는 present/absent)
 TOKEN_LOG_MASK_LENGTH = 8
 
 
