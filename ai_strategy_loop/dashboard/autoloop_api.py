@@ -127,6 +127,30 @@ def autonomy_generations(run_id: RunId = "", limit: int = 60) -> dict[str, Any]:
     }
 
 
+@autoloop_router.get("/loop/autonomy/ledger")
+def autonomy_ledger(run_id: RunId = "") -> dict[str, Any]:
+    """가설 원장(W2) — 수정 1건 = 가설 1건. 폐기된 가설도 남는다.
+
+    예산의 **정본**은 세대 수가 아니라 이 원장이다. 세대 없이 폐기된 수정도
+    예산을 소모했으므로, 원장이 있으면 그것을 우선해서 읽는다.
+    """
+    from ai_strategy_loop.controller import hypothesis_ledger as ledger  # noqa: PLC0415
+
+    rows = ledger.read_ledger()
+    if run_id:
+        rows = [row for row in rows if row.get("run_id") == run_id]
+    summary = ledger.run_summary(run_id) if run_id else None
+    return {
+        "available": bool(rows),
+        "authority": "observation_only",
+        "run_id": run_id,
+        "records": rows[-200:],
+        "summary": summary,
+        "revision_budget": ledger.DEFAULT_REVISION_BUDGET,
+        "selection_bias_pct": ledger.SELECTION_BIAS_PCT,
+    }
+
+
 @autoloop_router.get("/loop/autonomy/budget")
 def autonomy_budget(run_id: RunId = "") -> dict[str, Any]:
     """예산·편의 차감 요약 — 이 화면의 결론 칸."""
@@ -152,14 +176,27 @@ def autonomy_budget(run_id: RunId = "") -> dict[str, Any]:
         profit = best.get("profit") or 0.0
         design_pct = float(profit) / float(best["trade_count"]) / 10_000.0 if best["trade_count"] else None
 
+    # 예산의 정본은 가설 원장(W2)이다 — 세대 없이 폐기된 수정도 예산을 썼다.
+    #   원장에 기록이 있으면 그것을 우선하고, 없으면 세대 수로 근사한다.
+    from ai_strategy_loop.controller import hypothesis_ledger as ledger  # noqa: PLC0415
+
+    ledger_state = ledger.budget_state(target["run_id"])
+    from_ledger = ledger_state["revisions_used"] > 0
+    revisions_used = ledger_state["revisions_used"] if from_ledger else target["revisions_used"]
+    budget_remaining = (
+        ledger_state["budget_remaining"] if from_ledger else target["budget_remaining"]
+    )
+    over_budget = ledger_state["exhausted"] if from_ledger else target["over_budget"]
+
     return {
         "available": True,
         "authority": "observation_only",
         "run_id": target["run_id"],
-        "revisions_used": target["revisions_used"],
+        "budget_source": "hypothesis_ledger" if from_ledger else "generation_count",
+        "revisions_used": revisions_used,
         "revision_budget": REVISION_BUDGET,
-        "budget_remaining": target["budget_remaining"],
-        "over_budget": target["over_budget"],
+        "budget_remaining": budget_remaining,
+        "over_budget": over_budget,
         "selection_bias_pct": SELECTION_BIAS_PCT,
         "best_generation": best,
         "design_per_trade_pct": design_pct,

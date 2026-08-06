@@ -128,3 +128,44 @@ def test_missing_db_is_honest(monkeypatch):
     assert api.autonomy_generations()["available"] is False
     budget = api.autonomy_budget()
     assert budget["available"] is False and budget["reason"] == "no_run_records"
+
+
+# ---------------------------------------------------------------------------
+# W2 — 가설 원장이 예산의 정본이다.
+# ---------------------------------------------------------------------------
+
+def test_budget_prefers_hypothesis_ledger(loop_db, tmp_path, monkeypatch):
+    """세대 없이 폐기된 수정도 예산을 썼다 — 원장이 있으면 원장을 읽는다."""
+    from ai_strategy_loop.controller import hypothesis_ledger as hl
+
+    target = tmp_path / "ledger.jsonl"
+    monkeypatch.setenv("STOM_AILOOP_HYPOTHESIS_LEDGER", str(target))
+    for n in range(4):
+        hl.append_record(hl.RevisionRecord("run-A", n + 1, f"가설{n}", "profit", 1))
+
+    payload = api.autonomy_budget(run_id="run-A")
+    assert payload["budget_source"] == "hypothesis_ledger"
+    assert payload["revisions_used"] == 4          # 세대는 2개뿐이지만 수정은 4회
+    assert payload["budget_remaining"] == api.REVISION_BUDGET - 4
+
+
+def test_budget_falls_back_to_generation_count(loop_db, tmp_path, monkeypatch):
+    monkeypatch.setenv("STOM_AILOOP_HYPOTHESIS_LEDGER", str(tmp_path / "empty.jsonl"))
+    payload = api.autonomy_budget(run_id="run-A")
+    assert payload["budget_source"] == "generation_count"
+    assert payload["revisions_used"] == 2
+
+
+def test_ledger_endpoint_reports_records(loop_db, tmp_path, monkeypatch):
+    from ai_strategy_loop.controller import hypothesis_ledger as hl
+
+    target = tmp_path / "ledger.jsonl"
+    monkeypatch.setenv("STOM_AILOOP_HYPOTHESIS_LEDGER", str(target))
+    hl.append_record(hl.RevisionRecord("run-A", 1, "손절 확대", "profit", 1, design_pct=0.4))
+
+    payload = api.autonomy_ledger(run_id="run-A")
+    assert payload["available"] is True
+    assert payload["records"][0]["hypothesis_text"] == "손절 확대"
+    # 편의 차감본이 원값과 함께 나간다
+    assert payload["records"][0]["bias_adjusted_pct"] == pytest.approx(0.4 - 0.6225)
+    assert payload["summary"]["records"] == 1
