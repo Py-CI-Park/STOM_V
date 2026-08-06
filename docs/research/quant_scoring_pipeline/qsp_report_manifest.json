@@ -12,13 +12,13 @@
    "publication_status": "published",
    "generator": "claude-session-wave-w4-w5",
    "path": "reports/2026-08-07_wave_w4_w5_report.html",
-   "content_sha256": "c16213dcfaaea54f30c0415dc09f531aeb43487d18ba99fbfc60524610f112ee",
-   "bytes": 26031,
+   "content_sha256": "5071681317c26282f07d8b620b117e6a072637c2e352fd7a6884c563b26cc1ef",
+   "bytes": 30858,
    "generated_at": "2026-08-07T00:00:00Z",
    "trust": "verified",
    "provenance": "docs/research/quant_scoring_pipeline/2026-08-07_wave_w4_w5_results.md",
-   "decision": "엔진 A/B 3종 상회했으나 사다리 국면절단 FAIL — 승격 0",
-   "limitations": "설계 구간 in-sample · 고정 청산 전체가 국면 의존 · 넓은 격자 실험은 빌드 중"
+   "decision": "엔진 A/B 3종 상회했으나 사다리 국면절단 FAIL — 승격 0 · 후보 2배→편의 1.9배 실측",
+   "limitations": "설계 구간 in-sample · 고정 청산 전체가 국면 의존 · 넓은 격자 최적이 경계(arm+7)에 붙음"
   },
   {
    "schema_version": "stom-research-report-v1",
