@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-06T19:15:06.085843+00:00",
-  "source_fingerprint": "f089b86cb7b92c1ddd991a1fd55360a2bc9363a35b3efb0043dff9ebd0af33ad",
+  "generated_at": "2026-08-06T19:42:45.144523+00:00",
+  "source_fingerprint": "2fab6ebbff909ee9baea240c466e377bdda36b814fc745ea4654889c62a0e689",
   "count": 995,
   "docs": [
     {
@@ -6770,8 +6770,8 @@
       "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
       "title": "QSP1 한계 원장 (Limitation Ledger)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-05T20:05:31.579611+00:00",
-      "size": 20228
+      "updated_at": "2026-08-06T19:15:55.483666+00:00",
+      "size": 21027
     },
     {
       "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/analysis_to_revision.md",
