@@ -13,6 +13,9 @@
 수익률)만 담는다. 따라서 규칙마다 평가 정확도가 다르다. 모든 결과는 `exactness`
 를 달고 나간다.
 
+  - `trailing_exact`   : **exact**       — 라벨 v4 가 경로를 그대로 시뮬레이션한 실현값.
+                         러닝 최고만 쓰므로 미래 참조 없음(trailing.py). W3 재현
+                         게이트가 "청산 표현력 부족"으로 멈춘 지점을 여는 열.
   - `time_stop`        : **exact**       — 지평 h 에 청산 = frA_h (라벨 값 그 자체)
   - `barrier`          : **exact**       — 최초 도달 시각 비교로 승/패/만기 결정
   - `trailing`         : **lower_bound** — 무장 여부는 `hit_up_arm < h` 로 **정확**하고,
@@ -41,6 +44,7 @@ import numpy as np
 import pandas as pd
 
 from ai_strategy_loop.labeling import label_spec as spec
+from ai_strategy_loop.labeling.trailing import TRAILING_GRID
 from ai_strategy_loop.labeling.universe import ROUND_TRIP_COST_PCT
 
 Exactness = Literal["exact", "lower_bound", "upper_bound"]
@@ -67,7 +71,9 @@ def gross_to_net(gross_pct: np.ndarray) -> np.ndarray:
 class ExitRule:
     """청산 규칙 하나. family 마다 필요한 인자가 다르다."""
 
-    family: Literal["time_stop", "barrier", "trailing", "trailing_ceiling", "mfe_capture"]
+    family: Literal[
+        "trailing_exact", "time_stop", "barrier", "trailing", "trailing_ceiling", "mfe_capture",
+    ]
     horizon: int = 600
     tp_pct: float | None = None
     sl_pct: float | None = None
@@ -76,7 +82,7 @@ class ExitRule:
 
     @property
     def exactness(self) -> Exactness:
-        if self.family in ("time_stop", "barrier"):
+        if self.family in ("time_stop", "barrier", "trailing_exact"):
             return "exact"
         if self.family == "trailing":
             return "lower_bound"      # 무장 정확 + 최소 실현만 인정(미래 참조 없음)
@@ -88,6 +94,8 @@ class ExitRule:
             return f"time_stop({self.horizon}s)"
         if self.family == "barrier":
             return f"barrier(TP+{self.tp_pct:g}/SL-{self.sl_pct:g}, {self.horizon}s)"
+        if self.family == "trailing_exact":
+            return f"trailing(arm+{self.arm_pct:g}/give{self.give_pct:g})"
         if self.family == "trailing":
             return f"trailing_min(arm+{self.arm_pct:g}/give{self.give_pct:g}, {self.horizon}s)"
         if self.family == "trailing_ceiling":
@@ -145,6 +153,16 @@ def evaluate(frame: pd.DataFrame, rule: ExitRule) -> np.ndarray:
                      np.where(tp_time < rule.horizon, loss, timeout)),
         ).astype(np.float64)
 
+    if rule.family == "trailing_exact":
+        # 라벨 v4 — 경로를 그대로 시뮬레이션한 **실현값**이다(근사 아님).
+        #   러닝 최고만 쓰므로 미래 참조가 없다(trailing.py 참조).
+        if rule.arm_pct is None or rule.give_pct is None:
+            raise ValueError("trailing_exact 규칙에는 arm_pct/give_pct 가 필요하다")
+        column = f"trail_{rule.arm_pct:g}_{rule.give_pct:g}"
+        if column not in frame.columns:
+            raise KeyError(f"라벨 v4 트레일링 열이 없다: {column} (라벨 재빌드 필요)")
+        return np.nan_to_num(frame[column].to_numpy(dtype=np.float64))
+
     if rule.family in ("trailing", "trailing_ceiling"):
         if rule.arm_pct is None or rule.give_pct is None:
             raise ValueError("trailing 규칙에는 arm_pct/give_pct 가 필요하다")
@@ -188,6 +206,9 @@ def default_grid(horizons: Sequence[int] = ENVELOPE_HORIZONS) -> list[ExitRule]:
         for arm, give in ((1.0, 0.5), (2.0, 1.0), (3.0, 1.0), (3.0, 1.5)):
             rules.append(ExitRule("trailing", horizon=horizon, arm_pct=arm, give_pct=give))
             rules.append(ExitRule("trailing_ceiling", horizon=horizon, arm_pct=arm, give_pct=give))
+    # 라벨 v4 실현값 — 열이 있으면 정확 계열로 평가된다(없으면 unavailable 로 보고).
+    for arm, give in TRAILING_GRID:
+        rules.append(ExitRule("trailing_exact", arm_pct=arm, give_pct=give))
     return rules
 
 

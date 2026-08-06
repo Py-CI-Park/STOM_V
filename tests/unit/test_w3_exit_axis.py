@@ -169,9 +169,11 @@ def test_default_grid_is_prefixed_and_reports_all_cells():
     assert len(labels) == len(set(labels)), "격자에 중복 셀이 있다"
     # 사전 고정 지평만 쓴다(사후에 고르면 그 자체가 편의).
     assert set(r.horizon for r in grid) <= set(exit_axis.ENVELOPE_HORIZONS)
-    # 만기값이 필요한 규칙군은 frA_* 가 존재하는 지평만 쓴다(실측: 600s 없음).
+    # **만기값(frA_*)이 필요한** 규칙군만 RETURN_HORIZONS 제약을 받는다.
+    #   mfe_capture 는 봉투만, trailing_exact 는 라벨 v4 실현값 열만 쓴다.
+    needs_timeout = {"time_stop", "barrier", "trailing", "trailing_ceiling"}
     for rule in grid:
-        if rule.family != "mfe_capture":
+        if rule.family in needs_timeout:
             assert rule.horizon in exit_axis.RETURN_HORIZONS, rule.label
 
     rows = evaluate_grid(_frame(), grid)
@@ -190,3 +192,28 @@ def test_grid_rows_include_day_statistics():
     row = rows[0]
     assert row["days"] == 2
     assert "day_mean_pct" in row and "day_positive_ratio" in row
+
+
+# ---------------------------------------------------------------------------
+# 라벨 v4 — 트레일링 실현값(정확 계열)
+# ---------------------------------------------------------------------------
+
+def test_trailing_exact_reads_label_column():
+    """라벨 v4 열이 있으면 정확 계열로 그대로 읽는다(재계산·근사 없음)."""
+    frame = _frame()
+    frame["trail_2_1"] = [1.2, -0.4, 2.2, -1.5, 3.0, -0.1]
+    rule = ExitRule("trailing_exact", arm_pct=2.0, give_pct=1.0)
+    assert rule.exactness == "exact"
+    assert np.allclose(evaluate(frame, rule), frame["trail_2_1"].to_numpy())
+
+
+def test_trailing_exact_without_label_reports_rebuild_needed():
+    """열이 없으면 조용히 근사로 대체하지 않는다 — 재빌드가 필요하다고 말한다."""
+    rows = evaluate_grid(_frame(), [ExitRule("trailing_exact", arm_pct=2.0, give_pct=1.0)])
+    assert rows[0]["available"] is False
+    assert "재빌드" in rows[0]["reason"]
+
+
+def test_trailing_exact_requires_arm_and_give():
+    with pytest.raises(ValueError):
+        evaluate(_frame(), ExitRule("trailing_exact", arm_pct=2.0))
