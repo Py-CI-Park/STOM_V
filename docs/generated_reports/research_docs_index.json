@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-06T11:09:02.314343+00:00",
-  "source_fingerprint": "20ffd16c15227f0d371f8fce9fdc3a76485d53354f214d9c4f902c8531fa9598",
-  "count": 991,
+  "generated_at": "2026-08-06T19:11:29.184296+00:00",
+  "source_fingerprint": "9ae42509c1c55cb30bb1e5bc739e6a2e62666a9b1957568d143ef98de70104a5",
+  "count": 995,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6683,6 +6683,20 @@
       "size": 5353
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-06_wave_w09_w4_results.md",
+      "title": "웨이브 W0.9~W4 실행 결과 — 매도 축이 열렸다",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-06T13:08:22.027967+00:00",
+      "size": 3212
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-07_wave_w4_w5_results.md",
+      "title": "웨이브 W4~W5 실행 결과 — 엔진이 매도 축을 인정했다",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-06T16:12:36.308474+00:00",
+      "size": 11601
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
       "title": "핸드오프 — QSP7 매도식 연구 (2026-08-01)",
       "category": "quant_scoring_pipeline",
@@ -6711,11 +6725,25 @@
       "size": 7987
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-06_웨이브_자율루프.md",
+      "title": "핸드오프 — 웨이브 자율 루프 (2026-08-06)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-06T13:37:09.101698+00:00",
+      "size": 7693
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-07_웨이브_W4_W5.md",
+      "title": "핸드오프 — 웨이브 W4~W5 (2026-08-07)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-06T16:19:22.132266+00:00",
+      "size": 9645
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-06T05:19:26.541743+00:00",
-      "size": 3625
+      "updated_at": "2026-08-06T15:11:00.630256+00:00",
+      "size": 5186
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",

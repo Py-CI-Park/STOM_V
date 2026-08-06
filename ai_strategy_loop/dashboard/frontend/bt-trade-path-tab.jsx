@@ -20,6 +20,7 @@ import { BtSplitDiagnostics } from "./bt-split-diagnostics.jsx";
 import { BtReachMapTab } from "./bt-reach-map.jsx";
 import { BtAnalysisCardTab } from "./bt-analysis-card.jsx";
 import { BtTransferLedgerPanel } from "./bt-transfer-ledger.jsx";
+import { BtExitAxisPanel } from "./bt-exit-axis.jsx";
 import { _tpKo, _tpNextHint } from "./bt-tp-messages.jsx";
 const { useState: useState_tpt, useEffect: useEffect_tpt } = React;
 
@@ -42,6 +43,7 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
   const [showAnalysisCard, setShowAnalysisCard] = useState_tpt(false);
   // 페이지 12 강화 — 전이율 누적 원장. job 없이도 열린다(원장은 P5 리포트에서 온다).
   const [showTransferLedger, setShowTransferLedger] = useState_tpt(false);
+  const [showExitAxis, setShowExitAxis] = useState_tpt(false);
   const [lane, setLane] = useState_tpt("min");
   const [laneManifest, setLaneManifest] = useState_tpt(null);
   const [selectedProposalId, setSelectedProposalId] = useState_tpt("");
@@ -159,10 +161,16 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
                 title="지도 추정과 엔진 실측의 비율(전이율)을 누적해 보수 계수로 씁니다. job 선택 없이도 열립니다.">
           {showTransferLedger ? "전이율 원장 닫기" : "전이율 원장 열기 (페이지 12)"}
         </button>
+        <button className={"btn sm" + (showExitAxis ? " active" : " ghost")}
+                onClick={() => setShowExitAxis(!showExitAxis)}
+                title="같은 청산 규칙을 지도·워크포워드·엔진 세 자로 나란히 읽습니다. job 선택 없이도 열립니다.">
+          {showExitAxis ? "매도 축 종합 닫기" : "매도 축 종합 열기 (페이지 28)"}
+        </button>
       </div>
       {showReachMap && <BtReachMapTab/>}
       {showAnalysisCard && <BtAnalysisCardTab jobId={jobId}/>}
       {showTransferLedger && <BtTransferLedgerPanel/>}
+      {showExitAxis && <BtExitAxisPanel/>}
       <div className="tp-source-bar"><label>완료 결과<select value={jobId} onChange={event => { setJobId(event.target.value); setBoundaryTime(""); setPreflight(null); setDataContract(null); setActiveView("data"); setAnalysis(null); setCohorts([]); setTrades([]); setDetail(null); }}><option value="">job 선택</option>{jobs.map(job => <option key={job.job_id} value={job.job_id}>{job.spec?.buy || ""} · {job.spec?.sell || ""} · {job.job_id}</option>)}</select></label><label>전체청산 (HHMMSS)<input value={boundaryTime} inputMode="numeric" maxLength="6" placeholder="자동 판별" onChange={event => { setBoundaryTime(event.target.value.replace(/\D/g, "").slice(0, 6)); setPreflight(null); }}/></label><button className="btn ghost sm" onClick={inspect} disabled={!jobId}>사전 점검</button><button className="btn primary sm" onClick={start} disabled={!jobId || !preflight?.available || running}>경로 분석 시작</button>{running && <button className="btn danger sm" onClick={() => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" }).catch(reason => setError(_tpKo(String(reason.message || reason))))}>취소</button>}</div>
       {preflight && <div className={`tp-preflight ${preflight.available ? "ready" : "blocked"}`}><b>{preflight.available ? "분석 가능" : "분석 불가"}</b><span>{preflight.available ? `거래 ${preflight.trade_count} · 날짜 ${preflight.covered_date_count}/${preflight.date_count} · ${preflight.source.timeframe}` : `${_tpKo(preflight.reason)}${preflight.exit_after_boundary_count ? ` · 경계 뒤 실제 매도 ${preflight.exit_after_boundary_count}건` : ""}`}</span>{(preflight.uncovered_dates || []).length > 0 && <span className="tp-uncovered">⚠ 데이터 없는 날짜 {preflight.date_count - preflight.covered_date_count}일: {preflight.uncovered_dates.slice(0, 6).join(", ")}{preflight.uncovered_dates.length > 6 ? " …" : ""}</span>}<small>전체청산 {String(preflight.forced_liquidation_time || "").padStart(6, "0")} · {preflight.boundary_source || "미확인"} · 전체청산 이후 데이터는 존재해도 사용하지 않음</small></div>}
       {dataContract && <nav className="tp-view-tabs" aria-label="통합 백테스트 연구 단계">{pageTabs.map(([key,label]) => <button key={key} className={activeView === key ? "active" : ""} onClick={() => setActiveView(key)}>{label}</button>)}</nav>}

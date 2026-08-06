@@ -11,6 +11,7 @@
 import { CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveConfigPanel, CostPanel, FeedbackPanel, ConditionDiscoveryPanel, AutopsyPanel, AutopsyFocusCard, PopulationPanel, LineagePanel, MetaPanel, HoldoutPanel, ExportStatusBanner } from "./panels.jsx";
 import { HypothesisPanel } from "./hypothesis.jsx";
 import { LoopAutonomyPanel } from "./loop-autonomy.jsx";
+import { LoopStandingPanel } from "./loop-standing.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
 import { ResearchImprovementCard } from "./research-improvement.jsx";
@@ -610,6 +611,11 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <section className="v6-stage-lab v54-span-all" aria-label="자율 루프 관제(페이지 26)">
               <h3 className="stom-section-label">자율 루프 관제 · 가정 판정과 수정 예산</h3>
               <LoopAutonomyPanel />
+            </section>
+            {/* 페이지 29 — 상설화: 백필·재검증 계획 (실행 버튼 없음, 홀드아웃은 잠김) */}
+            <section className="v6-stage-lab v54-span-all" aria-label="상설화 현황(페이지 29)">
+              <h3 className="stom-section-label">상설화 · 백필과 상설 재검증</h3>
+              <LoopStandingPanel />
             </section>
           </div>
         )}

@@ -37,7 +37,7 @@ import pandas as pd
 from ai_strategy_loop.labeling.entries import entry_positions
 from ai_strategy_loop.labeling.exit_axis import default_grid, evaluate
 from ai_strategy_loop.labeling.lanes import LANES
-from ai_strategy_loop.labeling.trailing import TRAILING_GRID
+from ai_strategy_loop.labeling.trailing import TRAILING_GRID, resolve_grid
 from ai_strategy_loop.labeling.run_p3 import RULES, _load
 from ai_strategy_loop.labeling.verify_human_strategy import _mask_902, _mask_905
 
@@ -87,6 +87,8 @@ def main() -> None:
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser()
     parser.add_argument("--out-name", default="design_v3")
+    parser.add_argument("--grid", default="default",
+                        help="트레일링 격자: default(6쌍) | wide(36쌍)")
     parser.add_argument("--warmup", type=int, default=60)
     args = parser.parse_args()
 
@@ -99,7 +101,8 @@ def main() -> None:
     variables = sorted(_champion_columns())
     base = ["일자", "종목코드", "시분초", "경과", "관심종목", "spread_pct",
             "flag_no_trade", "flag_limit_up", "flag_vi_near"]
-    trail_cols = [f"trail_{a:g}_{g:g}" for a, g in TRAILING_GRID]
+    grid = resolve_grid(args.grid)
+    trail_cols = [f"trail_{a:g}_{g:g}" for a, g in grid]
 
     t0 = time.time()
     columns = base + hits + envelopes + horizons + variables + trail_cols
@@ -126,7 +129,7 @@ def main() -> None:
     n_days = int(day_codes.max() + 1) if day_codes.size else 0
 
     cells = []
-    for rule in default_grid():
+    for rule in default_grid(trailing_grid=grid):
         try:
             values = evaluate(subset, rule)
         except (KeyError, ValueError):

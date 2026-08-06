@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>웨이브 W4~W5 실행 결과 — 엔진은 통과, 사다리는 탈락</title>
+</head>
+<body>
+<style>
+:root{
+  --bg:#FAFAF7; --ink:#1A2332; --muted:#5A6B7D; --surface:#F0F1EC; --border:#D5D9D2;
+  --accent:#0B7A5C; --pass:#0B7A5C; --fail:#B42318; --warn:#B7791F; --link:#075DC4; --code:#EDEFE8;
+  color-scheme:light dark;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#12181F; --ink:#E4EAEF; --muted:#9FAEBC; --surface:#1A222B; --border:#33404D;
+  --accent:#4CC49A; --pass:#4CC49A; --fail:#E0776A; --warn:#D9A441; --link:#7FB3F5; --code:#1F2933;
+}}
+:root[data-theme="dark"]{
+  --bg:#12181F; --ink:#E4EAEF; --muted:#9FAEBC; --surface:#1A222B; --border:#33404D;
+  --accent:#4CC49A; --pass:#4CC49A; --fail:#E0776A; --warn:#D9A441; --link:#7FB3F5; --code:#1F2933;
+}
+:root[data-theme="light"]{
+  --bg:#FAFAF7; --ink:#1A2332; --muted:#5A6B7D; --surface:#F0F1EC; --border:#D5D9D2;
+  --accent:#0B7A5C; --pass:#0B7A5C; --fail:#B42318; --warn:#B7791F; --link:#075DC4; --code:#EDEFE8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.65 system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:clamp(16px,4vw,48px)}
+.cover{background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--accent);
+  border-radius:10px;padding:clamp(18px,3vw,36px);margin-bottom:26px}
+.eyebrow{color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+h1{font-size:clamp(23px,3.6vw,34px);line-height:1.2;margin:.35em 0 .3em;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:64ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;font-size:13px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:0 0 30px}
+.kpi{border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:12px 14px}
+.kpi b{display:block;font-size:21px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi span{font-size:12px;color:var(--muted)}
+.kpi.ok b{color:var(--pass)} .kpi.amber b{color:var(--warn)}
+h2{font-size:20px;margin:42px 0 6px;scroll-margin-top:16px}
+h2 .no{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:6px}
+h3{font-size:15.5px;margin:24px 0 8px}
+.sub{color:var(--muted);margin:0 0 14px;max-width:72ch}
+.tw{overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin:12px 0}
+table{width:100%;min-width:600px;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 11px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:none}
+th{background:var(--surface);font-weight:600;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:12.5px;
+  font-family:ui-monospace,Consolas,monospace}
+.pass{color:var(--pass);font-weight:600}.fail{color:var(--fail);font-weight:600}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid var(--border)}
+.pill.p{color:var(--pass);border-color:var(--pass)}
+.pill.w{color:var(--warn);border-color:var(--warn)}
+.callout{border:1px solid var(--border);border-left:4px solid var(--accent);background:var(--surface);
+  border-radius:8px;padding:14px 18px;margin:16px 0}
+.callout.amber{border-left-color:var(--warn)}
+.callout p{margin:.3em 0}
+.flow{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:14px 18px;
+  overflow-x:auto;font:13px/1.7 ui-monospace,Consolas,monospace;white-space:pre;margin:12px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:14px 0}
+.card{border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:14px 16px}
+.card h4{margin:0 0 8px;font-size:14px}
+.card ul{margin:0;padding-left:18px} .card li{margin:4px 0}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)}
+a{color:var(--link)}
+</style>
+
+
+<div class="wrap">
+<div class="cover">
+  <div class="eyebrow">STOM · 마스터 웨이브 W4~W5 · 실행 결과</div>
+  <h1>엔진은 통과시켰는데 사다리가 떨어뜨렸다 — 그리고 왜인지가 수확이다</h1>
+  <p class="lede">진입을 고정한 채 매도만 바꾼 엔진 A/B 에서 도전자 3종이 전부 챔피언의 건당 수익과 MDD 를 넘었다(최고 +0.92%/건).
+  그런데 검증 사다리의 <b>국면 절단</b>에서 전부 탈락했다 — 4분할 중 양수는 2조각뿐이다.
+  더 파 보니 <b>모든 고정 청산이 같은 국면 패턴</b>을 타고, <b>천장만 국면과 무관하게 평평했다</b>.</p>
+  <div class="meta">
+    <span>브랜치 <b>wave/w4b-engine-measure</b></span>
+    <span>구간 <b>20240304~20250822 (355일)</b></span>
+    <span>엔진 런 <b>4팔 · 1,368초</b></span>
+    <span>신규 테스트 <b>87종</b></span>
+  </div>
+</div>
+
+<div class="kpis">
+  <div class="kpi ok"><b>3 / 3</b><span>엔진 A/B 기준선 상회</span></div>
+  <div class="kpi amber"><b>2 / 4</b><span>국면 절단 양수 구간 → 사다리 FAIL</span></div>
+  <div class="kpi ok"><b>4 / 4</b><span>천장은 국면 무관하게 양수</span></div>
+  <div class="kpi amber"><b>×1.90</b><span>후보 2배 → 선택 편의 배수</span></div>
+  <div class="kpi ok"><b>0</b><span>승격한 후보 (규율대로)</span></div>
+  <div class="kpi ok"><b>125</b><span>JSX 등록 (+2면)</span></div>
+  <div class="kpi amber"><b>4건</b><span>측정이 잡은 결함</span></div>
+</div>
+
+<h2 id="s1"><span class="no">1</span>엔진 실측 — 진입 고정 A/B</h2>
+<p class="sub">진입은 챔피언 원본(<code>Tick_B_902_905</code>)을 그대로 두고 <b>매도만</b> 바꿨다.
+진입까지 바꾸면 차이가 매도에서 온 것인지 진입에서 온 것인지 나눌 수 없다.
+기준선도 <b>같은 런에서 다시 쟀다</b> — 기간·엔진 수·설정이 조금만 달라도 비교가 무의미해진다.</p>
+
+<div class="tw"><table>
+<tr><th>팔</th><th>매도 규칙</th><th class="num">거래</th><th class="num">건당</th><th class="num">CAGR</th><th class="num">MDD</th><th class="num">Δ건당</th></tr>
+<tr><td><b>A</b> 기준선</td><td>챔피언 원본 8종</td><td class="num">161</td><td class="num"><b>+0.50%</b></td><td class="num"><b>56.30</b></td><td class="num">14.82</td><td class="num">—</td></tr>
+<tr><td>B1</td><td><code>trailing(arm+3/give1.5)</code></td><td class="num">157</td><td class="num pass">+0.56%</td><td class="num fail">30.80</td><td class="num pass">12.43</td><td class="num pass">+0.06%p</td></tr>
+<tr><td>B2</td><td><code>trailing(arm+3/give1)</code></td><td class="num">158</td><td class="num pass">+0.55%</td><td class="num fail">30.63</td><td class="num pass">12.29</td><td class="num pass">+0.05%p</td></tr>
+<tr><td><b>B3</b></td><td><code>trailing(arm+5/give2)</code></td><td class="num">155</td><td class="num pass"><b>+0.92%</b></td><td class="num">49.98</td><td class="num pass"><b>10.48</b></td><td class="num pass"><b>+0.42%p</b></td></tr>
+</table></div>
+
+<div class="callout">
+  <p><b>부호가 맞았다.</b> 지도가 양수라고 한 셋이 엔진에서도 전부 양수다.
+  QSP12 에서 전이율 −1.18 로 부호가 통째로 뒤집혔던 것과 정반대다.</p>
+  <p><b>거래 수가 거의 같다</b>(155~161). 진입이 같으니 당연하지만, 이것이 이 A/B 를 깨끗하게 만든다 — 차이는 오직 매도에서 왔다.</p>
+</div>
+
+<div class="callout amber">
+  <p><b>건당 이득이 곧 자본 이득은 아니다.</b> B1·B2 는 건당이 올랐는데 CAGR 이 56 → 31 로 떨어졌다.
+  트레일링이 더 오래 들고 있어 회전이 느려지고 동시보유 슬롯이 묶인다.</p>
+  <p><b>B3 만</b> 건당(+84%)·MDD(−29%)·CAGR(−11%)을 함께 감당할 자리에 있다.
+  그래도 <b>지금 채택하지 않는다</b> — 이 구간은 청산 규칙을 고른 바로 그 구간(in-sample)이다.</p>
+</div>
+
+<h3>부수 관측 — 자본 제약이 필터로 작동한다</h3>
+<p class="sub">지도는 챔피언 진입을 <b>344건</b>으로 셌는데 엔진은 <b>155~161건</b>만 체결했다(45%).
+차이는 자본 한도·동시보유다. 그런데 그 45%의 건당 성적이 지도 전체의 2~4배다.
+자본 제약이 무작위로 자르는 게 아니라 <b>유리한 쪽으로 자르고 있다</b>. 지금은 관측일 뿐 설명이 없다 — 다음 라운드의 연구거리다.</p>
+
+<h2 id="s1b"><span class="no">1.5</span>검증 사다리 — 엔진이 통과시킨 것을 사다리가 떨어뜨렸다</h2>
+<p class="sub">엔진 승격 전에 지도 위에서 거를 수 있는 세 단(<code>run_exit_ladder</code>).
+챔피언 진입 344건 고정 · 설계 구간 225일.</p>
+
+<div class="tw"><table>
+<tr><th>단</th><th>무엇을 잡나</th><th>trailing(3/1.5)</th><th>trailing(5/2)</th><th>판정</th></tr>
+<tr><td>① 격자 고원</td><td>이웃 셀에서도 살아남는가</td><td>이웃 3/3 양수</td><td>이웃 1/1 양수</td><td><span class="pill p">PASS</span> <small>(기본 격자라 표본이 성기다)</small></td></tr>
+<tr><td>② 비용 스트레스 ×1.5</td><td>비용 여유가 있는가</td><td class="num">+0.1443%</td><td class="num">+0.1133%</td><td><span class="pill p">PASS</span></td></tr>
+<tr><td><b>③ 국면 절단</b></td><td>기간을 나눠도 일관되는가</td><td class="num fail"><b>2/4</b></td><td class="num fail"><b>2/4</b></td><td><span class="pill w">FAIL</span></td></tr>
+<tr><td colspan="4"><b>종합</b></td><td><span class="pill w">FAIL — 승격 대상 아님</span></td></tr>
+</table></div>
+
+<div class="tw"><table>
+<tr><th class="num">구간</th><th>기간</th><th class="num">일수/건수</th><th class="num">trailing(3/1.5)</th><th class="num">trailing(5/2)</th></tr>
+<tr><td class="num">1</td><td>20240304~20240719</td><td class="num">56일 79건</td><td class="num pass">+0.4870%</td><td class="num pass">+0.4903%</td></tr>
+<tr><td class="num">2</td><td>20240722~20241129</td><td class="num">56일 79건</td><td class="num fail">−0.2511%</td><td class="num fail">−0.3014%</td></tr>
+<tr><td class="num">3</td><td>20241202~20250407</td><td class="num">56일 93건</td><td class="num pass"><b>+0.9870%</b></td><td class="num pass"><b>+1.0355%</b></td></tr>
+<tr><td class="num">4</td><td>20250408~20250821</td><td class="num">57일 93건</td><td class="num fail">−0.0717%</td><td class="num fail">−0.2510%</td></tr>
+</table></div>
+
+<p class="sub"><b>전체 흑자의 대부분이 구간 3 하나에서 나온다.</b> 엔진 A/B 의 +0.92% 도 같은 이유다.</p>
+
+<h3>왜인가 — 청산 규칙 8종을 같은 4분할로 갈라 봤다</h3>
+<div class="tw"><table>
+<tr><th>청산 규칙</th><th class="num">구간1</th><th class="num">구간2</th><th class="num">구간3</th><th class="num">구간4</th><th class="num">양수</th></tr>
+<tr><td><code>trailing(3/1.5)</code> <small>exact</small></td><td class="num pass">+0.4870</td><td class="num fail">−0.2511</td><td class="num pass">+0.9870</td><td class="num fail">−0.0717</td><td class="num">2/4</td></tr>
+<tr><td><code>trailing(5/2)</code> <small>exact</small></td><td class="num pass">+0.4903</td><td class="num fail">−0.3014</td><td class="num pass">+1.0355</td><td class="num fail">−0.2510</td><td class="num">2/4</td></tr>
+<tr><td><code>trailing(1/0.5)</code> <small>exact</small></td><td class="num pass">+0.1680</td><td class="num fail">−0.2246</td><td class="num fail">−0.0147</td><td class="num fail">−0.4929</td><td class="num">1/4</td></tr>
+<tr><td><code>time_stop(300s)</code> <small>exact</small></td><td class="num pass">+0.1050</td><td class="num fail">−0.6182</td><td class="num pass">+0.5497</td><td class="num fail">−0.2647</td><td class="num">2/4</td></tr>
+<tr><td><code>time_stop(30s)</code> <small>exact</small></td><td class="num pass">+0.0477</td><td class="num fail">−0.3090</td><td class="num fail">−0.1899</td><td class="num fail">−0.3541</td><td class="num">1/4</td></tr>
+<tr><td><code>barrier(TP+3/SL−2, 300s)</code> <small>exact</small></td><td class="num pass">+0.3213</td><td class="num fail">−0.1476</td><td class="num pass">+0.0396</td><td class="num fail">−0.1329</td><td class="num">2/4</td></tr>
+<tr><td><code>barrier(TP+2/SL−1, 120s)</code> <small>exact</small></td><td class="num fail">−0.0850</td><td class="num fail">−0.2046</td><td class="num fail">−0.1127</td><td class="num fail">−0.2275</td><td class="num">0/4</td></tr>
+<tr><td><b><code>mfe_capture(600s)</code></b> <small>상한(천장)</small></td><td class="num pass"><b>+3.7265</b></td><td class="num pass"><b>+3.0135</b></td><td class="num pass"><b>+4.0597</b></td><td class="num pass"><b>+3.5413</b></td><td class="num"><b>4/4</b></td></tr>
+</table></div>
+
+<div class="callout">
+  <p><b>두 가지가 동시에 보인다.</b></p>
+  <p>1. <b>판정 가능한 모든 규칙이 같은 국면 패턴을 탄다</b> — 구간 2·4 에서 일제히 음수.
+  특정 셀의 과최적이 아니라 <b>고정 청산 전체의 공통 약점</b>이다.</p>
+  <p>2. <b>천장은 국면과 무관하게 평평하다</b>(+3.0 ~ +4.1). 챔피언 진입이 만드는 기회 자체는 늘 거기 있다.</p>
+  <p>→ 기회가 사라지는 것이 아니라, <b>고정된 arm/give 로 그 기회를 잡을 수 있는 국면이 따로 있다.</b>
+  &quot;더 좋은 고정 셀 찾기&quot;를 계속해도 안 되는 이유의 실측 근거다.</p>
+</div>
+
+<div class="tw"><table>
+<tr><th>이전 계획</th><th>바뀐 계획</th></tr>
+<tr><td>B3(arm+5/give2)를 사다리 태워 승격 후보로</td><td><b>승격 안 함.</b> 사다리 FAIL 을 기록으로 남긴다</td></tr>
+<tr><td>넓은 격자에서 더 좋은 셀 찾기</td><td>격자 실험은 <b>편의 측정 목적 그대로</b> 유지</td></tr>
+<tr><td>—</td><td><b>신규: 적응형 청산</b> — 진입 시점 관측값으로 arm/give 를 고르는 규칙군</td></tr>
+</table></div>
+
+<h2 id="s2"><span class="no">2</span>측정이 드러낸 결함 — 전이율을 축 없이 섞고 있었다</h2>
+<p class="sub">원장에 기록이 5건 쌓이자 계수가 이상해졌다. 방향이 <b>반대인 두 무리</b>가 한 통에 들어 있었다.</p>
+
+<div class="tw"><table>
+<tr><th>비교 축</th><th class="num">표본</th><th>전이율</th><th>지도의 편향</th><th>해야 할 일</th></tr>
+<tr><td>진입까지 함께 변경 <small>(QSP10 배리어)</small></td><td class="num">2</td><td class="num">0.105 · 0.343</td><td class="fail">과대평가</td><td>지도 값을 <b>깎는다</b></td></tr>
+<tr><td><b>진입 고정 · 청산만 변경</b> <small>(W4-b)</small></td><td class="num">3</td><td class="num">2.247 · 2.370 · 4.216</td><td class="pass">과소평가</td><td>지도 값을 <b>믿어도 된다</b></td></tr>
+</table></div>
+
+<p class="sub">섞인 중앙값은 <b>2.247</b>이었다. 이것을 배리어 후보에 곱하면 20배 과대추정이 된다.
+"보수 계수"라는 이름이 정확히 반대로 작동하고 있었다.</p>
+
+<div class="callout">
+  <p><b>교정</b> — 기록마다 <code>axis</code> 를 달고 축별 계수를 따로 낸다.
+  두 축이 모두 표본을 가지면 <code>axis_mixed=True</code> 로 알린다. 조용히 섞지 않는다.</p>
+  <p>이 결함은 "도구가 조용히 잘못된 값을 준다"는 이 프로젝트의 반복 실패 유형 <b>6번째</b>다.
+  앞의 다섯 건과 마찬가지로 <b>측정을 더 해서</b> 드러났다.</p>
+</div>
+
+<h2 id="s3"><span class="no">3</span>min 레인 최초 판독 — 155일을 처음 읽었다</h2>
+<p class="sub"><code>min_design_v2</code>(545MB·155일)는 QSP10 에서 만들어진 뒤 <b>한 번도 쓰이지 않았다</b>.
+트레일링 실현값이 없어 tick 과 같은 자로 잴 수 없었으므로 v4 로 재빌드했다 — 155일·795MB·708초·<b>실패 0</b>.</p>
+
+<div class="grid2">
+  <div class="card">
+    <h4>min 무필터 기저 (1,144,017행)</h4>
+    <ul>
+      <li>판정 가능 <b>27셀 중 양수 0</b></li>
+      <li>최고 정확 셀 <code>barrier(TP+5/SL-1, 60분)</code> <b>−0.4035%</b></li>
+      <li>트레일링 정확 <b>−0.53 ~ −0.63%</b></li>
+      <li><i>상한 <code>mfe_capture(60분)</code> +1.4898% — 천장일 뿐</i></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>tick 무필터 기저 (7,591,950행)</h4>
+    <ul>
+      <li>판정 가능 <b>28셀 중 양수 0</b></li>
+      <li>최고 정확 셀 <code>time_stop(30초)</code> <b>−0.4295%</b></li>
+      <li>트레일링 정확 <b>−0.61 ~ −0.71%</b></li>
+      <li>같은 자리다 — <b>min 은 더 쉽지 않다</b></li>
+    </ul>
+  </div>
+</div>
+
+<div class="tw"><table>
+<tr><th>질문</th><th>답</th></tr>
+<tr><td>min 이 tick 보다 쉬운가?</td><td><b>아니다.</b> 기저가 같은 수준으로 음수다.</td></tr>
+<tr><td>min 이 탈출구인가?</td><td>아니다. 같은 규율(진입 조건)이 필요한 <b>두 번째 레인</b>이다.</td></tr>
+<tr><td>그럼 왜 살려 두나?</td><td>지평이 분 단위라 tick 이 못 보는 규칙군을 표현한다.</td></tr>
+<tr><td>지금 당장 할 일은?</td><td><b>없다.</b> min 챔피언(검증된 흑자 전략)이 먼저다. 그것 없이 탐색하면 QSP10~13 을 min 에서 반복한다.</td></tr>
+</table></div>
+
+<p class="sub">"만들어 두고 안 쓴 자산"에 대한 정직한 결산이다 — 자산이 아니라 <b>미결 부채였고,
+갚고 나니 아직 쓸 때가 아니라는 답</b>이 나왔다.</p>
+
+<h2 id="s4"><span class="no">4</span>넓은 격자 — "후보 수 → 편의" 실험</h2>
+<p class="sub"><b>목적이 다르다.</b> 더 좋은 셀을 찾는 것이 아니라, W2 헌법("가설 예산제")이 주장하는 바를
+그 자신의 척도로 시험한다: 후보를 6개에서 36개로 늘리면 선택 편의가 얼마나 커지는가?</p>
+
+<div class="flow">알려진 두 점
+  후보 28셀      →  학습−표본밖 간극  0.1805%p
+  수백만 조합    →                    0.6225%p
+그 사이가 어떻게 생겼는지는 아무도 모른다.  ← 이번 실험이 채우는 자리</div>
+
+<div class="callout">
+  <p><b>승자 주변을 파지 않는다.</b> 승자(arm3/give1.5) 근처만 촘촘하게 만들면 그것이 곧 사후 미세조정이다.
+  그래서 균등 격자를 통째로 깐다 — arm ∈ {2,3,4,5,6,7} × give ∈ {0.5,1,1.5,2,2.5,3} = <b>36쌍</b>.</p>
+  <p>이 구조를 테스트로 고정했다: 모든 조합 존재 · 축 등간격 · 겹치는 셀은 값 동일.
+  기본 격자는 6쌍 그대로다 — <b>확장이 기본이 되면 그 자체가 편의다</b>.</p>
+</div>
+
+<h3>📌 결과 — 후보를 2배로 늘리니 편의가 1.9배가 됐다</h3>
+<p class="sub"><code>design_v5</code>(wide) 빌드: 355/356일 · 5.5GB · 4,485초.
+<b>같은 설정 · 같은 폴드 · 같은 진입에서 후보 수만 바꿨다.</b></p>
+
+<div class="tw"><table>
+<tr><th>후보 수</th><th class="num">학습 평균</th><th class="num">표본 밖 일평균</th><th class="num">간극(=편의)</th><th class="num">양수 폴드</th></tr>
+<tr><td><b>28셀</b> <small>기본 격자</small></td><td class="num">+0.330%</td><td class="num pass"><b>+0.1506%</b></td><td class="num">+0.1805%p</td><td class="num">3/5</td></tr>
+<tr><td><b>58셀</b> <small>넓은 격자</small></td><td class="num">+0.430%</td><td class="num"><b>+0.0886%</b></td><td class="num fail">+0.3424%p</td><td class="num">4/5</td></tr>
+<tr><td><b>변화</b></td><td class="num pass">+30%</td><td class="num fail"><b>−41%</b></td><td class="num fail"><b>×1.90</b></td><td class="num">—</td></tr>
+</table></div>
+
+<div class="callout amber">
+  <p><b>학습 성적은 올랐는데 표본 밖은 떨어졌다.</b> 선택 편의의 교과서적 실증이며,
+  W2 헌법(&quot;가설 예산제&quot;)이 주장하던 바가 이 프로젝트 자신의 데이터로 확인된 순간이다.</p>
+  <p>참고로 QSP13 의 대규모 탐색(수백만 조합·30폴드)은 0.6225%p 였다. 다만 그것은 <b>진입 탐색</b>이라
+  설정이 달라 직접 비교가 아니고, 위 표의 두 줄만이 같은 자로 잰 값이다.</p>
+</div>
+
+<h3>폴드 상세 — 경고 신호 2가지</h3>
+<div class="tw"><table>
+<tr><th class="num">폴드</th><th>선택된 청산</th><th class="num">학습</th><th class="num">표본 밖</th><th class="num">간극</th></tr>
+<tr><td class="num">1</td><td><code>trailing(arm+7/give1)</code></td><td class="num">+0.4642%</td><td class="num pass">+0.1303%</td><td class="num">+0.3339%p</td></tr>
+<tr><td class="num">2</td><td><code>trailing(arm+7/give1)</code></td><td class="num">+0.4145%</td><td class="num pass"><b>+0.7949%</b></td><td class="num">−0.3804%p</td></tr>
+<tr><td class="num">3</td><td><code>trailing(arm+7/give1)</code></td><td class="num">+0.4638%</td><td class="num pass">+0.2450%</td><td class="num">+0.2188%p</td></tr>
+<tr><td class="num">4</td><td><code>trailing(arm+7/give1)</code></td><td class="num">+0.4387%</td><td class="num fail"><b>−0.7763%</b></td><td class="num fail">+1.2150%p</td></tr>
+<tr><td class="num">5</td><td><code>trailing(arm+4/give1)</code></td><td class="num">+0.3740%</td><td class="num pass">+0.0492%</td><td class="num">+0.3248%p</td></tr>
+</table></div>
+
+<div class="callout amber">
+  <p><b>1. 5폴드 중 4폴드가 격자 끝(arm+7)을 골랐다.</b> 최적이 경계에 있으면 진짜 최적은
+  격자 밖이거나, 선택이 극단을 쫓고 있다는 뜻이다.</p>
+  <p><b>2. 분산이 커졌다.</b> 폴드 4 가 −0.7763% 로 기본 격자의 최악(−0.4496%)보다 나쁘다.
+  양수 폴드는 3/5 → 4/5 로 늘었지만 평균은 내려갔다 — 폴드 2 의 행운(+0.79)이 숫자를 떠받친다.</p>
+</div>
+
+<h3>더 좋은 셀은 실제로 나왔다 — 그런데 전이되지 않았다</h3>
+<div class="tw"><table>
+<tr><th>격자</th><th>최고 정확 셀</th><th class="num">설계 구간 건당</th></tr>
+<tr><td>기본(6쌍)</td><td><code>trailing(arm+3/give1.5)</code></td><td class="num">+0.2493%</td></tr>
+<tr><td><b>넓은(36쌍)</b></td><td><b><code>trailing(arm+4/give1)</code></b></td><td class="num pass"><b>+0.3033%</b> <small>(+21.7%)</small></td></tr>
+</table></div>
+<p class="sub">설계 구간에서 21.7% 더 좋다. 그런데 위 표가 보여주듯 <b>그 개선분은 표본 밖으로
+전이되지 않았다</b> — 오히려 표본 밖이 41% 나빠졌다.</p>
+
+<h3>넓은 격자로 다시 태운 사다리 — 결론은 같다</h3>
+<div class="tw"><table>
+<tr><th>단</th><th>결과</th><th>판정</th></tr>
+<tr><td>① 격자 고원</td><td><b>이웃 8/8 전부 양수</b> (+0.1534 ~ +0.2900%)</td><td><span class="pill p">PASS</span> — 절벽이 아니라 진짜 고원</td></tr>
+<tr><td>② 비용 스트레스 ×1.5</td><td class="num">+0.1983%</td><td><span class="pill p">PASS</span></td></tr>
+<tr><td><b>③ 국면 절단</b></td><td>+0.6098 / <span class="fail">−0.2013</span> / +1.1118 / <span class="fail">−0.1371</span> → <b>2/4</b></td><td><span class="pill w">FAIL</span></td></tr>
+</table></div>
+
+<div class="callout">
+  <p><b>진짜 고원 위에 있는 최고 셀조차 국면 절단에서 같은 모양으로 떨어진다.</b>
+  격자를 넓혀도, 고원을 확인해도, 국면 의존은 그대로다 — §1.5 의 진단이
+  격자 인공물이 아니라 <b>구조</b>임을 확정한다.</p>
+</div>
+
+<h2 id="s5"><span class="no">5</span>상설화 — 시간을 데이터로</h2>
+<p class="sub">연구가 캠페인 한 번으로 끝나면 결과는 끝난 날부터 썩는다. 두 가지를 상시로 돈다.</p>
+
+<div class="grid2">
+  <div class="card">
+    <h4>① 백필 — 새 거래일을 라벨로</h4>
+    <ul>
+      <li>DB 에는 있는데 라벨이 없는 날을 찾는다</li>
+      <li>멱등 — 이미 만든 날은 건드리지 않는다</li>
+      <li><b>홀드아웃 결손은 잠근다</b> 🔒</li>
+      <li>배치 상한 초과분은 <code>deferred_count</code> 로 보고</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>② 상설 재검증 — 시간을 표본으로</h4>
+    <ul>
+      <li>판정이 오래된 후보 · 판정 이력 없는 후보</li>
+      <li>이력 없는 쪽을 먼저 본다</li>
+      <li>오늘 날짜는 <b>인자로 받는다</b></li>
+      <li>결과가 나빠지면 그것이 새 사실이다</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout amber">
+  <p><b>홀드아웃은 자동으로 만들지 않는다.</b> 자동 백필이 홀드아웃을 조용히 채우면
+  그날부터 홀드아웃은 홀드아웃이 아니다. 실행 배치에 절대 섞이지 않음을 테스트로 고정했다.</p>
+</div>
+
+<h2 id="s6"><span class="no">6</span>이번 라운드의 화면</h2>
+<div class="tw"><table>
+<tr><th>페이지</th><th>이름</th><th>엔드포인트</th><th>위치</th><th>성격</th></tr>
+<tr><td><b>28</b></td><td>매도 축 종합</td><td><code>/bt/exit-axis</code></td><td>백테스트 탭 토글</td><td><span class="pill">관측 전용</span></td></tr>
+<tr><td><b>29</b></td><td>상설화 현황</td><td><code>/loop/standing</code></td><td>연구 탭</td><td><span class="pill">계획 전용</span></td></tr>
+<tr><td>12 강화</td><td>전이율 원장 <b>축 분리</b></td><td><code>/bt/transfer-ledger/estimate?axis=</code></td><td>백테스트 탭</td><td><span class="pill">관측 전용</span></td></tr>
+</table></div>
+
+<h3>페이지 28 이 푸는 문제</h3>
+<p class="sub">같은 청산 규칙이 세 곳에서 다른 숫자로 나온다 — 지도는 건당 %, 워크포워드는 일평균 %,
+엔진은 자본 경로까지 반영한 심판값. <b>자가 다르기 때문</b>인데, 화면이 없으면 세 숫자를 머릿속에서 섞어 읽게 된다.
+"지도에서 좋았는데 엔진에서 뒤집혔다"가 정확히 그 혼동이었다.</p>
+
+<div class="flow">규칙 이름으로 조인 →  지도 건당 │ 지도 일평균 │ 폴드 선택 │ 엔진 건당 │ 기준선 Δ │ 전이율
+                     ─────────────────────────────────────────────────────────────
+규율:  나눗셈하지 않는다  ·  없으면 "미실측"  ·  상한 셀은 judgeable=False</div>
+
+<h2 id="s7"><span class="no">7</span>산출 총계</h2>
+<div class="tw"><table>
+<tr><th>항목</th><th>값</th></tr>
+<tr><td>신규 모듈</td><td><code>run_engine_measure</code> · <code>run_exit_ladder</code> · <code>run_min_lane_read</code> · <code>exit_axis_api</code> · <code>controller/standing</code></td></tr>
+<tr><td>변경 모듈</td><td><code>assembler</code>(트레일링 렌더) · <code>trailing</code>(넓은 격자) · <code>label_factory</code>/<code>build_labels</code>(격자 인자) · 러너 3종(<code>--grid</code>) · <code>run_p5</code>(세션 재발급) · <code>transfer_ledger_api</code>(축 분리)</td></tr>
+<tr><td>신규 화면</td><td><code>bt-exit-axis.jsx</code> · <code>loop-standing.jsx</code> (+ 전이율 원장 축 선택기)</td></tr>
+<tr><td>신규 테스트</td><td class="num"><b>87종</b> 전부 GREEN</td></tr>
+<tr><td>JSX 등록</td><td class="num">123 → <b>125 PASS</b></td></tr>
+<tr><td>라벨 자산</td><td><code>min_design_v4</code> 795MB · <b><code>design_v5</code>(wide) 5.5GB</b> 신규</td></tr>
+</table></div>
+
+<h3>잡은 결함 3건</h3>
+<div class="tw"><table>
+<tr><th class="num">#</th><th>결함</th><th>발견 경로</th><th>교정</th></tr>
+<tr><td class="num">6</td><td><b>전이율을 축 없이 섞음</b> — 방향이 반대인 두 무리의 중앙값</td><td>원장에 5건 쌓이자 계수가 이상</td><td>축별 계수 + <code>axis_mixed</code> 경고</td></tr>
+<tr><td class="num">7</td><td>긴 러너가 세션 만료(401)로 죽음</td><td>두 번째 전략 등록에서 중단</td><td>401 시 세션 재발급 후 1회 재시도</td></tr>
+<tr><td class="num">8</td><td>중간 결과 미저장 — 위 401 로 A·B1 결과 통째 소실</td><td>위와 동시</td><td>팔 하나마다 리포트 저장</td></tr>
+<tr><td class="num">9</td><td><b>보고서 매니페스트가 조용히 unverified</b> — CRLF 변환으로 바이트 불일치(11,596→11,794B)</td><td>신규 보고서 등록 중 전량 검증</td><td><code>.gitattributes</code> eol=lf + LF 정규화 + 회귀 테스트 6종</td></tr>
+</table></div>
+
+<h2 id="s8"><span class="no">8</span>다음 한 걸음</h2>
+<div class="tw"><table>
+<tr><th class="num">#</th><th>작업</th><th>판정 기준</th></tr>
+<tr><td class="num"><b>1</b></td><td><b>적응형 청산 규칙군</b> — 진입 시점 관측값(변동성·체결강도·시간대)으로 arm/give 선택</td><td><b>국면 절단 4/4 양수</b>가 최소 조건</td></tr>
+<tr><td class="num">2</td><td>국면을 <b>무엇이 가르는가</b> 규명 — 구간 2·4 vs 1·3 의 시장 상태 차이</td><td>관측 가능한 변수로 구분되면 적응형의 입력이 된다</td></tr>
+<tr><td class="num">3</td><td>자본 제약이 왜 유리하게 자르는가 — 체결 순서·슬롯 경합 관측</td><td>설명이 서면 진입 조건에 반영 가능</td></tr>
+<tr><td class="num">4</td><td><i>(보류)</i> min 레인 탐색</td><td><b>min 챔피언 확보 전에는 시작하지 않는다</b></td></tr>
+<tr><td class="num">—</td><td><s>넓은 격자 실험</s></td><td><span class="pill p">완료</span> §4 — 후보 2배 → 편의 1.9배</td></tr>
+</table></div>
+
+<div class="callout amber">
+  <p><b>하지 않기로 한 것</b></p>
+  <p>· <b>B3(및 B1·B2)를 승격하지 않는다.</b> 엔진 A/B 는 통과했지만 <b>사다리 ③ 국면 절단이 FAIL</b> 이다.
+  엔진 수치가 좋다고 사다리를 건너뛰면 사다리를 만든 이유가 사라진다.</p>
+  <p>· <b>넓은 격자의 최고 셀(arm+4/give1)을 쓰지 않는다.</b> 설계 구간에서 21.7% 더 좋지만
+  표본 밖은 오히려 41% 나빠졌고(§4), 사다리 국면 절단도 똑같이 FAIL 이다. 목적한 답은 이미 얻었다.</p>
+  <p>· <b>국면 구간 2·4 를 제외하고 재측정하지 않는다.</b> 나쁜 구간을 빼면 무엇이든 좋아진다.</p>
+</div>
+
+<footer>
+STOM · 웨이브 W4~W5 실행 결과 · 2026-08-07 · 권위: 관측(진단)<br>
+정본 문서 <code>docs/research/quant_scoring_pipeline/2026-08-07_wave_w4_w5_results.md</code> ·
+선행 <code>2026-08-06_wave_w09_w4_results.md</code><br>
+안전 경계: 운영 DB 쓰기 · 실거래 반영 · 전체청산 이후 시세 · 홀드아웃 재학습 · 후보 자동 채택 금지
+</footer>
+</div>
+
+</body>
+</html>

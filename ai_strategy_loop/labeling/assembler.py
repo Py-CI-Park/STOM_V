@@ -126,6 +126,43 @@ def render_sell_expression(*, name: str, tp_pct: float, sl_pct: float, horizon: 
     ])
 
 
+def render_trailing_sell_expression(*, name: str, arm_pct: float, give_pct: float,
+                                    horizon: int, forced_exit: int = 92800) -> str:
+    """트레일링 청산 규칙 → STOM 매도 DSL. 지도 `trailing.py` 커널과 같은 규칙이다.
+
+    규칙(양쪽 동일):
+      무장 — 최고수익률이 arm 이상이 된 뒤에만 트레일링이 켜진다.
+      청산 — 무장 후 최고 대비 give(%p) 이상 되돌린 **첫** 순간.
+      만기 — 지평(tick=초 / min=분) 도달 또는 전체청산 시각.
+
+    **지도와 엔진의 남는 차이 2가지**(숨기지 않고 전이율로 흡수한다):
+      1. 지도는 매수=매도호가1 / 청산=매수호가1 로 스프레드를 명시적으로 낸다.
+         엔진 `수익률` 은 **현재가** 기준이라 보유 중 값이 약간 높게 읽힌다
+         → 엔진 쪽이 조금 더 일찍 무장한다.
+      2. 엔진 `최고수익률` 은 0 에서 시작한다(음수 최고가 없다). arm 이 양수인
+         한 무장 조건은 같지만, 되돌림 폭 계산의 기준점이 물속에서는 다르다.
+    비용 모델은 같다 — 매수 0.015% / 매도 0.195%(세금 0.18% 포함).
+    """
+    if arm_pct <= 0:
+        raise ValueError("무장 임계는 양수여야 한다 — 0 이하면 손절로 동작한다")
+    if give_pct <= 0:
+        raise ValueError("되돌림 폭은 양수여야 한다")
+    return "\n".join([
+        f"# {name} — 트레일링 청산 (무장 +{arm_pct:g}% / 되돌림 {give_pct:g}%p / 지평 {horizon})",
+        "매도 = False",
+        "",
+        f"if 최고수익률 >= {arm_pct:g} and (최고수익률 - 수익률) >= {give_pct:g}:",
+        "    매도 = True",
+        f"elif 보유시간 >= {horizon}:",
+        "    매도 = True",
+        f"elif 시분초 >= {forced_exit}:",
+        "    매도 = True",
+        "",
+        "if 매도:",
+        "    self.Sell()",
+    ])
+
+
 def render_buy_expression(*, name: str, time_start: int, time_end: int,
                           clauses: list[dict], price_floor: int = 1000,
                           price_cap: int = 50000) -> str:

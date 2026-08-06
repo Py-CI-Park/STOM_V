@@ -44,6 +44,24 @@ def _reports() -> list[tuple[str, dict[str, Any]]]:
     return found
 
 
+#: 무엇을 바꿔 가며 잰 전이율인가 — 이 축이 다르면 계수를 섞으면 안 된다.
+#:
+#: 실측(2026-08-06): 진입까지 바꾼 후보는 전이율 0.105~0.343(지도가 과대평가),
+#: 진입을 고정하고 청산만 바꾼 후보는 2.25~4.22(지도가 **과소**평가)로 나왔다.
+#: 둘의 중앙값 하나를 "보수 계수"라고 부르면 어느 쪽에도 맞지 않는다.
+AXIS_EXIT_ONLY: Final = "exit_only"
+AXIS_ENTRY_AND_EXIT: Final = "entry_and_exit"
+
+
+def _axis(outcome: dict[str, Any]) -> str:
+    """이 기록이 무엇을 바꿔 가며 잰 것인가.
+
+    진입 고정 A/B 러너(`run_engine_measure`)는 `arm` 을 남긴다. 그 표식이 없으면
+    진입까지 함께 바뀐 후보다(QSP10 P5 계열).
+    """
+    return AXIS_EXIT_ONLY if outcome.get("arm") else AXIS_ENTRY_AND_EXIT
+
+
 def _record(lane: str, source: str, outcome: dict[str, Any]) -> dict[str, Any] | None:
     predicted = outcome.get("predicted") or {}
     engine = outcome.get("engine") or {}
@@ -62,6 +80,7 @@ def _record(lane: str, source: str, outcome: dict[str, Any]) -> dict[str, Any] |
         "rule": outcome.get("rule"),
         "job_id": outcome.get("job_id"),
         "lane": lane,
+        "axis": _axis(outcome),
         "source": os.path.basename(source),
         "map_expectancy_pct": float(map_pct),
         "engine_avg_profit_pct": float(engine_pct),
@@ -94,11 +113,29 @@ def transfer_ledger() -> dict[str, Any]:
             if row is not None:
                 records.append(row)
 
-    aligned = [r["transfer_ratio"] for r in records
-               if r["transfer_ratio"] is not None and not r["sign_flip"] and r["transfer_ratio"] > 0]
+    def _aligned(rows: list[dict[str, Any]]) -> list[float]:
+        return [r["transfer_ratio"] for r in rows
+                if r["transfer_ratio"] is not None and not r["sign_flip"]
+                and r["transfer_ratio"] > 0]
+
+    aligned = _aligned(records)
     flips = [r for r in records if r["sign_flip"]]
 
+    # 축별 계수 — 진입까지 바꾼 기록과 청산만 바꾼 기록을 섞지 않는다.
+    by_axis: dict[str, dict[str, Any]] = {}
+    for axis in (AXIS_EXIT_ONLY, AXIS_ENTRY_AND_EXIT):
+        rows = [r for r in records if r["axis"] == axis]
+        values = _aligned(rows)
+        by_axis[axis] = {
+            "record_count": len(rows),
+            "aligned_count": len(values),
+            "coefficient": statistics.median(values) if values else None,
+            "status": "ready" if len(values) >= MIN_RECORDS_FOR_COEFFICIENT else "accumulating",
+        }
+
     coefficient = statistics.median(aligned) if aligned else None
+    # 두 축이 모두 표본을 가지면 섞인 계수는 어느 쪽에도 맞지 않는다.
+    mixed = all(by_axis[a]["aligned_count"] > 0 for a in by_axis)
     return {
         "available": bool(records),
         "authority": "diagnostic",
@@ -111,15 +148,43 @@ def transfer_ledger() -> dict[str, Any]:
         # 보수 계수 — 부호 일치 건의 중앙값. 평균은 이상치에 끌리므로 쓰지 않는다.
         "conservative_coefficient": coefficient,
         "coefficient_basis": "median of sign-aligned transfer ratios",
+        "by_axis": by_axis,
+        "axis_mixed": mixed,
         "note": ("전이율은 부호가 같을 때만 감쇠 계수다. 부호 반전 건은 계수가 아니라 "
                  "구조 불일치 경고로 읽는다(QSP12 진입 단위 결함이 −1.18 이었다)."),
+        "axis_note": ("진입까지 바꾼 후보(0.105~0.343)와 진입 고정·청산만 바꾼 후보"
+                      "(2.25~4.22)는 전이 방향이 반대다. 섞은 중앙값은 어느 쪽에도 "
+                      "맞지 않으므로 축을 골라 읽는다."),
     }
 
 
 @transfer_ledger_router.get("/bt/transfer-ledger/estimate")
-def transfer_estimate(map_expectancy_pct: float) -> dict[str, Any]:
-    """지도 추정치를 원장 계수로 환산한다 — '엔진에서 얼마쯤 나올까'의 사전 답."""
+def transfer_estimate(map_expectancy_pct: float, axis: str = "") -> dict[str, Any]:
+    """지도 추정치를 원장 계수로 환산한다 — '엔진에서 얼마쯤 나올까'의 사전 답.
+
+    `axis` 를 주면 그 축의 계수만 쓴다. 안 주면 섞인 계수를 쓰되, 두 축이 모두
+    표본을 가지고 있으면 **섞였다는 사실을 함께 돌려준다** — 조용히 섞인 값을
+    내주면 그 값이 어느 쪽에도 안 맞는다는 것을 아무도 모른다.
+    """
     ledger = transfer_ledger()
+    if axis:
+        bucket = (ledger.get("by_axis") or {}).get(axis)
+        if bucket is None:
+            return {"available": False, "reason": "unknown_axis", "axis": axis}
+        if bucket["coefficient"] is None or bucket["status"] != "ready":
+            return {"available": False, "reason": "insufficient_records", "axis": axis,
+                    "minimum_for_coefficient": MIN_RECORDS_FOR_COEFFICIENT,
+                    "aligned_count": bucket["aligned_count"],
+                    "record_count": bucket["record_count"]}
+        return {
+            "available": True, "authority": "diagnostic", "axis": axis,
+            "map_expectancy_pct": map_expectancy_pct,
+            "coefficient": bucket["coefficient"],
+            "engine_estimate_pct": map_expectancy_pct * bucket["coefficient"],
+            "status": bucket["status"], "axis_mixed": False,
+            "note": "추정일 뿐이며 공식 판정은 엔진 실측에서만 한다.",
+        }
+
     coefficient = ledger.get("conservative_coefficient")
     # 표본 미달 계수는 내주지 않는다 — 1~2건에서 나온 비율을 예측에 쓰면
     #   "계수가 있다"는 사실만으로 근거 없는 확신이 생긴다(원장의 존재 이유와 반대).
@@ -135,5 +200,7 @@ def transfer_estimate(map_expectancy_pct: float) -> dict[str, Any]:
         "coefficient": coefficient,
         "engine_estimate_pct": map_expectancy_pct * coefficient,
         "status": ledger["status"],
+        "axis_mixed": ledger.get("axis_mixed", False),
+        "by_axis": ledger.get("by_axis"),
         "note": "추정일 뿐이며 공식 판정은 엔진 실측에서만 한다.",
     }
