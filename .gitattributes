@@ -23,3 +23,13 @@ alpha_lab/runlab/watchdog.py             text eol=lf
 alpha_lab/discipline/__init__.py         text eol=lf
 alpha_lab/discipline/evidence.py         text eol=lf
 alpha_lab/discipline/prereg.py           text eol=lf
+
+# 연구 보고서 HTML 은 LF 고정.
+#   이유: qsp_report_manifest.json 이 파일 바이트의 SHA256·바이트 수를 핀하고,
+#   대시보드(app.py `_report_manifest_rows`)가 **디스크 바이트와 일치할 때만**
+#   'verified' 로 표시한다. core.autocrlf=true 환경에서 체크아웃 시 CRLF 로 변환되면
+#   디스크 바이트가 달라져 등록해 둔 보고서가 조용히 'unverified' 로 떨어진다
+#   (실측 2026-08-07: wave_w05 보고서가 11,596B → 11,794B 로 벌어져 검증 실패).
+docs/research/quant_scoring_pipeline/*.html          text eol=lf
+docs/research/quant_scoring_pipeline/reports/*.html  text eol=lf
+docs/research/quant_scoring_pipeline/qsp_report_manifest.json text eol=lf
