@@ -1,8 +1,0 @@
-{
-  "status": "passed",
-  "e2eStatus": "passed",
-  "redTeamStatus": "passed",
-  "blockers": [],
-  "evidence": "Read assigned artifacts, independently parsed JSON, recomputed annual totals, checked snapshots/CSV existence including 2026, verified taxonomy separation, protected path cleanliness, and process cleanup. Source: agent://31-ResearchOosQaReview.",
-  "source": "agent://31-ResearchOosQaReview"
-}

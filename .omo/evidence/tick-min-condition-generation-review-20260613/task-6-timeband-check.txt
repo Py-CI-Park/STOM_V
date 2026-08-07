@@ -1,5 +1,0 @@
-﻿| 09:00~10:00 | template expressible | primitive map result and density/profit profile |
-| 10:00~11:30 | template expressible | primitive map result and overfire check |
-| 11:30~13:00 | template expressible | lunch/low-liquidity behavior profile |
-| 13:00~14:50 | template expressible | afternoon continuation/reversal profile |
-| 14:50~15:00 | template expressible | close-risk and forced-exit behavior profile |

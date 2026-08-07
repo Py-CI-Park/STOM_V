@@ -1,8 +1,0 @@
-{
-  "status": "passed",
-  "e2eStatus": "passed",
-  "redTeamStatus": "passed",
-  "blockers": [],
-  "evidence": "Executor QA/red-team passed. It parsed target JSON artifacts, checked the three options, recommendation clarity, no production/export/live/DB/V3K overclaim, and final verification evidence. Source: agent://17-G002NextQa.",
-  "source": "agent://17-G002NextQa"
-}

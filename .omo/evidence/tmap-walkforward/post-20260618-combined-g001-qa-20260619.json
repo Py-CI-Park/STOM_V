@@ -1,8 +1,0 @@
-{
-  "status": "passed",
-  "e2eStatus": "passed",
-  "redTeamStatus": "passed",
-  "blockers": [],
-  "evidence": "Executor QA/red-team passed. It compared 27 focused checks across readout JSON/MD, official summary, combined candidates source, and portfolio-rule source; verified official numbers, combined all/recent/Q4 numbers, yearly profits, YTD caveat, taxonomy, and non-production verdict. Source: agent://15-G001CombinedQa.",
-  "source": "agent://15-G001CombinedQa"
-}

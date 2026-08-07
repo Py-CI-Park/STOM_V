@@ -1,4 +1,0 @@
-[BATCH] run_id=post_q4_r8_lowcap_oos_2022_logged_20260619 pairs=1
-[BATCH] prepare status=ok back_count=1530 elapsed=109s
-[BATCH] gen0 r8_exclude_cap_lt_1500 ok profit=1,766,684 mdd=7.30 trades=31 daily=0.20 payoff=1.2939666238767653 gate=True reason=ok (34s)
-[BATCH] done

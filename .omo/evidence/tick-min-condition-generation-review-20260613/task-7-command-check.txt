@@ -1,7 +1,0 @@
-﻿The roadmap examples for `tmap_sweep` are currently inconsistent with the CLI. The docs use `--out-prefix`, but current `python -m ai_strategy_loop.scripts.tmap_sweep --help` exposes `--run-id` and `--manifest-out`; it does not expose `--out-prefix`.
---run-id RUN_ID
---manifest-out MANIFEST_OUT
-  --run-id tick_late_0920_0925_train_20260613 `
-  --manifest-out .omo/evidence/tmap-walkforward/tick_late_0920_0925_train_20260613/manifest.json
-  --run-id min_0900_1500_train_20260613 `
-  --manifest-out .omo/evidence/tmap-walkforward/min_0900_1500_train_20260613/manifest.json

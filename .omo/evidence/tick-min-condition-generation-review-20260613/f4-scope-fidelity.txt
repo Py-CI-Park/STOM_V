@@ -1,1 +1,0 @@
-﻿forbidden_overclaim_matches=0 pattern=V3K complete|실전 완료|min 수익 후보 확정|09:20~09:25 수익 후보 확정|live deployment complete|profitable min/tick discovery complete 

@@ -1,1 +1,0 @@
-﻿Min data is about 11개월: 2025-04-07 through 2026-02-27. That means fixed min OOS is structurally limited to 2026-01~02 after train use. Unlike tick, min cannot claim multi-year fixed OOS robustness from the current database alone.

@@ -1,9 +1,0 @@
-{
-  "architectureStatus": "CLEAR",
-  "productStatus": "CLEAR",
-  "codeStatus": "CLEAR",
-  "recommendation": "APPROVE",
-  "evidence": "Architect review approved G002 after wrapper root fix. Mapping defines evidence-local strategy/run-state/snapshot/current-state artifacts and wrapper-only official OOS commands; wrapper uses ROOT=parents[3], STOM_CLI_DB_STRATEGY, and patches LoopState output paths to .omo evidence; mapping avoids materialize_candidate, protected runtime DB writes, backtest.py, live/V3K/KHOPENAPI and preserves official OOS vs portfolio-rule taxonomy.",
-  "source": "agent://8-G002FixedReview",
-  "blockers": []
-}

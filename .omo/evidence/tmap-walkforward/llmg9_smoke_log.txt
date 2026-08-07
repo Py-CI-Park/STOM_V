@@ -1,4 +1,0 @@
-[BATCH] run_id=smoke_llmg9_20260612 pairs=1
-[BATCH] prepare status=ok back_count=814 elapsed=67s
-[BATCH] gen0 LLMG9 regime_gated default ok profit=-455,920 mdd=9.67 trades=169 daily=2.90 payoff=1.507706148292394 gate=False reason=total_profit -4.559e+05 <= 0 (31s)
-[BATCH] done

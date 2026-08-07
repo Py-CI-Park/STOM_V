@@ -1,9 +1,0 @@
-{
-  "architectureStatus": "CLEAR",
-  "productStatus": "CLEAR",
-  "codeStatus": "CLEAR",
-  "recommendation": "APPROVE",
-  "blockers": [],
-  "evidence": "Architect review approved G001 combined readout. It confirmed Korean method/input/caveat/exact-number coverage, official OOS values, combined portfolio simulation values, 2026 YTD caveat, and no production/export or pure official OOS overclaim. Source: agent://14-G001CombinedReview.",
-  "source": "agent://14-G001CombinedReview"
-}
