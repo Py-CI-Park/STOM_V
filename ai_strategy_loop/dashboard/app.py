@@ -85,6 +85,7 @@ from ai_strategy_loop.dashboard.autoloop_api import autoloop_router  # noqa: E40
 from ai_strategy_loop.dashboard.provider_status_api import provider_status_router  # noqa: E402
 from ai_strategy_loop.dashboard.transfer_ledger_api import transfer_ledger_router  # noqa: E402
 from ai_strategy_loop.dashboard.exit_axis_api import exit_axis_router  # noqa: E402
+from ai_strategy_loop.dashboard.strategy_ledger_api import strategy_ledger_router  # noqa: E402
 from ai_strategy_loop.fitness.research_criteria import normalize_research_oos_mode, research_mode_payload  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
@@ -3580,6 +3581,7 @@ def create_app(
     app.include_router(provider_status_router)
     app.include_router(transfer_ledger_router)
     app.include_router(exit_axis_router)
+    app.include_router(strategy_ledger_router)
 
     @app.get("/", response_class=HTMLResponse)
     def root(request: Request) -> HTMLResponse:

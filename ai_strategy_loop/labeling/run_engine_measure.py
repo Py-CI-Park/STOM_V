@@ -99,8 +99,11 @@ def _run_arm(client: Client, *, buy: str, sell: str, lane, engines: int,
     return {"job_id": job_id, "status": status, "metrics": result.get("metrics") or {}}
 
 
+# 자본 지표(seed_capital·max_hold_count)를 반드시 함께 담는다 — 총수익금만 적으면
+#   자본을 더 쓴 후보가 항상 이긴다(실측: B3 는 자본 2배로 수익 1.77배였다).
 _METRIC_KEYS = ("trade_count", "win_rate", "avg_profit_pct", "total_profit_krw",
-                "cagr", "mdd_pct", "tpi")
+                "total_profit_pct", "cagr", "mdd_pct", "tpi",
+                "seed_capital", "max_hold_count", "avg_hold_time", "day_count")
 
 
 def main() -> None:

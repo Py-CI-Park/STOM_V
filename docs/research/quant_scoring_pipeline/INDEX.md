@@ -9,7 +9,10 @@
 
 | 순서 | 문서 | 내용 |
 |---:|---|---|
-| **0** | **`2026-08-07_성공기록과_방법론.md`** | **여기서 시작** — 통한 방법 6가지·성공 수치·왜 아직 확정이 아닌가·다음 우선순위 |
+| **0** | **`HANDOFF_2026-08-07B_조건식개발_로드맵.md`** | **여기서 시작** — 재개 지점·다음 한 걸음(표본 백필)·헌법 8항·마스터 프롬프트 |
+| 0.0005 | `2026-08-07_마스터로드맵_조건식개발.md` | 5단계 실행 계획 · STOM 최적화 사용법 · UX 고도화 계획 |
+| 0.0007 | `2026-08-07_조건식_기술해설.md` | **무엇과 무엇을 비교했나** — 조건식 원문·절 단위 기술 해설·비교 서식 |
+| 0.0009 | `2026-08-07_성공기록과_방법론.md` | 통한 방법 6가지·성공 수치·왜 아직 확정이 아닌가 |
 | 0.001 | `reports/2026-08-07_success_playbook_report.html` | 위의 시각 보고서(차트 5종 · 대시보드 [보고서] 탭) |
 | 0.002 | `HANDOFF_2026-08-07_웨이브_W4_W5.md` | 재개 지점·코드 자산 지도·헌법 10항 |
 | 0.005 | `2026-08-07_wave_w4_w5_results.md` | **W4~W5 실행 결과 — 엔진 A/B 3종 전부 기준선 상회**·전이율 축 분리·min 최초 판독 |
@@ -63,7 +66,9 @@ HANDOFF 2부(QSP7 G0·QSP8) · `2026-08-04_qsp8r_손익비우선_넓은시간_�
 | QA 3종·정보력 랭킹 | `labeling/{label_qa,info_rank}.py` | ✅ (info_rank 는 고정 h 목표 — 참고용) |
 | 라벨 데이터 | `state/labels/{design_v4,design_v5,min_design_v4,…}/` (gitignore) | ✅ **정본=design_v4** · v5=넓은 격자 실험 · min_v4 795MB |
 | 도달 지도 API·화면 | `dashboard/reach_map_api.py` · `frontend/bt-reach-map.jsx` | ✅ 페이지 22~24 |
-| 대시보드 연구 페이지 **29종** | `dashboard/` | ✅ (21 + 22~24 + 25·26·27 + **28·29**, 12 강화) |
+| 대시보드 연구 페이지 **30종** | `dashboard/` | ✅ (21 + 22~24 + 25·26·27 + 28·29 + **30**, 12 강화) |
+| **조건식 성과 원장**(append-only) | `controller/strategy_ledger.py` + `_database/strategy_ledger.db` | ✅ 페이지 30 |
+| 원장 적재기 | `labeling/run_ledger_sync.py` | ✅ |
 | **엔진 실측 A/B**(진입 고정·매도 교체) | `labeling/run_engine_measure.py` | ✅ W4-b · 3종 전부 기준선 상회 |
 | **엔진 축 심판**(합격선=챔피언·짝지은 검정) | `labeling/engine_ladder.py` + `run_engine_ladder` | ✅ 정본 심판 |
 | 성과 차트 생성기 | `build_w4w5_charts.py` → `artifacts/w4w5_*.png` | ✅ 5종 |

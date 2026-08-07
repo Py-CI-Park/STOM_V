@@ -12,6 +12,7 @@ import { CurrentGenPanel, ActiveStrategyPanel, ResearchCriteriaBanner, ActiveCon
 import { HypothesisPanel } from "./hypothesis.jsx";
 import { LoopAutonomyPanel } from "./loop-autonomy.jsx";
 import { LoopStandingPanel } from "./loop-standing.jsx";
+import { LoopStrategyLedgerPanel } from "./loop-strategy-ledger.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
 import { ResearchImprovementCard } from "./research-improvement.jsx";
@@ -616,6 +617,11 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <section className="v6-stage-lab v54-span-all" aria-label="상설화 현황(페이지 29)">
               <h3 className="stom-section-label">상설화 · 백필과 상설 재검증</h3>
               <LoopStandingPanel />
+            </section>
+            {/* 페이지 30 — 조건식 성과 원장: 지금까지 만든 후보 전부의 엔진 실측 누적 */}
+            <section className="v6-stage-lab v54-span-all" aria-label="조건식 성과 원장(페이지 30)">
+              <h3 className="stom-section-label">조건식 성과 원장 · 챔피언 대비 누적</h3>
+              <LoopStrategyLedgerPanel />
             </section>
           </div>
         )}

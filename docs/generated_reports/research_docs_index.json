@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-07T00:46:56.866305+00:00",
-  "source_fingerprint": "fbb395519d8878cdab21df7feed2273a1a781b21a397ec5de193adf6a4765555",
-  "count": 996,
+  "generated_at": "2026-08-07T02:16:02.538522+00:00",
+  "source_fingerprint": "201eaf339053c894d20538ce5eea3a5776453fe333ef56a92cab58b2e7707a08",
+  "count": 999,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6697,11 +6697,25 @@
       "size": 11601
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-07_마스터로드맵_조건식개발.md",
+      "title": "마스터 로드맵 — 좋은 조건식을 성공적으로 개발하기 위한 전체 계획 (2026-08-07)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-07T02:14:09.585451+00:00",
+      "size": 7042
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/2026-08-07_성공기록과_방법론.md",
       "title": "성공 기록과 방법론 — 무엇이 실제로 통했나 (2026-08-07)",
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-08-07T00:43:49.137122+00:00",
       "size": 5998
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-07_조건식_기술해설.md",
+      "title": "조건식 기술 해설 — 무엇과 무엇을 비교했나 (2026-08-07)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-07T02:12:32.326880+00:00",
+      "size": 9477
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
@@ -6739,6 +6753,13 @@
       "size": 7693
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-07B_조건식개발_로드맵.md",
+      "title": "핸드오프 — 조건식 개발 로드맵 (2026-08-07 B)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-07T02:15:16.830053+00:00",
+      "size": 5978
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-07_웨이브_W4_W5.md",
       "title": "핸드오프 — 웨이브 W4~W5 (2026-08-07)",
       "category": "quant_scoring_pipeline",
@@ -6749,8 +6770,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-07T00:46:33.302195+00:00",
-      "size": 5506
+      "updated_at": "2026-08-07T02:15:38.455350+00:00",
+      "size": 5909
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",

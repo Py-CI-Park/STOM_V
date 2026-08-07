@@ -202,8 +202,19 @@ def judge(baseline: Arm, challenger: Arm, *,
     profit_pass = bool(paired.get("available")) and paired["mean_diff_pct"] >= 0
     proven = bool(paired.get("significant"))
 
+    # **자본 대비**로도 챔피언 이상인가. 총수익률 = 총수익금 / 필요자금 이므로
+    #   자본을 2배 쓰고 수익이 1.8배면 이 값이 떨어진다. 건당 수익률만 보면
+    #   그 사실이 통째로 가려진다(실측: B1 은 건당 +0.06%p 인데 총수익률은 −36%p).
+    base_tpp, chal_tpp = baseline.total_profit_pct, challenger.total_profit_pct
+    capital_known = base_tpp is not None and chal_tpp is not None
+    capital_pass = (not capital_known) or float(chal_tpp) >= float(base_tpp)
+
     if not (consistency_pass and profit_pass):
         verdict = "REJECT"
+    elif not capital_pass:
+        # 어떤 축은 낫고 어떤 축은 못하다 — 합격도 폐기도 아니고 **혼합**이다.
+        #   사람이 무엇을 중시하는지(총수익률 vs 위험)에 따라 갈리므로 자동 판정하지 않는다.
+        verdict = "MIXED"
     elif proven:
         verdict = "PASS"
     else:
@@ -225,10 +236,20 @@ def judge(baseline: Arm, challenger: Arm, *,
         },
         "paired": paired,
         "capital": capital,
+        "capital_efficiency": {
+            "baseline_total_profit_pct": base_tpp,
+            "challenger_total_profit_pct": chal_tpp,
+            "pass": capital_pass,
+            "known": capital_known,
+            "note": ("총수익률 = 총수익금 / 필요자금. 자본을 더 쓰고 총액만 늘린 후보는 "
+                     "여기서 걸린다."),
+        },
         "verdict": verdict,
         "verdict_meaning": {
             "PASS": "챔피언 이상이고 통계적으로도 확정됐다 — 사람 보고 대상.",
             "PROMISING": "챔피언 이상이지만 표본이 얇아 확정 못했다 — 표본을 늘려 재판정.",
+            "MIXED": ("건당·일관성은 챔피언 이상이지만 **자본 대비 수익률이 낮다**. "
+                      "무엇을 중시하는지에 따라 갈리므로 자동 판정하지 않는다."),
             "REJECT": "챔피언에 못 미친다 — 폐기.",
         }[verdict],
     }
