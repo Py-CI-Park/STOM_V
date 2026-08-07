@@ -1,0 +1,19 @@
+{
+  "random": {
+    "total": 8,
+    "valid_attempt": 8,
+    "oos_promising_tick": 0,
+    "smoke_pass_rate": 0.0,
+    "near_miss_rate": 0.0
+  },
+  "stateful": {
+    "total": 8,
+    "valid_attempt": 8,
+    "oos_promising_tick": 0,
+    "smoke_pass_rate": 0.375,
+    "near_miss_rate": 0.0
+  },
+  "verdict": "③진행 — rate 우위(sp+0.375/nm+0.000) but OOS 0 → P2 정제 계속(천장선언 금지)",
+  "sp_edge": 0.375,
+  "nm_edge": 0.0
+}

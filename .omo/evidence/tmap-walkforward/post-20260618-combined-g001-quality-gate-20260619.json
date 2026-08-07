@@ -1,0 +1,147 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect review approved G001 combined readout. It confirmed Korean method/input/caveat/exact-number coverage, official OOS values, combined portfolio simulation values, 2026 YTD caveat, and no production/export or pure official OOS overclaim. Source: agent://14-G001CombinedReview.",
+    "commands": [
+      "architect subagent review: agent://14-G001CombinedReview",
+      "read .omo/evidence/tmap-walkforward/post-20260618-combined-portfolio-simulation-readout-20260619.json",
+      "read .omo/evidence/tmap-walkforward/post-20260618-combined-portfolio-simulation-readout-20260619.md"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA/red-team passed. It compared 27 focused checks across readout JSON/MD, official summary, combined candidates source, and portfolio-rule source; verified official numbers, combined all/recent/Q4 numbers, yearly profits, YTD caveat, taxonomy, and non-production verdict. Source: agent://15-G001CombinedQa.",
+    "e2eCommands": [
+      "python -m json.tool .omo/evidence/tmap-walkforward/post-20260618-combined-portfolio-simulation-readout-20260619.json",
+      "python -c combined readout cross-check"
+    ],
+    "redTeamCommands": [
+      "executor QA/red-team: agent://15-G001CombinedQa",
+      "taxonomy/overclaim/YTD caveat checks",
+      "git status protected pathspecs"
+    ],
+    "artifactRefs": [
+      {
+        "id": "combined-readout-json",
+        "kind": "api-test-report",
+        "path": ".omo/evidence/tmap-walkforward/post-20260618-combined-portfolio-simulation-readout-20260619.json",
+        "description": "Structured combined portfolio simulation readout."
+      },
+      {
+        "id": "combined-readout-md",
+        "kind": "api-test-report",
+        "path": ".omo/evidence/tmap-walkforward/post-20260618-combined-portfolio-simulation-readout-20260619.md",
+        "description": "Korean combined portfolio simulation report."
+      },
+      {
+        "id": "architect-review",
+        "kind": "review-report",
+        "path": ".omo/evidence/tmap-walkforward/post-20260618-combined-g001-architect-review-20260619.json",
+        "description": "Architect CLEAR/APPROVE receipt."
+      },
+      {
+        "id": "executor-qa",
+        "kind": "api-test-report",
+        "path": ".omo/evidence/tmap-walkforward/post-20260618-combined-g001-qa-20260619.json",
+        "description": "Executor QA/red-team receipt."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-combined-readout",
+        "contractRef": "G001 objective",
+        "obligation": "Consolidate existing combined portfolio simulation with new official OOS entry-filter result in Korean with method, inputs, caveats, and exact numbers.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-artifact-readout"
+        ],
+        "adversarialCaseRefs": [
+          "case-taxonomy-overclaim",
+          "case-number-drift"
+        ]
+      },
+      {
+        "id": "contract-boundaries",
+        "contractRef": "Shared constraints",
+        "obligation": "Do not claim pure official buy/sell OOS, production/export readiness, UI changes, or live/V3K work.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-artifact-readout"
+        ],
+        "adversarialCaseRefs": [
+          "case-production-leakage"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-artifact-readout",
+        "contractRef": "combined readout artifact",
+        "surface": "api",
+        "invocation": "JSON parse, markdown token checks, source-number cross-checks, and read-only QA review over evidence artifacts.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "combined-readout-json",
+          "combined-readout-md",
+          "executor-qa"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-taxonomy-overclaim",
+        "contractRef": "evidence taxonomy",
+        "scenario": "Report could label combined portfolio simulation as pure official OOS.",
+        "expectedBehavior": "Combined candidate is labeled portfolio simulation/CSV reanalysis and not pure official buy/sell OOS.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "combined-readout-json",
+          "combined-readout-md",
+          "executor-qa"
+        ]
+      },
+      {
+        "id": "case-number-drift",
+        "contractRef": "exact numbers",
+        "scenario": "Report values could drift from source artifacts.",
+        "expectedBehavior": "Official and combined metrics match source JSON artifacts.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "combined-readout-json",
+          "executor-qa"
+        ]
+      },
+      {
+        "id": "case-production-leakage",
+        "contractRef": "boundary guardrails",
+        "scenario": "Report could imply production/export approval.",
+        "expectedBehavior": "Report states not production/export ready and requires separate approval/plan.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "combined-readout-md",
+          "executor-qa"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORT: G001 changed artifacts are a readout JSON/MD and review receipts only. No fallback-like masking, duplicate conflicting guidance, dead code, needless abstraction, boundary violation, UI/design slop, or missing document verification blocker found. Advisory architect polish was applied by adding an input/source table; JSON parse and markdown token verification reran cleanly after the change.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m json.tool .omo/evidence/tmap-walkforward/post-20260618-combined-portfolio-simulation-readout-20260619.json",
+      "python -c combined readout cross-check",
+      "git status protected pathspecs",
+      "architect subagent review: agent://14-G001CombinedReview",
+      "executor QA/red-team: agent://15-G001CombinedQa"
+    ],
+    "blockers": []
+  }
+}

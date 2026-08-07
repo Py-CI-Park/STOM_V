@@ -1,0 +1,98 @@
+{
+  "generated_at": "2026-06-18T16:16:46.001055+09:00",
+  "step": 4,
+  "step_name": "markdown research journal auto exposure dashboard design",
+  "elapsed_seconds": 0.019,
+  "current_state_evidence": {
+    "research_api_py": {
+      "selected_update_logs_only": true,
+      "allowed_update_logs": [
+        "docs/update_log/2026-06-02_analysis_capability_audit.md",
+        "docs/update_log/2026-06-02_band_generator_design.md",
+        "docs/update_log/2026-06-02_dashboard_batch_resume_context.md",
+        "docs/update_log/2026-06-03_tick_program_complete_handoff.md"
+      ],
+      "latest_q4_doc_visible_in_research_docs": false,
+      "current_research_docs_count": 79
+    },
+    "research_wiki_jsx": {
+      "has_update_log_category": true,
+      "category_label": "Failed Candidates",
+      "risk": "Label is too narrow for general research journals; category can be reused but should be relabeled to Research Logs or Recent Logs."
+    },
+    "research_records_panel": {
+      "purpose": "campaign evidence summary/jsonl/log cards, not markdown journal browsing",
+      "recommended_no_change": true
+    }
+  },
+  "recent_update_log_sample": [
+    "docs/update_log/2026-06-18_q4_defense_prerule_halfexit_dashboard.md",
+    "docs/update_log/2026-06-18_combo_defense_stress_followup.md",
+    "docs/update_log/2026-06-18_oos_2023_2025_combo_experiment_log.md",
+    "docs/update_log/2026-06-18_dashboard_research_records_oos_followup.md",
+    "docs/update_log/2026-06-17_condition_campaign_1_to_6_completion_report.md",
+    "docs/update_log/2026-06-17_ovn_r8_oos_verification_and_freeze.md",
+    "docs/update_log/2026-06-17_condition_generation_breadth_evaluation.md",
+    "docs/update_log/2026-06-17_condition_self_improvement_score_update.md",
+    "docs/update_log/2026-06-17_AGENT_RESUME_RUNBOOK.md",
+    "docs/update_log/2026-06-17_session_handoff_anchor_mutation_research.md",
+    "docs/update_log/2026-06-17_anchor_mutation_convergence_structural_analogy.md",
+    "docs/update_log/2026-06-16_champion_positive_control_diagnostic.md"
+  ],
+  "implementation_design": {
+    "goal": "Automatically expose recent docs/update_log/*.md research journals in the dashboard Research Wiki without manually editing _SELECTED_UPDATE_LOGS for every session.",
+    "backend_patch": [
+      "Add _RECENT_UPDATE_LOG_LIMIT: Final[int] = 40 in ai_strategy_loop/dashboard/research_api.py.",
+      "Add _iter_recent_update_logs() that scans REPO_ROOT / docs/update_log for YYYY-MM-DD_*.md files, sorted by mtime desc then name desc.",
+      "In _iter_allowed_docs(), keep _DOC_ROOTS and _SELECTED_UPDATE_LOGS, then append latest update logs not already included.",
+      "Use category update_log for the dynamic rows so the existing ResearchWikiPanel grouping works.",
+      "Keep _doc_index() path normalization and /research_doc id lookup unchanged so path traversal protection remains centralized."
+    ],
+    "frontend_patch": [
+      "Relabel RESEARCH_WIKI_CATEGORIES update_log from Failed Candidates to Recent Logs or Research Logs.",
+      "Optionally prefer the most recent update_log when no wiki doc exists; otherwise keep current preferred wiki behavior.",
+      "No need to change ResearchRecordsPanel because campaign records and markdown docs are different surfaces."
+    ],
+    "tests": [
+      "Add a unit test for _iter_allowed_docs or research_docs that creates recent update_log markdown in a monkeypatched REPO_ROOT and asserts newest logs are present.",
+      "Add a test that _SELECTED_UPDATE_LOGS remain present even if they are older than the dynamic limit.",
+      "Add a path traversal/detail test for a non-allowed id remains unavailable.",
+      "Add a frontend source contract assertion that update_log label is Research Logs or Recent Logs."
+    ],
+    "manual_qa": [
+      "Start dashboard locally and call curl -i http://127.0.0.1:<port>/research_docs; assert latest docs/update_log/2026-06-18_*.md ids appear.",
+      "Open Research Wiki, press refresh, verify update_log category lists latest research journal and document pane shows markdown text."
+    ],
+    "risk_controls": [
+      "Limit latest update logs to prevent huge payloads.",
+      "Only include .md files directly under docs/update_log matching date-prefixed filenames.",
+      "Do not include protected runtime paths or screenshots.",
+      "Do not mark V3K gate docs complete; this only exposes docs already present on disk."
+    ],
+    "estimated_implementation_time_minutes": 45
+  },
+  "next_patch_plan": [
+    {
+      "order": 1,
+      "task": "Write failing backend test for latest update_log inclusion",
+      "estimated_minutes": 10
+    },
+    {
+      "order": 2,
+      "task": "Patch research_api.py dynamic update-log iterator",
+      "estimated_minutes": 15
+    },
+    {
+      "order": 3,
+      "task": "Patch ResearchWikiPanel category label and frontend source test",
+      "estimated_minutes": 10
+    },
+    {
+      "order": 4,
+      "task": "Run focused pytest and TestClient/curl manual QA",
+      "estimated_minutes": 10
+    }
+  ],
+  "decision": "implement_next_with_tests",
+  "reason": "The current API exposes only four selected update logs, while the Research Wiki UI already supports an update_log category. A bounded dynamic update_log index is the smallest change that makes nightly research journals visible without misusing ResearchRecordsPanel."
+}

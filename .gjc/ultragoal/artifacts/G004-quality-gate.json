@@ -1,0 +1,166 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "G004 enhances the live process surface without replacing the existing explanatory /process_flow page. ProcessFlowPanel now normalizes current_step safely, shows current node/phase/current_step/latest log, exposes per-step timing cells, and process tab mounts the realtime panel above the existing iframe. Build graph and protected paths remain clean.",
+    "commands": [
+      "python -m pytest tests/unit/dashboard/test_p11_process_flow.py tests/unit/dashboard/test_phase9_spa_tabs.py tests/unit/dashboard/test_track_z_pr1_harness.py -q -k \"not committed_bundle_in_sync\"",
+      "node check-missing-imports.mjs",
+      "browser process-tab QA"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Process tab browser QA shows the realtime process panel with current node/phase/current_step/latest log and step timing grid above the retained /process_flow iframe. Focused tests passed 35 with 1 intentional freshness-test deselection while feature diffs remain uncommitted; missing-import check passed; protected path status empty.",
+    "e2eCommands": [
+      "browser open http://127.0.0.1:8870/ui/ and click 프로세스 흐름",
+      "node track-z-harness.mjs via focused pytest"
+    ],
+    "redTeamCommands": [
+      "process flow source-contract tests for normalizeFlowStepIndex and timing grid",
+      "node check-missing-imports.mjs",
+      "protected path status check"
+    ],
+    "artifactRefs": [
+      {
+        "id": "g004-browser-run",
+        "kind": "browser-automation",
+        "path": ".gjc/ultragoal/artifacts/G004-browser-run.json",
+        "description": "automation transcript for opening dashboard process tab and observing realtime process panel"
+      },
+      {
+        "id": "g004-screenshot",
+        "kind": "screenshot",
+        "path": ".gjc/ultragoal/artifacts/G004-process-tab.png",
+        "description": "non-uniform screenshot showing realtime process strip/timing grid and retained process_flow iframe"
+      },
+      {
+        "id": "g004-cli-replay",
+        "kind": "command-replay",
+        "path": ".gjc/ultragoal/artifacts/G004-cli-replay.json",
+        "description": "allowlisted CLI replay marker for G004 process visualization verification"
+      },
+      {
+        "id": "g004-test-report",
+        "kind": "test-report",
+        "path": ".gjc/ultragoal/artifacts/G004-test-report.json",
+        "description": "focused process-flow tests, build/harness, missing-import, and protected path receipt"
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-process-realtime",
+        "contractRef": "G004 realtime process visualization",
+        "obligation": "Show current node, phase/current_step, latest log, SVG flow and per-step timing information in dashboard process surface",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-process"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-step"
+        ]
+      },
+      {
+        "id": "contract-process-compat",
+        "contractRef": "G004 existing process_flow compatibility",
+        "obligation": "Keep existing /process_flow explanatory document available while adding realtime panel",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-web-process"
+        ],
+        "adversarialCaseRefs": [
+          "case-iframe-preserved"
+        ]
+      },
+      {
+        "id": "contract-performance-safe",
+        "contractRef": "G004 safe performance constraints",
+        "obligation": "Use small memoized/derived UI calculations and no persistent cache or protected writes",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-cli-process"
+        ],
+        "adversarialCaseRefs": [
+          "case-protected-empty"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-web-process",
+        "contractRef": "process tab browser surface",
+        "surface": "web",
+        "invocation": "Browser opened served dashboard, selected 프로세스 흐름, observed realtime panel and existing iframe, and captured screenshot",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-browser-run",
+          "g004-screenshot"
+        ]
+      },
+      {
+        "id": "surface-cli-process",
+        "contractRef": "process flow test and compatibility harness",
+        "surface": "cli",
+        "invocation": "Focused pytest, missing import check, bundle build, and protected path checks passed",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-cli-replay",
+          "g004-test-report"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-missing-step",
+        "contractRef": "G004 current_step normalization",
+        "scenario": "latest.current_step is missing or malformed and only latest.phase may be present",
+        "expectedBehavior": "normalizeFlowStepIndex falls back to phaseIndex or -1 without throwing; UI shows 미정/— safely",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-test-report",
+          "g004-screenshot"
+        ]
+      },
+      {
+        "id": "case-iframe-preserved",
+        "contractRef": "G004 process_flow compatibility",
+        "scenario": "Adding realtime panel could remove the existing explanatory process_flow document",
+        "expectedBehavior": "Process tab still embeds iframe[src$=\"/process_flow\"] below realtime panel",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-browser-run",
+          "g004-screenshot"
+        ]
+      },
+      {
+        "id": "case-protected-empty",
+        "contractRef": "protected runtime paths",
+        "scenario": "Process work could accidentally write runtime databases/logs/settings",
+        "expectedBehavior": "Protected path git status is empty",
+        "verdict": "passed",
+        "artifactRefs": [
+          "g004-cli-replay",
+          "g004-test-report"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "After process visualization changes, bundle rebuild, focused process/SPA/harness tests, missing-import check, browser process-tab QA, and protected path status reran cleanly. The build freshness test remains intentionally deferred until final commit/PR packaging because source and committed bundle diffs are active feature changes.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "node build-app.mjs",
+      "python -m pytest tests/unit/dashboard/test_p11_process_flow.py tests/unit/dashboard/test_phase9_spa_tabs.py tests/unit/dashboard/test_track_z_pr1_harness.py -q -k \"not committed_bundle_in_sync\"",
+      "node check-missing-imports.mjs",
+      "browser process-tab QA"
+    ],
+    "blockers": []
+  }
+}

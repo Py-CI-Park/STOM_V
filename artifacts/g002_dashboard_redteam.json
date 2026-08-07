@@ -1,0 +1,430 @@
+{
+  "schemaVersion": 1,
+  "kind": "web-api-redteam-test-report",
+  "target": {
+    "base_url": "http://127.0.0.1:8770",
+    "commit": "1ba48ddb",
+    "note": "re-run against restarted server after commit 1ba48ddb (gate_passed additive field, ab-pairs series pre-filter, bundle app.js v=7c569541)"
+  },
+  "generated_at": "2026-07-17T12:18:51+0900",
+  "checks": [
+    {
+      "name": "ab_pairs_series_missing",
+      "request": {
+        "method": "GET",
+        "path": "/history/ab-pairs"
+      },
+      "expected": "4xx (no 500) because series is required",
+      "actual": {
+        "status": 422,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "query",
+                "series"
+              ],
+              "msg": "Field required",
+              "input": null
+            }
+          ]
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "ab_pairs_series_empty",
+      "request": {
+        "method": "GET",
+        "path": "/history/ab-pairs?series="
+      },
+      "expected": "no 500; either 4xx or 200 with available:false",
+      "actual": {
+        "status": 200,
+        "body": {
+          "available": false,
+          "reason": "unknown_series",
+          "items": []
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "ab_pairs_series_very_long",
+      "request": {
+        "method": "GET",
+        "path": "/history/ab-pairs?series=<10000 'a' chars>"
+      },
+      "expected": "no 500; either 4xx or 200 with available:false",
+      "actual": {
+        "status": 200,
+        "body_type": "dict",
+        "available": false
+      },
+      "passed": true
+    },
+    {
+      "name": "ab_pairs_special_chars_path_traversal",
+      "request": {
+        "method": "GET",
+        "path": "/history/ab-pairs?series=..%2F..%2F..%2Fetc%2Fpasswd"
+      },
+      "expected": "no 500; either 4xx or 200 with available:false",
+      "actual": {
+        "status": 200,
+        "body": {
+          "available": false,
+          "reason": "unknown_series",
+          "items": []
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "ab_pairs_special_chars_null_byte",
+      "request": {
+        "method": "GET",
+        "path": "/history/ab-pairs?series=abc%00def"
+      },
+      "expected": "no 500; either 4xx or 200 with available:false",
+      "actual": {
+        "status": 200,
+        "body": {
+          "available": false,
+          "reason": "unknown_series",
+          "items": []
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "ab_pairs_special_chars_quotes",
+      "request": {
+        "method": "GET",
+        "path": "/history/ab-pairs?series=abc%27%22def"
+      },
+      "expected": "no 500; either 4xx or 200 with available:false",
+      "actual": {
+        "status": 200,
+        "body": {
+          "available": false,
+          "reason": "unknown_series",
+          "items": []
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "ab_pairs_limit_zero",
+      "request": {
+        "method": "GET",
+        "path": "/history/ab-pairs?series=abmain0716f&limit=0"
+      },
+      "expected": "4xx (no 500) because limit must be >=1",
+      "actual": {
+        "status": 422,
+        "body": {
+          "detail": [
+            {
+              "type": "greater_than_equal",
+              "loc": [
+                "query",
+                "limit"
+              ],
+              "msg": "Input should be greater than or equal to 1",
+              "input": "0",
+              "ctx": {
+                "ge": 1
+              }
+            }
+          ]
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "ab_pairs_limit_100000",
+      "request": {
+        "method": "GET",
+        "path": "/history/ab-pairs?series=abmain0716f&limit=100000"
+      },
+      "expected": "4xx (no 500) because limit must be <=100 (_MAX_LIMIT)",
+      "actual": {
+        "status": 422,
+        "body": {
+          "detail": [
+            {
+              "type": "less_than_equal",
+              "loc": [
+                "query",
+                "limit"
+              ],
+              "msg": "Input should be less than or equal to 100",
+              "input": "100000",
+              "ctx": {
+                "le": 100
+              }
+            }
+          ]
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "ab_pairs_limit_negative",
+      "request": {
+        "method": "GET",
+        "path": "/history/ab-pairs?series=abmain0716f&limit=-1"
+      },
+      "expected": "4xx (no 500) because limit must be >=1",
+      "actual": {
+        "status": 422,
+        "body": {
+          "detail": [
+            {
+              "type": "greater_than_equal",
+              "loc": [
+                "query",
+                "limit"
+              ],
+              "msg": "Input should be greater than or equal to 1",
+              "input": "-1",
+              "ctx": {
+                "ge": 1
+              }
+            }
+          ]
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "ab_pairs_unknown_series_baseline",
+      "request": {
+        "method": "GET",
+        "path": "/history/ab-pairs?series=does_not_exist_zz"
+      },
+      "expected": "200 with available:false, reason:unknown_series",
+      "actual": {
+        "status": 200,
+        "body": {
+          "available": false,
+          "reason": "unknown_series",
+          "items": []
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "history_index_required_fields_present",
+      "request": {
+        "method": "GET",
+        "path": "/history/index?limit=50"
+      },
+      "expected": "every item has research_id/source_kind/label/updated_at/counts/condition_tree_status",
+      "actual": {
+        "status": 200,
+        "item_count": 50,
+        "missing_required": []
+      },
+      "passed": true
+    },
+    {
+      "name": "history_index_ab_role_optional_for_non_ab_runs",
+      "request": {
+        "method": "GET",
+        "path": "/history/index?limit=50"
+      },
+      "expected": "ab_role absent/None for at least one non-AB run (optional field, not forced)",
+      "actual": {
+        "status": 200,
+        "count_without_ab_role": 29,
+        "sample": [
+          "campaign:q4-defense-prerule-halfexit-dashboard-20260618",
+          "campaign:post-q4-next4-20260618",
+          "campaign:ovn_t2late",
+          "campaign:ovn_t2late_dry",
+          "campaign:ovn_r2full"
+        ]
+      },
+      "passed": true
+    },
+    {
+      "name": "history_index_optional_fields_well_typed_when_present",
+      "request": {
+        "method": "GET",
+        "path": "/history/index?limit=50"
+      },
+      "expected": "when ab_role is present it is a dict (never forced/garbage)",
+      "actual": {
+        "status": 200,
+        "all_well_typed": true
+      },
+      "passed": true
+    },
+    {
+      "name": "no_absolute_path_leak_in_json_responses",
+      "request": {
+        "method": "GET",
+        "paths": [
+          "/history/index?limit=50",
+          "/history/ab-pairs?series=abmain0716f",
+          "/history/ab-pairs?series=does_not_exist_zz"
+        ]
+      },
+      "expected": "no 'C:\\\\' or '/System_Trading' substrings in any response body",
+      "actual": {
+        "leaks_found": {}
+      },
+      "passed": true
+    },
+    {
+      "name": "page_200_ui_root",
+      "request": {
+        "method": "GET",
+        "path": "/ui/"
+      },
+      "expected": "HTTP 200",
+      "actual": {
+        "status": 200,
+        "len": 1908
+      },
+      "passed": true
+    },
+    {
+      "name": "page_200_ui_v4",
+      "request": {
+        "method": "GET",
+        "path": "/ui/v4/"
+      },
+      "expected": "HTTP 200",
+      "actual": {
+        "status": 200,
+        "len": 2153
+      },
+      "passed": true
+    },
+    {
+      "name": "page_200_ui_remodel",
+      "request": {
+        "method": "GET",
+        "path": "/ui/remodel/"
+      },
+      "expected": "HTTP 200",
+      "actual": {
+        "status": 200,
+        "len": 1096
+      },
+      "passed": true
+    },
+    {
+      "name": "ui_v4_has_preview_banner_and_ui_link",
+      "request": {
+        "method": "GET",
+        "path": "/ui/v4/"
+      },
+      "expected": "response contains PREVIEW banner text and a link to /ui",
+      "actual": {
+        "has_preview": true,
+        "has_ui_link": true
+      },
+      "passed": true
+    },
+    {
+      "name": "ui_remodel_has_draft_banner",
+      "request": {
+        "method": "GET",
+        "path": "/ui/remodel/"
+      },
+      "expected": "response contains draft/시안 banner text (static design draft, not live data)",
+      "actual": {
+        "has_banner": true
+      },
+      "passed": true
+    },
+    {
+      "name": "bundle_contains_three_history_viz_components",
+      "request": {
+        "method": "GET",
+        "path": "/bundle/app.js (fallback /ui/bundle/app.js)",
+        "resolved_status": 200
+      },
+      "expected": "app.js bundle contains AbPairCompareView, CellHeatmap, HoldoutFunnel",
+      "actual": {
+        "status": 200,
+        "present": {
+          "AbPairCompareView": true,
+          "CellHeatmap": true,
+          "HoldoutFunnel": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "loop_run_evaluations_gate_passed_boolean_exactly_one_true_of_15",
+      "request": {
+        "method": "GET",
+        "path": "/history/detail?research_id=loop_run:abmain0716f_p1_legacy&section=evaluations"
+      },
+      "expected": "15 rows, each gate_passed is bool, exactly 1 True",
+      "actual": {
+        "status": 200,
+        "row_count": 15,
+        "all_bool": true,
+        "true_count": 1
+      },
+      "passed": true
+    },
+    {
+      "name": "campaign_evaluations_omit_gate_passed_key",
+      "request": {
+        "method": "GET",
+        "path": "/history/detail?research_id=campaign%3Aq4-defense-prerule-halfexit-dashboard-20260618&section=evaluations",
+        "campaign_research_id": "campaign:q4-defense-prerule-halfexit-dashboard-20260618"
+      },
+      "expected": "no row in a campaign evaluations response has a gate_passed key at all",
+      "actual": {
+        "status": 200,
+        "row_count": 9,
+        "none_have_key": true
+      },
+      "passed": true
+    },
+    {
+      "name": "bundle_versioned_no_net_profit_or_win_rate_strings",
+      "request": {
+        "method": "GET",
+        "path": "/ui/bundle/app.js?v=7c569541"
+      },
+      "expected": "literal claim as asked: whole bundle no longer contains 'net_profit' or 'win_rate'",
+      "actual": {
+        "status": 200,
+        "whole_bundle_has_net_profit": true,
+        "whole_bundle_has_win_rate": true,
+        "note": "Whole-bundle scan still finds both strings in OTHER, unrelated legacy components (history-condition-tree.jsx column label 'net_profit'/'순손익', rp-heatmap.jsx cell win_rate display) that this fix did not touch. Scoped to the G002 history-viz components actually changed by commit 1ba48ddb (AbPairCompareView/CellHeatmap/HoldoutFunnel), neither string appears: scoped_has_net_profit=False, scoped_has_win_rate=False, scoped_region_found=True."
+      },
+      "passed": false
+    },
+    {
+      "name": "loop_runs_db_readonly_mtime_size_unchanged",
+      "request": {
+        "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\ai_strategy_loop\\state\\loop_runs.db",
+        "note": "stat captured at script start vs stat after all HTTP probes ran"
+      },
+      "expected": "mtime and size identical (script performs only GET requests)",
+      "actual": {
+        "pre": {
+          "mtime": 1784258210.934468,
+          "size": 29814784
+        },
+        "post": {
+          "mtime": 1784258210.934468,
+          "size": 29814784
+        }
+      },
+      "passed": true
+    }
+  ],
+  "all_passed": false
+}

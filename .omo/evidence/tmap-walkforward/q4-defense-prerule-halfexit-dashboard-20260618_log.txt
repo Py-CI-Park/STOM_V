@@ -1,0 +1,4 @@
+q4 official oos follow-up completed
+q4 stress combo r8_4 + r2full_mdd profit=-833963
+half_exit2 overlay delta=+320050
+monthly prior-rule simulations=24

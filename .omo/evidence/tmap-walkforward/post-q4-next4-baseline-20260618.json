@@ -1,0 +1,104 @@
+{
+  "generated_at": "2026-06-18T16:07:53.546703+09:00",
+  "work_id": "post-q4-defense-next4-20260618",
+  "plan": ".omo/plans/post-q4-defense-next4-20260618.md",
+  "required_source_artifacts": [
+    {
+      "file": ".omo\\evidence\\tmap-walkforward\\combo-defense-baseline-coverage-20260618.json",
+      "exists": true,
+      "size_bytes": 6003,
+      "json_type": "dict",
+      "top_level_keys": [
+        "generated_at",
+        "coverage_count",
+        "missing_run_ids",
+        "runs"
+      ]
+    },
+    {
+      "file": ".omo\\evidence\\tmap-walkforward\\monthly-prerule-sim-r8-exit2-r2full-20260618.json",
+      "exists": true,
+      "size_bytes": 61352,
+      "json_type": "dict",
+      "top_level_keys": [
+        "generated_at",
+        "coverage_source",
+        "coverage_note",
+        "months",
+        "annual_source_rows",
+        "rules",
+        "summaries",
+        "best_by_combo_profit",
+        "best_by_combo_mdd"
+      ]
+    },
+    {
+      "file": ".omo\\evidence\\tmap-walkforward\\q4-official-oos-run-records-20260618.json",
+      "exists": true,
+      "size_bytes": 2493,
+      "json_type": "dict",
+      "top_level_keys": [
+        "generated_at",
+        "db_path",
+        "expected_run_ids",
+        "runs_found_count",
+        "generations_found_count",
+        "missing_run_ids",
+        "csv_missing_run_ids",
+        "runs",
+        "generations"
+      ]
+    },
+    {
+      "file": ".omo\\evidence\\tmap-walkforward\\q4-defense-official-oos-20260618.json",
+      "exists": true,
+      "size_bytes": 22195,
+      "json_type": "dict",
+      "top_level_keys": [
+        "generated_at",
+        "source",
+        "method",
+        "strategy_rows",
+        "portfolio_scenarios",
+        "interpretation"
+      ]
+    },
+    {
+      "file": ".omo\\evidence\\tmap-walkforward\\half-exit2-official-oos-20260618.json",
+      "exists": true,
+      "size_bytes": 21396,
+      "json_type": "dict",
+      "top_level_keys": [
+        "generated_at",
+        "method",
+        "q4_records",
+        "all_period_reference",
+        "decision_note"
+      ]
+    },
+    {
+      "file": ".omo\\evidence\\tmap-walkforward\\dashboard-research-records-check-20260618.json",
+      "exists": true,
+      "size_bytes": 8878,
+      "json_type": "dict",
+      "top_level_keys": [
+        "generated_at",
+        "method",
+        "list_status_code",
+        "detail_status_code",
+        "campaign",
+        "campaign_visible",
+        "campaign_rank",
+        "campaign_count",
+        "selected_campaign",
+        "detail_available",
+        "detail_campaign",
+        "direct_index_count"
+      ]
+    }
+  ],
+  "all_required_present": true,
+  "spawn_agent_available": false,
+  "spawn_agent_note": "No spawn_agent/wait_agent tools are available in this Codex harness; root process executes tasks and records this limitation.",
+  "protected_scope_note": "No backtest.py, V3K gate, live trading, or protected runtime path edits are planned."
+}

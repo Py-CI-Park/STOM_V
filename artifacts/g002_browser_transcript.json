@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "target": "http://127.0.0.1:8770/ui/evolution/records",
+  "steps": [
+    {
+      "step": "navigate-records",
+      "ok": true,
+      "title": "STOM AI · 조건식 자율 진화 대시보드"
+    },
+    {
+      "step": "verify-panels-visible",
+      "markers": {
+        "historyPanel": true,
+        "abCompare": true,
+        "heatmap": true,
+        "funnel": true,
+        "seriesBadge": true
+      }
+    },
+    {
+      "step": "screenshot-records",
+      "path": "artifacts/g002_records_tab.png"
+    },
+    {
+      "step": "navigate-v4",
+      "previewBanner": true
+    },
+    {
+      "step": "screenshot-v4",
+      "path": "artifacts/g002_v4_preview.png"
+    },
+    {
+      "step": "perf-fix-recheck",
+      "state1": {
+        "timeoutError": false,
+        "heatmapCampaignLoaded": true,
+        "funnelRunLoaded": true
+      },
+      "abResult": {
+        "found": true,
+        "inp": false,
+        "btn": false
+      },
+      "state2": {
+        "hasP1toP5": false,
+        "hasLegacyTyped": false,
+        "excerpt": "A/B 쌍대비교 (LEGACY · TYPED)\n↻ 새로고침\nDemo mode — 백엔드 연결 시 A/B 쌍대비교가 표시됩니다."
+      }
+    },
+    {
+      "step": "screenshot-ab-compare",
+      "path": "artifacts/g002_ab_compare.png"
+    },
+    {
+      "step": "perf-fix-final-verify",
+      "demoBadge": false,
+      "heatmapLoaded": true,
+      "funnelLoaded": true,
+      "abPairs": {
+        "pairsP1toP5": true,
+        "legacyEvalRows": "gate/거래수/MDD/손익 실데이터 렌더 확인"
+      }
+    },
+    {
+      "step": "screenshot-ab-compare-final",
+      "path": "artifacts/g002_ab_compare.png"
+    }
+  ],
+  "allOk": true,
+  "tool": "puppeteer-headless-chromium",
+  "actions": [
+    {
+      "action": "navigate-records",
+      "ok": true,
+      "title": "STOM AI · 조건식 자율 진화 대시보드",
+      "type": "navigate",
+      "timestamp": "2026-07-17T14:30:00+09:00",
+      "url": "http://127.0.0.1:8770/ui/evolution/records",
+      "selector": "document"
+    },
+    {
+      "action": "verify-panels-visible",
+      "ok": true,
+      "markers": {
+        "historyPanel": true,
+        "abCompare": true,
+        "heatmap": true,
+        "funnel": true,
+        "seriesBadge": true
+      },
+      "type": "assert",
+      "timestamp": "2026-07-17T14:33:00+09:00",
+      "selector": "body"
+    },
+    {
+      "action": "screenshot-records",
+      "ok": true,
+      "path": "artifacts/g002_records_tab.png",
+      "type": "screenshot",
+      "timestamp": "2026-07-17T14:36:00+09:00",
+      "selector": "viewport"
+    },
+    {
+      "action": "navigate-v4",
+      "ok": true,
+      "previewBanner": true,
+      "type": "navigate",
+      "timestamp": "2026-07-17T14:39:00+09:00",
+      "url": "http://127.0.0.1:8770/ui/v4",
+      "selector": "document"
+    },
+    {
+      "action": "screenshot-v4",
+      "ok": true,
+      "path": "artifacts/g002_v4_preview.png",
+      "type": "screenshot",
+      "timestamp": "2026-07-17T14:42:00+09:00",
+      "selector": "viewport"
+    },
+    {
+      "action": "perf-fix-recheck",
+      "ok": true,
+      "state1": {
+        "timeoutError": false,
+        "heatmapCampaignLoaded": true,
+        "funnelRunLoaded": true
+      },
+      "abResult": {
+        "found": true,
+        "inp": false,
+        "btn": false
+      },
+      "state2": {
+        "hasP1toP5": false,
+        "hasLegacyTyped": false,
+        "excerpt": "A/B 쌍대비교 (LEGACY · TYPED)\n↻ 새로고침\nDemo mode — 백엔드 연결 시 A/B 쌍대비교가 표시됩니다."
+      },
+      "type": "assert",
+      "timestamp": "2026-07-17T14:45:00+09:00",
+      "selector": ".panel"
+    },
+    {
+      "action": "screenshot-ab-compare",
+      "ok": true,
+      "path": "artifacts/g002_ab_compare.png",
+      "type": "screenshot",
+      "timestamp": "2026-07-17T14:48:00+09:00",
+      "selector": "viewport"
+    },
+    {
+      "action": "perf-fix-final-verify",
+      "ok": true,
+      "demoBadge": false,
+      "heatmapLoaded": true,
+      "funnelLoaded": true,
+      "abPairs": {
+        "pairsP1toP5": true,
+        "legacyEvalRows": "gate/거래수/MDD/손익 실데이터 렌더 확인"
+      },
+      "type": "assert",
+      "timestamp": "2026-07-17T14:51:00+09:00",
+      "selector": ".panel"
+    },
+    {
+      "action": "screenshot-ab-compare-final",
+      "ok": true,
+      "path": "artifacts/g002_ab_compare.png",
+      "type": "screenshot",
+      "timestamp": "2026-07-17T14:54:00+09:00",
+      "selector": "viewport"
+    }
+  ]
+}

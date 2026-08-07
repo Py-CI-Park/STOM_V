@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "commit": "ec35b0db",
+  "bundle": "cf0024f4",
+  "fixture": "production-shape status snapshot with inert WebSocket",
+  "dpr": 1,
+  "zoom": "100%",
+  "runtimeWindow": {"consoleErrors": [], "pageErrors": []},
+  "viewports": {
+    "3440x1440": {"scrollHeight": 2352, "scrollRatio": 1.6333333333333333, "horizontalOverflow": 0, "rects": {"situation": {"y": 184.53125, "height": 235.078125, "visibleRatio": 1}, "fitness": {"y": 478.796875, "height": 320, "visibleRatio": 1}, "profit": {"y": 435.609375, "height": 488.953125, "visibleRatio": 1}, "quality": {"y": 435.609375, "height": 488.953125, "visibleRatio": 1}, "equity": {"y": 940.5625, "height": 414.515625, "visibleRatio": 1}}},
+    "2560x1440": {"scrollHeight": 2351, "scrollRatio": 1.632638888888889, "horizontalOverflow": 0, "rects": {"situation": {"y": 184.53125, "height": 235.078125, "visibleRatio": 1}, "fitness": {"y": 478.796875, "height": 320, "visibleRatio": 1}, "profit": {"y": 435.609375, "height": 456.984375, "visibleRatio": 1}, "quality": {"y": 435.609375, "height": 456.984375, "visibleRatio": 1}, "equity": {"y": 908.59375, "height": 445.734375, "visibleRatio": 1}}},
+    "1920x1080": {"scrollHeight": 2918, "scrollRatio": 2.7018518518518517, "horizontalOverflow": 0, "fitnessHeight": 302.390625},
+    "320x800": {"scrollHeight": 7430, "scrollRatio": 9.2875, "horizontalOverflow": 0, "fitnessHeight": 224}
+  },
+  "productionPayload": {
+    "engineSummary": "status running · phase backtest_start · bt_engine_mode warm · bt_timeframe tick · effective_engine_count 12",
+    "progressSummary": "60.0% · generation_level",
+    "selectedStep": "백테스트 active",
+    "source": "current_run.generation · fixture-production-shape · 2",
+    "evidenceState": "fresh",
+    "fieldSourceRows": 5,
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  "interactionReceipts": {
+    "keyboard": {"ArrowRight": "백테스트", "Home": "생성", "End": "부검", "focusFollowedSelection": true},
+    "pinning": {"sameRunGenerationPreserved": true, "identityChangeReleasedPin": true},
+    "drawer": {"opened": true, "focusTraversedInside": true, "closedDisplay": "none", "focusReturnedToToggle": true}
+  },
+  "acceptance": {"ultrawideCoreGraphsAtLeast90PercentVisible": true, "ultrawideFitnessMax320": true, "ultrawideScrollRatioAtMost2": true, "allMeasuredHorizontalOverflowAtMost3": true, "consoleAndPageErrorsZero": true, "productionObjectsRenderWithoutReactError": true}
+}

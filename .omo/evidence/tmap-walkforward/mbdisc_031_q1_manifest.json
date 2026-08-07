@@ -1,0 +1,292 @@
+{
+  "template": "llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean",
+  "run_id": "mbdisc_031_q1",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_000_B",
+      "status": "ok",
+      "profit": -22870556.0,
+      "mdd": 228.91,
+      "trades": 953
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP min_len=20",
+      "param": "min_len",
+      "value": 20,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_001_B",
+      "status": "ok",
+      "profit": -25364907.0,
+      "mdd": 252.98,
+      "trades": 1029
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP min_len=70",
+      "param": "min_len",
+      "value": 70,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_002_B",
+      "status": "ok",
+      "profit": -19616041.0,
+      "mdd": 195.55,
+      "trades": 829
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP min_len=100",
+      "param": "min_len",
+      "value": 100,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_003_B",
+      "status": "ok",
+      "profit": -17168838.0,
+      "mdd": 170.92,
+      "trades": 730
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP min_len=150",
+      "param": "min_len",
+      "value": 150,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_004_B",
+      "status": "ok",
+      "profit": -13075515.0,
+      "mdd": 130.53,
+      "trades": 580
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP min_len=220",
+      "param": "min_len",
+      "value": 220,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_005_B",
+      "status": "ok",
+      "profit": -8317362.0,
+      "mdd": 83.15,
+      "trades": 438
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP b1_cap_max=3000",
+      "param": "b1_cap_max",
+      "value": 3000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_006_B",
+      "status": "ok",
+      "profit": -25552068.0,
+      "mdd": 255.35,
+      "trades": 1053
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP b1_cap_max=2000",
+      "param": "b1_cap_max",
+      "value": 2000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_007_B",
+      "status": "ok",
+      "profit": -18922657.0,
+      "mdd": 189.73,
+      "trades": 804
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP b1_cap_max=1500",
+      "param": "b1_cap_max",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_008_B",
+      "status": "ok",
+      "profit": -14819754.0,
+      "mdd": 148.68,
+      "trades": 655
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP b1_cap_max=1200",
+      "param": "b1_cap_max",
+      "value": 1200,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_009_B",
+      "status": "ok",
+      "profit": -11538950.0,
+      "mdd": 115.62,
+      "trades": 511
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP b1_cap_max=900",
+      "param": "b1_cap_max",
+      "value": 900,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_010_B",
+      "status": "ok",
+      "profit": -9270205.0,
+      "mdd": 92.8,
+      "trades": 435
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP b1_rate_min=0.5",
+      "param": "b1_rate_min",
+      "value": 0.5,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_011_B",
+      "status": "ok",
+      "profit": -23114815.0,
+      "mdd": 231.34,
+      "trades": 960
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP b1_rate_min=1.8",
+      "param": "b1_rate_min",
+      "value": 1.8,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_012_B",
+      "status": "ok",
+      "profit": -22952070.0,
+      "mdd": 229.74,
+      "trades": 941
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP b1_rate_min=3.0",
+      "param": "b1_rate_min",
+      "value": 3.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_013_B",
+      "status": "ok",
+      "profit": -22197193.0,
+      "mdd": 222.24,
+      "trades": 911
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP b1_rate_min=5.0",
+      "param": "b1_rate_min",
+      "value": 5.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_014_B",
+      "status": "ok",
+      "profit": -20112806.0,
+      "mdd": 201.47,
+      "trades": 824
+    },
+    {
+      "gen_no": 15,
+      "label": "TMAP b1_rate_min=7.0",
+      "param": "b1_rate_min",
+      "value": 7.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_015_B",
+      "status": "ok",
+      "profit": -17725035.0,
+      "mdd": 177.09,
+      "trades": 725
+    },
+    {
+      "gen_no": 16,
+      "label": "TMAP b1_day_money_min=300",
+      "param": "b1_day_money_min",
+      "value": 300,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_016_B",
+      "status": "ok",
+      "profit": -22870556.0,
+      "mdd": 228.91,
+      "trades": 953
+    },
+    {
+      "gen_no": 17,
+      "label": "TMAP b1_day_money_min=1500",
+      "param": "b1_day_money_min",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_017_B",
+      "status": "ok",
+      "profit": -22244083.0,
+      "mdd": 222.61,
+      "trades": 932
+    },
+    {
+      "gen_no": 18,
+      "label": "TMAP b1_day_money_min=3000",
+      "param": "b1_day_money_min",
+      "value": 3000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_018_B",
+      "status": "ok",
+      "profit": -18367694.0,
+      "mdd": 183.17,
+      "trades": 780
+    },
+    {
+      "gen_no": 19,
+      "label": "TMAP b1_day_money_min=6000",
+      "param": "b1_day_money_min",
+      "value": 6000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_019_B",
+      "status": "ok",
+      "profit": -12280932.0,
+      "mdd": 122.88,
+      "trades": 552
+    },
+    {
+      "gen_no": 20,
+      "label": "TMAP b1_day_money_min=10000",
+      "param": "b1_day_money_min",
+      "value": 10000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_020_B",
+      "status": "ok",
+      "profit": -8752859.0,
+      "mdd": 87.84,
+      "trades": 438
+    },
+    {
+      "gen_no": 21,
+      "label": "TMAP b1_sec_money_min=30",
+      "param": "b1_sec_money_min",
+      "value": 30,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_021_B",
+      "status": "ok",
+      "profit": -30179739.0,
+      "mdd": 201.37,
+      "trades": 1224
+    },
+    {
+      "gen_no": 22,
+      "label": "TMAP b1_sec_money_min=150",
+      "param": "b1_sec_money_min",
+      "value": 150,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_022_B",
+      "status": "ok",
+      "profit": -14740614.0,
+      "mdd": 147.44,
+      "trades": 678
+    },
+    {
+      "gen_no": 23,
+      "label": "TMAP b1_sec_money_min=300",
+      "param": "b1_sec_money_min",
+      "value": 300,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_023_B",
+      "status": "ok",
+      "profit": -9558291.0,
+      "mdd": 95.7,
+      "trades": 451
+    },
+    {
+      "gen_no": 24,
+      "label": "TMAP b1_sec_money_min=600",
+      "param": "b1_sec_money_min",
+      "value": 600,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_024_B",
+      "status": "ok",
+      "profit": -6623630.0,
+      "mdd": 66.29,
+      "trades": 359
+    },
+    {
+      "gen_no": 25,
+      "label": "TMAP b1_sec_money_min=1000",
+      "param": "b1_sec_money_min",
+      "value": 1000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_mid_upper_rehigh_two_relays_clean_025_B",
+      "status": "ok",
+      "profit": -6185454.0,
+      "mdd": 61.89,
+      "trades": 345
+    }
+  ]
+}

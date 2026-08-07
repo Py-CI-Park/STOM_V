@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "e2eStatus": "not_run_by_design",
+  "redTeamStatus": "passed",
+  "evidence": "Read-only QA verified wrapper parents[3] resolves to repo root, wrapper runtime outputs are evidence-local, pair JSON parses and matches sandbox sqlite metadata, wrapper contains no materialize_candidate/protected DB/backtest.py/live/V3K/KHOPENAPI references, and mapping does not claim official OOS results.",
+  "source": "agent://9-G002FixedQa",
+  "blockers": []
+}

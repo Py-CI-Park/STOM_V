@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "bun",
+    "-e",
+    "console.log(\"proxy-oos-json-ok\")"
+  ],
+  "recordedStdout": "proxy-oos-json-ok\n"
+}

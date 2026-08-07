@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "recordedAt": "2026-07-19T07:22:26.801120+00:00",
+  "commit": "c61d90cf4f2862b09df6e00c3597a75e76168549",
+  "commands": [
+    {
+      "command": "python -m pytest tests/unit/test_alpha_reporting_manifest.py -q",
+      "status": "passed",
+      "summary": "5 passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/dashboard/test_research_docs_api.py tests/unit/dashboard/test_research_index.py tests/unit/dashboard/test_reports_security.py -q",
+      "status": "passed",
+      "summary": "24 passed, including real symlink escape rejection"
+    },
+    {
+      "command": "python -m pytest tests/unit/dashboard -q --maxfail=1",
+      "status": "passed",
+      "summary": "804 passed"
+    },
+    {
+      "command": "npm run typecheck && npm run build",
+      "cwd": "ai_strategy_loop/dashboard/webui-build",
+      "status": "passed",
+      "summary": "runtime JSX PASS 89/537; bundle 53a72135"
+    },
+    {
+      "command": "python -m pytest tests/unit/dashboard/test_track_z_pr1_harness.py -q",
+      "status": "passed",
+      "summary": "15 passed"
+    }
+  ],
+  "browserEvidence": "artifacts/g006-reports-wiki-browser-transcript.json",
+  "blockers": []
+}

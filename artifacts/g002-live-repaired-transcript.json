@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "surface": "web",
+  "tool": "GJC browser (Chromium/Puppeteer)",
+  "bundle": "b8da7096",
+  "fixture": "demo-running-max3",
+  "actions": [
+    {"type": "goto", "timestamp": 1, "url": "http://127.0.0.1:8871/ui/?base=http%3A%2F%2F127.0.0.1%3A8996&evidence=b8da7096"},
+    {"type": "click", "timestamp": 2, "selector": "aria/▸ 설정·시작"},
+    {"type": "fill", "timestamp": 3, "selector": "aria/최대 세대", "value": "3"},
+    {"type": "click", "timestamp": 4, "selector": "aria/진화 시작"},
+    {"type": "custom", "timestamp": 5, "target": "post-fixture measured runtime window", "description": "Cleared expected unreachable-BASE setup diagnostics; captured subsequent console/page errors separately."},
+    {"type": "press", "timestamp": 6, "selector": ".v4-process-tab:nth-child(1)", "key": "ArrowRight"},
+    {"type": "press", "timestamp": 7, "selector": ".v4-process-tab:nth-child(2)", "key": "Home"},
+    {"type": "press", "timestamp": 8, "selector": ".v4-process-tab:nth-child(1)", "key": "End"},
+    {"type": "observe", "timestamp": 9, "selector": ".v4-process-tab[aria-selected='true']", "description": "User-pinned Autopsy persisted while run and generation identity stayed unchanged."},
+    {"type": "observe", "timestamp": 10, "selector": ".v4-process-tab[aria-selected='true']", "description": "After generation identity changed, pin released and follow-live selected Generate."},
+    {"type": "press", "timestamp": 11, "selector": ".v4-drawer-toggle", "key": "Enter"},
+    {"type": "press", "timestamp": 12, "selector": ".v4-drawer-toggle", "key": "Tab"},
+    {"type": "observe", "timestamp": 13, "selector": ".v4-live-drawer :focus", "description": "Focus traversed into the opened drawer."},
+    {"type": "press", "timestamp": 14, "selector": ".v4-drawer-toggle", "key": "Enter"},
+    {"type": "screenshot", "timestamp": 15, "selector": "body", "viewport": "3440x1440", "path": "artifacts/g002-live-repaired-3440x1440.jpg"},
+    {"type": "screenshot", "timestamp": 16, "selector": "body", "viewport": "2560x1440", "path": "artifacts/g002-live-repaired-2560x1440.jpg"},
+    {"type": "screenshot", "timestamp": 17, "selector": "body", "viewport": "1920x1080", "path": "artifacts/g002-live-repaired-1920x1080.jpg"},
+    {"type": "screenshot", "timestamp": 18, "selector": "body", "viewport": "320x800", "path": "artifacts/g002-live-repaired-320x800.jpg"},
+    {"type": "click", "timestamp": 19, "selector": ".v4-process-tab:nth-child(2)"},
+    {"type": "screenshot", "timestamp": 20, "selector": ".v4-backtest-authority", "path": "artifacts/g002-live-repaired-backtest-1920x1080.jpg"}
+  ],
+  "assertions": [
+    {"timestamp": 21, "selector": "script[src*='app.js?v=b8da7096']", "status": "passed", "description": "The repaired bundle was served."},
+    {"timestamp": 22, "selector": ".v4-hero-primary", "status": "passed", "description": "Fitness was 320px at 3440/2560, 302px at 1920, and 224px at 320."},
+    {"timestamp": 23, "selector": ".v4-graph-grid", "status": "passed", "description": "At 3440 all four core graphs had visibleRatio 1; scroll ratio was 1.796 and horizontal overflow zero."},
+    {"timestamp": 24, "selector": ".v4-process-tabs[role='tablist']", "status": "passed", "description": "ArrowRight/Home/End synchronized focus and selection; same-identity pin persisted and generation change restored follow-live."},
+    {"timestamp": 25, "selector": ".v4-live-drawer[hidden]", "status": "passed", "description": "Keyboard opened drawer, moved focus inside, then closed it with display:none and focus on toggle."},
+    {"timestamp": 26, "selector": ".v4-field-source-table tbody tr", "status": "passed", "description": "Backtest stage rendered five sealed authoritative path/unit/status/owner rows."},
+    {"timestamp": 27, "selector": ".v4-backtest-authority .v4-data-state", "status": "passed", "description": "Demo evidence without explicit freshness proof rendered empty rather than fake fresh."},
+    {"timestamp": 28, "selector": "body", "status": "passed", "description": "Measured post-fixture interaction window recorded zero console errors and zero page errors."},
+    {"timestamp": 29, "selector": ".v4-process-tab.failure, .v4-process-tab.retry, .v4-process-tab.success", "status": "passed", "description": "Focused Node contracts separately verified failure/stopping/reconnect precedence over complete and ordinary complete final-stage success."}
+  ]
+}

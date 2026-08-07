@@ -1,8 +1,25 @@
 {
  "schema_version": "stom-research-report-v1",
  "generated_at": "2026-08-07T00:00:00Z",
- "count": 10,
+ "count": 11,
  "reports": [
+  {
+   "schema_version": "stom-research-report-v1",
+   "report_id": "success_playbook_20260807",
+   "report_type": "research",
+   "research_id": "master_wave_plan",
+   "status": "complete",
+   "publication_status": "published",
+   "generator": "claude-session-success-playbook",
+   "path": "reports/2026-08-07_success_playbook_report.html",
+   "content_sha256": "9735a381d9772e698c03d99acbef52f2ac231e2d6ccf15c245da5e0d407ebade",
+   "bytes": 557508,
+   "generated_at": "2026-08-07T00:00:00Z",
+   "trust": "verified",
+   "provenance": "docs/research/quant_scoring_pipeline/2026-08-07_성공기록과_방법론.md",
+   "decision": "프로세스 성공·산출물 미확정 — 표본 3.1배 부족, 백필 478일이 해법",
+   "limitations": "설계 구간 in-sample · 짝지은 95% CI 가 0 포함 · 홀드아웃 미개봉 · B3 는 자본 2배 사용"
+  },
   {
    "schema_version": "stom-research-report-v1",
    "report_id": "wave_w4_w5_execution_20260807",

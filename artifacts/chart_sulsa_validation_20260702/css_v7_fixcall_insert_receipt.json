@@ -1,0 +1,15 @@
+{
+  "status": "inserted",
+  "schema_version": 1,
+  "dry_run": false,
+  "db_path": "ai_strategy_loop\\state\\loop_strategies.db",
+  "pairs_in": "artifacts\\chart_sulsa_validation_20260702\\pairs_unique.json",
+  "pairs_unique_fixcall": "artifacts\\chart_sulsa_validation_20260702\\pairs_unique_fixcall.json",
+  "backup_path": "ai_strategy_loop\\state\\loop_strategies.db.bak.css_v7_fixcall_20260703T143604Z",
+  "planned_insert_count": 21,
+  "inserted_count": 21,
+  "pair_count": 21,
+  "conflicts": [],
+  "invalid_runtime_call_count_before_repair": 21,
+  "invalid_runtime_call_count_after_repair": 0
+}

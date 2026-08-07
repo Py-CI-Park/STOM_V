@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "commit": "536b47f7",
+  "bundle": "deb05d2b",
+  "viewports": [
+    {"width": 1920, "height": 1080, "destination": "history", "horizontalOverflowPx": 0, "railCount": 6, "pageScrollHeight": 7377},
+    {"width": 2560, "height": 1440, "destination": "history", "horizontalOverflowPx": 0, "railCount": 6, "pageScrollHeight": 6874},
+    {"width": 3440, "height": 1440, "destination": "research", "horizontalOverflowPx": 0, "railCount": 6, "pageScrollHeight": 3665, "graphCardsAboveFold": 4, "graphCardWidthsPx": [1051, 1051, 1051, 1051]}
+  ],
+  "routeMigration": {"input": "/ui/evolution/lab?base=http://127.0.0.1:8770", "canonicalTab": "history", "rollbackDefault": false, "explicitRollbackRecovered": true},
+  "contextDrawer": {"openUrl": "/ui/?tab=history&v4_context=1", "roleDialog": true, "initialFocus": "close", "escapeClosed": true, "triggerFocusRestored": true},
+  "verdict": "passed"
+}

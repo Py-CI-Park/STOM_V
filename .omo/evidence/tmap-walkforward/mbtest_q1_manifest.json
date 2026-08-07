@@ -1,0 +1,17 @@
+{
+  "template": "llmgen_multiband_open_small_late_mid_reignite",
+  "run_id": "mbtest_q1",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_multiband_open_small_late_mid_reignite_000_B",
+      "status": "ok",
+      "profit": -3048898.0,
+      "mdd": 65.93,
+      "trades": 156
+    }
+  ]
+}

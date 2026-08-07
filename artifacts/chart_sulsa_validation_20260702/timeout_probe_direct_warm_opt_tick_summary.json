@@ -1,0 +1,50 @@
+{
+  "status": "complete",
+  "config_path": "artifacts\\chart_sulsa_validation_20260702\\timeout_probe_tick_valid_micro_config.json",
+  "warm_config": {
+    "start_date": 20250102,
+    "end_date": 20250103,
+    "start_time": 90000,
+    "end_time": 92800,
+    "engine_count": 2,
+    "is_tick": true,
+    "timeout": 600,
+    "run_timeout": 180,
+    "divid_mode": "종목코드별 분류"
+  },
+  "pairs": [
+    {
+      "label": "probe_css_v7_opt_tick_master",
+      "buy": "CSS_V7_OPT_TICK_B_MASTER_0900_0930",
+      "sell": "CSS_V7_OPT_TICK_S_MASTER_0900_0930",
+      "elapsed_sec": 200.12,
+      "raw_status": "error",
+      "raw_message": "백테스트 시간 초과 (180초)",
+      "ok": false,
+      "status": "error",
+      "reason": "warm backtest non-success: status=error message=백테스트 시간 초과 (180초) csv=no",
+      "csv_path": null,
+      "metrics": null
+    }
+  ],
+  "prepare": {
+    "elapsed_sec": 29.508,
+    "status": "ok",
+    "back_count": 66,
+    "timing": {
+      "engine_count": 2,
+      "back_count": 66,
+      "status": "ok",
+      "prepare_elapsed": 29.50838630000362,
+      "spawn_subtotals_elapsed": 0.4986837999895215,
+      "spawn_engines_elapsed": 16.478252100001555,
+      "market_data_load_elapsed": 0.82783979998203,
+      "engine_data_send_elapsed": 11.65774480003165
+    }
+  },
+  "close": {
+    "status": "ok",
+    "elapsed_sec": 4.521
+  },
+  "new_csv_files": []
+}

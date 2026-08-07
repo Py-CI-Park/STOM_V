@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G012",
+  "createdAt": "2026-07-05T02:43:00+09:00",
+  "subject": "P5 official tick chunk06 stale partial resolution",
+  "runIds": {
+    "staleFirstAttempt": "lat_tick_official_full_warm64_chunk06_20260704",
+    "supplement": "lat_tick_official_full_warm64_chunk06_supplement10_23_20260704"
+  },
+  "artifacts": {
+    "blockerHandoff": "docs/update_log/2026-07-04_p5_tick_chunk06_blocker_handoff.md",
+    "blockerReceipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk06_blocker_official_full_warm64_20260704_receipt.json",
+    "supplementPairs": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk06_supplement10_23_20260704.json",
+    "supplementReceipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk06_supplement10_23_official_full_warm64_20260704_receipt.json",
+    "combinedReceipt": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk06_official_full_warm64_20260704_receipt.json",
+    "plan": ".omo/plans/css-v7-repair-plan-c-plan-b-d-20260703.md",
+    "boulder": ".omo/boulder.json",
+    "ledger": ".omo/start-work/ledger.jsonl",
+    "processScan": "artifacts/g012_chunk06_process_scan_20260705.json"
+  },
+  "observedState": {
+    "firstAttempt": {
+      "dbStatus": "running",
+      "rows": 10,
+      "ok": 10,
+      "error": 0,
+      "preservedWithoutUpdateDelete": true
+    },
+    "supplement": {
+      "dbStatus": "complete",
+      "rows": 14,
+      "ok": 14,
+      "error": 0,
+      "gatePassed": 0
+    },
+    "combined": {
+      "rows": 24,
+      "statusCounts": {
+        "ok": 24
+      },
+      "gatePassed": 0,
+      "allRowsHonestStatus": true,
+      "allRowsOk": true,
+      "mddRange": [
+        236.83,
+        805.16
+      ],
+      "profitRange": [
+        -506115259.0,
+        -22864504.0
+      ],
+      "chunkRowsAreSurvivors": false,
+      "nextAllowedAction": "P5 official tick chunk07 only with --fail-fast-timeout"
+    }
+  },
+  "commands": [
+    "python artifacts/record_chunk06_blocker.py",
+    "python -m py_compile artifacts/build_chunk06_receipts.py",
+    "python -u -m ai_strategy_loop.scripts.claude_candidate_batch_eval --pairs-json docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk06_supplement10_23_20260704.json --config-json docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json --run-id lat_tick_official_full_warm64_chunk06_supplement10_23_20260704 --fail-fast-timeout",
+    "python artifacts/build_chunk06_receipts.py",
+    "python - <<'PY' ... chunk06 artifact/db/process invariant check ... PY",
+    "pytest tests/unit/test_warm_session_window.py tests/unit/test_lattice_p5_batch_repair.py tests/unit/test_plan_b_p5_profile_audit.py -q",
+    "git diff --check",
+    "python -m py_compile artifacts/record_chunk06_blocker.py artifacts/build_chunk06_receipts.py"
+  ],
+  "verificationResults": {
+    "jsonArtifactsParse": true,
+    "ledgerJsonlParse": true,
+    "combinedReceiptInvariants": true,
+    "dbInvariants": true,
+    "processClean": true,
+    "focusedPytest": "19 passed in 10.65s",
+    "gitDiffCheck": "passed with CRLF warning for .omo/plans/css-v7-repair-plan-c-plan-b-d-20260703.md",
+    "recordChunk06BlockerUsesReadOnlySqliteUri": true,
+    "processScanArtifact": "artifacts/g012_chunk06_process_scan_20260705.json"
+  },
+  "forbiddenStillApplied": [
+    "No DB UPDATE/DELETE used or required; stale first attempt remains preserved.",
+    "No chunk07 was started before chunk06 combined receipt existed.",
+    "No min/P6/P7 was started before official tick export exists.",
+    "Wrong-profile lat_smoke_tick_full_sanitized_20260704* remains excluded from official decisions.",
+    "Chunk06 rows are coverage-map evidence only and not survivor/promotion evidence."
+  ],
+  "verdict": "passed"
+}

@@ -1,0 +1,292 @@
+{
+  "template": "llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1",
+  "run_id": "mbdisc_029_q1",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_000_B",
+      "status": "ok",
+      "profit": -11488535.0,
+      "mdd": 46.67,
+      "trades": 432
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP min_len=5",
+      "param": "min_len",
+      "value": 5,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_001_B",
+      "status": "ok",
+      "profit": -11488535.0,
+      "mdd": 46.67,
+      "trades": 432
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP min_len=40",
+      "param": "min_len",
+      "value": 40,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_002_B",
+      "status": "ok",
+      "profit": -9268793.0,
+      "mdd": 47.24,
+      "trades": 342
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP min_len=70",
+      "param": "min_len",
+      "value": 70,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_003_B",
+      "status": "ok",
+      "profit": -2753420.0,
+      "mdd": 18.63,
+      "trades": 147
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP min_len=100",
+      "param": "min_len",
+      "value": 100,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_004_B",
+      "status": "ok",
+      "profit": -2506410.0,
+      "mdd": 17.22,
+      "trades": 105
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP min_len=140",
+      "param": "min_len",
+      "value": 140,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_005_B",
+      "status": "ok",
+      "profit": -1644321.0,
+      "mdd": 16.63,
+      "trades": 71
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP b1_cap_hi=3000",
+      "param": "b1_cap_hi",
+      "value": 3000,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_006_B",
+      "status": "ok",
+      "profit": -9001358.0,
+      "mdd": 45.6,
+      "trades": 324
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP b1_cap_hi=5000",
+      "param": "b1_cap_hi",
+      "value": 5000,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_007_B",
+      "status": "ok",
+      "profit": -10337336.0,
+      "mdd": 52.35,
+      "trades": 385
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP b1_cap_hi=8000",
+      "param": "b1_cap_hi",
+      "value": 8000,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_008_B",
+      "status": "ok",
+      "profit": -11348967.0,
+      "mdd": 57.47,
+      "trades": 419
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP b1_cap_hi=20000",
+      "param": "b1_cap_hi",
+      "value": 20000,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_009_B",
+      "status": "ok",
+      "profit": -11927576.0,
+      "mdd": 48.26,
+      "trades": 458
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP b1_cap_hi=35000",
+      "param": "b1_cap_hi",
+      "value": 35000,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_010_B",
+      "status": "ok",
+      "profit": -12150887.0,
+      "mdd": 40.95,
+      "trades": 487
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP b1_rate_min=0.3",
+      "param": "b1_rate_min",
+      "value": 0.3,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_011_B",
+      "status": "ok",
+      "profit": -11505645.0,
+      "mdd": 46.64,
+      "trades": 440
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP b1_rate_min=2.0",
+      "param": "b1_rate_min",
+      "value": 2.0,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_012_B",
+      "status": "ok",
+      "profit": -11131039.0,
+      "mdd": 56.29,
+      "trades": 417
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP b1_rate_min=3.5",
+      "param": "b1_rate_min",
+      "value": 3.5,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_013_B",
+      "status": "ok",
+      "profit": -10579966.0,
+      "mdd": 53.57,
+      "trades": 391
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP b1_rate_min=5.0",
+      "param": "b1_rate_min",
+      "value": 5.0,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_014_B",
+      "status": "ok",
+      "profit": -9178709.0,
+      "mdd": 46.54,
+      "trades": 357
+    },
+    {
+      "gen_no": 15,
+      "label": "TMAP b1_rate_min=7.0",
+      "param": "b1_rate_min",
+      "value": 7.0,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_015_B",
+      "status": "ok",
+      "profit": -7861529.0,
+      "mdd": 40.42,
+      "trades": 319
+    },
+    {
+      "gen_no": 16,
+      "label": "TMAP b1_day_money_min=500",
+      "param": "b1_day_money_min",
+      "value": 500,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_016_B",
+      "status": "ok",
+      "profit": -11488535.0,
+      "mdd": 46.67,
+      "trades": 432
+    },
+    {
+      "gen_no": 17,
+      "label": "TMAP b1_day_money_min=1500",
+      "param": "b1_day_money_min",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_017_B",
+      "status": "ok",
+      "profit": -11488535.0,
+      "mdd": 46.67,
+      "trades": 432
+    },
+    {
+      "gen_no": 18,
+      "label": "TMAP b1_day_money_min=7000",
+      "param": "b1_day_money_min",
+      "value": 7000,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_018_B",
+      "status": "ok",
+      "profit": -11561914.0,
+      "mdd": 46.99,
+      "trades": 431
+    },
+    {
+      "gen_no": 19,
+      "label": "TMAP b1_day_money_min=15000",
+      "param": "b1_day_money_min",
+      "value": 15000,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_019_B",
+      "status": "ok",
+      "profit": -9842587.0,
+      "mdd": 49.79,
+      "trades": 365
+    },
+    {
+      "gen_no": 20,
+      "label": "TMAP b1_day_money_min=30000",
+      "param": "b1_day_money_min",
+      "value": 30000,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_020_B",
+      "status": "ok",
+      "profit": -7464050.0,
+      "mdd": 38.04,
+      "trades": 273
+    },
+    {
+      "gen_no": 21,
+      "label": "TMAP b1_min_money=80",
+      "param": "b1_min_money",
+      "value": 80,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_021_B",
+      "status": "ok",
+      "profit": -11612218.0,
+      "mdd": 39.22,
+      "trades": 481
+    },
+    {
+      "gen_no": 22,
+      "label": "TMAP b1_min_money=150",
+      "param": "b1_min_money",
+      "value": 150,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_022_B",
+      "status": "ok",
+      "profit": -11696430.0,
+      "mdd": 47.31,
+      "trades": 470
+    },
+    {
+      "gen_no": 23,
+      "label": "TMAP b1_min_money=700",
+      "param": "b1_min_money",
+      "value": 700,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_023_B",
+      "status": "ok",
+      "profit": -10457945.0,
+      "mdd": 52.96,
+      "trades": 357
+    },
+    {
+      "gen_no": 24,
+      "label": "TMAP b1_min_money=1500",
+      "param": "b1_min_money",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_024_B",
+      "status": "ok",
+      "profit": -8706955.0,
+      "mdd": 44.52,
+      "trades": 277
+    },
+    {
+      "gen_no": 25,
+      "label": "TMAP b1_min_money=3000",
+      "param": "b1_min_money",
+      "value": 3000,
+      "buy_name": "TMAP_llmgen_min_threezone_buyqty_pressure_moneypulse_ma_caporthogonal_v1_025_B",
+      "status": "ok",
+      "profit": -5454273.0,
+      "mdd": 36.55,
+      "trades": 204
+    }
+  ]
+}

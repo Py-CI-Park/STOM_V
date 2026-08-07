@@ -38,6 +38,7 @@ _GATE: Final = "_reproduction_gate.json"
 _WALKFORWARD: Final = "_exit_walkforward.json"
 _ENGINE: Final = "_p5_engine_report.json"
 _LADDER_GLOB: Final = "_exit_ladder_*.json"
+_ENGINE_LADDER: Final = "_engine_ladder.json"
 
 
 def _read(out_name: str, filename: str) -> dict[str, Any] | None:
@@ -87,6 +88,19 @@ def _ladders(out_name: str) -> dict[str, dict[str, Any]]:
     return found
 
 
+def _engine_ladders(out_name: str) -> dict[str, dict[str, Any]]:
+    """규칙 이름 → 엔진 축 사다리 판정 (`run_engine_ladder` 산출).
+
+    **지도 축 사다리보다 이쪽이 우선한다.** 지도는 엔진이 체결하지 않는 진입까지
+    세기 때문에 국면 판정이 어긋난다(2026-08-07 정정: 지도 2/4 vs 엔진 4/4).
+    """
+    payload = _read(out_name, _ENGINE_LADDER)
+    if not payload:
+        return {}
+    return {str(r.get("challenger")): r for r in payload.get("results") or []
+            if r.get("challenger")}
+
+
 def _chosen_counts(walkforward: dict[str, Any] | None) -> dict[str, int]:
     """폴드가 각 규칙을 몇 번 골랐는가 — 안정성의 가장 단순한 지표."""
     counts: dict[str, int] = {}
@@ -107,6 +121,7 @@ def exit_axis(out_name: str = "design_v4") -> dict[str, Any]:
     engine_rules = _engine_by_rule(engine)
     chosen = _chosen_counts(walkforward)
     ladders = _ladders(out_name)
+    engine_ladders = _engine_ladders(out_name)
     reproducing = set((gate or {}).get("reproducing") or [])
 
     rows: list[dict[str, Any]] = []
@@ -117,7 +132,23 @@ def exit_axis(out_name: str = "design_v4") -> dict[str, Any]:
         engine_row = engine_rules.get(rule)
         engine_metrics = (engine_row or {}).get("engine") or {}
         ladder = ladders.get(rule)
+        engine_ladder = engine_ladders.get(rule)
+        paired = (engine_ladder or {}).get("paired") or {}
+        engine_regime = (engine_ladder or {}).get("regime") or {}
         rows.append({
+            # ── 엔진 축 판정(정본). 지도 축보다 이쪽을 먼저 읽는다.
+            "engine_ladder_verdict": (engine_ladder or {}).get("verdict"),
+            "engine_ladder_meaning": (engine_ladder or {}).get("verdict_meaning"),
+            "engine_regime_positive": engine_regime.get("challenger_positive"),
+            "engine_regime_baseline": engine_regime.get("baseline_positive"),
+            "engine_regime_segments": engine_regime.get("challenger_segments"),
+            "paired_mean_diff_pct": paired.get("mean_diff_pct"),
+            "paired_ci95": paired.get("ci95"),
+            "paired_significant": paired.get("significant"),
+            "paired_pairs": paired.get("pairs"),
+            "paired_required_pairs": paired.get("required_pairs"),
+            "paired_improved": paired.get("improved_trades"),
+            "paired_worsened": paired.get("worsened_trades"),
             # 사다리 — 엔진보다 **앞선** 관문이다. FAIL 이면 엔진 수치와 무관하게
             #   승격 대상이 아니다.
             "ladder_verdict": (ladder or {}).get("verdict"),
@@ -173,6 +204,7 @@ def exit_axis(out_name: str = "design_v4") -> dict[str, Any]:
             "walkforward": walkforward is not None,
             "engine": engine is not None,
             "ladder": bool(ladders),
+            "engine_ladder": bool(engine_ladders),
         },
         "gate": {
             "verdict": (gate or {}).get("verdict"),
@@ -202,7 +234,11 @@ def exit_axis(out_name: str = "design_v4") -> dict[str, Any]:
             "지도는 건당 %, 워크포워드는 일평균 % 입니다. 나란히 두되 나누지 않습니다.",
             "엔진 값이 없으면 전이율도 없습니다 — 추정치를 채우지 않습니다.",
             "기준선 대비 Δ는 같은 런에서 잰 값끼리만 뺍니다.",
-            "사다리가 FAIL 이면 엔진 수치가 좋아도 승격 대상이 아닙니다 "
-            "(2026-08-07: 엔진 A/B 3종 전부 통과했으나 국면 절단에서 전부 탈락).",
+            "사다리는 **엔진 축**을 봅니다. 지도 축 사다리는 엔진이 체결하지 않는 "
+            "진입까지 세어 국면 판정이 어긋납니다(2026-08-07 정정: 지도 2/4 vs 엔진 4/4).",
+            "합격선은 절대 기준이 아니라 **챔피언**입니다. 챔피언이 3/4 면 3/4 가 "
+            "기준이며, 4/4 를 요구하면 챔피언도 탈락합니다.",
+            "PROMISING 은 합격이 아닙니다 — 방향은 맞지만 표본이 얇아 확정하지 "
+            "못했다는 뜻입니다. 표본을 늘려 재판정해야 합니다.",
         ],
     }

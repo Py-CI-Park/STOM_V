@@ -38,49 +38,69 @@ function BtEaExactness({ value }) {
   return <span className={"badge " + tone} title={hint}>{label}</span>;
 }
 
-/* 사다리 배지 — 엔진보다 **앞선** 관문이다.
-   실측 2026-08-07: 엔진 A/B 3종이 전부 기준선을 넘었는데 국면 절단에서 전부 탈락했다.
-   그래서 사다리 판정은 엔진 값 바로 옆에 있어야 한다. */
-function BtEaLadder({ verdict, rungs }) {
-  if (!verdict) return <span className="mono" title="아직 사다리를 태우지 않았습니다">—</span>;
-  const failed = rungs
-    ? Object.keys(rungs).filter((k) => rungs[k] === "FAIL")
-    : [];
-  const names = { plateau: "격자 고원", cost_stress: "비용 스트레스", regime: "국면 절단" };
-  const hint = verdict === "PASS"
-    ? "세 단을 모두 통과했습니다 — 그래도 채택은 사람 결정입니다."
-    : `탈락: ${failed.map((k) => names[k] || k).join(", ")}. 엔진 수치와 무관하게 승격 대상이 아닙니다.`;
+/* 사다리 배지 — **엔진 축** 판정이 정본이다.
+
+   2026-08-07 정정: 처음엔 지도 축에서 국면 절단을 쟀는데, 지도는 엔진이 체결하지
+   않는 진입까지 세어 판정이 어긋났다(지도 2/4 vs 엔진 4/4). 게다가 합격선을
+   "4/4 양수"로 잡았는데 챔피언 자신이 3/4라 챔피언도 탈락하는 기준이었다.
+   지금은 엔진 체결 기록으로 재고, 합격선은 챔피언이다. */
+const BT_EA_VERDICT = {
+  PASS:      ["승격 후보", "",     "챔피언 이상이고 통계적으로도 확정됐습니다 — 사람 보고 대상입니다."],
+  PROMISING: ["유망 · 표본 부족", "warn", "챔피언 이상이지만 표본이 얇아 확정하지 못했습니다. 표본을 늘려 재판정해야 합니다."],
+  REJECT:    ["폐기", "warn",     "챔피언에 못 미칩니다."],
+};
+
+function BtEaLadder({ verdict, meaning, positive, baseline, paired }) {
+  if (!verdict) return <span className="mono" title="아직 엔진 축 사다리를 태우지 않았습니다">—</span>;
+  const [label, tone, fallback] = BT_EA_VERDICT[verdict] || [verdict, "warn", ""];
+  const detail = [
+    meaning || fallback,
+    positive != null ? `국면 ${positive}/4 (합격선 = 챔피언 ${baseline}/4)` : "",
+    paired && paired.pairs ? `짝지은 표본 ${paired.pairs}건` : "",
+  ].filter(Boolean).join(" · ");
+  return <span className={"badge " + tone} title={detail}>{label}</span>;
+}
+
+/* 짝지은 비교 — 두 팔이 같은 진입을 쓰므로 1:1 로 맞추면 진입에서 오는 분산이 빠진다.
+   신뢰구간이 0 을 넘으면 "우세하다"고 쓰지 않는다. */
+function BtEaPaired({ diff, ci, significant, pairs, required }) {
+  if (diff === null || diff === undefined) return <span className="mono">—</span>;
+  const bad = !significant;
   return (
-    <span className={"badge " + (verdict === "PASS" ? "" : "warn")} title={hint}>
-      {verdict === "PASS" ? "사다리 통과" : `사다리 탈락${failed.length ? ` · ${names[failed[0]] || failed[0]}` : ""}`}
+    <span className="mono" title={ci
+      ? `95% 신뢰구간 [${btEaNum(ci[0], 3)}, ${btEaNum(ci[1], 3)}] · 표본 ${pairs}건`
+      + (required ? ` · 확정에 ${btEaNum(required, 0)}건 필요` : "")
+      : ""}>
+      <span className={btEaSign(diff)}>{btEaNum(diff, 4)}%p</span>
+      {bad && <span className="badge warn" style={{ marginLeft: 4 }}>미확정</span>}
     </span>
   );
 }
 
 /* 국면 절단 상세 — 평균 하나로는 "어느 구간이 다 벌었는지"가 안 보인다. */
 function BtEaRegime({ rows }) {
-  const withSegments = (rows || []).filter((r) => (r.ladder_regime_segments || []).length);
+  const withSegments = (rows || []).filter((r) => (r.engine_regime_segments || []).length);
   if (!withSegments.length) return null;
   return (
     <section className="panel" style={{ marginTop: 12 }}>
       <div className="panel-hd"><div className="panel-hd-title">국면 절단 — 기간을 나눠도 일관되는가</div>
-        <small className="v4s-en">한 구간이 전체를 벌어 주는 규칙은 국면에 기댄 것이다</small></div>
+        <small className="v4s-en">엔진 실제 체결 기록 · 합격선은 챔피언</small></div>
       <div className="panel-bd">
         <p className="v4s-note">전체 평균이 양수여도 <b>구간별로 갈라 보면</b> 한두 구간이 나머지를
           떠받치고 있는 경우가 있습니다. 그런 규칙은 그 국면이 끝나면 함께 끝납니다.</p>
         <div className="table-wrap">
           <table className="tbl">
             <thead><tr><th>청산 규칙</th><th>구간</th><th>기간</th>
-              <th className="num">일수</th><th className="num">건수</th><th className="num">일평균</th></tr></thead>
+              <th className="num">거래</th><th className="num">수익금</th><th className="num">건당</th></tr></thead>
             <tbody>
-              {withSegments.map((row) => row.ladder_regime_segments.map((seg, i) => (
-                <tr key={`${row.rule}-${seg.segment}`} className={seg.day_mean_pct < 0 ? "row-warn" : ""}>
-                  {i === 0 && <td className="mono" rowSpan={row.ladder_regime_segments.length}>{row.rule}</td>}
+              {withSegments.map((row) => row.engine_regime_segments.map((seg, i) => (
+                <tr key={`${row.rule}-${seg.segment}`} className={seg.mean_pct < 0 ? "row-warn" : ""}>
+                  {i === 0 && <td className="mono" rowSpan={row.engine_regime_segments.length}>{row.rule}</td>}
                   <td className="num mono">{seg.segment}</td>
                   <td className="mono">{seg.day_from} ~ {seg.day_to}</td>
-                  <td className="num mono">{btEaNum(seg.days)}</td>
-                  <td className="num mono">{btEaNum(seg.n)}</td>
-                  <td className={"num mono " + btEaSign(seg.day_mean_pct)}>{btEaNum(seg.day_mean_pct, 4)}%</td>
+                  <td className="num mono">{btEaNum(seg.trades)}</td>
+                  <td className="num mono">{btEaNum(seg.profit_krw)}원</td>
+                  <td className={"num mono " + btEaSign(seg.mean_pct)}>{btEaNum(seg.mean_pct, 4)}%</td>
                 </tr>
               )))}
             </tbody>
@@ -228,7 +248,8 @@ export function BtExitAxisPanel({ outName }) {
                   <th>청산 규칙</th><th>정확도</th>
                   <th className="num">지도 건당</th><th className="num">지도 일평균</th>
                   <th className="num">폴드 선택</th>
-                  <th>사다리</th>
+                  <th>사다리(엔진 축)</th>
+                  <th className="num">짝지은 차이</th>
                   <th className="num">엔진 건당</th><th className="num">기준선 Δ</th>
                   <th className="num">전이율</th>
                   <th className="num">엔진 CAGR</th><th className="num">엔진 MDD</th>
@@ -243,7 +264,16 @@ export function BtExitAxisPanel({ outName }) {
                       <td className={"num mono " + btEaSign(row.map_expectancy_pct)}>{btEaNum(row.map_expectancy_pct, 4)}%</td>
                       <td className={"num mono " + btEaSign(row.map_day_mean_pct)}>{btEaNum(row.map_day_mean_pct, 4)}%</td>
                       <td className="num mono">{row.walkforward_chosen_count || "—"}</td>
-                      <td><BtEaLadder verdict={row.ladder_verdict} rungs={row.ladder_rungs}/></td>
+                      <td><BtEaLadder verdict={row.engine_ladder_verdict}
+                                      meaning={row.engine_ladder_meaning}
+                                      positive={row.engine_regime_positive}
+                                      baseline={row.engine_regime_baseline}
+                                      paired={{ pairs: row.paired_pairs }}/></td>
+                      <td className="num"><BtEaPaired diff={row.paired_mean_diff_pct}
+                                                      ci={row.paired_ci95}
+                                                      significant={row.paired_significant}
+                                                      pairs={row.paired_pairs}
+                                                      required={row.paired_required_pairs}/></td>
                       <td className={"num mono " + btEaSign(row.engine_avg_profit_pct)}>
                         {row.engine_avg_profit_pct === null || row.engine_avg_profit_pct === undefined
                           ? "미실측" : btEaNum(row.engine_avg_profit_pct, 4) + "%"}</td>

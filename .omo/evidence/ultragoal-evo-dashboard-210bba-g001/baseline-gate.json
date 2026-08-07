@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-20T12:55:00+09:00",
+  "goalId": "G001",
+  "planPath": ".gjc/plans/ralplan/2026-06-19-proxy-oos/pending-approval.md",
+  "executionWorktree": "C:/System_Trading/STOM/STOM_V.wt-evo-governance",
+  "branch": "feature/evo-dashboard-condition-discovery-governance",
+  "expectedHead": "210bba854d03a8680ffebfb94f2544c52e81858b",
+  "actualHead": "210bba854d03a8680ffebfb94f2544c52e81858b",
+  "worktreeClean": true,
+  "sourceRuntimeArtifactCheck": {
+    ".gjc": "absent",
+    "_database": "absent",
+    "ai_strategy_loop/state": "tracked placeholder only: .gitignore",
+    "test-results": "tracked placeholder only: .last-run.json",
+    "gitStatusAfterVerification": "clean"
+  },
+  "baselineSeams": {
+    "contract_page_data": "present in ai_strategy_loop/controller/contract.py LoopState.page_data",
+    "generation_telemetry_fields": "present in ai_strategy_loop/controller/contract.py GenerationInfo telemetry_events and telemetry_contract",
+    "state_to_loop_state_page_data": "present in ai_strategy_loop/controller/state.py to_loop_state(..., page_data=...)",
+    "telemetry_contract": "present in ai_strategy_loop/controller/telemetry.py",
+    "status_attaches_telemetry": "present in ai_strategy_loop/dashboard/app.py _current_state_payload attach_telemetry_to_status",
+    "evolution_routes": "present in ai_strategy_loop/dashboard/app.py /ui/evolution and aliases",
+    "frontend_dashboard_pages": "present in ai_strategy_loop/dashboard/frontend/dashboard-pages.jsx and research-index.jsx",
+    "telemetry_tests": "present in tests/unit/dashboard/test_dashboard_telemetry.py"
+  },
+  "verificationCommands": [
+    {
+      "cwd": "C:/System_Trading/STOM/STOM_V.wt-evo-governance",
+      "command": "python -m pytest tests/unit/dashboard/test_dashboard_telemetry.py -q",
+      "result": "5 passed in 11.33s",
+      "artifact": "artifact://363"
+    }
+  ],
+  "verdict": "pass",
+  "nextGoalAllowed": true
+}

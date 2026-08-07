@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "goalId": "G007",
+  "commit": "5082e6fe3d7abe9679a36f75dc69ffd95f7369da",
+  "bundle": "218ef53a",
+  "commands": [
+    {"command":"python -m pytest tests/unit/dashboard/test_research_catalog_api.py tests/unit/dashboard/test_v4_ui_foundation.py tests/unit/dashboard/test_reports_security.py tests/unit/dashboard/test_shell_wiring_parity.py -q","status":"passed","summary":"50 passed"},
+    {"command":"python -m pytest tests/unit/dashboard/test_security_boundary.py tests/unit/dashboard/test_v4_ui_foundation.py -q","status":"passed","summary":"47 passed"},
+    {"command":"python -m pytest tests/unit/dashboard/test_v4_ui_foundation.py tests/unit/dashboard/test_research_catalog_api.py -q","status":"passed","summary":"31 passed after dynamic source repair"},
+    {"command":"python -m pytest tests/unit/dashboard -q --maxfail=1","status":"passed","summary":"814 passed at final HEAD"},
+    {"command":"python -m pytest tests/unit/dashboard/test_track_z_pr1_harness.py -q","status":"passed","summary":"15 passed at final HEAD"},
+    {"command":"npm run typecheck && npm run build","status":"passed","summary":"runtime JSX PASS 89/537; bundle 218ef53a"}
+  ],
+  "blockers": []
+}

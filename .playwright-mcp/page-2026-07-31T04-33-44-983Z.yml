@@ -1,0 +1,161 @@
+- generic [ref=f3e3]:
+  - complementary "V4 내비게이션" [ref=f3e4]:
+    - generic "STOM V4" [ref=f3e5]
+    - tablist "V4 연구 워크스페이스" [ref=f3e9]:
+      - tab "라이브" [ref=f3e10] [cursor=pointer]
+      - tab "기록" [ref=f3e16] [cursor=pointer]
+      - tab "보고서" [ref=f3e22] [cursor=pointer]
+      - tab "성과" [ref=f3e29] [cursor=pointer]
+      - tab "백테스트" [selected] [ref=f3e34] [cursor=pointer]
+      - tab "리플레이" [ref=f3e41] [cursor=pointer]
+      - generic [ref=f3e45]: 보조
+      - tab "연구 자산" [ref=f3e47] [cursor=pointer]
+      - tab "설정" [ref=f3e54] [cursor=pointer]
+      - tab "용어" [ref=f3e60] [cursor=pointer]
+    - button "컨텍스트" [ref=f3e66] [cursor=pointer]
+  - generic [ref=f3e71]:
+    - banner [ref=f3e72]:
+      - generic [ref=f3e73]:
+        - generic [ref=f3e74]: 조건식 AI 연구 터미널
+        - generic [ref=f3e75]: 대시보드 v5.14.0 · build 9817d46a · contract v1
+      - generic "안전 경계" [ref=f3e76]:
+        - button "build 9817d46a" [ref=f3e77] [cursor=pointer]
+        - generic [ref=f3e78]: 실거래 없음
+        - generic [ref=f3e79]: 브로커 없음
+        - generic [ref=f3e80]: HUMAN GATE
+        - generic [ref=f3e81]: APPEND-ONLY 감사
+      - generic [ref=f3e82]:
+        - generic [ref=f3e83]: BASE
+        - textbox "대시보드 API Base URL" [ref=f3e84]: http://127.0.0.1:8770
+        - button "적용" [ref=f3e85] [cursor=pointer]
+        - button "↻" [ref=f3e86] [cursor=pointer]
+      - button "🔑 GPT ?" [ref=f3e87] [cursor=pointer]
+      - generic [ref=f3e88]: 연결 시도중
+      - generic [ref=f3e90]: 대기
+      - group "테마" [ref=f3e92]:
+        - button "Dark" [pressed] [ref=f3e93] [cursor=pointer]
+        - button "Midnight" [ref=f3e94] [cursor=pointer]
+        - button "Light" [ref=f3e95] [cursor=pointer]
+        - button "Sepia" [ref=f3e96] [cursor=pointer]
+        - button "High" [ref=f3e97] [cursor=pointer]
+    - generic [ref=f3e99]:
+      - heading "Backtest" [level=2] [ref=f3e100]
+      - generic [ref=f3e101]: 전략 실행 · 결과 리포트 · run=LIVE
+    - main [ref=f3e102]:
+      - tabpanel "백테스트" [ref=f3e103]:
+        - region [ref=f3e104]:
+          - heading "Backtest · 전략 검증" [level=2] [ref=f3e105]
+          - list "백테스트 실행 순서" [ref=f3e106]:
+            - listitem [ref=f3e107]: 전략 선택
+            - listitem [ref=f3e108]: 사전 점검
+            - listitem [ref=f3e109]: 실행 또는 취소
+            - listitem [ref=f3e110]: 결과 분석
+          - status [ref=f3e111]: 연결 확인 필요 · 실행 제어가 비활성화될 수 있습니다
+          - region "백테스트 선택, 실행, 취소 및 결과" [ref=f3e112]:
+            - generic [ref=f3e113]:
+              - generic [ref=f3e114]:
+                - generic [ref=f3e115]: 백테스트 워크벤치
+                - generic [ref=f3e117]: ● checking
+              - generic [ref=f3e120]:
+                - generic [ref=f3e121]:
+                  - generic [ref=f3e122]: 모드
+                  - generic [ref=f3e123]:
+                    - button "백테스트" [ref=f3e124] [cursor=pointer]
+                    - button "최적화" [ref=f3e125] [cursor=pointer]
+                    - button "WFO" [ref=f3e126] [cursor=pointer]
+                    - button "스윕" [ref=f3e127] [cursor=pointer]
+                - generic [ref=f3e128]:
+                  - generic [ref=f3e129]: 매수 조건식
+                  - combobox "매수 조건식 선택" [ref=f3e130]:
+                    - option "— 선택 —" [selected]
+                - generic [ref=f3e131]:
+                  - generic [ref=f3e132]: 매도 조건식
+                  - combobox "매도 조건식 선택" [ref=f3e133]:
+                    - option "— 선택 —" [selected]
+                - generic [ref=f3e134]:
+                  - generic [ref=f3e135]: 시작 (YYYYMMDD)
+                  - textbox "20260101" [ref=f3e136]
+                - generic [ref=f3e137]:
+                  - generic [ref=f3e138]: 종료 (YYYYMMDD)
+                  - textbox "20261231" [ref=f3e139]
+                - generic [ref=f3e140]:
+                  - generic [ref=f3e141]: 시간단위
+                  - combobox "시간단위 선택" [ref=f3e142]:
+                    - option "분봉 (min)" [selected]
+                    - option "틱 (tick)"
+                - generic [ref=f3e143]:
+                  - generic [ref=f3e144]: 엔진 수 (CPU 25%)
+                  - spinbutton "백테스트 엔진 수" [ref=f3e145]: "16"
+                  - generic [ref=f3e146]: 거래일 수 확인 전
+                - generic [ref=f3e147]:
+                  - generic [ref=f3e148]: 데이터 분류
+                  - combobox "데이터 분류 선택" [ref=f3e149]:
+                    - option "종목코드별 분류" [selected]
+                    - option "일자별 분류"
+                    - option "한종목 로딩"
+                - button "▸ 백테스트 실행" [ref=f3e150] [cursor=pointer]
+                - button "↻ 이력" [ref=f3e151] [cursor=pointer]
+                - button "self.vars → 스윕 빌더" [disabled] [ref=f3e152]
+              - generic [ref=f3e153]:
+                - button "조건식 편집" [ref=f3e154] [cursor=pointer]
+                - button "결과 분석" [ref=f3e155] [cursor=pointer]
+              - generic [ref=f3e156]:
+                - generic [ref=f3e157]:
+                  - generic [ref=f3e158]:
+                    - generic [ref=f3e159]: 에디터 보기
+                    - button "매수·매도 동시" [ref=f3e160] [cursor=pointer]
+                    - button "매수만 크게" [ref=f3e161] [cursor=pointer]
+                    - button "매도만 크게" [ref=f3e162] [cursor=pointer]
+                  - generic [ref=f3e163]:
+                    - generic [ref=f3e165]:
+                      - generic [ref=f3e167]:
+                        - text: 매수 에디터
+                        - generic [ref=f3e169]: 1줄
+                      - generic [ref=f3e170]:
+                        - textbox "매수 조건식 이름" [ref=f3e171]
+                        - textbox "# 매수 전략 코드 (Python)" [ref=f3e173]
+                        - generic [ref=f3e174]: 사용 변수 칩 — 코드 입력 시 한글 변수가 SSOT 대조되어 표시됩니다.
+                        - generic [ref=f3e175]:
+                          - button "검증" [ref=f3e176] [cursor=pointer]
+                          - button "저장" [ref=f3e177] [cursor=pointer]
+                          - button "다른 이름으로" [ref=f3e178] [cursor=pointer]
+                    - generic [ref=f3e180]:
+                      - generic [ref=f3e182]:
+                        - text: 매도 에디터
+                        - generic [ref=f3e184]: 1줄
+                      - generic [ref=f3e185]:
+                        - textbox "매도 조건식 이름" [ref=f3e186]
+                        - textbox "# 매도 전략 코드 (Python)" [ref=f3e188]
+                        - generic [ref=f3e189]: 사용 변수 칩 — 코드 입력 시 한글 변수가 SSOT 대조되어 표시됩니다.
+                        - generic [ref=f3e190]:
+                          - button "검증" [ref=f3e191] [cursor=pointer]
+                          - button "저장" [ref=f3e192] [cursor=pointer]
+                          - button "다른 이름으로" [ref=f3e193] [cursor=pointer]
+                - generic [ref=f3e194]:
+                  - button "조건식 라이브러리(빠른 선택) ▾ 접기" [ref=f3e195] [cursor=pointer]:
+                    - generic [ref=f3e196]: 조건식 라이브러리(빠른 선택)
+                    - generic [ref=f3e197]: ▾ 접기
+                  - generic [ref=f3e198]:
+                    - generic [ref=f3e199]:
+                      - generic [ref=f3e200]:
+                        - generic [ref=f3e201]:
+                          - text: 조건식 라이브러리
+                          - generic [ref=f3e203]: 매수
+                        - button "로딩…" [disabled] [ref=f3e204]
+                      - generic [ref=f3e205]:
+                        - textbox "이름 검색…" [ref=f3e206]
+                        - generic [ref=f3e207]: 조건식이 없습니다
+                        - generic [ref=f3e209]: 0개 표시 / 전체 0개
+                    - generic [ref=f3e210]:
+                      - generic [ref=f3e211]:
+                        - generic [ref=f3e212]:
+                          - text: 조건식 라이브러리
+                          - generic [ref=f3e214]: 매도
+                        - button "로딩…" [disabled] [ref=f3e215]
+                      - generic [ref=f3e216]:
+                        - textbox "이름 검색…" [ref=f3e217]
+                        - generic [ref=f3e218]: 조건식이 없습니다
+                        - generic [ref=f3e220]: 0개 표시 / 전체 0개
+                - button "백파인더 사전 점검(실행 전용 준비) ▸ 펼치기" [ref=f3e222] [cursor=pointer]:
+                  - generic [ref=f3e223]: 백파인더 사전 점검(실행 전용 준비)
+                  - generic [ref=f3e224]: ▸ 펼치기

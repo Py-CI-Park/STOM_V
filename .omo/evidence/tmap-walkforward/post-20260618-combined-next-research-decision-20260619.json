@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-06-19T12:39:20.671167+00:00",
+  "kind": "combined_portfolio_next_research_decision",
+  "current_page_status": "complete",
+  "combined_readout": ".omo/evidence/tmap-walkforward/post-20260618-combined-portfolio-simulation-readout-20260619.json",
+  "headline": "현재 연구는 종료 가능. 다음에 실제로 더 진행한다면 fresh exact combined portfolio simulation을 추천.",
+  "options": [
+    {
+      "option": "research_stop",
+      "label": "이번 combined research 종료",
+      "recommendation": "recommended_now",
+      "reason": "공식 OOS entry-filter 통과와 기존 combined portfolio simulation readout가 완료되어 현재 질문에는 충분한 근거가 있다.",
+      "next_command": null
+    },
+    {
+      "option": "fresh_exact_combined_simulation",
+      "label": "fresh exact combined portfolio simulation",
+      "recommendation": "recommended_if_promotion_discussion_needed",
+      "reason": "승격 논의 전에는 새로 생성된 r8 low-cap 공식 CSV와 기존 exit2/r2full 공식 CSV를 월별 equity로 재결합해 정확한 combined 수치를 다시 만드는 것이 가장 의미 있다.",
+      "next_command": "gjc ultragoal create-goals --brief-file .omo/plans/post-20260618-fresh-exact-combined-simulation.md"
+    },
+    {
+      "option": "new_ai_generation",
+      "label": "신규 AI 생성 재개",
+      "recommendation": "not_recommended_yet",
+      "reason": "검증된 후보의 결합/승격 판단이 먼저이며, 신규 생성은 연구 분산과 과최적화 위험을 키운다.",
+      "next_command": null
+    }
+  ],
+  "decision": "Stop the current research page; use fresh exact combined simulation as the next research only if exact promotion-grade combined metrics are needed.",
+  "not_allowed_without_separate_approval": [
+    "production export",
+    "live trading",
+    "strategy DB write",
+    "V3K gate/live path",
+    "UI frontend/bundle work in this worktree"
+  ]
+}

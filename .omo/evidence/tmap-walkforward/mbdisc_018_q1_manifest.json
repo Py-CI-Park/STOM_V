@@ -1,0 +1,292 @@
+{
+  "template": "llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7",
+  "run_id": "mbdisc_018_q1",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_000_B",
+      "status": "ok",
+      "profit": -6252441.0,
+      "mdd": 64.65,
+      "trades": 272
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP b1_cap_max=1500",
+      "param": "b1_cap_max",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_001_B",
+      "status": "ok",
+      "profit": -5106705.0,
+      "mdd": 51.44,
+      "trades": 215
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP b1_cap_max=2000",
+      "param": "b1_cap_max",
+      "value": 2000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_002_B",
+      "status": "ok",
+      "profit": -5738417.0,
+      "mdd": 60.68,
+      "trades": 254
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP b1_cap_max=3000",
+      "param": "b1_cap_max",
+      "value": 3000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_003_B",
+      "status": "ok",
+      "profit": -6694015.0,
+      "mdd": 69.58,
+      "trades": 291
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP b1_cap_max=4000",
+      "param": "b1_cap_max",
+      "value": 4000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_004_B",
+      "status": "ok",
+      "profit": -7158151.0,
+      "mdd": 74.51,
+      "trades": 314
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP b1_cap_max=6000",
+      "param": "b1_cap_max",
+      "value": 6000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_005_B",
+      "status": "ok",
+      "profit": -7860475.0,
+      "mdd": 81.79,
+      "trades": 346
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP b1_rate_min=0.5",
+      "param": "b1_rate_min",
+      "value": 0.5,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_006_B",
+      "status": "ok",
+      "profit": -6252441.0,
+      "mdd": 64.65,
+      "trades": 272
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP b1_rate_min=1.0",
+      "param": "b1_rate_min",
+      "value": 1.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_007_B",
+      "status": "ok",
+      "profit": -6252441.0,
+      "mdd": 64.65,
+      "trades": 272
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP b1_rate_min=2.5",
+      "param": "b1_rate_min",
+      "value": 2.5,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_008_B",
+      "status": "ok",
+      "profit": -6211652.0,
+      "mdd": 64.26,
+      "trades": 270
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP b1_rate_min=4.0",
+      "param": "b1_rate_min",
+      "value": 4.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_009_B",
+      "status": "ok",
+      "profit": -6077223.0,
+      "mdd": 63.6,
+      "trades": 265
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP b1_rate_min=6.0",
+      "param": "b1_rate_min",
+      "value": 6.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_010_B",
+      "status": "ok",
+      "profit": -6184026.0,
+      "mdd": 63.7,
+      "trades": 254
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP b1_day_money_min=500",
+      "param": "b1_day_money_min",
+      "value": 500,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_011_B",
+      "status": "ok",
+      "profit": -8255916.0,
+      "mdd": 82.95,
+      "trades": 358
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP b1_day_money_min=1500",
+      "param": "b1_day_money_min",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_012_B",
+      "status": "ok",
+      "profit": -7534616.0,
+      "mdd": 76.01,
+      "trades": 339
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP b1_day_money_min=7000",
+      "param": "b1_day_money_min",
+      "value": 7000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_013_B",
+      "status": "ok",
+      "profit": -4605005.0,
+      "mdd": 46.71,
+      "trades": 189
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP b1_day_money_min=15000",
+      "param": "b1_day_money_min",
+      "value": 15000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_014_B",
+      "status": "ok",
+      "profit": -4123760.0,
+      "mdd": 41.26,
+      "trades": 157
+    },
+    {
+      "gen_no": 15,
+      "label": "TMAP b1_day_money_min=30000",
+      "param": "b1_day_money_min",
+      "value": 30000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_015_B",
+      "status": "ok",
+      "profit": -3720911.0,
+      "mdd": 37.23,
+      "trades": 150
+    },
+    {
+      "gen_no": 16,
+      "label": "TMAP b1_sec_money_min=30",
+      "param": "b1_sec_money_min",
+      "value": 30,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_016_B",
+      "status": "ok",
+      "profit": -6417471.0,
+      "mdd": 67.2,
+      "trades": 277
+    },
+    {
+      "gen_no": 17,
+      "label": "TMAP b1_sec_money_min=150",
+      "param": "b1_sec_money_min",
+      "value": 150,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_017_B",
+      "status": "ok",
+      "profit": -5436652.0,
+      "mdd": 57.6,
+      "trades": 251
+    },
+    {
+      "gen_no": 18,
+      "label": "TMAP b1_sec_money_min=300",
+      "param": "b1_sec_money_min",
+      "value": 300,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_018_B",
+      "status": "ok",
+      "profit": -4526848.0,
+      "mdd": 46.74,
+      "trades": 195
+    },
+    {
+      "gen_no": 19,
+      "label": "TMAP b1_sec_money_min=700",
+      "param": "b1_sec_money_min",
+      "value": 700,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_019_B",
+      "status": "ok",
+      "profit": -3544062.0,
+      "mdd": 35.76,
+      "trades": 157
+    },
+    {
+      "gen_no": 20,
+      "label": "TMAP b1_sec_money_min=1500",
+      "param": "b1_sec_money_min",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_020_B",
+      "status": "ok",
+      "profit": -3683558.0,
+      "mdd": 36.86,
+      "trades": 152
+    },
+    {
+      "gen_no": 21,
+      "label": "TMAP b1_burst_win=10",
+      "param": "b1_burst_win",
+      "value": 10,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_021_B",
+      "status": "ok",
+      "profit": -5370425.0,
+      "mdd": 55.42,
+      "trades": 241
+    },
+    {
+      "gen_no": 22,
+      "label": "TMAP b1_burst_win=20",
+      "param": "b1_burst_win",
+      "value": 20,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_022_B",
+      "status": "ok",
+      "profit": -5585709.0,
+      "mdd": 56.83,
+      "trades": 260
+    },
+    {
+      "gen_no": 23,
+      "label": "TMAP b1_burst_win=45",
+      "param": "b1_burst_win",
+      "value": 45,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_023_B",
+      "status": "ok",
+      "profit": -5760835.0,
+      "mdd": 58.72,
+      "trades": 262
+    },
+    {
+      "gen_no": 24,
+      "label": "TMAP b1_burst_win=60",
+      "param": "b1_burst_win",
+      "value": 60,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_024_B",
+      "status": "ok",
+      "profit": -6468085.0,
+      "mdd": 65.37,
+      "trades": 265
+    },
+    {
+      "gen_no": 25,
+      "label": "TMAP b1_burst_win=90",
+      "param": "b1_burst_win",
+      "value": 90,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_threephase_capseg_strict_reburst_v7_025_B",
+      "status": "ok",
+      "profit": -5297932.0,
+      "mdd": 53.93,
+      "trades": 242
+    }
+  ]
+}

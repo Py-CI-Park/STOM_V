@@ -1,0 +1,150 @@
+{
+  "generated_at": "2026-06-19T12:32:39.887557+00:00",
+  "kind": "combined_portfolio_simulation_readout",
+  "candidate": "r8_exclude_cap_lt_1500__exit2_skip_after_prior_exit2_loss_500k_else_full",
+  "display_alias": "저시총 제외 방어 조합",
+  "purpose": "공식 OOS를 통과한 r8 저시총 제외 entry filter와 기존 exit2 prior-month 포트폴리오 규칙을 결합했을 때의 연구상 의미를 정리한다.",
+  "evidence_taxonomy": {
+    "entry_filter": "공식 OOS: r8_exclude_cap_lt_1500 wrapper-backed results",
+    "combined_portfolio": "포트폴리오 시뮬레이션/CSV 재분석: r8_exclude_cap_lt_1500 + exit2_skip_after_prior_exit2_loss_500k_else_full",
+    "not_claimed": "combined portfolio simulation is not a pure official buy/sell OOS pair and is not production/export approval."
+  },
+  "inputs": {
+    "official_entry_filter_summary": ".omo/evidence/tmap-walkforward/post-q4-r8-lowcap-official-oos-summary-20260619.json",
+    "combined_candidate_source": ".omo/evidence/tmap-walkforward/post-q4-3h-combined-candidates-20260618.json",
+    "portfolio_rule_source": ".omo/evidence/tmap-walkforward/r8-exit2-prior-loss-500k-split-20260618.json",
+    "decision_card": ".omo/evidence/tmap-walkforward/post-20260618-robust-decision-card-20260619.json"
+  },
+  "official_entry_filter": {
+    "coverage_label": "2022-2025 full-year + 2026 YTD",
+    "coverage_note": "2026 is YTD through 2026-02-28 per oos-2026-e32-config.json, not a full-year 2026 OOS period.",
+    "q4_profit_krw": 310886,
+    "q4_mdd_pct": 9.25,
+    "aggregate_profit_krw": 7292861,
+    "aggregate_trades": 263,
+    "max_mdd_pct": 19.09,
+    "all_gates_passed": true
+  },
+  "combined_portfolio_simulation": {
+    "method": "portfolio-layer reanalysis over completed annual OOS/CSV evidence; r8 low-cap filter plus causal prior-month exit2 allocation rule.",
+    "deployability": "deployable_entry_filter;portfolio_causal_prior_month",
+    "score": 90.5884,
+    "trade_retention_vs_full_static": 0.7815,
+    "all": {
+      "label": "r8_exclude_cap_lt_1500+exit2_skip_after_prior_exit2_loss_500k_else_full",
+      "max_allocated_capital_krw": 15000000,
+      "profit_krw": 39402438,
+      "return_pct_on_max_allocated_capital": 262.6829,
+      "annualized_return_pct_calendar": 38.6826,
+      "mdd_pct_daily_realized": 7.6823,
+      "mdd_krw_daily_realized": 2751189,
+      "trade_count": 1073,
+      "weighted_trade_equivalent": 1073.0,
+      "trading_days": 411,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2024-12-20",
+        "profit_krw": -800953
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 2003868
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 15553800,
+        "r2full_mdd": 13711654,
+        "r8_4": 10136984
+      }
+    },
+    "recent_2025_2026": {
+      "label": "r8_exclude_cap_lt_1500+exit2_skip_after_prior_exit2_loss_500k_else_full",
+      "max_allocated_capital_krw": 15000000,
+      "profit_krw": 6941830,
+      "return_pct_on_max_allocated_capital": 46.2789,
+      "annualized_return_pct_calendar": 39.0624,
+      "mdd_pct_daily_realized": 12.6478,
+      "mdd_krw_daily_realized": 2751189,
+      "trade_count": 322,
+      "weighted_trade_equivalent": 322.0,
+      "trading_days": 114,
+      "calendar_days": 421,
+      "first_trade_date": "2025-01-03",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2026-01-28",
+        "profit_krw": -720352
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 2003868
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 1651214,
+        "r2full_mdd": 2110141,
+        "r8_4": 3180475
+      }
+    },
+    "q4_2025": {
+      "label": "r8_exclude_cap_lt_1500+exit2_skip_after_prior_exit2_loss_500k_else_full",
+      "max_allocated_capital_krw": 15000000,
+      "profit_krw": 952502,
+      "return_pct_on_max_allocated_capital": 6.35,
+      "annualized_return_pct_calendar": 33.3884,
+      "mdd_pct_daily_realized": 11.3583,
+      "mdd_krw_daily_realized": 1863678,
+      "trade_count": 67,
+      "weighted_trade_equivalent": 67.0,
+      "trading_days": 18,
+      "calendar_days": 78,
+      "first_trade_date": "2025-10-14",
+      "last_trade_date": "2025-12-30",
+      "worst_day": {
+        "day": "2025-11-12",
+        "profit_krw": -620033
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 2003868
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 640100,
+        "r2full_mdd": 1516,
+        "r8_4": 310886
+      }
+    },
+    "yearly_profit_krw": {
+      "2022": 6560023,
+      "2023": 14757205,
+      "2024": 11143380,
+      "2025": 5728090,
+      "2026": 1213740
+    },
+    "positive_year_count": 5,
+    "worst_year_profit_krw": 1213740
+  },
+  "portfolio_rule_context": {
+    "rule": "exit2_skip_after_prior_exit2_loss_500k_else_full",
+    "source_method": "A strategy is excluded for month N only if its own month N-1 PnL is <= -500,000 KRW. Results are split by trade-date year and half-year while using globally causal prior-month weights.",
+    "baseline_profit_krw": 31505991,
+    "prior_loss_500k_profit_krw": 31702635,
+    "delta_profit_krw": 196644,
+    "delta_mdd_pct_points": -0.1176,
+    "changed_months": [
+      "2024-11",
+      "2024-12",
+      "2025-06",
+      "2025-07",
+      "2025-12"
+    ]
+  },
+  "interpretation": [
+    "공식 OOS 기준으로 r8 저시총 제외 entry filter는 단독 검증을 통과했다.",
+    "combined portfolio simulation 기준으로 전체 수익은 39,402,438원, MDD는 7.6823%, Q4 수익은 952,502원이다.",
+    "다만 combined 수치는 포트폴리오 레이어 재분석이므로, 순수 공식 buy/sell OOS로 부르면 안 된다.",
+    "2026 공식 OOS 범위는 2026-02-28까지의 YTD이며 full-year가 아니다."
+  ],
+  "research_verdict": "combined_research_supported_not_production_ready",
+  "recommended_next_step": "Stop current research page; if more precision is needed before promotion discussion, run a fresh exact combined portfolio simulation that rebuilds the combined monthly equity from the newly emitted r8 low-cap official CSVs and existing exit2/r2full official CSVs."
+}

@@ -1,0 +1,8 @@
+﻿# Task 5 Tick 09:20~09:25 Readiness Review
+Tick late generation is contractually ready to create candidates, especially through TMAP. It is not yet proven that the system can repeatedly discover a profitable new 09:20~09:25 condition.
+- The prompt explicitly names the 09:20~09:25 and 09:25~09:30 extended buckets and tells the model to test 09:20~09:25 as a standalone branch.
+  - `t2_corner_log.txt` has THETA and T2C candidates with positive/gate-true train results.
+## THETA Separation
+THETA is the current champion/baseline, not proof that 09:20~09:25 discovery is complete. THETA validates the seed-family baseline and the need for conservative OOS gates. It should be used as the comparison target for late-tick candidates.
+1. 2-quarter smoke: run the exact 09:20~09:25 template on two separated train-like quarters before full sweep.
+5. Exact-window attribution: report whether the edge comes from 09:20~09:25, 09:25~09:30, or earlier extension spillover.

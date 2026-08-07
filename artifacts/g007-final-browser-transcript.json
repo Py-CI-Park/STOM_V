@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "tool": "Chromium/Puppeteer browser tool",
+  "goalId": "G007",
+  "commit": "5082e6fe3d7abe9679a36f75dc69ffd95f7369da",
+  "bundle": "218ef53a",
+  "baseUrl": "http://127.0.0.1:18777",
+  "actions": [
+    {"id":"catalog-deeplink","type":"navigation","action":"navigate direct canonical Catalog deep link","selector":"/ui/evolution/catalog","timestamp":"2026-07-19T09:05:00+00:00","viewport":"1920x1080","result":"passed","observed":{"canonicalUrl":"/ui/evolution/catalog?tab=reports&prototype=catalog","sixRail":["Live","Backtest","Replay","History","성과","Reports"],"catalogRailAbsent":true}},
+    {"id":"rdc1-api","type":"inspection","action":"fetch four sealed endpoint families and retired summary","selector":"/research/*","timestamp":"2026-07-19T09:05:15+00:00","viewport":"1920x1080","result":"passed","observed":{"assets":200,"judgments":200,"cellsDiscovery":200,"cellsSource":200,"clauses":200,"summary":404,"contractVersion":"rdc-1","mode":"read-only fixture"}},
+    {"id":"five-views","type":"inspection","action":"inspect five canonical Catalog views and honest B1 shell","selector":".v4-catalog","timestamp":"2026-07-19T09:05:30+00:00","viewport":"1920x1080","result":"passed","observed":{"headings":["V1 연구 파이프라인/연혁실","V2 함정 설명 지도","V3 절 실험실","V4 표본/출구 은행 조회","V5 B1 honest empty skeleton"],"b1Empty":true,"u4Unconfirmed":true,"dynamicSources":2,"invalidParamVisible":false,"overflowPx":0},"evidence":"artifacts/g007-catalog-218ef53a-1920x1080.png"},
+    {"id":"viewport-2560","type":"viewport","action":"resize and inspect","selector":".v4-catalog","timestamp":"2026-07-19T09:06:00+00:00","viewport":"2560x1440","result":"passed","observed":{"overflowPx":0,"scrollHeightPx":3436,"catalog":true,"invalidParamVisible":false},"evidence":"artifacts/g007-catalog-218ef53a-2560x1440.png"},
+    {"id":"viewport-3440","type":"viewport","action":"resize and inspect","selector":".v4-catalog","timestamp":"2026-07-19T09:06:30+00:00","viewport":"3440x1440","result":"passed","observed":{"overflowPx":0,"scrollHeightPx":3436,"catalog":true,"invalidParamVisible":false},"evidence":"artifacts/g007-catalog-218ef53a-3440x1440.png"}
+  ],
+  "securityEvidence": {"envOnly":true,"absoluteFixturePathNotDisplayed":true,"summaryRetired":true,"rawSourceRequests":0,"mutatingRequests":0,"dynamicAllowedSources":["o1g","sv1_l0"],"b1SuccessClaim":false},
+  "screenshots": ["artifacts/g007-catalog-218ef53a-1920x1080.png","artifacts/g007-catalog-218ef53a-2560x1440.png","artifacts/g007-catalog-218ef53a-3440x1440.png"]
+}

@@ -1,0 +1,1 @@
+[BATCH] run_id=post_q4_r8_lowcap_oos_2026_logged3_20260619 pairs=1

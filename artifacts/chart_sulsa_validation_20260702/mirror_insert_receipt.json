@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-03T06:45:40.657134+00:00",
+  "dry_run": false,
+  "status": "inserted",
+  "source_db": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database\\strategy.db",
+  "loop_db": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\ai_strategy_loop\\state\\loop_strategies.db",
+  "source_rows": 25,
+  "inserted_rows": 25,
+  "collisions": [],
+  "before_counts": {
+    "stockbuy": 4892,
+    "stocksell": 4800
+  },
+  "after_counts": {
+    "stockbuy": 4906,
+    "stocksell": 4811
+  },
+  "post_insert_sha_bad": 0,
+  "backup_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\ai_strategy_loop\\state\\loop_strategies.db.bak.css_v7_20260703T064540Z",
+  "restore_command": "Copy-Item -LiteralPath C:\\System_Trading\\STOM\\STOM_V.wt-dev\\ai_strategy_loop\\state\\loop_strategies.db.bak.css_v7_20260703T064540Z -Destination C:\\System_Trading\\STOM\\STOM_V.wt-dev\\ai_strategy_loop\\state\\loop_strategies.db -Force",
+  "sql_policy": "INSERT-only; no UPDATE/DELETE used"
+}

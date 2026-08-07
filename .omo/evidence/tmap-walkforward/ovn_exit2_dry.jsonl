@@ -1,0 +1,2 @@
+{"event": "start", "template": "seed_902905_exit2", "deadline_hhmm": "08:00", "ts": 1781722100.5792618, "config": "ai_strategy_loop/state/run_p5_validation_tick_late.json"}
+{"event": "round_dry", "round": 1, "candidates": 14, "pairs_path": ".omo\\evidence\\tmap-walkforward\\ovn_exit2_dry_r1_pairs.json", "ts": 1781722101.1108446}

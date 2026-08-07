@@ -1,0 +1,46 @@
+{
+  "status": "blocked_for_css_v7_tick_family",
+  "purpose": "Plan B before-run decision after CSS_V7 Plan C smoke timeout",
+  "write_scope_note": "Probe avoided claude_candidate_batch_eval/LoopState, so it did not intentionally record loop run or strategy DB rows. Official STOM backtest runtime still generated CSV/metrics artifacts.",
+  "probe_window": {
+    "timeframe": "tick",
+    "start_date": 20250102,
+    "end_date": 20250103,
+    "start_time": 90000,
+    "effective_end_time": 92800,
+    "engine_count": 2,
+    "run_timeout_sec": 180,
+    "prepare_back_count": 66
+  },
+  "control": {
+    "pair": "GATE_rr8_12_turnover_min_902_1_5_B/S",
+    "status": "success",
+    "elapsed_sec": 12.863,
+    "csv_path": "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260703180848.csv"
+  },
+  "css_v7_tick_raw": {
+    "pair": "CSS_V7_TICK_B_MASTER_0900_0930/CSS_V7_TICK_S_MASTER_0900_0930",
+    "status": "timeout",
+    "elapsed_sec": 203.022,
+    "timeout_sec": 180,
+    "csv_path": null
+  },
+  "css_v7_tick_opt": {
+    "pair": "CSS_V7_OPT_TICK_B_MASTER_0900_0930/CSS_V7_OPT_TICK_S_MASTER_0900_0930",
+    "status": "timeout",
+    "elapsed_sec": 200.12,
+    "timeout_sec": 180,
+    "csv_path": null
+  },
+  "decision": {
+    "plan_b_recommendation": "do_not_feed_css_v7_tick_family_into_plan_b_until_repaired_or_explicitly_excluded",
+    "allowed_next_step": "Plan B may proceed only if CSS_V7 tick family is excluded from seed/smoke selection, or after a separate repair pass proves raw/OPT tick master completes on the same micro-window.",
+    "preferred_follow_up": "repair_or_taper_css_v7_tick_conditions_before_plan_b_full_night_batch"
+  },
+  "evidence": [
+    "artifacts/chart_sulsa_validation_20260702/timeout_probe_direct_warm_valid_micro_summary.json",
+    "artifacts/chart_sulsa_validation_20260702/timeout_probe_direct_warm_opt_tick_summary.json",
+    "artifacts/chart_sulsa_validation_20260702/timeout_probe_direct_warm_valid_micro.log",
+    "artifacts/chart_sulsa_validation_20260702/timeout_probe_direct_warm_opt_tick.log"
+  ]
+}

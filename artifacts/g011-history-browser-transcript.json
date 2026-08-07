@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "goalId": "G011",
+  "route": "http://127.0.0.1:18771/ui/evolution/records?tab=history",
+  "bundle": "0c67767a",
+  "events": [
+    {"action":"navigate","status":"passed","title":"STOM AI · V4 조건식 자율 진화 대시보드","historySelected":true},
+    {"action":"dom-contract-inspection","status":"passed","assertions":{"horizontalOverflowAbsent":true,"absoluteFilesystemPathVisible":false,"typedDestinationUnavailableVisible":true}},
+    {"action":"api-contract-probe","status":"passed","request":"/history/index?limit=2&selection_generation=11","response":{"httpStatus":200,"total":544,"selectionGeneration":"11","campaignCoverage":{"available":true,"total":17,"reason":null},"loopRunCoverage":{"available":true,"total":527,"reason":null}}},
+    {"action":"governed-destination-probe","status":"passed","request":"/history/detail?...section=research&selection_generation=12","response":{"researchId":"loop_run:abmain0716f_p5_typed","available":true,"conditions":{"state":"complete","owner":"loop_state"},"evaluations":{"state":"complete","owner":"loop_state"},"ab":{"state":"partial","owner":"history_ab_pairs","joinKey":"series:abmain0716f"},"unqueriedDestinations":{"autopsy":"unavailable/not_queried","holdout":"unavailable/not_queried","docs":"unavailable/not_queried","commits":"unavailable/not_queried","governance":"unavailable/not_queried"}}},
+    {"action":"typed-unavailable-probe","status":"passed","request":"/history/detail?research_id=loop_run%3A__missing_identity__&section=evaluations&selection_generation=13","response":{"httpStatus":200,"researchId":"loop_run:__missing_identity__","available":false,"reason":"missing_run","section":"evaluations","selectionGeneration":"13"}},
+    {"action":"viewport-matrix","status":"passed","viewports":[
+      {"width":1920,"height":1080,"scrollWidth":1920,"clientWidth":1920,"overflow":false,"screenshot":"artifacts/g011-history-0c67767a-1920x1080.png","nonUniform":true},
+      {"width":2560,"height":1440,"scrollWidth":2560,"clientWidth":2560,"overflow":false,"screenshot":"artifacts/g011-history-0c67767a-2560x1440.png","nonUniform":true},
+      {"width":3440,"height":1440,"scrollWidth":3440,"clientWidth":3440,"overflow":false,"screenshot":"artifacts/g011-history-0c67767a-3440x1440.png","nonUniform":true}
+    ]}
+  ],
+  "verdict": "passed"
+}

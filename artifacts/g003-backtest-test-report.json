@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "commit": "366f6de96240a93c5150dcf5e72d7c5224b68b7a",
+  "bundle": "d023a101",
+  "commands": [
+    {"command":"python -m pytest tests/unit/dashboard/test_backtest_result_identity.py tests/unit/dashboard/test_backtest_phase4.py -q","status":"passed","summary":"32 passed in 10.90s"},
+    {"command":"python -m pytest <13 Backtest-focused dashboard files> -q","status":"passed","summary":"241 passed in 33.74s"},
+    {"command":"npm run typecheck && npm run build","cwd":"ai_strategy_loop/dashboard/webui-build","status":"passed","summary":"runtime JSX PASS; bundle app.js v=d023a101"},
+    {"command":"python -m pytest tests/unit/dashboard/ -q","status":"failed_unrelated","summary":"758 passed, 2 pre-existing failures outside G003 in V4 Live layout marker and History inline-style contract; deferred to owning later integration stories"},
+    {"command":"git diff --check","status":"passed","summary":"no whitespace errors"}
+  ],
+  "verdict": "passed_for_g003_focused_scope"
+}

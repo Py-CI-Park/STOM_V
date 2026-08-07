@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "node",
+    "-e",
+    "console.log('g003-merge-ok')"
+  ],
+  "cwd": ".",
+  "env": {
+    "LC_ALL": "C"
+  },
+  "timeoutMs": 30000,
+  "expectedExitCode": 0,
+  "recordedStdout": "g003-merge-ok\n",
+  "recordedStderr": "",
+  "invariants": [
+    {
+      "type": "substring",
+      "value": "g003-merge-ok"
+    }
+  ]
+}

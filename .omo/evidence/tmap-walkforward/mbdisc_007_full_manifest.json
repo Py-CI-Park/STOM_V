@@ -1,0 +1,72 @@
+{
+  "template": "llmgen_tick_theta1500_midupper_late_rehigh_discrete_clean",
+  "run_id": "mbdisc_007_full",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_late_rehigh_discrete_clean_000_B",
+      "status": "ok",
+      "profit": -17121149.0,
+      "mdd": 119.69,
+      "trades": 1383
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP b1_rate_min=0.5",
+      "param": "b1_rate_min",
+      "value": 0.5,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_late_rehigh_discrete_clean_001_B",
+      "status": "ok",
+      "profit": -17856241.0,
+      "mdd": 124.0,
+      "trades": 1394
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP b1_rate_min=2.5",
+      "param": "b1_rate_min",
+      "value": 2.5,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_late_rehigh_discrete_clean_002_B",
+      "status": "ok",
+      "profit": -15691677.0,
+      "mdd": 110.99,
+      "trades": 1358
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP b1_rate_min=4.0",
+      "param": "b1_rate_min",
+      "value": 4.0,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_late_rehigh_discrete_clean_003_B",
+      "status": "ok",
+      "profit": -15680095.0,
+      "mdd": 109.26,
+      "trades": 1318
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP b1_rate_min=6.0",
+      "param": "b1_rate_min",
+      "value": 6.0,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_late_rehigh_discrete_clean_004_B",
+      "status": "ok",
+      "profit": -14726036.0,
+      "mdd": 148.12,
+      "trades": 1201
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP b1_rate_min=8.0",
+      "param": "b1_rate_min",
+      "value": 8.0,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_late_rehigh_discrete_clean_005_B",
+      "status": "ok",
+      "profit": -7979512.0,
+      "mdd": 104.87,
+      "trades": 1054
+    }
+  ]
+}

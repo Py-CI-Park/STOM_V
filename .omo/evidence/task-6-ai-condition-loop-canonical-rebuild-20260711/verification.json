@@ -1,0 +1,126 @@
+{
+  "all_pass": true,
+  "checks": [
+    {
+      "name": "1_cl_d_chain_allows[CL-D0]",
+      "expected": "('allow', None)",
+      "got": "('allow', None)",
+      "pass": true
+    },
+    {
+      "name": "1_cl_d_chain_allows[CL-D1]",
+      "expected": "('allow', None)",
+      "got": "('allow', None)",
+      "pass": true
+    },
+    {
+      "name": "1_cl_d_chain_allows[CL-D2]",
+      "expected": "('allow', None)",
+      "got": "('allow', None)",
+      "pass": true
+    },
+    {
+      "name": "1_cl_d_chain_allows[CL-D3]",
+      "expected": "('allow', None)",
+      "got": "('allow', None)",
+      "pass": true
+    },
+    {
+      "name": "1_cl_d_chain_allows[CL-D4]",
+      "expected": "('allow', None)",
+      "got": "('allow', None)",
+      "pass": true
+    },
+    {
+      "name": "2_cl_r01_empty_approvals_authority_missing",
+      "expected": "('reject', 'authority_missing')",
+      "got": "('reject', 'authority_missing')",
+      "pass": true
+    },
+    {
+      "name": "3a_cl_r01_exact_phrase_allow",
+      "expected": "('allow', None)",
+      "got": "('allow', None)",
+      "pass": true
+    },
+    {
+      "name": "3b_cl_r07_wrong_phrase_authority_missing",
+      "expected": "('reject', 'authority_missing')",
+      "got": "('reject', 'authority_missing')",
+      "pass": true
+    },
+    {
+      "name": "4_paraphrase_rejected[approve_only]",
+      "expected": "('reject', 'authority_missing')",
+      "got": "('reject', 'authority_missing')",
+      "pass": true
+    },
+    {
+      "name": "4_paraphrase_rejected[approve_all]",
+      "expected": "('reject', 'authority_missing')",
+      "got": "('reject', 'authority_missing')",
+      "pass": true
+    },
+    {
+      "name": "4_paraphrase_rejected[lowercase]",
+      "expected": "('reject', 'authority_missing')",
+      "got": "('reject', 'authority_missing')",
+      "pass": true
+    },
+    {
+      "name": "5_receipt_only_authority_missing",
+      "expected": "('reject', 'authority_missing')",
+      "got": "('reject', 'authority_missing')",
+      "pass": true
+    },
+    {
+      "name": "6_unknown_alias_wrong_alias[P99]",
+      "expected": "('reject', 'wrong_alias')",
+      "got": "('reject', 'wrong_alias')",
+      "pass": true
+    },
+    {
+      "name": "6_unknown_alias_wrong_alias[CL-R99]",
+      "expected": "('reject', 'wrong_alias')",
+      "got": "('reject', 'wrong_alias')",
+      "pass": true
+    },
+    {
+      "name": "7_out_of_order",
+      "expected": "('reject', 'out_of_order')",
+      "got": "('reject', 'out_of_order')",
+      "pass": true
+    },
+    {
+      "name": "8_mutation_forbidden[UPDATE]",
+      "expected": "('reject', 'evidence_mutation_forbidden')",
+      "got": "('reject', 'evidence_mutation_forbidden')",
+      "pass": true
+    },
+    {
+      "name": "8_mutation_forbidden[DELETE]",
+      "expected": "('reject', 'evidence_mutation_forbidden')",
+      "got": "('reject', 'evidence_mutation_forbidden')",
+      "pass": true
+    },
+    {
+      "name": "9a_default_phase_status",
+      "expected": "(<CLPhase.CL_D4: 'CL-D4'>, <PhaseState.AWAITING_APPROVAL: 'AWAITING_APPROVAL'>)",
+      "got": "(<CLPhase.CL_D4: 'CL-D4'>, <PhaseState.AWAITING_APPROVAL: 'AWAITING_APPROVAL'>)",
+      "pass": true
+    },
+    {
+      "name": "9b_fixed_batch_owner_false",
+      "expected": "False",
+      "got": "False",
+      "pass": true
+    },
+    {
+      "name": "9c_run_loop_owner_true",
+      "expected": "True",
+      "got": "True",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

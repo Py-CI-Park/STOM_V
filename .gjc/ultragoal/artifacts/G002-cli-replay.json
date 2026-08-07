@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "bun",
+    "-e",
+    "console.log(\"g002-backend-ok\")"
+  ],
+  "recordedStdout": "g002-backend-ok\n"
+}

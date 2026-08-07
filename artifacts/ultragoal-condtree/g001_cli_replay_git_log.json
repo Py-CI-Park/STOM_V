@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": ["git", "log", "-1", "--format=%H %s", "f254b9ddec8780a10e68ba867bd0da0def330e09"],
+  "cwd": "C:/System_Trading/STOM/STOM_V.wt-condition-tree",
+  "env": { "LC_ALL": "C" },
+  "timeoutMs": 30000,
+  "expectedExitCode": 0,
+  "recordedStdout": "f254b9ddec8780a10e68ba867bd0da0def330e09 기록: 조건식 History 트리·와이드 시드 합의 계획과 검토 문서\n",
+  "recordedStderr": "",
+  "invariants": [
+    { "type": "substring", "value": "f254b9ddec8780a10e68ba867bd0da0def330e09" },
+    { "type": "substring", "value": "조건식 History" },
+    { "type": "not-substring", "value": "fatal" }
+  ]
+}

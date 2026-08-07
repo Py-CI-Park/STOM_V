@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-06-19T08:06:38.549797+00:00",
+  "kind": "shadow_and_standalone_followup",
+  "robust_primary_official_entry_filter": {
+    "candidate": "r8_exclude_cap_lt_1500",
+    "official_oos_status": "passed",
+    "annual_profit_krw": 7292861,
+    "max_mdd_pct": 19.09,
+    "q4_profit_krw": 310886,
+    "source": ".omo/evidence/tmap-walkforward/post-q4-r8-lowcap-official-oos-summary-20260619.json",
+    "coverage_label": "2022-2025 full-year + 2026 YTD",
+    "coverage_note": "2026 is YTD through 2026-02-28 per oos-2026-e32-config.json, not a full-year 2026 OOS period."
+  },
+  "shadow_high_overfit_comparison": {
+    "candidate": "r8_exclude_month_11__exit2_skip_after_prior_exit2_loss_500k_else_full",
+    "evidence_type": "CSV 재분석 shadow/high-overfit comparison only",
+    "score": 93.5087,
+    "all_profit_krw": 46745487,
+    "all_mdd_pct": 10.9396,
+    "q4_profit_krw": 1028539,
+    "risk": "calendar-month exclusion; not promotion evidence and not official OOS in this handoff"
+  },
+  "robust_csv_baseline_for_context": {
+    "candidate": "r8_exclude_cap_lt_1500__exit2_skip_after_prior_exit2_loss_500k_else_full",
+    "evidence_type": "CSV 재분석 context only",
+    "score": 90.5884,
+    "all_profit_krw": 39402438,
+    "all_mdd_pct": 7.6823,
+    "q4_profit_krw": 952502
+  },
+  "standalone_attribution": {
+    "status": "covered_by_official_entry_filter_oos",
+    "rationale": "The official OOS run is for r8_exclude_cap_lt_1500 alone, before portfolio-layer exit2 allocation, so it is the standalone attribution check for the low-cap exclusion entry filter."
+  },
+  "separation_rules": [
+    "Do not promote the 11월 제외 candidate directly.",
+    "Do not label CSV reanalysis as official OOS.",
+    "Do not conflate portfolio-layer exit2 rule with buy/sell official OOS."
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "G004 is the CL-R04 9b sub-record (analyzer threshold provenance + approved-B registry reconciliation + non_approved_variable enforcement reachability). Its substantive deliverables are a subset of CL-R04 (G002) and landed in commits ed1279e6 (analyzer threshold_provenance backward-compat + default-off enforce_approved_b_only toggle + always-on b_variable_approval provenance), dd4b05d9 (enforce_approved_b_only plumbed through the production caller expression_result_from_candidate_pack, reachable, default-off, CL-R07 prerequisite documented), and fcc24d07 (evidence_ledger_enabled declared LoopConfig field). The G002 architect two-pass review (agent://10-G002-architect-review, agent://12-G002-architect-rereview) explicitly reviewed cli/analyzer.py threshold_provenance and cli/condition_generator.py enforce-toggle and rated architecture/product/code CLEAR + APPROVE. B-registry reconciliation resolved as: always record b_variable_approval provenance + opt-in default-OFF hard block, pending the timeframe-specific approved-B_* registry reconciliation which is a tracked CL-R07 prerequisite (a full hard block now would over-reject legacy packs). Sub-item (3) research_loop/pack_producer deep context-pack wiring is intentionally deferred to CL-R07 (marginal: the enforcement gate is the condition_generator ingestion which IS wired; the whole B-only enforcement is default-OFF until CL-R07). This deferral is documented, not a live guardrail gap.",
+    "commands": ["agent://10-G002-architect-review", "agent://12-G002-architect-rereview"],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Analyzer threshold provenance + default-off/enforce-on B toggle verified: test_condition_provenance + test_condition_generator 20 passed; analyzer -k regression 20 passed; fingerprint+provenance+generator junit 61 passed; enforce-flag reachable via expression_result_from_candidate_pack (dd4b05d9 test). Adversarial: threshold fit_role full_baseline/oos/validation rejection, default-off keeps unapproved candidate valid with b_variable_approval.approved=False, enforce-on rejects it (non_approved_variable).",
+    "e2eCommands": [
+      "python -m pytest tests/unit/test_condition_provenance.py tests/unit/test_condition_generator.py -q",
+      "python -m pytest tests/unit -q -k analyzer"
+    ],
+    "redTeamCommands": ["adversarial pytest: threshold fit-partition rejection, default-off vs enforce-on B enforcement, provenance attach/omit"],
+    "artifactRefs": [
+      {"id": "g004-9-junit", "kind": "algorithm-test-report", "path": ".omo/evidence/task-9-ai-condition-loop-canonical-rebuild-20260711/pytest_cl_r04_9.junit.xml", "description": "CL-R04 9a/9b fingerprint+provenance+generator junit (61 tests, 0 failures)"}
+    ],
+    "contractCoverage": [
+      {"id": "cov-g004-provenance", "contractRef": "CL-R04 9b (1) analyzer threshold provenance", "obligation": "attach ThresholdProvenance (estimator/params/fit_role train-only/period/row_count+signature/dataset_sha/fold_id/source_receipt) to quantile/bucket/ttest candidates; reject full_baseline/oos/validation fit", "status": "covered", "surfaceEvidenceRefs": ["surf-g004"], "adversarialCaseRefs": ["adv-g004-fit"]},
+      {"id": "cov-g004-benforce", "contractRef": "CL-R04 9b (2) B-registry reconciliation + enforcement reachability", "obligation": "always record b_variable_approval provenance; reachable default-off enforce_approved_b_only toggle via production caller; CL-R07 registry-reconciliation prerequisite documented", "status": "covered", "surfaceEvidenceRefs": ["surf-g004"], "adversarialCaseRefs": ["adv-g004-enforce"]},
+      {"id": "cov-g004-wiring", "contractRef": "CL-R04 9b (3) research_loop/pack_producer context-pack wiring", "obligation": "deep context-pack wiring in research_loop/pack_producer", "status": "not_applicable", "reason": "Intentionally deferred to CL-R07: enforcement gate is the condition_generator ingestion (wired); B-only enforcement is default-OFF pending CL-R07 approved-B registry reconciliation, so wiring it into research_loop/pack_producer now would add a dormant default-off path with marginal value and real risk in the 131KB research_loop. Tracked as a CL-R07 prerequisite in the design/handoff."}
+    ],
+    "surfaceEvidence": [
+      {"id": "surf-g004", "contractRef": "CL-R04 9b", "surface": "algorithm", "invocation": "python -m pytest tests/unit/test_condition_provenance.py tests/unit/test_condition_generator.py -q", "verdict": "passed", "artifactRefs": ["g004-9-junit"]}
+    ],
+    "adversarialCases": [
+      {"id": "adv-g004-fit", "contractRef": "CL-R04 9b", "scenario": "threshold provenance fit_role=full_baseline/oos/validation", "expectedBehavior": "rejected by ThresholdProvenance", "verdict": "passed", "artifactRefs": ["g004-9-junit"]},
+      {"id": "adv-g004-enforce", "contractRef": "CL-R04 9b", "scenario": "unapproved-variable candidate, default-off vs enforce-on", "expectedBehavior": "default keeps valid + provenance approved=False; enforce-on rejects (non_approved_variable)", "verdict": "passed", "artifactRefs": ["g004-9-junit"]}
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "G004's analyzer-provenance + B-reconciliation content landed and was verified under CL-R04 (G002)'s two-pass architect-CLEAR gate and its test suites (re-run green: provenance 20, analyzer 20, fingerprint/provenance/generator 61). Sub-item (3) research_loop/pack_producer deep wiring is a documented CL-R07 prerequisite (default-off, no live gap). No separate regression beyond G002's.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m pytest tests/unit/test_condition_provenance.py tests/unit/test_condition_generator.py -q",
+      "python -m pytest tests/unit -q -k analyzer"
+    ],
+    "blockers": []
+  }
+}

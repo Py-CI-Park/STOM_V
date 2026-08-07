@@ -1,0 +1,292 @@
+{
+  "template": "llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim",
+  "run_id": "mbdisc_021_q1",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_000_B",
+      "status": "ok",
+      "profit": -20714844.0,
+      "mdd": 61.31,
+      "trades": 1346
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP b1_cap_max=1500",
+      "param": "b1_cap_max",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_001_B",
+      "status": "ok",
+      "profit": -16938223.0,
+      "mdd": 50.25,
+      "trades": 1102
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP b1_cap_max=2000",
+      "param": "b1_cap_max",
+      "value": 2000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_002_B",
+      "status": "ok",
+      "profit": -18777550.0,
+      "mdd": 56.05,
+      "trades": 1228
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP b1_cap_max=3000",
+      "param": "b1_cap_max",
+      "value": 3000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_003_B",
+      "status": "ok",
+      "profit": -21864024.0,
+      "mdd": 64.37,
+      "trades": 1412
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP b1_cap_max=3500",
+      "param": "b1_cap_max",
+      "value": 3500,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_004_B",
+      "status": "ok",
+      "profit": -22618569.0,
+      "mdd": 66.49,
+      "trades": 1457
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP b1_cap_max=5000",
+      "param": "b1_cap_max",
+      "value": 5000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_005_B",
+      "status": "ok",
+      "profit": -23343136.0,
+      "mdd": 68.16,
+      "trades": 1571
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP b1_rate_min=0.5",
+      "param": "b1_rate_min",
+      "value": 0.5,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_006_B",
+      "status": "ok",
+      "profit": -21276865.0,
+      "mdd": 62.9,
+      "trades": 1353
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP b1_rate_min=1.5",
+      "param": "b1_rate_min",
+      "value": 1.5,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_007_B",
+      "status": "ok",
+      "profit": -21186912.0,
+      "mdd": 62.64,
+      "trades": 1344
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP b1_rate_min=2.5",
+      "param": "b1_rate_min",
+      "value": 2.5,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_008_B",
+      "status": "ok",
+      "profit": -21305813.0,
+      "mdd": 62.93,
+      "trades": 1335
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP b1_rate_min=4.0",
+      "param": "b1_rate_min",
+      "value": 4.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_009_B",
+      "status": "ok",
+      "profit": -21221869.0,
+      "mdd": 62.58,
+      "trades": 1299
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP b1_rate_min=6.0",
+      "param": "b1_rate_min",
+      "value": 6.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_010_B",
+      "status": "ok",
+      "profit": -20825931.0,
+      "mdd": 61.41,
+      "trades": 1239
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP b1_day_money_min=500",
+      "param": "b1_day_money_min",
+      "value": 500,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_011_B",
+      "status": "ok",
+      "profit": -21076978.0,
+      "mdd": 62.0,
+      "trades": 1369
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP b1_day_money_min=3000",
+      "param": "b1_day_money_min",
+      "value": 3000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_012_B",
+      "status": "ok",
+      "profit": -18528399.0,
+      "mdd": 55.84,
+      "trades": 1213
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP b1_day_money_min=7000",
+      "param": "b1_day_money_min",
+      "value": 7000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_013_B",
+      "status": "ok",
+      "profit": -15760433.0,
+      "mdd": 46.19,
+      "trades": 988
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP b1_day_money_min=15000",
+      "param": "b1_day_money_min",
+      "value": 15000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_014_B",
+      "status": "ok",
+      "profit": -14981587.0,
+      "mdd": 43.45,
+      "trades": 864
+    },
+    {
+      "gen_no": 15,
+      "label": "TMAP b1_day_money_min=30000",
+      "param": "b1_day_money_min",
+      "value": 30000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_015_B",
+      "status": "ok",
+      "profit": -13429179.0,
+      "mdd": 39.08,
+      "trades": 821
+    },
+    {
+      "gen_no": 16,
+      "label": "TMAP b1_sec_money_min=30",
+      "param": "b1_sec_money_min",
+      "value": 30,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_016_B",
+      "status": "ok",
+      "profit": -23567624.0,
+      "mdd": 69.28,
+      "trades": 1486
+    },
+    {
+      "gen_no": 17,
+      "label": "TMAP b1_sec_money_min=150",
+      "param": "b1_sec_money_min",
+      "value": 150,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_017_B",
+      "status": "ok",
+      "profit": -16487962.0,
+      "mdd": 49.85,
+      "trades": 1178
+    },
+    {
+      "gen_no": 18,
+      "label": "TMAP b1_sec_money_min=300",
+      "param": "b1_sec_money_min",
+      "value": 300,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_018_B",
+      "status": "ok",
+      "profit": -15030283.0,
+      "mdd": 44.1,
+      "trades": 954
+    },
+    {
+      "gen_no": 19,
+      "label": "TMAP b1_sec_money_min=600",
+      "param": "b1_sec_money_min",
+      "value": 600,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_019_B",
+      "status": "ok",
+      "profit": -14233014.0,
+      "mdd": 41.37,
+      "trades": 845
+    },
+    {
+      "gen_no": 20,
+      "label": "TMAP b1_sec_money_min=1000",
+      "param": "b1_sec_money_min",
+      "value": 1000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_020_B",
+      "status": "ok",
+      "profit": -13355433.0,
+      "mdd": 38.87,
+      "trades": 821
+    },
+    {
+      "gen_no": 21,
+      "label": "TMAP b1_money_win=5",
+      "param": "b1_money_win",
+      "value": 5,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_021_B",
+      "status": "ok",
+      "profit": -21559737.0,
+      "mdd": 63.63,
+      "trades": 1357
+    },
+    {
+      "gen_no": 22,
+      "label": "TMAP b1_money_win=10",
+      "param": "b1_money_win",
+      "value": 10,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_022_B",
+      "status": "ok",
+      "profit": -21266479.0,
+      "mdd": 62.71,
+      "trades": 1357
+    },
+    {
+      "gen_no": 23,
+      "label": "TMAP b1_money_win=30",
+      "param": "b1_money_win",
+      "value": 30,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_023_B",
+      "status": "ok",
+      "profit": -20728738.0,
+      "mdd": 61.45,
+      "trades": 1357
+    },
+    {
+      "gen_no": 24,
+      "label": "TMAP b1_money_win=60",
+      "param": "b1_money_win",
+      "value": 60,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_024_B",
+      "status": "ok",
+      "profit": -20988829.0,
+      "mdd": 62.67,
+      "trades": 1389
+    },
+    {
+      "gen_no": 25,
+      "label": "TMAP b1_money_win=90",
+      "param": "b1_money_win",
+      "value": 90,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midlate_valueburst_twofork_slim_025_B",
+      "status": "ok",
+      "profit": -21345469.0,
+      "mdd": 63.46,
+      "trades": 1399
+    }
+  ]
+}

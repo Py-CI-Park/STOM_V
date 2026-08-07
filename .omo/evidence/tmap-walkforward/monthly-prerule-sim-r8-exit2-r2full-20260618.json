@@ -1,0 +1,2194 @@
+{
+  "generated_at": "2026-06-18T16:00:00+09:00",
+  "coverage_source": ".omo/evidence/tmap-walkforward/combo-defense-baseline-coverage-20260618.json",
+  "coverage_note": "Uses completed annual OOS CSVs for 2022 partial, 2023, 2024, 2025, and 2026 partial. Decisions for a month use only previous calendar months.",
+  "months": {
+    "start": "2022-03",
+    "end": "2026-02",
+    "count": 48
+  },
+  "annual_source_rows": [
+    {
+      "strategy": "r8_4",
+      "year": 2022,
+      "run_id": "ovn_r8_oos_2022_20260617",
+      "profit_krw": 2201399.0,
+      "mdd_pct": 10.1,
+      "trade_count": 75,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r8_4_strength_max_250_B_20260617223847.csv"
+    },
+    {
+      "strategy": "r8_4",
+      "year": 2023,
+      "run_id": "ovn_r8_oos_2023_20260618",
+      "profit_krw": 6616654.0,
+      "mdd_pct": 6.52,
+      "trade_count": 164,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r8_4_strength_max_250_B_20260618132007.csv"
+    },
+    {
+      "strategy": "r8_4",
+      "year": 2024,
+      "run_id": "ovn_r8_oos_2024_20260618",
+      "profit_krw": 4508381.0,
+      "mdd_pct": 12.57,
+      "trade_count": 132,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r8_4_strength_max_250_B_20260618132308.csv"
+    },
+    {
+      "strategy": "r8_4",
+      "year": 2025,
+      "run_id": "ovn_r8_oos_2025_20260618",
+      "profit_krw": 2803351.0,
+      "mdd_pct": 16.96,
+      "trade_count": 164,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r8_4_strength_max_250_B_20260618132628.csv"
+    },
+    {
+      "strategy": "r8_4",
+      "year": 2026,
+      "run_id": "ovn_r8_oos_2026_20260617",
+      "profit_krw": 764267.0,
+      "mdd_pct": 10.06,
+      "trade_count": 15,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r8_4_strength_max_250_B_20260617224045.csv"
+    },
+    {
+      "strategy": "exit2_balance",
+      "year": 2022,
+      "run_id": "ovn_exit2_balance_oos_2022",
+      "profit_krw": 2625686.0,
+      "mdd_pct": 8.46,
+      "trade_count": 58,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r4_7_be_floor_0_5_B_20260618100155.csv"
+    },
+    {
+      "strategy": "exit2_balance",
+      "year": 2023,
+      "run_id": "ovn_exit2_balance_oos_2023",
+      "profit_krw": 6647731.0,
+      "mdd_pct": 4.64,
+      "trade_count": 111,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r4_7_be_floor_0_5_B_20260618132942.csv"
+    },
+    {
+      "strategy": "exit2_balance",
+      "year": 2024,
+      "run_id": "ovn_exit2_balance_oos_2024",
+      "profit_krw": 4177859.0,
+      "mdd_pct": 9.08,
+      "trade_count": 87,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r4_7_be_floor_0_5_B_20260618133250.csv"
+    },
+    {
+      "strategy": "exit2_balance",
+      "year": 2025,
+      "run_id": "ovn_exit2_balance_oos_2025",
+      "profit_krw": 1119661.0,
+      "mdd_pct": 17.16,
+      "trade_count": 101,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r4_7_be_floor_0_5_B_20260618133553.csv"
+    },
+    {
+      "strategy": "exit2_balance",
+      "year": 2026,
+      "run_id": "ovn_exit2_balance_oos_2026",
+      "profit_krw": 41002.0,
+      "mdd_pct": 18.45,
+      "trade_count": 10,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r4_7_be_floor_0_5_B_20260618100340.csv"
+    },
+    {
+      "strategy": "r2full_mdd",
+      "year": 2022,
+      "run_id": "ovn_r2full_mdd_oos_2022",
+      "profit_krw": 2167653.0,
+      "mdd_pct": 15.39,
+      "trade_count": 85,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r4_9_burst_b_1_5_B_20260618100617.csv"
+    },
+    {
+      "strategy": "r2full_mdd",
+      "year": 2023,
+      "run_id": "ovn_r2full_mdd_oos_2023",
+      "profit_krw": 5242784.0,
+      "mdd_pct": 5.72,
+      "trade_count": 135,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r4_9_burst_b_1_5_B_20260618133913.csv"
+    },
+    {
+      "strategy": "r2full_mdd",
+      "year": 2024,
+      "run_id": "ovn_r2full_mdd_oos_2024",
+      "profit_krw": 4191076.0,
+      "mdd_pct": 11.35,
+      "trade_count": 108,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r4_9_burst_b_1_5_B_20260618134221.csv"
+    },
+    {
+      "strategy": "r2full_mdd",
+      "year": 2025,
+      "run_id": "ovn_r2full_mdd_oos_2025",
+      "profit_krw": 1821615.0,
+      "mdd_pct": 17.02,
+      "trade_count": 118,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r4_9_burst_b_1_5_B_20260618134518.csv"
+    },
+    {
+      "strategy": "r2full_mdd",
+      "year": 2026,
+      "run_id": "ovn_r2full_mdd_oos_2026",
+      "profit_krw": 288526.0,
+      "mdd_pct": 14.39,
+      "trade_count": 10,
+      "csv_path": "backtest/csv\\stock_bt_GATE_r4_9_burst_b_1_5_B_20260618100800.csv"
+    }
+  ],
+  "rules": {
+    "baseline_no_prior_defense": "No monthly defense; all combo weights stay at base allocation.",
+    "strategy_half_after_prior_month_loss": "For each strategy, halve next-month weight if that strategy lost money in the previous calendar month.",
+    "strategy_skip_after_prior_month_loss": "For each strategy, set next-month weight to zero if that strategy lost money in the previous calendar month.",
+    "strategy_skip_after_prior_month_loss_500k": "For each strategy, set next-month weight to zero if that strategy lost at least 500,000 KRW in the previous calendar month.",
+    "strategy_half_after_two_month_cum_loss": "For each strategy, halve next-month weight if its previous two calendar months sum below zero.",
+    "combo_half_after_prior_month_loss": "For the whole combo, halve all member weights if the prior month combo PnL was negative."
+  },
+  "summaries": [
+    {
+      "scenario": "r8_4 + r2full_mdd / baseline_no_prior_defense",
+      "method": "baseline over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 30605706,
+      "return_pct_on_max_allocated_capital": 306.0571,
+      "annualized_return_pct_calendar": 42.7166,
+      "mdd_pct_daily_realized": 12.8394,
+      "mdd_krw_daily_realized": 1469390,
+      "raw_trade_count": 1006,
+      "weighted_trade_equivalent": 1006.0,
+      "changed_trade_count": 0,
+      "changed_month_count": 0,
+      "changed_months_sample": {},
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -850210
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 1199727
+      },
+      "per_strategy_profit_krw": {
+        "r2full_mdd": 13711654,
+        "r8_4": 16894052
+      }
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd / strategy_half_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 26523683,
+      "return_pct_on_max_allocated_capital": 265.2368,
+      "annualized_return_pct_calendar": 38.9298,
+      "mdd_pct_daily_realized": 12.3552,
+      "mdd_krw_daily_realized": 1373540,
+      "raw_trade_count": 1006,
+      "weighted_trade_equivalent": 901.5,
+      "changed_trade_count": 209,
+      "changed_month_count": 12,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2022-06": [
+          "r8_4"
+        ],
+        "2023-01": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-10": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-02": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-11": [
+          "r2full_mdd"
+        ],
+        "2024-12": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-06": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-07": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-10": [
+          "r2full_mdd"
+        ],
+        "2025-12": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2026-01": [
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -850210
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1130346
+      },
+      "per_strategy_profit_krw": {
+        "r2full_mdd": 12039414,
+        "r8_4": 14484268
+      },
+      "delta_profit_vs_baseline_krw": -4082023,
+      "delta_mdd_vs_baseline_pct_points": -0.4842
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd / strategy_skip_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 22441660,
+      "return_pct_on_max_allocated_capital": 224.4166,
+      "annualized_return_pct_calendar": 34.8126,
+      "mdd_pct_daily_realized": 11.8415,
+      "mdd_krw_daily_realized": 1277690,
+      "raw_trade_count": 797,
+      "weighted_trade_equivalent": 797.0,
+      "changed_trade_count": 209,
+      "changed_month_count": 12,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2022-06": [
+          "r8_4"
+        ],
+        "2023-01": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-10": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-02": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-11": [
+          "r2full_mdd"
+        ],
+        "2024-12": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-06": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-07": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-10": [
+          "r2full_mdd"
+        ],
+        "2025-12": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2026-01": [
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 361,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -850210
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1130346
+      },
+      "per_strategy_profit_krw": {
+        "r2full_mdd": 10367175,
+        "r8_4": 12074485
+      },
+      "delta_profit_vs_baseline_krw": -8164046,
+      "delta_mdd_vs_baseline_pct_points": -0.9979
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd / strategy_skip_after_prior_month_loss_500k",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 29860489,
+      "return_pct_on_max_allocated_capital": 298.6049,
+      "annualized_return_pct_calendar": 42.0472,
+      "mdd_pct_daily_realized": 12.8394,
+      "mdd_krw_daily_realized": 1469390,
+      "raw_trade_count": 946,
+      "weighted_trade_equivalent": 946.0,
+      "changed_trade_count": 60,
+      "changed_month_count": 4,
+      "changed_months_sample": {
+        "2024-12": [
+          "r8_4"
+        ],
+        "2025-06": [
+          "r8_4"
+        ],
+        "2025-07": [
+          "r8_4"
+        ],
+        "2025-12": [
+          "r8_4"
+        ]
+      },
+      "trading_days": 431,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -850210
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 1199727
+      },
+      "per_strategy_profit_krw": {
+        "r2full_mdd": 13711654,
+        "r8_4": 16148835
+      },
+      "delta_profit_vs_baseline_krw": -745217,
+      "delta_mdd_vs_baseline_pct_points": 0.0
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd / strategy_half_after_two_month_cum_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 27615122,
+      "return_pct_on_max_allocated_capital": 276.1512,
+      "annualized_return_pct_calendar": 39.972,
+      "mdd_pct_daily_realized": 12.3552,
+      "mdd_krw_daily_realized": 1373540,
+      "raw_trade_count": 1006,
+      "weighted_trade_equivalent": 932.5,
+      "changed_trade_count": 147,
+      "changed_month_count": 10,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2023-01": [
+          "r8_4"
+        ],
+        "2023-11": [
+          "r8_4"
+        ],
+        "2024-11": [
+          "r2full_mdd"
+        ],
+        "2024-12": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-07": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-08": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-10": [
+          "r2full_mdd"
+        ],
+        "2025-12": [
+          "r8_4"
+        ],
+        "2026-01": [
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -850210
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1130346
+      },
+      "per_strategy_profit_krw": {
+        "r2full_mdd": 12913839,
+        "r8_4": 14701282
+      },
+      "delta_profit_vs_baseline_krw": -2990584,
+      "delta_mdd_vs_baseline_pct_points": -0.4842
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd / combo_half_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 26578117,
+      "return_pct_on_max_allocated_capital": 265.7812,
+      "annualized_return_pct_calendar": 38.9823,
+      "mdd_pct_daily_realized": 12.8394,
+      "mdd_krw_daily_realized": 1469390,
+      "raw_trade_count": 1006,
+      "weighted_trade_equivalent": 896.0,
+      "changed_trade_count": 220,
+      "changed_month_count": 11,
+      "changed_months_sample": {
+        "2022-06": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-01": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-10": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-02": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-11": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-12": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-06": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-07": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-10": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-12": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2026-01": [
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -850210
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1130346
+      },
+      "per_strategy_profit_krw": {
+        "r2full_mdd": 11813524,
+        "r8_4": 14764594
+      },
+      "delta_profit_vs_baseline_krw": -4027589,
+      "delta_mdd_vs_baseline_pct_points": 0.0
+    },
+    {
+      "scenario": "r8_4 + exit2_balance / baseline_no_prior_defense",
+      "method": "baseline over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 31505991,
+      "return_pct_on_max_allocated_capital": 315.0599,
+      "annualized_return_pct_calendar": 43.5132,
+      "mdd_pct_daily_realized": 9.3902,
+      "mdd_krw_daily_realized": 4084122,
+      "raw_trade_count": 917,
+      "weighted_trade_equivalent": 917.0,
+      "changed_trade_count": 0,
+      "changed_month_count": 0,
+      "changed_months_sample": {},
+      "trading_days": 399,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -800050
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 1569951
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 14611939,
+        "r8_4": 16894052
+      }
+    },
+    {
+      "scenario": "r8_4 + exit2_balance / strategy_half_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 26551955,
+      "return_pct_on_max_allocated_capital": 265.5195,
+      "annualized_return_pct_calendar": 38.9571,
+      "mdd_pct_daily_realized": 9.3776,
+      "mdd_krw_daily_realized": 3658438,
+      "raw_trade_count": 917,
+      "weighted_trade_equivalent": 812.0,
+      "changed_trade_count": 210,
+      "changed_month_count": 16,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2022-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2022-08": [
+          "exit2_balance"
+        ],
+        "2023-01": [
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2024-02": [
+          "r8_4"
+        ],
+        "2024-06": [
+          "exit2_balance"
+        ],
+        "2024-08": [
+          "exit2_balance"
+        ],
+        "2024-11": [
+          "exit2_balance"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-03": [
+          "exit2_balance"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r8_4"
+        ]
+      },
+      "trading_days": 399,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -800050
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 1167880
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 12067686,
+        "r8_4": 14484268
+      },
+      "delta_profit_vs_baseline_krw": -4954036,
+      "delta_mdd_vs_baseline_pct_points": -0.0126
+    },
+    {
+      "scenario": "r8_4 + exit2_balance / strategy_skip_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 21597919,
+      "return_pct_on_max_allocated_capital": 215.9792,
+      "annualized_return_pct_calendar": 33.9139,
+      "mdd_pct_daily_realized": 9.8881,
+      "mdd_krw_daily_realized": 3414510,
+      "raw_trade_count": 707,
+      "weighted_trade_equivalent": 707.0,
+      "changed_trade_count": 210,
+      "changed_month_count": 16,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2022-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2022-08": [
+          "exit2_balance"
+        ],
+        "2023-01": [
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2024-02": [
+          "r8_4"
+        ],
+        "2024-06": [
+          "exit2_balance"
+        ],
+        "2024-08": [
+          "exit2_balance"
+        ],
+        "2024-11": [
+          "exit2_balance"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-03": [
+          "exit2_balance"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r8_4"
+        ]
+      },
+      "trading_days": 341,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -800050
+      },
+      "best_day": {
+        "day": "2023-12-01",
+        "profit_krw": 1092905
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 9523434,
+        "r8_4": 12074485
+      },
+      "delta_profit_vs_baseline_krw": -9908072,
+      "delta_mdd_vs_baseline_pct_points": 0.4979
+    },
+    {
+      "scenario": "r8_4 + exit2_balance / strategy_skip_after_prior_month_loss_500k",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 31702635,
+      "return_pct_on_max_allocated_capital": 317.0263,
+      "annualized_return_pct_calendar": 43.6855,
+      "mdd_pct_daily_realized": 9.2726,
+      "mdd_krw_daily_realized": 1062657,
+      "raw_trade_count": 843,
+      "weighted_trade_equivalent": 843.0,
+      "changed_trade_count": 74,
+      "changed_month_count": 5,
+      "changed_months_sample": {
+        "2024-11": [
+          "exit2_balance"
+        ],
+        "2024-12": [
+          "r8_4"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-07": [
+          "r8_4"
+        ],
+        "2025-12": [
+          "r8_4"
+        ]
+      },
+      "trading_days": 381,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -800050
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 1569951
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 15553800,
+        "r8_4": 16148835
+      },
+      "delta_profit_vs_baseline_krw": 196644,
+      "delta_mdd_vs_baseline_pct_points": -0.1176
+    },
+    {
+      "scenario": "r8_4 + exit2_balance / strategy_half_after_two_month_cum_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 28374760,
+      "return_pct_on_max_allocated_capital": 283.7476,
+      "annualized_return_pct_calendar": 40.6842,
+      "mdd_pct_daily_realized": 9.8888,
+      "mdd_krw_daily_realized": 4046275,
+      "raw_trade_count": 917,
+      "weighted_trade_equivalent": 841.5,
+      "changed_trade_count": 151,
+      "changed_month_count": 12,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2023-01": [
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance"
+        ],
+        "2023-11": [
+          "r8_4"
+        ],
+        "2024-11": [
+          "exit2_balance"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-06": [
+          "exit2_balance"
+        ],
+        "2025-07": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-08": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-10": [
+          "exit2_balance"
+        ],
+        "2025-12": [
+          "r8_4"
+        ],
+        "2026-01": [
+          "r8_4"
+        ]
+      },
+      "trading_days": 399,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -800050
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 1167880
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 13673478,
+        "r8_4": 14701282
+      },
+      "delta_profit_vs_baseline_krw": -3131231,
+      "delta_mdd_vs_baseline_pct_points": 0.4986
+    },
+    {
+      "scenario": "r8_4 + exit2_balance / combo_half_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 26898795,
+      "return_pct_on_max_allocated_capital": 268.988,
+      "annualized_return_pct_calendar": 39.2906,
+      "mdd_pct_daily_realized": 9.8367,
+      "mdd_krw_daily_realized": 3867322,
+      "raw_trade_count": 917,
+      "weighted_trade_equivalent": 813.0,
+      "changed_trade_count": 208,
+      "changed_month_count": 11,
+      "changed_months_sample": {
+        "2022-04": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2022-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2023-01": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2024-02": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2024-11": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-07": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-10": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-12": [
+          "exit2_balance",
+          "r8_4"
+        ]
+      },
+      "trading_days": 399,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -800050
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1105151
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 12112438,
+        "r8_4": 14786358
+      },
+      "delta_profit_vs_baseline_krw": -4607196,
+      "delta_mdd_vs_baseline_pct_points": 0.4465
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd + exit2_balance / baseline_no_prior_defense",
+      "method": "baseline over completed annual OOS CSVs",
+      "capital_krw": 15000000,
+      "profit_krw": 45217645,
+      "return_pct_on_max_allocated_capital": 301.451,
+      "annualized_return_pct_calendar": 42.3039,
+      "mdd_pct_daily_realized": 10.9396,
+      "mdd_krw_daily_realized": 1887169,
+      "raw_trade_count": 1373,
+      "weighted_trade_equivalent": 1373.0,
+      "changed_trade_count": 0,
+      "changed_month_count": 0,
+      "changed_months_sample": {},
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -990983
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 2003868
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 14611939,
+        "r2full_mdd": 13711654,
+        "r8_4": 16894052
+      }
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd + exit2_balance / strategy_half_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 15000000,
+      "profit_krw": 38591370,
+      "return_pct_on_max_allocated_capital": 257.2758,
+      "annualized_return_pct_calendar": 38.1548,
+      "mdd_pct_daily_realized": 10.5847,
+      "mdd_krw_daily_realized": 1791319,
+      "raw_trade_count": 1373,
+      "weighted_trade_equivalent": 1224.5,
+      "changed_trade_count": 297,
+      "changed_month_count": 16,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2022-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2022-08": [
+          "exit2_balance"
+        ],
+        "2023-01": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-02": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-06": [
+          "exit2_balance"
+        ],
+        "2024-08": [
+          "exit2_balance"
+        ],
+        "2024-11": [
+          "exit2_balance",
+          "r2full_mdd"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-03": [
+          "exit2_balance"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -990983
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1400335
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 12067686,
+        "r2full_mdd": 12039414,
+        "r8_4": 14484268
+      },
+      "delta_profit_vs_baseline_krw": -6626275,
+      "delta_mdd_vs_baseline_pct_points": -0.3549
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd + exit2_balance / strategy_skip_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 15000000,
+      "profit_krw": 31965094,
+      "return_pct_on_max_allocated_capital": 213.1006,
+      "annualized_return_pct_calendar": 33.6032,
+      "mdd_pct_daily_realized": 10.2159,
+      "mdd_krw_daily_realized": 1695469,
+      "raw_trade_count": 1076,
+      "weighted_trade_equivalent": 1076.0,
+      "changed_trade_count": 297,
+      "changed_month_count": 16,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2022-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2022-08": [
+          "exit2_balance"
+        ],
+        "2023-01": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-02": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-06": [
+          "exit2_balance"
+        ],
+        "2024-08": [
+          "exit2_balance"
+        ],
+        "2024-11": [
+          "exit2_balance",
+          "r2full_mdd"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-03": [
+          "exit2_balance"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 380,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -990983
+      },
+      "best_day": {
+        "day": "2023-03-21",
+        "profit_krw": 1233387
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 9523434,
+        "r2full_mdd": 10367175,
+        "r8_4": 12074485
+      },
+      "delta_profit_vs_baseline_krw": -13252551,
+      "delta_mdd_vs_baseline_pct_points": -0.7237
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd + exit2_balance / strategy_skip_after_prior_month_loss_500k",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 15000000,
+      "profit_krw": 45414289,
+      "return_pct_on_max_allocated_capital": 302.7619,
+      "annualized_return_pct_calendar": 42.4217,
+      "mdd_pct_daily_realized": 10.9396,
+      "mdd_krw_daily_realized": 1887169,
+      "raw_trade_count": 1299,
+      "weighted_trade_equivalent": 1299.0,
+      "changed_trade_count": 74,
+      "changed_month_count": 5,
+      "changed_months_sample": {
+        "2024-11": [
+          "exit2_balance"
+        ],
+        "2024-12": [
+          "r8_4"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-07": [
+          "r8_4"
+        ],
+        "2025-12": [
+          "r8_4"
+        ]
+      },
+      "trading_days": 431,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -990983
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 2003868
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 15553800,
+        "r2full_mdd": 13711654,
+        "r8_4": 16148835
+      },
+      "delta_profit_vs_baseline_krw": 196644,
+      "delta_mdd_vs_baseline_pct_points": 0.0
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd + exit2_balance / strategy_half_after_two_month_cum_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 15000000,
+      "profit_krw": 41288599,
+      "return_pct_on_max_allocated_capital": 275.2573,
+      "annualized_return_pct_calendar": 39.8875,
+      "mdd_pct_daily_realized": 10.5847,
+      "mdd_krw_daily_realized": 1791319,
+      "raw_trade_count": 1373,
+      "weighted_trade_equivalent": 1272.5,
+      "changed_trade_count": 201,
+      "changed_month_count": 12,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2023-01": [
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance"
+        ],
+        "2023-11": [
+          "r8_4"
+        ],
+        "2024-11": [
+          "exit2_balance",
+          "r2full_mdd"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-06": [
+          "exit2_balance"
+        ],
+        "2025-07": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-08": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-10": [
+          "exit2_balance",
+          "r2full_mdd"
+        ],
+        "2025-12": [
+          "r8_4"
+        ],
+        "2026-01": [
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -990983
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1670324
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 13673478,
+        "r2full_mdd": 12913839,
+        "r8_4": 14701282
+      },
+      "delta_profit_vs_baseline_krw": -3929046,
+      "delta_mdd_vs_baseline_pct_points": -0.3549
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd + exit2_balance / combo_half_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 15000000,
+      "profit_krw": 39523360,
+      "return_pct_on_max_allocated_capital": 263.4891,
+      "annualized_return_pct_calendar": 38.7607,
+      "mdd_pct_daily_realized": 10.9396,
+      "mdd_krw_daily_realized": 1887169,
+      "raw_trade_count": 1373,
+      "weighted_trade_equivalent": 1234.0,
+      "changed_trade_count": 278,
+      "changed_month_count": 10,
+      "changed_months_sample": {
+        "2022-06": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-01": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-02": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-11": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-07": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-10": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-12": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -990983
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1670324
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 12418426,
+        "r2full_mdd": 12087220,
+        "r8_4": 15017713
+      },
+      "delta_profit_vs_baseline_krw": -5694285,
+      "delta_mdd_vs_baseline_pct_points": 0.0
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd + half_exit2 / baseline_no_prior_defense",
+      "method": "baseline over completed annual OOS CSVs",
+      "capital_krw": 12500000,
+      "profit_krw": 37911676,
+      "return_pct_on_max_allocated_capital": 303.2934,
+      "annualized_return_pct_calendar": 42.4694,
+      "mdd_pct_daily_realized": 11.6973,
+      "mdd_krw_daily_realized": 1678280,
+      "raw_trade_count": 1373,
+      "weighted_trade_equivalent": 1189.5,
+      "changed_trade_count": 0,
+      "changed_month_count": 0,
+      "changed_months_sample": {},
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -905717
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 1601798
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 7305970,
+        "r2full_mdd": 13711654,
+        "r8_4": 16894052
+      }
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd + half_exit2 / strategy_half_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 12500000,
+      "profit_krw": 32557526,
+      "return_pct_on_max_allocated_capital": 260.4602,
+      "annualized_return_pct_calendar": 38.4663,
+      "mdd_pct_daily_realized": 11.2866,
+      "mdd_krw_daily_realized": 1582430,
+      "raw_trade_count": 1373,
+      "weighted_trade_equivalent": 1063.0,
+      "changed_trade_count": 297,
+      "changed_month_count": 16,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2022-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2022-08": [
+          "exit2_balance"
+        ],
+        "2023-01": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-02": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-06": [
+          "exit2_balance"
+        ],
+        "2024-08": [
+          "exit2_balance"
+        ],
+        "2024-11": [
+          "exit2_balance",
+          "r2full_mdd"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-03": [
+          "exit2_balance"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -905717
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1265340
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 6033843,
+        "r2full_mdd": 12039414,
+        "r8_4": 14484268
+      },
+      "delta_profit_vs_baseline_krw": -5354150,
+      "delta_mdd_vs_baseline_pct_points": -0.4107
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd + half_exit2 / strategy_skip_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 12500000,
+      "profit_krw": 27203377,
+      "return_pct_on_max_allocated_capital": 217.627,
+      "annualized_return_pct_calendar": 34.0908,
+      "mdd_pct_daily_realized": 10.8563,
+      "mdd_krw_daily_realized": 1486580,
+      "raw_trade_count": 1076,
+      "weighted_trade_equivalent": 936.5,
+      "changed_trade_count": 297,
+      "changed_month_count": 16,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2022-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2022-08": [
+          "exit2_balance"
+        ],
+        "2023-01": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-02": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-06": [
+          "exit2_balance"
+        ],
+        "2024-08": [
+          "exit2_balance"
+        ],
+        "2024-11": [
+          "exit2_balance",
+          "r2full_mdd"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-03": [
+          "exit2_balance"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 380,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -905717
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1130346
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 4761717,
+        "r2full_mdd": 10367175,
+        "r8_4": 12074485
+      },
+      "delta_profit_vs_baseline_krw": -10708299,
+      "delta_mdd_vs_baseline_pct_points": -0.841
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd + half_exit2 / strategy_skip_after_prior_month_loss_500k",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 12500000,
+      "profit_krw": 37637389,
+      "return_pct_on_max_allocated_capital": 301.0991,
+      "annualized_return_pct_calendar": 42.2723,
+      "mdd_pct_daily_realized": 11.6973,
+      "mdd_krw_daily_realized": 1678280,
+      "raw_trade_count": 1299,
+      "weighted_trade_equivalent": 1122.5,
+      "changed_trade_count": 74,
+      "changed_month_count": 5,
+      "changed_months_sample": {
+        "2024-11": [
+          "exit2_balance"
+        ],
+        "2024-12": [
+          "r8_4"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-07": [
+          "r8_4"
+        ],
+        "2025-12": [
+          "r8_4"
+        ]
+      },
+      "trading_days": 431,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -905717
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 1601798
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 7776900,
+        "r2full_mdd": 13711654,
+        "r8_4": 16148835
+      },
+      "delta_profit_vs_baseline_krw": -274287,
+      "delta_mdd_vs_baseline_pct_points": 0.0
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd + half_exit2 / strategy_half_after_two_month_cum_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 12500000,
+      "profit_krw": 34451860,
+      "return_pct_on_max_allocated_capital": 275.6149,
+      "annualized_return_pct_calendar": 39.9213,
+      "mdd_pct_daily_realized": 11.2866,
+      "mdd_krw_daily_realized": 1582430,
+      "raw_trade_count": 1373,
+      "weighted_trade_equivalent": 1102.5,
+      "changed_trade_count": 201,
+      "changed_month_count": 12,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2023-01": [
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance"
+        ],
+        "2023-11": [
+          "r8_4"
+        ],
+        "2024-11": [
+          "exit2_balance",
+          "r2full_mdd"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-06": [
+          "exit2_balance"
+        ],
+        "2025-07": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-08": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-10": [
+          "exit2_balance",
+          "r2full_mdd"
+        ],
+        "2025-12": [
+          "r8_4"
+        ],
+        "2026-01": [
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -905717
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1400335
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 6836739,
+        "r2full_mdd": 12913839,
+        "r8_4": 14701282
+      },
+      "delta_profit_vs_baseline_krw": -3459816,
+      "delta_mdd_vs_baseline_pct_points": -0.4107
+    },
+    {
+      "scenario": "r8_4 + r2full_mdd + half_exit2 / combo_half_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 12500000,
+      "profit_krw": 33314146,
+      "return_pct_on_max_allocated_capital": 266.5132,
+      "annualized_return_pct_calendar": 39.0529,
+      "mdd_pct_daily_realized": 11.6973,
+      "mdd_krw_daily_realized": 1678280,
+      "raw_trade_count": 1373,
+      "weighted_trade_equivalent": 1069.25,
+      "changed_trade_count": 278,
+      "changed_month_count": 10,
+      "changed_months_sample": {
+        "2022-06": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-01": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-02": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-11": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-07": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-10": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-12": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -905717
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1400335
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 6209213,
+        "r2full_mdd": 12087220,
+        "r8_4": 15017713
+      },
+      "delta_profit_vs_baseline_krw": -4597530,
+      "delta_mdd_vs_baseline_pct_points": 0.0
+    }
+  ],
+  "best_by_combo_profit": {
+    "r8_4 + r2full_mdd": {
+      "scenario": "r8_4 + r2full_mdd / baseline_no_prior_defense",
+      "method": "baseline over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 30605706,
+      "return_pct_on_max_allocated_capital": 306.0571,
+      "annualized_return_pct_calendar": 42.7166,
+      "mdd_pct_daily_realized": 12.8394,
+      "mdd_krw_daily_realized": 1469390,
+      "raw_trade_count": 1006,
+      "weighted_trade_equivalent": 1006.0,
+      "changed_trade_count": 0,
+      "changed_month_count": 0,
+      "changed_months_sample": {},
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -850210
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 1199727
+      },
+      "per_strategy_profit_krw": {
+        "r2full_mdd": 13711654,
+        "r8_4": 16894052
+      }
+    },
+    "r8_4 + exit2_balance": {
+      "scenario": "r8_4 + exit2_balance / strategy_skip_after_prior_month_loss_500k",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 31702635,
+      "return_pct_on_max_allocated_capital": 317.0263,
+      "annualized_return_pct_calendar": 43.6855,
+      "mdd_pct_daily_realized": 9.2726,
+      "mdd_krw_daily_realized": 1062657,
+      "raw_trade_count": 843,
+      "weighted_trade_equivalent": 843.0,
+      "changed_trade_count": 74,
+      "changed_month_count": 5,
+      "changed_months_sample": {
+        "2024-11": [
+          "exit2_balance"
+        ],
+        "2024-12": [
+          "r8_4"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-07": [
+          "r8_4"
+        ],
+        "2025-12": [
+          "r8_4"
+        ]
+      },
+      "trading_days": 381,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -800050
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 1569951
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 15553800,
+        "r8_4": 16148835
+      },
+      "delta_profit_vs_baseline_krw": 196644,
+      "delta_mdd_vs_baseline_pct_points": -0.1176
+    },
+    "r8_4 + r2full_mdd + exit2_balance": {
+      "scenario": "r8_4 + r2full_mdd + exit2_balance / strategy_skip_after_prior_month_loss_500k",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 15000000,
+      "profit_krw": 45414289,
+      "return_pct_on_max_allocated_capital": 302.7619,
+      "annualized_return_pct_calendar": 42.4217,
+      "mdd_pct_daily_realized": 10.9396,
+      "mdd_krw_daily_realized": 1887169,
+      "raw_trade_count": 1299,
+      "weighted_trade_equivalent": 1299.0,
+      "changed_trade_count": 74,
+      "changed_month_count": 5,
+      "changed_months_sample": {
+        "2024-11": [
+          "exit2_balance"
+        ],
+        "2024-12": [
+          "r8_4"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-07": [
+          "r8_4"
+        ],
+        "2025-12": [
+          "r8_4"
+        ]
+      },
+      "trading_days": 431,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -990983
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 2003868
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 15553800,
+        "r2full_mdd": 13711654,
+        "r8_4": 16148835
+      },
+      "delta_profit_vs_baseline_krw": 196644,
+      "delta_mdd_vs_baseline_pct_points": 0.0
+    },
+    "r8_4 + r2full_mdd + half_exit2": {
+      "scenario": "r8_4 + r2full_mdd + half_exit2 / baseline_no_prior_defense",
+      "method": "baseline over completed annual OOS CSVs",
+      "capital_krw": 12500000,
+      "profit_krw": 37911676,
+      "return_pct_on_max_allocated_capital": 303.2934,
+      "annualized_return_pct_calendar": 42.4694,
+      "mdd_pct_daily_realized": 11.6973,
+      "mdd_krw_daily_realized": 1678280,
+      "raw_trade_count": 1373,
+      "weighted_trade_equivalent": 1189.5,
+      "changed_trade_count": 0,
+      "changed_month_count": 0,
+      "changed_months_sample": {},
+      "trading_days": 442,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -905717
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 1601798
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 7305970,
+        "r2full_mdd": 13711654,
+        "r8_4": 16894052
+      }
+    }
+  },
+  "best_by_combo_mdd": {
+    "r8_4 + r2full_mdd": {
+      "scenario": "r8_4 + r2full_mdd / strategy_skip_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 22441660,
+      "return_pct_on_max_allocated_capital": 224.4166,
+      "annualized_return_pct_calendar": 34.8126,
+      "mdd_pct_daily_realized": 11.8415,
+      "mdd_krw_daily_realized": 1277690,
+      "raw_trade_count": 797,
+      "weighted_trade_equivalent": 797.0,
+      "changed_trade_count": 209,
+      "changed_month_count": 12,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2022-06": [
+          "r8_4"
+        ],
+        "2023-01": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-10": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-02": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-11": [
+          "r2full_mdd"
+        ],
+        "2024-12": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-06": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-07": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-10": [
+          "r2full_mdd"
+        ],
+        "2025-12": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2026-01": [
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 361,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -850210
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1130346
+      },
+      "per_strategy_profit_krw": {
+        "r2full_mdd": 10367175,
+        "r8_4": 12074485
+      },
+      "delta_profit_vs_baseline_krw": -8164046,
+      "delta_mdd_vs_baseline_pct_points": -0.9979
+    },
+    "r8_4 + exit2_balance": {
+      "scenario": "r8_4 + exit2_balance / strategy_skip_after_prior_month_loss_500k",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 10000000,
+      "profit_krw": 31702635,
+      "return_pct_on_max_allocated_capital": 317.0263,
+      "annualized_return_pct_calendar": 43.6855,
+      "mdd_pct_daily_realized": 9.2726,
+      "mdd_krw_daily_realized": 1062657,
+      "raw_trade_count": 843,
+      "weighted_trade_equivalent": 843.0,
+      "changed_trade_count": 74,
+      "changed_month_count": 5,
+      "changed_months_sample": {
+        "2024-11": [
+          "exit2_balance"
+        ],
+        "2024-12": [
+          "r8_4"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2025-07": [
+          "r8_4"
+        ],
+        "2025-12": [
+          "r8_4"
+        ]
+      },
+      "trading_days": 381,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -800050
+      },
+      "best_day": {
+        "day": "2025-10-30",
+        "profit_krw": 1569951
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 15553800,
+        "r8_4": 16148835
+      },
+      "delta_profit_vs_baseline_krw": 196644,
+      "delta_mdd_vs_baseline_pct_points": -0.1176
+    },
+    "r8_4 + r2full_mdd + exit2_balance": {
+      "scenario": "r8_4 + r2full_mdd + exit2_balance / strategy_skip_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 15000000,
+      "profit_krw": 31965094,
+      "return_pct_on_max_allocated_capital": 213.1006,
+      "annualized_return_pct_calendar": 33.6032,
+      "mdd_pct_daily_realized": 10.2159,
+      "mdd_krw_daily_realized": 1695469,
+      "raw_trade_count": 1076,
+      "weighted_trade_equivalent": 1076.0,
+      "changed_trade_count": 297,
+      "changed_month_count": 16,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2022-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2022-08": [
+          "exit2_balance"
+        ],
+        "2023-01": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-02": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-06": [
+          "exit2_balance"
+        ],
+        "2024-08": [
+          "exit2_balance"
+        ],
+        "2024-11": [
+          "exit2_balance",
+          "r2full_mdd"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-03": [
+          "exit2_balance"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 380,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2025-05-07",
+        "profit_krw": -990983
+      },
+      "best_day": {
+        "day": "2023-03-21",
+        "profit_krw": 1233387
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 9523434,
+        "r2full_mdd": 10367175,
+        "r8_4": 12074485
+      },
+      "delta_profit_vs_baseline_krw": -13252551,
+      "delta_mdd_vs_baseline_pct_points": -0.7237
+    },
+    "r8_4 + r2full_mdd + half_exit2": {
+      "scenario": "r8_4 + r2full_mdd + half_exit2 / strategy_skip_after_prior_month_loss",
+      "method": "prior-only monthly pre-rule simulation over completed annual OOS CSVs",
+      "capital_krw": 12500000,
+      "profit_krw": 27203377,
+      "return_pct_on_max_allocated_capital": 217.627,
+      "annualized_return_pct_calendar": 34.0908,
+      "mdd_pct_daily_realized": 10.8563,
+      "mdd_krw_daily_realized": 1486580,
+      "raw_trade_count": 1076,
+      "weighted_trade_equivalent": 936.5,
+      "changed_trade_count": 297,
+      "changed_month_count": 16,
+      "changed_months_sample": {
+        "2022-04": [
+          "r8_4"
+        ],
+        "2022-06": [
+          "exit2_balance",
+          "r8_4"
+        ],
+        "2022-08": [
+          "exit2_balance"
+        ],
+        "2023-01": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2023-10": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-02": [
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2024-06": [
+          "exit2_balance"
+        ],
+        "2024-08": [
+          "exit2_balance"
+        ],
+        "2024-11": [
+          "exit2_balance",
+          "r2full_mdd"
+        ],
+        "2024-12": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ],
+        "2025-03": [
+          "exit2_balance"
+        ],
+        "2025-06": [
+          "exit2_balance",
+          "r2full_mdd",
+          "r8_4"
+        ]
+      },
+      "trading_days": 380,
+      "calendar_days": 1438,
+      "first_trade_date": "2022-03-23",
+      "last_trade_date": "2026-02-27",
+      "worst_day": {
+        "day": "2023-03-10",
+        "profit_krw": -905717
+      },
+      "best_day": {
+        "day": "2025-03-14",
+        "profit_krw": 1130346
+      },
+      "per_strategy_profit_krw": {
+        "exit2_balance": 4761717,
+        "r2full_mdd": 10367175,
+        "r8_4": 12074485
+      },
+      "delta_profit_vs_baseline_krw": -10708299,
+      "delta_mdd_vs_baseline_pct_points": -0.841
+    }
+  }
+}

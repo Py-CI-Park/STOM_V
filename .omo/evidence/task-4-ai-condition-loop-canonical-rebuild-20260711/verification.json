@@ -1,0 +1,61 @@
+{
+  "all_pass": true,
+  "errors": [],
+  "state_machine_tests": [
+    {
+      "name": "design_path_CL-D0",
+      "expected": "allow",
+      "got": "allow",
+      "pass": true
+    },
+    {
+      "name": "design_path_CL-D1",
+      "expected": "allow",
+      "got": "allow",
+      "pass": true
+    },
+    {
+      "name": "design_path_CL-D2",
+      "expected": "allow",
+      "got": "allow",
+      "pass": true
+    },
+    {
+      "name": "design_path_CL-D3",
+      "expected": "allow",
+      "got": "allow",
+      "pass": true
+    },
+    {
+      "name": "design_path_CL-D4",
+      "expected": "allow",
+      "got": "allow",
+      "pass": true
+    },
+    {
+      "name": "stop_at_awaiting_CL_R01_R06_approval",
+      "expected": "reject/authority_missing",
+      "got": "reject/authority_missing",
+      "pass": true
+    },
+    {
+      "name": "d2_to_r07_out_of_order",
+      "expected": "reject/out_of_order",
+      "got": "reject/out_of_order",
+      "pass": true
+    },
+    {
+      "name": "receipt_only_r08_authority_missing",
+      "expected": "reject/authority_missing",
+      "got": "reject/authority_missing",
+      "pass": true
+    },
+    {
+      "name": "update_delete_forbidden",
+      "expected": "reject/evidence_mutation_forbidden",
+      "got": "reject/evidence_mutation_forbidden",
+      "pass": true
+    }
+  ],
+  "checked_at_utc": "2026-07-11T10:12:24Z"
+}

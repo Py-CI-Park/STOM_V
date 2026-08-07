@@ -1,0 +1,9 @@
+{"event": "cand", "round": 1, "label": "r8_4 solo", "gate": false, "profit": -835479, "mdd": 35.6902, "trades": 35, "daily": 1.5909090909090908, "ts": 1781765119.9802783}
+{"event": "cand", "round": 1, "label": "r2full_mdd solo", "gate": true, "profit": 1516, "mdd": 17.1934, "trades": 25, "daily": 1.4705882352941178, "ts": 1781765120.9803326}
+{"event": "cand", "round": 1, "label": "exit2_balance solo", "gate": true, "profit": 640100, "mdd": 9.5991, "trades": 23, "daily": 1.3529411764705883, "ts": 1781765121.980345}
+{"event": "cand", "round": 1, "label": "r8_4 + r2full_mdd", "gate": false, "profit": -833963, "mdd": 26.4762, "trades": 60, "daily": 2.608695652173913, "ts": 1781765122.980354}
+{"event": "cand", "round": 1, "label": "r8_4 + exit2_balance", "gate": false, "profit": -195379, "mdd": 21.7504, "trades": 58, "daily": 2.6363636363636362, "ts": 1781765123.9803622}
+{"event": "cand", "round": 1, "label": "r2full_mdd + exit2_balance", "gate": true, "profit": 641616, "mdd": 12.522, "trades": 48, "daily": 2.6666666666666665, "ts": 1781765124.9803698}
+{"event": "cand", "round": 1, "label": "r8_4 + r2full_mdd + exit2_balance", "gate": false, "profit": -193863, "mdd": 20.243, "trades": 83, "daily": 3.608695652173913, "ts": 1781765125.9803772}
+{"event": "cand", "round": 1, "label": "r8_4 + r2full_mdd + half_exit2", "gate": false, "profit": -513913, "mdd": 22.7304, "trades": 83, "daily": 3.608695652173913, "ts": 1781765126.9803846}
+{"event": "cand", "round": 1, "label": "r2full_mdd + half_exit2", "gate": true, "profit": 321566, "mdd": 14.071, "trades": 48, "daily": 2.6666666666666665, "ts": 1781765127.9803915}

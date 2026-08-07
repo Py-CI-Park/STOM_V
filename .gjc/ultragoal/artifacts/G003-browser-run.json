@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "surface": "web",
+  "tool": "GJC browser/puppeteer",
+  "actions": [
+    {
+      "type": "goto",
+      "url": "http://127.0.0.1:8870/ui/",
+      "timestamp": 1
+    },
+    {
+      "type": "click",
+      "selector": "role=tab[name=\"기록 인덱스\"]",
+      "timestamp": 2
+    },
+    {
+      "type": "observe",
+      "selector": "[role=\"listbox\"][aria-label=\"research index records\"]",
+      "timestamp": 3
+    },
+    {
+      "type": "screenshot",
+      "selector": "#root",
+      "timestamp": 4
+    }
+  ],
+  "assertions": [
+    {
+      "status": "passed",
+      "selector": "[role=\"tab\"][aria-selected=\"true\"]",
+      "timestamp": 5,
+      "description": "기록 인덱스 tab selected"
+    },
+    {
+      "status": "passed",
+      "selector": ".research-index",
+      "timestamp": 6,
+      "description": "governed research index panel rendered with rows and detail"
+    }
+  ],
+  "artifactRefs": [
+    "G003-records-tab.png"
+  ]
+}

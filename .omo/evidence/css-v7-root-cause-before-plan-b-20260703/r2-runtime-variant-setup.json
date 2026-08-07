@@ -1,0 +1,25 @@
+{
+  "source_db": "ai_strategy_loop\\state\\loop_strategies.db",
+  "target_db": "artifacts\\chart_sulsa_validation_20260702\\css_v7_root_cause_strategy_copy.db",
+  "config": "artifacts\\chart_sulsa_validation_20260702\\css_v7_root_cause_micro_config.json",
+  "pairs": "artifacts\\chart_sulsa_validation_20260702\\css_v7_root_cause_pairs.json",
+  "inserted_variants": [
+    {
+      "side": "buy",
+      "table": "stockbuy",
+      "source_name": "CSS_V7_TICK_B_MASTER_0900_0930",
+      "fix_name": "CSS_V7_TICK_B_MASTER_0900_0930_FIXCALL",
+      "source_call_tail": "self.Buy(종목코드, 종목명, 매수수량, 현재가, 매도호가1, 매수호가1, 데이터길이)",
+      "fixed_call_tail": "self.Buy()"
+    },
+    {
+      "side": "sell",
+      "table": "stocksell",
+      "source_name": "CSS_V7_TICK_S_MASTER_0900_0930",
+      "fix_name": "CSS_V7_TICK_S_MASTER_0900_0930_FIXCALL",
+      "source_call_tail": "self.Sell(종목코드, 종목명, 매도수량, 현재가, 매도호가1, 매수호가1, 강제청산)",
+      "fixed_call_tail": "self.Sell()"
+    }
+  ],
+  "main_db_mutation": false
+}

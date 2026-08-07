@@ -1,0 +1,5 @@
+post q4 next4 follow-up completed
+step1 r8+exit2 prior -500k exclusion split validation completed
+step2 exit2 dynamic allocation completed
+step3 r8 q4 loss decomposition completed
+step4 research docs auto exposure design completed

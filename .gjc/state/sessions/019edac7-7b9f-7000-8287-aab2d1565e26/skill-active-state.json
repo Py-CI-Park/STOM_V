@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "active": true,
+  "skill": "ultragoal",
+  "phase": "failed",
+  "updated_at": "2026-06-20T10:27:17.832Z",
+  "session_id": "019edac7-7b9f-7000-8287-aab2d1565e26",
+  "active_skills": [
+    {
+      "skill": "ultragoal",
+      "phase": "failed",
+      "active": true,
+      "activated_at": "2026-06-20T10:27:17.832Z",
+      "updated_at": "2026-06-20T10:27:17.832Z",
+      "session_id": "019edac7-7b9f-7000-8287-aab2d1565e26",
+      "hud": {
+        "version": 1,
+        "chips": [
+          {
+            "label": "blocked",
+            "value": "1",
+            "priority": 5,
+            "severity": "blocked"
+          },
+          {
+            "label": "goals",
+            "value": "0/5",
+            "priority": 10
+          },
+          {
+            "label": "current",
+            "value": "G002:Backend preset and bridge payload base",
+            "priority": 20
+          },
+          {
+            "label": "status",
+            "value": "failed",
+            "priority": 30
+          },
+          {
+            "label": "ledger",
+            "value": "goal_checkpointed:G001",
+            "priority": 35
+          }
+        ],
+        "updated_at": "2026-06-20T10:27:17.822Z"
+      },
+      "receipt": {
+        "version": 1,
+        "skill": "ultragoal",
+        "owner": "gjc-runtime",
+        "command": "gjc ultragoal (reconcile)",
+        "state_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.gjc\\state\\sessions\\019edac7-7b9f-7000-8287-aab2d1565e26\\skill-active-state.json",
+        "storage_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.gjc\\state\\sessions\\019edac7-7b9f-7000-8287-aab2d1565e26\\ultragoal-state.json",
+        "mutated_at": "2026-06-20T10:27:17.783Z",
+        "fresh_until": "2026-06-20T10:57:17.783Z",
+        "status": "fresh",
+        "mutation_id": "ultragoal:reconcile:2026-06-20T10:27:17.783Z",
+        "verb": "reconcile",
+        "forced": true,
+        "from_phase": "active",
+        "to_phase": "failed"
+      }
+    }
+  ],
+  "active_subskills": []
+}

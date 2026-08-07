@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "surface": "web",
+  "tool": "GJC browser (Chromium/Puppeteer)",
+  "bundle": "818b3fff",
+  "fixture": "demo-running-max3",
+  "actions": [
+    {"type": "goto", "timestamp": 1, "url": "http://127.0.0.1:8871/ui/?base=http%3A%2F%2F127.0.0.1%3A8997&evidence=818b3fff"},
+    {"type": "click", "timestamp": 2, "selector": "aria/▸ 설정·시작"},
+    {"type": "fill", "timestamp": 3, "selector": "aria/최대 세대", "value": "3"},
+    {"type": "click", "timestamp": 4, "selector": "aria/진화 시작"},
+    {"type": "observe", "timestamp": 5, "selector": ".v4-situation-board"},
+    {"type": "screenshot", "timestamp": 6, "selector": "body", "viewport": "3440x1440", "path": "artifacts/g002-live-final-3440x1440.jpg"},
+    {"type": "screenshot", "timestamp": 7, "selector": "body", "viewport": "2560x1440", "path": "artifacts/g002-live-final-2560x1440.jpg"},
+    {"type": "screenshot", "timestamp": 8, "selector": "body", "viewport": "1920x1080", "path": "artifacts/g002-live-final-1920x1080.jpg"},
+    {"type": "click", "timestamp": 9, "selector": ".v4-process-tab:nth-child(2)"},
+    {"type": "screenshot", "timestamp": 10, "selector": ".v4-backtest-authority", "path": "artifacts/g002-live-backtest-stage-1920x1080.jpg"},
+    {"type": "press", "timestamp": 11, "selector": ".v4-drawer-toggle", "key": "Enter"},
+    {"type": "press", "timestamp": 12, "selector": ".v4-drawer-toggle", "key": "Enter"}
+  ],
+  "assertions": [
+    {"timestamp": 13, "selector": "script[src*='app.js?v=818b3fff']", "status": "passed", "description": "The served HTML loaded the rebuilt V5 bundle."},
+    {"timestamp": 14, "selector": ".v4-hero-primary", "status": "passed", "description": "Fitness height was 320px or less at every measured viewport."},
+    {"timestamp": 15, "selector": ".v4-graph-grid", "status": "passed", "description": "At 3440x1440 Fitness, Profit, Quality, and Equity each had visibleRatio 1.0; scroll ratio was 1.856 and horizontal overflow was zero."},
+    {"timestamp": 16, "selector": ".v4-process-tabs[role='tablist']", "status": "passed", "description": "The four process tabs exposed selected state and follow/pinned behavior; run/gen identity change released the user pin."},
+    {"timestamp": 17, "selector": ".v4-backtest-authority", "status": "passed", "description": "The Backtest stage displayed buy_code, sell_code, source/run/generation, engine/progress, and explicit analysis evidence state."},
+    {"timestamp": 18, "selector": ".v4-drawer-toggle[aria-expanded='false']", "status": "passed", "description": "Keyboard Enter opened and closed the detail drawer; closed drawer computed display:none and retained focusable control."},
+    {"timestamp": 19, "selector": ".v4-engine-summary", "status": "passed", "description": "The top situation board integrated run, generation, engine, progress, and phase-start evidence."}
+  ]
+}

@@ -1,0 +1,7 @@
+[BATCH] run_id=t2_corner_train_20260613 pairs=4
+[BATCH] prepare status=ok back_count=2285 elapsed=239s
+[BATCH] gen0 FROZEN_THETA ok profit=10,965,479 mdd=10.04 trades=272 daily=0.40 payoff=1.534815263812587 gate=True reason=ok (117s)
+[BATCH] gen1 T2C1 91000/4000/4.0 ok profit=9,550,593 mdd=13.76 trades=317 daily=0.40 payoff=1.6305632407045456 gate=True reason=ok (133s)
+[BATCH] gen2 T2C2 91000/4000/3.0 ok profit=9,642,207 mdd=13.89 trades=322 daily=0.40 payoff=1.6190294439388508 gate=True reason=ok (137s)
+[BATCH] gen3 T2C3 91500/4000/4.0 ok profit=9,866,240 mdd=11.30 trades=356 daily=0.50 payoff=1.6579896938913554 gate=True reason=ok (128s)
+[BATCH] done

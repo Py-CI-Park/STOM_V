@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "kind": "web-test-report",
+  "commit": "17b0aff85a23a4e80de793120ddc7875b9195da7",
+  "bundle": "e08246bb",
+  "command": ["python", "-m", "pytest", "tests/unit/test_dashboard_phase_mapping.py", "tests/unit/dashboard/test_v4_ui_foundation.py", "tests/unit/test_dashboard_route_parity.py", "tests/unit/dashboard/test_shell_wiring_parity.py", "tests/unit/dashboard/test_v4_uat.py", "tests/unit/dashboard/test_dashboard_ui_remodel.py", "tests/unit/test_dashboard_engine_progress_contract.py", "-q"],
+  "cwd": "C:/System_Trading/STOM/STOM_V.wt-dev",
+  "startedAfterCommit": true,
+  "exitCode": 0,
+  "passed": 84,
+  "failed": 0,
+  "durationSeconds": 53.26,
+  "recordedOutput": "........................................................................ [ 85%]\n............                                                             [100%]\n84 passed in 53.26s\n",
+  "verdict": "passed"
+}

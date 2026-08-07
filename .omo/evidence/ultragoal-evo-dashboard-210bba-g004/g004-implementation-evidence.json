@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G004",
+  "executionWorktree": "C:/System_Trading/STOM/STOM_V.wt-evo-governance",
+  "changedFiles": [
+    "ai_strategy_loop/controller/condition_discovery_feedback.py",
+    "tests/unit/test_condition_discovery_feedback.py"
+  ],
+  "implemented": {
+    "persistenceState": "Prompt/equity persistence health rows with required/optional status and blockers based on preset policy",
+    "hypotheses": "Advisory autopsy hypotheses normalized with id, status, source, provenance, and advisory_only flag",
+    "patternCards": "Human DB composition cards strip thresholds, hash normalized expressions/threshold sets, reject performance truth, and expose creativity-only prompt excerpts",
+    "antiCopy": "validate_pattern_card_usage detects full-expression copy, threshold copy, and performance truth import",
+    "antiCopyRobustnessFixes": "No-space numeric thresholds are stripped, pattern_summary is sanitized, full-expression copy hashes are whitespace/operator-format insensitive, and canonical per-threshold hashes block partial/reordered/equivalent threshold copying.",
+    "numericLiteralRobustness": "Threshold stripping/canonicalization handles no-space digits, signed decimals, leading-dot decimals, and exponent notation."
+  },
+  "boundaries": {
+    "humanDbUsage": "composition grammar and creativity only",
+    "thresholdCopying": "blocked",
+    "fullExpressionCopying": "blocked",
+    "performanceTruthImport": "blocked",
+    "promotionExportAuthority": "not introduced",
+    "liveExportOperatingDb": "not touched",
+    "v3kKhopenapi": "not touched",
+    "transformerMl": "not implemented"
+  },
+  "verification": [
+    {
+      "command": "python -m pytest tests/unit/test_condition_discovery_feedback.py tests/unit/test_advisory_scores.py tests/unit/test_condition_discovery_policy.py tests/unit/test_launch_config.py -q",
+      "result": "38 passed in 1.54s",
+      "artifact": "artifact://445"
+    },
+    {
+      "command": "git diff --check",
+      "result": "clean"
+    },
+    {
+      "command": "git diff --check",
+      "result": "clean_after_anti_copy_fix"
+    },
+    {
+      "command": "python -m pytest tests/unit/dashboard/test_dashboard_telemetry.py tests/unit/test_condition_discovery_feedback.py tests/unit/test_advisory_scores.py tests/unit/test_condition_discovery_policy.py tests/unit/test_launch_config.py -q",
+      "result": "44 passed in 12.76s",
+      "artifact": "artifact://458"
+    },
+    {
+      "command": "git diff --check",
+      "result": "clean_after_exponent_numeric_fix"
+    }
+  ],
+  "verdict": "ready_for_ultimate_review"
+}

@@ -1,0 +1,304 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "commit": "42366d7",
+  "baseUrl": "http://127.0.0.1:8770",
+  "routes": {
+    "canonical": [
+      "research",
+      "backtest",
+      "replay",
+      "history",
+      "workbench",
+      "reports"
+    ],
+    "legacyRedirects": {
+      "audit": "history",
+      "verdict": "history",
+      "records": "history",
+      "lab": "history",
+      "alpha": "research",
+      "catalog": "reports"
+    },
+    "unknown": {
+      "input": "totally_unknown",
+      "urlPreserved": true,
+      "unavailableAlert": true,
+      "unrelatedQueryPreserved": true
+    },
+    "malformed": {
+      "input": "%00bad",
+      "urlPreserved": true,
+      "unavailableAlert": true,
+      "unrelatedQueryPreserved": true
+    },
+    "rail": [
+      "Live",
+      "Backtest",
+      "Replay",
+      "History",
+      "성과",
+      "Reports"
+    ],
+    "retiredTopLevel": []
+  },
+  "legacyStorage": {
+    "urlPrecedence": "history",
+    "primaryRemoved": true,
+    "evolutionRemoved": true,
+    "unrelatedQueryPreserved": true,
+    "malformedValuesRemoved": true,
+    "malformedFallback": "research"
+  },
+  "contextDrawer": {
+    "open": {
+      "query": "1",
+      "focus": "close button"
+    },
+    "escape": {
+      "closed": true,
+      "queryRemoved": true,
+      "focusReturned": true
+    },
+    "back": {
+      "closed": true,
+      "focusReturned": true
+    },
+    "forward": {
+      "opened": true,
+      "query": "1"
+    }
+  },
+  "keyboard": {
+    "ArrowRight": {
+      "from": "History",
+      "active": "성과",
+      "focus": "성과"
+    },
+    "Home": {
+      "active": "Live",
+      "focus": "Live"
+    },
+    "End": {
+      "active": "Reports",
+      "focus": "Reports"
+    },
+    "nativeEnterSpace": "button semantics covered by runtime JSX and dashboard regression"
+  },
+  "rollback": {
+    "query": "v4_legacy_extras=1",
+    "selected": "Lab",
+    "restoredRail": [
+      "Live",
+      "Backtest",
+      "Replay",
+      "History",
+      "성과",
+      "Reports",
+      "Lab",
+      "카탈로그",
+      "Context",
+      "Alpha"
+    ],
+    "defaultRemainsOff": true
+  },
+  "baseRace": {
+    "scenario": "slow BASE /reports response arrives after fast BASE selection",
+    "slowDelayMs": 700,
+    "fastDelayMs": 30,
+    "finalInput": "http://fast.local",
+    "renderedReport": "FAST",
+    "iframeSource": "http://fast.local/reports/view?path=fast.html",
+    "staleSlowRendered": false
+  },
+  "historyBaseRace": {
+    "scenario": "slow old BASE records/index/governance responses arrive after fast BASE",
+    "finalInput": "http://fast.local",
+    "staleMarkersRendered": false,
+    "currentHistoryRows": 0,
+    "unexpectedAlerts": 0
+  },
+  "galleryBaseRace": {
+    "scenario": "slow old BASE reference_screenshots response arrives after fast BASE",
+    "finalInput": "http://fast.local",
+    "staleFilenameRendered": false,
+    "staleImageRequested": false,
+    "galleryRemainedOpenForCurrentBase": true
+  },
+  "destinations": {
+    "history": {
+      "researchProMounted": false,
+      "duplicateHeatmaps": 0,
+      "decisionLedgerMounted": 0,
+      "readOnlyScopeQualified": true,
+      "appendOnlyExceptionVisible": true
+    },
+    "performance": {
+      "dataTab": "workbench",
+      "compareOrAnalysisMounted": false,
+      "decisionTraceMounted": false,
+      "hallOfFameOnly": true
+    },
+    "reports": {
+      "wikiMounted": true,
+      "iframeSandbox": "",
+      "referrerPolicy": "no-referrer",
+      "csp": "default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'self'",
+      "blockedScriptMessages": 14,
+      "unexpectedConsoleErrors": 0,
+      "pageErrors": 0
+    },
+    "hallOfFameFixtures": {
+      "valid": {
+        "row": "BENCH",
+        "humanCount": 1,
+        "error": false
+      },
+      "empty": {
+        "message": "표시할 전략이 없습니다",
+        "humanCount": 0,
+        "error": false
+      },
+      "malformed": {
+        "message": "Malformed /hall_of_fame response",
+        "failureVisible": true
+      },
+      "kindOnlyMalformed": {
+        "fixture": {
+          "human": [
+            {
+              "kind": "human"
+            }
+          ],
+          "ai": []
+        },
+        "failureVisible": true,
+        "rowRendered": false
+      }
+    },
+    "governanceMalformedFixtures": {
+      "freezeRegimeRevivalPortfolioDecisions": {
+        "fixture": "status:anything",
+        "failureVisible": true,
+        "endpointNamesVisible": true,
+        "staleDataRendered": false
+      }
+    }
+  },
+  "viewports": [
+    {
+      "width": 1920,
+      "height": 1080,
+      "route": "history",
+      "horizontalOverflow": 0,
+      "build": "ce177aa4",
+      "screenshot": "artifacts/g012-history-1920x1080.png"
+    },
+    {
+      "width": 2560,
+      "height": 1440,
+      "route": "reports",
+      "horizontalOverflow": 0,
+      "build": "ce177aa4",
+      "screenshot": "artifacts/g012-reports-2560x1440.png"
+    },
+    {
+      "width": 3440,
+      "height": 1440,
+      "route": "research",
+      "horizontalOverflow": 0,
+      "build": "ce177aa4",
+      "screenshot": "artifacts/g012-live-3440x1440.png"
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "route": "workbench",
+      "horizontalOverflow": 0,
+      "build": "ce177aa4",
+      "screenshot": "artifacts/g012-hof-1920x1080.png"
+    }
+  ],
+  "unexpectedConsoleErrors": [],
+  "pageErrors": [],
+  "tool": "browser",
+  "bundle": "ce177aa4",
+  "url": "http://127.0.0.1:8770/ui/evolution",
+  "environment": {
+    "browser": "Chromium",
+    "dpr": 1,
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  "actions": [
+    {
+      "timestamp": "2026-07-18T22:00:00Z",
+      "type": "navigate",
+      "action": "navigate canonical History and verify frozen bundle",
+      "result": "passed",
+      "bundle": "ce177aa4"
+    },
+    {
+      "timestamp": "2026-07-18T22:00:01Z",
+      "type": "capture",
+      "action": "capture required History, Reports, Live, and HOF viewports",
+      "result": "passed",
+      "viewports": [
+        "1920x1080",
+        "2560x1440",
+        "3440x1440"
+      ]
+    },
+    {
+      "timestamp": "2026-07-18T22:00:02Z",
+      "type": "assertion",
+      "action": "verify required viewport horizontal overflow",
+      "result": "passed",
+      "overflowX": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "selector": ".v4-root[data-v4-tab]"
+    },
+    {
+      "timestamp": "2026-07-18T22:00:03Z",
+      "type": "assertion",
+      "action": "inject malformed governance endpoint responses",
+      "result": "passed",
+      "failureVisible": true,
+      "staleDataRendered": false,
+      "selector": "[role=\"alert\"]"
+    },
+    {
+      "timestamp": "2026-07-18T22:00:04Z",
+      "type": "assertion",
+      "action": "inject kind-only malformed Hall-of-Fame row",
+      "result": "passed",
+      "failureVisible": true,
+      "invalidRowRendered": false,
+      "selector": ".v4-workbench"
+    },
+    {
+      "timestamp": "2026-07-18T22:00:05Z",
+      "type": "assertion",
+      "action": "verify route storage drawer keyboard and BASE-race scenarios",
+      "result": "passed"
+    },
+    {
+      "timestamp": "2026-07-18T22:00:06Z",
+      "type": "assertion",
+      "action": "verify console and page errors",
+      "result": "passed",
+      "errors": []
+    }
+  ],
+  "screenshots": [
+    "artifacts/g012-history-1920x1080.png",
+    "artifacts/g012-reports-2560x1440.png",
+    "artifacts/g012-live-3440x1440.png",
+    "artifacts/g012-hof-1920x1080.png"
+  ],
+  "verdict": "passed"
+}

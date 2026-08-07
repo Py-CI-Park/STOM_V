@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-03T07:41:42.556421+00:00",
+  "blocker": "CSS_V7 smoke validation did not produce go candidates",
+  "tick_result": "7/7 warm backtest timeout at 300 seconds",
+  "min_result": "batch stopped after first pair exceeded expected smoke duration; min config timeout is 1200 seconds per pair",
+  "decision": "train/OOS/WF/slippage not run; all 21 unique pairs classified as 보류",
+  "evidence": [
+    "artifacts\\chart_sulsa_validation_20260702\\smoke_tick.log",
+    "artifacts\\chart_sulsa_validation_20260702\\smoke_min.log",
+    "artifacts\\chart_sulsa_validation_20260702\\t5_validation_summary.json"
+  ]
+}

@@ -1,0 +1,310 @@
+{
+  "generated_at": "2026-06-18T16:10:00+09:00",
+  "method": "FastAPI TestClient calls create_app() and requests /research_records plus /research_records/detail.",
+  "list_status_code": 200,
+  "detail_status_code": 200,
+  "campaign": "q4-defense-prerule-halfexit-dashboard-20260618",
+  "campaign_visible": true,
+  "campaign_rank": 1,
+  "campaign_count": 15,
+  "selected_campaign": {
+    "name": "q4-defense-prerule-halfexit-dashboard-20260618",
+    "updated_at": 1781765119.9838629,
+    "summary": {
+      "rounds": 4,
+      "adopted_total": 0,
+      "finished_ts": 1781765119.9767706,
+      "best_overall": {
+        "label": "r2full_mdd + exit2_balance",
+        "profit": 641616,
+        "mdd": 12.522,
+        "trades": 48
+      },
+      "best_monthly_prerule": {
+        "label": "r8_4 + r2full_mdd + exit2_balance / strategy_skip_after_prior_month_loss_500k",
+        "profit": 45414289,
+        "mdd": 10.9396,
+        "return_pct": 302.7619
+      },
+      "q4_stress": {
+        "stress_combo": "r8_4 + r2full_mdd",
+        "stress_combo_profit_krw": -833963,
+        "primary_loss_source": "r8_4",
+        "exit2_full_overlay_delta_krw": 640100,
+        "exit2_half_overlay_delta_krw": 320050
+      },
+      "artifacts": [
+        "q4-official-oos-run-records-20260618.json",
+        "q4-defense-official-oos-20260618.json",
+        "half-exit2-official-oos-20260618.json",
+        "monthly-prerule-sim-r8-exit2-r2full-20260618.json"
+      ]
+    },
+    "best": {
+      "label": "r2full_mdd + exit2_balance",
+      "profit": 641616,
+      "mdd": 12.522,
+      "trades": 48
+    },
+    "candidates": [
+      {
+        "label": "r2full_mdd + exit2_balance",
+        "event": "cand",
+        "round": 1,
+        "gate": true,
+        "profit": 641616.0,
+        "mdd": 12.522,
+        "trades": 48,
+        "daily": 2.6666666666666665,
+        "ts": 1781765124.9803698
+      },
+      {
+        "label": "exit2_balance solo",
+        "event": "cand",
+        "round": 1,
+        "gate": true,
+        "profit": 640100.0,
+        "mdd": 9.5991,
+        "trades": 23,
+        "daily": 1.3529411764705883,
+        "ts": 1781765121.980345
+      },
+      {
+        "label": "r2full_mdd + half_exit2",
+        "event": "cand",
+        "round": 1,
+        "gate": true,
+        "profit": 321566.0,
+        "mdd": 14.071,
+        "trades": 48,
+        "daily": 2.6666666666666665,
+        "ts": 1781765127.9803915
+      },
+      {
+        "label": "r2full_mdd solo",
+        "event": "cand",
+        "round": 1,
+        "gate": true,
+        "profit": 1516.0,
+        "mdd": 17.1934,
+        "trades": 25,
+        "daily": 1.4705882352941178,
+        "ts": 1781765120.9803326
+      },
+      {
+        "label": "r8_4 + r2full_mdd + exit2_balance",
+        "event": "cand",
+        "round": 1,
+        "gate": false,
+        "profit": -193863.0,
+        "mdd": 20.243,
+        "trades": 83,
+        "daily": 3.608695652173913,
+        "ts": 1781765125.9803772
+      },
+      {
+        "label": "r8_4 + exit2_balance",
+        "event": "cand",
+        "round": 1,
+        "gate": false,
+        "profit": -195379.0,
+        "mdd": 21.7504,
+        "trades": 58,
+        "daily": 2.6363636363636362,
+        "ts": 1781765123.9803622
+      },
+      {
+        "label": "r8_4 + r2full_mdd + half_exit2",
+        "event": "cand",
+        "round": 1,
+        "gate": false,
+        "profit": -513913.0,
+        "mdd": 22.7304,
+        "trades": 83,
+        "daily": 3.608695652173913,
+        "ts": 1781765126.9803846
+      },
+      {
+        "label": "r8_4 + r2full_mdd",
+        "event": "cand",
+        "round": 1,
+        "gate": false,
+        "profit": -833963.0,
+        "mdd": 26.4762,
+        "trades": 60,
+        "daily": 2.608695652173913,
+        "ts": 1781765122.980354
+      },
+      {
+        "label": "r8_4 solo",
+        "event": "cand",
+        "round": 1,
+        "gate": false,
+        "profit": -835479.0,
+        "mdd": 35.6902,
+        "trades": 35,
+        "daily": 1.5909090909090908,
+        "ts": 1781765119.9802783
+      }
+    ],
+    "candidate_count": 9,
+    "artifacts": {
+      "summary": "q4-defense-prerule-halfexit-dashboard-20260618_summary.json",
+      "jsonl": "q4-defense-prerule-halfexit-dashboard-20260618.jsonl",
+      "run_log": "q4-defense-prerule-halfexit-dashboard-20260618_log.txt",
+      "pairs": []
+    }
+  },
+  "detail_available": true,
+  "detail_campaign": {
+    "name": "q4-defense-prerule-halfexit-dashboard-20260618",
+    "updated_at": 1781765119.9838629,
+    "summary": {
+      "rounds": 4,
+      "adopted_total": 0,
+      "finished_ts": 1781765119.9767706,
+      "best_overall": {
+        "label": "r2full_mdd + exit2_balance",
+        "profit": 641616,
+        "mdd": 12.522,
+        "trades": 48
+      },
+      "best_monthly_prerule": {
+        "label": "r8_4 + r2full_mdd + exit2_balance / strategy_skip_after_prior_month_loss_500k",
+        "profit": 45414289,
+        "mdd": 10.9396,
+        "return_pct": 302.7619
+      },
+      "q4_stress": {
+        "stress_combo": "r8_4 + r2full_mdd",
+        "stress_combo_profit_krw": -833963,
+        "primary_loss_source": "r8_4",
+        "exit2_full_overlay_delta_krw": 640100,
+        "exit2_half_overlay_delta_krw": 320050
+      },
+      "artifacts": [
+        "q4-official-oos-run-records-20260618.json",
+        "q4-defense-official-oos-20260618.json",
+        "half-exit2-official-oos-20260618.json",
+        "monthly-prerule-sim-r8-exit2-r2full-20260618.json"
+      ]
+    },
+    "best": {
+      "label": "r2full_mdd + exit2_balance",
+      "profit": 641616,
+      "mdd": 12.522,
+      "trades": 48
+    },
+    "candidates": [
+      {
+        "label": "r2full_mdd + exit2_balance",
+        "event": "cand",
+        "round": 1,
+        "gate": true,
+        "profit": 641616.0,
+        "mdd": 12.522,
+        "trades": 48,
+        "daily": 2.6666666666666665,
+        "ts": 1781765124.9803698
+      },
+      {
+        "label": "exit2_balance solo",
+        "event": "cand",
+        "round": 1,
+        "gate": true,
+        "profit": 640100.0,
+        "mdd": 9.5991,
+        "trades": 23,
+        "daily": 1.3529411764705883,
+        "ts": 1781765121.980345
+      },
+      {
+        "label": "r2full_mdd + half_exit2",
+        "event": "cand",
+        "round": 1,
+        "gate": true,
+        "profit": 321566.0,
+        "mdd": 14.071,
+        "trades": 48,
+        "daily": 2.6666666666666665,
+        "ts": 1781765127.9803915
+      },
+      {
+        "label": "r2full_mdd solo",
+        "event": "cand",
+        "round": 1,
+        "gate": true,
+        "profit": 1516.0,
+        "mdd": 17.1934,
+        "trades": 25,
+        "daily": 1.4705882352941178,
+        "ts": 1781765120.9803326
+      },
+      {
+        "label": "r8_4 + r2full_mdd + exit2_balance",
+        "event": "cand",
+        "round": 1,
+        "gate": false,
+        "profit": -193863.0,
+        "mdd": 20.243,
+        "trades": 83,
+        "daily": 3.608695652173913,
+        "ts": 1781765125.9803772
+      },
+      {
+        "label": "r8_4 + exit2_balance",
+        "event": "cand",
+        "round": 1,
+        "gate": false,
+        "profit": -195379.0,
+        "mdd": 21.7504,
+        "trades": 58,
+        "daily": 2.6363636363636362,
+        "ts": 1781765123.9803622
+      },
+      {
+        "label": "r8_4 + r2full_mdd + half_exit2",
+        "event": "cand",
+        "round": 1,
+        "gate": false,
+        "profit": -513913.0,
+        "mdd": 22.7304,
+        "trades": 83,
+        "daily": 3.608695652173913,
+        "ts": 1781765126.9803846
+      },
+      {
+        "label": "r8_4 + r2full_mdd",
+        "event": "cand",
+        "round": 1,
+        "gate": false,
+        "profit": -833963.0,
+        "mdd": 26.4762,
+        "trades": 60,
+        "daily": 2.608695652173913,
+        "ts": 1781765122.980354
+      },
+      {
+        "label": "r8_4 solo",
+        "event": "cand",
+        "round": 1,
+        "gate": false,
+        "profit": -835479.0,
+        "mdd": 35.6902,
+        "trades": 35,
+        "daily": 1.5909090909090908,
+        "ts": 1781765119.9802783
+      }
+    ],
+    "candidate_count": 9,
+    "artifacts": {
+      "summary": "q4-defense-prerule-halfexit-dashboard-20260618_summary.json",
+      "jsonl": "q4-defense-prerule-halfexit-dashboard-20260618.jsonl",
+      "run_log": "q4-defense-prerule-halfexit-dashboard-20260618_log.txt",
+      "pairs": []
+    }
+  },
+  "direct_index_count": 15,
+  "direct_errors_sample": [],
+  "note": "ResearchRecordsPanel indexes campaign summary/jsonl/log files. Markdown update logs are a separate research_docs surface with an allowlist."
+}

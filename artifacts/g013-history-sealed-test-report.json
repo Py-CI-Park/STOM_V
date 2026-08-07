@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "commit": "33698e7b",
+  "bundle": "1fde83a6",
+  "commands": [
+    {
+      "command": "python -m pytest tests/unit/dashboard/test_research_index.py tests/unit/dashboard/test_v4_replay_history_ui.py tests/unit/test_history_api.py tests/unit/dashboard/test_research_records.py tests/unit/dashboard/test_v4_audit_context_contract.py -q",
+      "result": "63 passed in 56.74s",
+      "status": "passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/dashboard/test_track_z_pr1_harness.py -q",
+      "result": "15 passed in 212.08s",
+      "status": "passed"
+    },
+    {
+      "command": "python -m pytest tests/unit/dashboard -q --maxfail=1",
+      "result": "792 passed in 344.29s",
+      "status": "passed"
+    },
+    {
+      "command": "npm run typecheck && npm run build",
+      "result": "runtime JSX PASS 89 JSX / 537 graph files; bundle 1fde83a6",
+      "status": "passed"
+    }
+  ]
+}

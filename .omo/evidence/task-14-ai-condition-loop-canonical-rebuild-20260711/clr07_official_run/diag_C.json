@@ -1,0 +1,150 @@
+{
+  "status": "error",
+  "message": "backtest completed without metrics",
+  "timestamp": "2026-07-12 11:17:49",
+  "checkpoint_status": "error",
+  "last_checkpoint": "csv_detected",
+  "elapsed_seconds": 55.575,
+  "checkpoints": [
+    {
+      "name": "preflight_started",
+      "elapsed_seconds": 0.0,
+      "detail": {
+        "buy_strategy": "CLR07_ablation_buy_C",
+        "sell_strategy": "CLR07_ablation_sell_C",
+        "start_date": 20250408,
+        "end_date": 20250423,
+        "is_tick": false,
+        "engine_count": 1
+      }
+    },
+    {
+      "name": "dict_set_synced",
+      "elapsed_seconds": 0.0,
+      "detail": {}
+    },
+    {
+      "name": "backtest_watermark_ready",
+      "elapsed_seconds": 0.358,
+      "detail": {
+        "backtest_rowid_watermark": 6815
+      }
+    },
+    {
+      "name": "engine_processes_started",
+      "elapsed_seconds": 13.612,
+      "detail": {
+        "engine_count": 1
+      }
+    },
+    {
+      "name": "stock_back_db_selected",
+      "elapsed_seconds": 13.612,
+      "detail": {
+        "db_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database\\stock_min_back.db"
+      }
+    },
+    {
+      "name": "moneytop_loaded",
+      "elapsed_seconds": 13.763,
+      "detail": {
+        "rows": 4560
+      }
+    },
+    {
+      "name": "engine_data_load_requested",
+      "elapsed_seconds": 13.817,
+      "detail": {
+        "expected_count": 1,
+        "data_list_count": 5,
+        "avg_list": [
+          60
+        ]
+      }
+    },
+    {
+      "name": "engine_data_response_wait_started",
+      "elapsed_seconds": 13.817,
+      "detail": {
+        "expected_count": 1,
+        "timeout_seconds": 300
+      }
+    },
+    {
+      "name": "engine_data_response_received",
+      "elapsed_seconds": 40.729,
+      "detail": {
+        "expected_count": 1,
+        "received_count": 1,
+        "response_index": 0,
+        "chunk_count": 5
+      }
+    },
+    {
+      "name": "shared_data_loaded",
+      "elapsed_seconds": 40.73,
+      "detail": {
+        "back_count": 5
+      }
+    },
+    {
+      "name": "engine_data_load_completed",
+      "elapsed_seconds": 40.73,
+      "detail": {
+        "back_count": 5,
+        "expected_count": 1,
+        "received_count": 1,
+        "received_lengths": [
+          5
+        ]
+      }
+    },
+    {
+      "name": "back_count_ready",
+      "elapsed_seconds": 40.73,
+      "detail": {
+        "back_count": 5
+      }
+    },
+    {
+      "name": "backtest_process_started",
+      "elapsed_seconds": 53.014,
+      "detail": {
+        "pid": 71532
+      }
+    },
+    {
+      "name": "backtest_process_finished",
+      "elapsed_seconds": 55.033,
+      "detail": {
+        "exitcode": 0
+      }
+    },
+    {
+      "name": "csv_detected",
+      "elapsed_seconds": 55.575,
+      "detail": {
+        "csv_path": null
+      }
+    },
+    {
+      "name": "shared_memory_cleanup_started",
+      "elapsed_seconds": 55.575,
+      "detail": {
+        "shared_info_count": 5
+      }
+    },
+    {
+      "name": "shared_memory_cleanup_completed",
+      "elapsed_seconds": 55.575,
+      "detail": {}
+    }
+  ],
+  "backtest_process_diagnostics": {
+    "event_count": 0,
+    "last_checkpoint": null,
+    "last_by_source": {},
+    "events": []
+  },
+  "csv_path": null
+}

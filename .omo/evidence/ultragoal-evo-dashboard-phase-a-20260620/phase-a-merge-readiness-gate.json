@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-20T08:50:00+09:00",
+  "goalId": "G001",
+  "planPath": ".gjc/plans/ralplan/2026-06-19-proxy-oos/pending-approval.md",
+  "phase": "A",
+  "gate": "merge-readiness",
+  "verdict": "blocked",
+  "stopBeforeBackendPhases": true,
+  "reason": "Phase A cannot pass because both current worktree and UI worktree have overlapping dashboard/app.py and frontend/bundle changes; current worktree also has a route addition in dashboard/app.py, so the pre-UI app freeze cannot be confirmed.",
+  "worktrees": {
+    "current": {
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dev",
+      "branch": "lazycodex/tick-sparse-positive-generation-improvement-20260604",
+      "statusCount": 429,
+      "interestChanges": [
+        {"path": "ai_strategy_loop/config.py", "status": "modified"},
+        {"path": "ai_strategy_loop/controller/loop.py", "status": "modified"},
+        {"path": "ai_strategy_loop/dashboard/app.py", "status": "modified"}
+      ],
+      "frontendOrBundleChanges": [
+        "ai_strategy_loop/dashboard/frontend/app.jsx",
+        "ai_strategy_loop/dashboard/frontend/bundle/app.js",
+        "ai_strategy_loop/dashboard/frontend/bundle/manifest.json",
+        "ai_strategy_loop/dashboard/frontend/index.html",
+        "ai_strategy_loop/dashboard/frontend/lab.html",
+        "ai_strategy_loop/dashboard/frontend/pro.html",
+        "ai_strategy_loop/dashboard/frontend/verdict.html",
+        "ai_strategy_loop/dashboard/frontend/evolution-gui-parity-panel.jsx",
+        "ai_strategy_loop/dashboard/frontend/research-records-panel.jsx"
+      ],
+      "runtimeOrProtectedPresent": [".gjc/", "ai_strategy_loop/dashboard/frontend/bundle/app.js", "ai_strategy_loop/dashboard/frontend/bundle/manifest.json"],
+      "dashboardAppFreeze": "failed",
+      "dashboardAppDiffEvidence": "git diff reports 81 insertions including new /time_profit route and CSV fallback helper."
+    },
+    "ui": {
+      "path": "C:/System_Trading/STOM/STOM_V.wt-dashboard-next",
+      "branch": "lazycodex/dashboard-ui-phase3-feedback-20260619",
+      "statusCount": 37,
+      "interestChanges": [
+        {"path": "ai_strategy_loop/controller/contract.py", "status": "modified"},
+        {"path": "ai_strategy_loop/controller/ga.py", "status": "modified"},
+        {"path": "ai_strategy_loop/controller/loop.py", "status": "modified"},
+        {"path": "ai_strategy_loop/controller/state.py", "status": "modified"},
+        {"path": "ai_strategy_loop/dashboard/app.py", "status": "modified"},
+        {"path": "ai_strategy_loop/dashboard/backtest_jobs.py", "status": "modified"},
+        {"path": "ai_strategy_loop/controller/telemetry.py", "status": "untracked"}
+      ],
+      "frontendOrBundleChanges": [
+        "ai_strategy_loop/dashboard/frontend/app.jsx",
+        "ai_strategy_loop/dashboard/frontend/bundle/app.js",
+        "ai_strategy_loop/dashboard/frontend/bundle/manifest.json",
+        "ai_strategy_loop/dashboard/frontend/dashboard-inventory.jsx",
+        "ai_strategy_loop/dashboard/frontend/dashboard-pages.jsx",
+        "ai_strategy_loop/dashboard/frontend/index.html",
+        "ai_strategy_loop/dashboard/frontend/lab.html",
+        "ai_strategy_loop/dashboard/frontend/phase-detail.jsx",
+        "ai_strategy_loop/dashboard/frontend/pro.html",
+        "ai_strategy_loop/dashboard/frontend/research-index.jsx",
+        "ai_strategy_loop/dashboard/frontend/rl-panel.jsx",
+        "ai_strategy_loop/dashboard/frontend/styles.css",
+        "ai_strategy_loop/dashboard/frontend/ui-contract.jsx",
+        "ai_strategy_loop/dashboard/frontend/verdict.html",
+        "ai_strategy_loop/dashboard/webui-build/build-app.mjs",
+        "ai_strategy_loop/dashboard/webui-build/package-lock.json",
+        "ai_strategy_loop/dashboard/webui-build/package.json",
+        "ai_strategy_loop/dashboard/webui-build/track-z-harness.mjs",
+        "ai_strategy_loop/dashboard/webui-build/src/react-jsx-runtime-shim.js"
+      ],
+      "runtimeOrProtectedPresent": [".gjc/", "_database/", "ai_strategy_loop/dashboard/frontend/bundle/app.js", "ai_strategy_loop/dashboard/frontend/bundle/manifest.json"],
+      "dashboardAppDiffEvidence": "git diff reports telemetry status merge and route/static/index behavior changes; UI worktree owns this surface."
+    }
+  },
+  "overlap": [
+    ".gjc/",
+    "ai_strategy_loop/controller/loop.py",
+    "ai_strategy_loop/dashboard/app.py",
+    "ai_strategy_loop/dashboard/frontend/app.jsx",
+    "ai_strategy_loop/dashboard/frontend/bundle/app.js",
+    "ai_strategy_loop/dashboard/frontend/bundle/manifest.json",
+    "ai_strategy_loop/dashboard/frontend/index.html",
+    "ai_strategy_loop/dashboard/frontend/lab.html",
+    "ai_strategy_loop/dashboard/frontend/pro.html",
+    "ai_strategy_loop/dashboard/frontend/verdict.html",
+    "tests/unit/dashboard/test_research_records.py"
+  ],
+  "ownership": {
+    "frontendRoutesLayoutStaticBundles": "ui-worktree",
+    "presetEvidenceScoringPromptSemantics": "backend-plan",
+    "sharedBackendFiles": "manual-reconciliation-only-no-overlay"
+  },
+  "requiredExclusions": [".gjc/", "_database/", "ai_strategy_loop/state/", "__pycache__/", ".pytest_cache/", "test-results/", "screenshots/reference-captures", "frontend bundles/generated build artifacts unless separately approved"],
+  "telemetryFile": {
+    "currentWorktree": "absent-not-applicable",
+    "uiWorktree": "present-untracked-do-not-overlay"
+  },
+  "nextAction": "Do not start backend phases B-D. First finish or reconcile UI worktree and current dashboard/app.py/frontend/bundle changes, then rerun Phase A."
+}

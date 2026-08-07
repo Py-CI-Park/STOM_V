@@ -1,0 +1,292 @@
+{
+  "template": "llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1",
+  "run_id": "mbdisc_036_q1",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_000_B",
+      "status": "ok",
+      "profit": -3796113.0,
+      "mdd": 40.61,
+      "trades": 130
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP min_len=20",
+      "param": "min_len",
+      "value": 20,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_001_B",
+      "status": "ok",
+      "profit": -3577491.0,
+      "mdd": 37.22,
+      "trades": 136
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP min_len=100",
+      "param": "min_len",
+      "value": 100,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_002_B",
+      "status": "ok",
+      "profit": -4092361.0,
+      "mdd": 42.1,
+      "trades": 117
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP min_len=160",
+      "param": "min_len",
+      "value": 160,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_003_B",
+      "status": "ok",
+      "profit": -3244898.0,
+      "mdd": 33.51,
+      "trades": 99
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP min_len=240",
+      "param": "min_len",
+      "value": 240,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_004_B",
+      "status": "ok",
+      "profit": -2086593.0,
+      "mdd": 42.59,
+      "trades": 71
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP min_len=360",
+      "param": "min_len",
+      "value": 360,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_005_B",
+      "status": "ok",
+      "profit": -1471648.0,
+      "mdd": 30.63,
+      "trades": 45
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP b1_cap_max=1500",
+      "param": "b1_cap_max",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_006_B",
+      "status": "ok",
+      "profit": -3231040.0,
+      "mdd": 68.92,
+      "trades": 94
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP b1_cap_max=2000",
+      "param": "b1_cap_max",
+      "value": 2000,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_007_B",
+      "status": "ok",
+      "profit": -3166973.0,
+      "mdd": 34.15,
+      "trades": 110
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP b1_cap_max=3000",
+      "param": "b1_cap_max",
+      "value": 3000,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_008_B",
+      "status": "ok",
+      "profit": -4023297.0,
+      "mdd": 42.85,
+      "trades": 141
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP b1_cap_max=4000",
+      "param": "b1_cap_max",
+      "value": 4000,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_009_B",
+      "status": "ok",
+      "profit": -4873162.0,
+      "mdd": 51.76,
+      "trades": 170
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP b1_cap_max=6000",
+      "param": "b1_cap_max",
+      "value": 6000,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_010_B",
+      "status": "ok",
+      "profit": -5619416.0,
+      "mdd": 39.68,
+      "trades": 205
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP b1_rate_min=0.5",
+      "param": "b1_rate_min",
+      "value": 0.5,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_011_B",
+      "status": "ok",
+      "profit": -3742941.0,
+      "mdd": 40.52,
+      "trades": 130
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP b1_rate_min=3.5",
+      "param": "b1_rate_min",
+      "value": 3.5,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_012_B",
+      "status": "ok",
+      "profit": -3878270.0,
+      "mdd": 41.98,
+      "trades": 129
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP b1_rate_min=5.0",
+      "param": "b1_rate_min",
+      "value": 5.0,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_013_B",
+      "status": "ok",
+      "profit": -3783810.0,
+      "mdd": 41.67,
+      "trades": 123
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP b1_rate_min=7.0",
+      "param": "b1_rate_min",
+      "value": 7.0,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_014_B",
+      "status": "ok",
+      "profit": -3425577.0,
+      "mdd": 36.42,
+      "trades": 117
+    },
+    {
+      "gen_no": 15,
+      "label": "TMAP b1_rate_min=10.0",
+      "param": "b1_rate_min",
+      "value": 10.0,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_015_B",
+      "status": "ok",
+      "profit": -3302142.0,
+      "mdd": 36.51,
+      "trades": 103
+    },
+    {
+      "gen_no": 16,
+      "label": "TMAP b1_day_money_min=2000",
+      "param": "b1_day_money_min",
+      "value": 2000,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_016_B",
+      "status": "ok",
+      "profit": -8464809.0,
+      "mdd": 44.18,
+      "trades": 317
+    },
+    {
+      "gen_no": 17,
+      "label": "TMAP b1_day_money_min=15000",
+      "param": "b1_day_money_min",
+      "value": 15000,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_017_B",
+      "status": "ok",
+      "profit": -3316156.0,
+      "mdd": 68.21,
+      "trades": 78
+    },
+    {
+      "gen_no": 18,
+      "label": "TMAP b1_day_money_min=30000",
+      "param": "b1_day_money_min",
+      "value": 30000,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_018_B",
+      "status": "ok",
+      "profit": -1974020.0,
+      "mdd": 38.83,
+      "trades": 54
+    },
+    {
+      "gen_no": 19,
+      "label": "TMAP b1_day_money_min=60000",
+      "param": "b1_day_money_min",
+      "value": 60000,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_019_B",
+      "status": "ok",
+      "profit": -2249738.0,
+      "mdd": 44.38,
+      "trades": 52
+    },
+    {
+      "gen_no": 20,
+      "label": "TMAP b1_day_money_min=100000",
+      "param": "b1_day_money_min",
+      "value": 100000,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_020_B",
+      "status": "ok",
+      "profit": -2249738.0,
+      "mdd": 44.38,
+      "trades": 52
+    },
+    {
+      "gen_no": 21,
+      "label": "TMAP b1_sec_money_min=30",
+      "param": "b1_sec_money_min",
+      "value": 30,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_021_B",
+      "status": "ok",
+      "profit": -3988699.0,
+      "mdd": 42.51,
+      "trades": 133
+    },
+    {
+      "gen_no": 22,
+      "label": "TMAP b1_sec_money_min=150",
+      "param": "b1_sec_money_min",
+      "value": 150,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_022_B",
+      "status": "ok",
+      "profit": -3152626.0,
+      "mdd": 33.79,
+      "trades": 118
+    },
+    {
+      "gen_no": 23,
+      "label": "TMAP b1_sec_money_min=300",
+      "param": "b1_sec_money_min",
+      "value": 300,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_023_B",
+      "status": "ok",
+      "profit": -2840559.0,
+      "mdd": 28.66,
+      "trades": 93
+    },
+    {
+      "gen_no": 24,
+      "label": "TMAP b1_sec_money_min=600",
+      "param": "b1_sec_money_min",
+      "value": 600,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_024_B",
+      "status": "ok",
+      "profit": -2074639.0,
+      "mdd": 43.34,
+      "trades": 64
+    },
+    {
+      "gen_no": 25,
+      "label": "TMAP b1_sec_money_min=1000",
+      "param": "b1_sec_money_min",
+      "value": 1000,
+      "buy_name": "TMAP_llmgen_tick_anchor_open_small_midlate_conservative_reburst_v1_025_B",
+      "status": "ok",
+      "profit": -2074373.0,
+      "mdd": 40.85,
+      "trades": 55
+    }
+  ]
+}

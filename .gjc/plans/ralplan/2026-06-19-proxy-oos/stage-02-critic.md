@@ -1,0 +1,28 @@
+**[OKAY]**
+
+**Justification**: The revised planner artifact resolves the prior critic blockers and is actionable as a pending-approval plan. It explicitly gates proxy sandbox path isolation before OOS, makes top-trade concentration a mandatory pass gate with thresholds and missing-evidence behavior, preserves the no-execution/no-mutation boundary until approval, and defines verifiable acceptance and verification steps. Architect pass 2 independently recommends APPROVE with only execution-time WATCH items. No material planning gap remains.
+
+**Summary**:
+- Clarity: Strong. The plan states a bounded research objective: at most three `r8_exclude_cap_lt_1500` based single STOM buy/sell proxy pairs, official OOS after approval, baseline/combined comparison, and a final `pass/defer/reject/evidence_blocker` decision card. It remains marked `PENDING APPROVAL — planning only`.
+- Verifiability: Strong. Acceptance criteria include concrete gates: profit > 7,292,861원, MDD <= 19.09%, all gates passed, trades >= 132, at least four positive periods, Q4 > 0, top1_abs_share <= 0.20, top5_abs_share <= 0.50, and reconciled official trade-detail/CSV evidence. Missing or unreconciled trade detail cannot pass.
+- Completeness: Strong for planning. It covers candidate slate, leakage/syntax review, baseline freezing, preflight, official OOS sequence, metric extraction, comparison, decision card, and post-run guardrail check. Product/live/export/operating DB/V3K changes remain out of scope.
+- Big Picture: Fit. The plan correctly treats the combined result as portfolio/CSV simulation evidence, not official buy/sell OOS, and attempts only a single-condition proxy study before deferring fallback operating-rule research.
+- Principle/Option Consistency: Consistent. Option C + Option D follows the principles: balanced candidate slate, proxy-specific run-owned isolation, single proxy constraint, mandatory robustness gates, and no silent promotion. Option E is a constrained fallback, not the default.
+- Alternatives Depth: Adequate. Entry-only, exit-behavior, balanced slate, proxy-specific wrapper, hardcoded wrapper fallback, and invalid direct combined switching are differentiated with useful trade-offs and invalidation conditions.
+- Risk/Verification Rigor: Sufficient. The prior WATCH items are carried into file-level changes, execution preflight, acceptance criteria, verification, and risk/mitigation. Remaining path/concentration concerns are execution-time stop/pass conditions, not planning blockers.
+
+**Referenced artifact verification**:
+- Prior critic `.gjc/plans/ralplan/2026-06-19-proxy-oos/stage-01-critic.md` required three fixes: pin/preflight mutable wrapper paths; make top-trade concentration non-optional; carry both into acceptance, verification, and risk controls. The revision addresses all three.
+- Architect pass 2 `.gjc/plans/ralplan/2026-06-19-proxy-oos/stage-02-architect.md` recommends APPROVE, Product Status CLEAR, Code Status WATCH only for execution-time checks.
+- Spec `.gjc/specs/deep-interview-condition-proxy-official-oos.md` requires max three proxy candidates, official OOS, combined comparison, no live/export/operating DB mutation, and pass/defer/reject card. The revision matches this scope.
+- Official baseline `.omo/evidence/tmap-walkforward/post-q4-r8-lowcap-official-oos-summary-20260619.json` confirms profit 7,292,861원, trades 263, max MDD 19.09%, all gates passed, Q4 profit 310,886원, and 2026 YTD through 2026-02-28.
+- Combined readout `.omo/evidence/tmap-walkforward/post-20260618-combined-portfolio-simulation-readout-20260619.json` confirms profit 39,402,438원, MDD 7.6823%, trade count 1,073, Q4 profit 952,502원, and explicitly says it is not pure official buy/sell OOS or production/export approval.
+- Wrapper `.omo/evidence/tmap-walkforward/run_post_q4_oos_wrapper_20260619.py` hardcodes `post-q4-oos-*` strategy DB, loop DB, snapshots, current-state, and stop-flag paths; the revised plan handles this by preferring a proxy-specific wrapper/config under `.omo/evidence/tmap-walkforward/proxy-oos-<YYYYMMDD>/` and treating existing hardcoded wrapper reuse only as a run-owned, unique-ID, cleanup/collision-recorded fallback.
+- `utility/ai_agent/strategy.txt` exposes the planned buy-side and sell-side variable families, including market-cap/liquidity/strength/orderbook/volatility variables and sell-side `수익률`, `보유시간`, `최고수익률`, `최저수익률`. `utility/ai_agent/rules.txt` requires separated buy/sell strategy output; the plan syntax/leakage review is feasible.
+
+**Representative implementation simulation**:
+1. Path preflight: An executor can select `<run_root>`, enumerate strategy sqlite, loop-runs sqlite, snapshots, current-state JSON, stop flag, logs, summaries/cards, CSV reference policy, cleanup record, and stop before OOS if any target points at operating DBs, baseline evidence, live/export/V3K/KHOPENAPI, or colliding run IDs. This directly resolves the wrapper hardcoding issue.
+2. Candidate design/leakage review: The three-candidate slate can be checked against supported STOM variables before materialization. Buy conditions are constrained away from holdings/result/future/CSV/prior-month PnL state, while sell proxies may use supported holding/result variables available only on sell side.
+3. Decision card: For each candidate, aggregate profit/MDD/gates/trades/period/Q4 metrics can be reconciled with per-trade CSV/equivalent evidence, concentration computed, and final verdict assigned. Missing concentration detail yields `defer` or `evidence_blocker`, never `pass`.
+
+**Concrete required fixes**: None. Final pending-approval plan can be produced.

@@ -1,0 +1,4 @@
+{"event": "cand", "round": 1, "label": "r8_exit2_prior_500k_exclusion", "gate": true, "profit": 31702635, "mdd": 9.2726, "trades": 843, "daily": 0.0, "ts": 1781767069.0367231}
+{"event": "cand", "round": 2, "label": "exit2_skip_after_prior_exit2_loss_500k_else_full", "gate": true, "profit": 46159506, "mdd": 10.9396, "trades": 1359, "daily": 0.0, "ts": 1781767070.0367277}
+{"event": "cand", "round": 3, "label": "r8_q4_loss_main_bucket_<1500", "gate": false, "profit": -835479, "mdd": 35.6902, "trades": 35, "daily": 0.0, "ts": 1781767071.0367353}
+{"event": "cand", "round": 4, "label": "research_docs_auto_exposure_design", "gate": true, "profit": 0, "mdd": 0, "trades": 0, "daily": 0.0, "ts": 1781767072.036736}

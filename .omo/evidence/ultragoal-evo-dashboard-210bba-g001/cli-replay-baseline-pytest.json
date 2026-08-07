@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "python",
+    "-m",
+    "pytest",
+    ".omo/evidence/ultragoal-evo-dashboard-210bba-g001/test_g001_baseline_contract.py",
+    "-q"
+  ],
+  "recordedStdout": ".                                                                        [100%]\n1 passed in 0.85s\n"
+}

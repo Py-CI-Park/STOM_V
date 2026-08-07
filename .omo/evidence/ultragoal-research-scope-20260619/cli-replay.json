@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "bun",
+    "-e",
+    "const fs=require('fs'); const p='docs/update_log/2026-06-19_ai_loop_research_recommended_start_scope.md'; const s=fs.readFileSync(p,'utf8'); const required=['권장 시작 범위 테이블','저시총 제외 방어 조합','45~70분','dashboard frontend/UI 개선','live, V3K','backtest.py','공식 OOS가 수행된 것은 아니다']; const missing=required.filter(x=>!s.includes(x)); if (missing.length) { throw new Error('missing '+missing.join(',')); } console.log('document verification passed');"
+  ],
+  "recordedStdout": "document verification passed\n"
+}

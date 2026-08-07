@@ -1,0 +1,147 @@
+{
+  "generated_at": "2026-06-19T16:11:37.289857+00:00",
+  "status": "passed",
+  "e2eStatus": "passed",
+  "redTeamStatus": "passed",
+  "evidence": "QA verified candidate count, run-owned preflight, JSON parse, script compile, strategy listing/dry-run validation, evidence_blocker decision semantics, process cleanup, and protected path status. Official OOS metrics are explicitly absent because Q4 warm-engine prepare timed out before candidate execution.",
+  "blockers": [],
+  "artifactRefs": [
+    {
+      "id": "preflight",
+      "kind": "api-test-report",
+      "path": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/proxy-oos-preflight-20260619.json",
+      "description": "Run-owned mutable path preflight with no violations."
+    },
+    {
+      "id": "candidate-design",
+      "kind": "api-test-report",
+      "path": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/proxy-candidate-design-20260619.md",
+      "description": "Three proxy condition pair designs with leakage review."
+    },
+    {
+      "id": "decision-card",
+      "kind": "api-test-report",
+      "path": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/proxy-oos-decision-card-20260619.json",
+      "description": "Evidence-blocker decision card for official OOS data-loading timeout."
+    },
+    {
+      "id": "cli-replay",
+      "kind": "command-replay",
+      "path": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/proxy-oos-cli-replay-20260619.json",
+      "description": "Replay-safe JSON parse command and recorded stdout."
+    },
+    {
+      "id": "adversarial-report",
+      "kind": "failure-mode-test",
+      "path": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/proxy-oos-final-verification-20260619.json",
+      "description": "Final verification includes timeout/evidence-blocker handling, process cleanup, and protected path checks."
+    }
+  ],
+  "contractCoverage": [
+    {
+      "id": "contract-max3",
+      "contractRef": "pending plan candidate design",
+      "obligation": "Design up to 3 single proxy buy/sell pairs without CSV switching or prior-month strategy PnL state.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-artifacts"
+      ],
+      "adversarialCaseRefs": [
+        "case-no-overclaim"
+      ]
+    },
+    {
+      "id": "contract-run-owned",
+      "contractRef": "pending plan preflight/run ownership",
+      "obligation": "Use run-owned mutable paths and block forbidden operating/live/export/V3K paths.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-artifacts"
+      ],
+      "adversarialCaseRefs": [
+        "case-forbidden-paths"
+      ]
+    },
+    {
+      "id": "contract-official-oos",
+      "contractRef": "pending plan official OOS sequence",
+      "obligation": "Run Q4 stress first and stop on non-zero runner exit or guardrail failure.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-cli"
+      ],
+      "adversarialCaseRefs": [
+        "case-runner-timeout"
+      ]
+    },
+    {
+      "id": "contract-pass-blocked",
+      "contractRef": "pending plan pass/defer/reject gates",
+      "obligation": "Never pass without reconciled official trade-detail/CSV evidence and concentration metrics.",
+      "status": "covered",
+      "surfaceEvidenceRefs": [
+        "surface-artifacts"
+      ],
+      "adversarialCaseRefs": [
+        "case-no-overclaim"
+      ]
+    }
+  ],
+  "surfaceEvidence": [
+    {
+      "id": "surface-artifacts",
+      "contractRef": "research artifacts",
+      "surface": "api",
+      "invocation": "JSON/SQLite/Markdown artifact inspection and parsing",
+      "verdict": "passed",
+      "artifactRefs": [
+        "preflight",
+        "candidate-design",
+        "decision-card"
+      ]
+    },
+    {
+      "id": "surface-cli",
+      "contractRef": "CLI official runner/dry-run surface",
+      "surface": "cli",
+      "invocation": "proxy wrapper Q4 official OOS attempts plus replay-safe JSON parse and dry-run validation",
+      "verdict": "passed",
+      "artifactRefs": [
+        "cli-replay",
+        "decision-card"
+      ]
+    }
+  ],
+  "adversarialCases": [
+    {
+      "id": "case-runner-timeout",
+      "contractRef": "official OOS stop rule",
+      "scenario": "Warm-engine data loading timed out before any candidate generation rows were recorded.",
+      "expectedBehavior": "Stop official OOS sequence and classify candidates as evidence_blocker rather than pass/reject.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "decision-card"
+      ]
+    },
+    {
+      "id": "case-no-overclaim",
+      "contractRef": "evidence taxonomy",
+      "scenario": "No official CSV/trade detail exists for proxy candidates.",
+      "expectedBehavior": "Do not claim official OOS performance or top-trade concentration; block pass.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "decision-card"
+      ]
+    },
+    {
+      "id": "case-forbidden-paths",
+      "contractRef": "run-owned isolation",
+      "scenario": "Mutable path preflight checks for operating DB/live/export/V3K fragments.",
+      "expectedBehavior": "No violations; no forbidden path targeted.",
+      "verdict": "passed",
+      "artifactRefs": [
+        "preflight"
+      ]
+    }
+  ]
+}

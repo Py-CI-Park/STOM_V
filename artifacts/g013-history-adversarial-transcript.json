@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "goalId": "G013",
+  "bundle": "c319f9cd",
+  "surface": "real Chromium with served production bundle and bounded fetch fixtures",
+  "events": [
+    {"id":"keyboard-disclosure","status":"passed","before":"false","after":"true","regionHidden":false,"focusRetained":true},
+    {"id":"condition-pagination","status":"passed","beforeRows":1,"afterRows":15,"continuationRemoved":true},
+    {"id":"omitted-owner-and-join","status":"passed","input":"conditions omits owner and join_key","observed":{"reason":"malformed_history_research_envelope","governedDetailVisible":false},"screenshot":"artifacts/g013-history-omitted-owner-c319f9cd-1920x1080.png"},
+    {"id":"research-index-missing-row","status":"passed","observed":{"detailUnavailable":true,"foreignMarkdownRendered":false}},
+    {"id":"research-index-wrong-row","status":"passed","observed":{"detailUnavailable":true,"foreignMarkdownRendered":false}},
+    {"id":"legacy-governed-isolation","status":"passed","before":"abmain0716f_p5_typed","after":"abmain0716f_p5_typed"},
+    {"id":"layout","status":"passed","viewport":{"width":1920,"height":1080},"overflow":false,"screenshot":"artifacts/g013-history-adversarial-c319f9cd-1920x1080.png","nonUniform":true}
+  ],
+  "verdict":"passed"
+}

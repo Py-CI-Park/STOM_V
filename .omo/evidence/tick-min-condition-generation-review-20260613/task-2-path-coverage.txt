@@ -1,0 +1,4 @@
+﻿tick LLM count=2
+tick TMAP count=1
+min LLM count=1
+min TMAP count=1

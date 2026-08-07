@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "commit": "33698e7b",
+  "bundle": "1fde83a6",
+  "url": "http://127.0.0.1:18773/ui/evolution/records?tab=history",
+  "viewport": {"width": 1920, "height": 1080},
+  "cases": [
+    {
+      "id": "research-index-path-bearing-detail",
+      "recordId": "doc:docs/research/condition_research/2026-07-02_replay_profile_forensics.md",
+      "apiAvailable": true,
+      "drivePathPresent": false,
+      "uncPathPresent": false,
+      "posixPathPresent": false,
+      "selectedDetailRendered": true,
+      "absoluteFilesystemPathVisible": false,
+      "verdict": "passed"
+    },
+    {
+      "id": "research-index-invalid-date-injection",
+      "input": "Invalid Date",
+      "rendered": "updated —",
+      "invalidDateVisible": false,
+      "safeFallbackVisible": true,
+      "verdict": "passed"
+    },
+    {
+      "id": "evaluation-keyboard-sort",
+      "mount": "served HistoryConditionTreePanel with real /history API responses",
+      "selectedResearchId": "loop_run:abmain0716f_p5_typed",
+      "buttonText": "거래수",
+      "initialAriaSort": "none",
+      "afterEnterAriaSort": "descending",
+      "afterSpaceAriaSort": "ascending",
+      "focusRetainedAfterEnter": true,
+      "focusRetainedAfterSpace": true,
+      "sortButtonCount": 7,
+      "invalidDateVisible": false,
+      "verdict": "passed"
+    }
+  ],
+  "screenshot": "artifacts/g013-history-sealed-1fde83a6-1920x1080.png",
+  "consoleErrors": [],
+  "pageErrors": []
+}

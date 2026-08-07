@@ -9,7 +9,9 @@
 
 | 순서 | 문서 | 내용 |
 |---:|---|---|
-| **0** | **`HANDOFF_2026-08-07_웨이브_W4_W5.md`** | **여기서 시작** — 재개 지점·다음 한 걸음(넓은 격자·사다리)·헌법 8항·코드 자산 지도 |
+| **0** | **`2026-08-07_성공기록과_방법론.md`** | **여기서 시작** — 통한 방법 6가지·성공 수치·왜 아직 확정이 아닌가·다음 우선순위 |
+| 0.001 | `reports/2026-08-07_success_playbook_report.html` | 위의 시각 보고서(차트 5종 · 대시보드 [보고서] 탭) |
+| 0.002 | `HANDOFF_2026-08-07_웨이브_W4_W5.md` | 재개 지점·코드 자산 지도·헌법 10항 |
 | 0.005 | `2026-08-07_wave_w4_w5_results.md` | **W4~W5 실행 결과 — 엔진 A/B 3종 전부 기준선 상회**·전이율 축 분리·min 최초 판독 |
 | 0.006 | `reports/2026-08-07_wave_w4_w5_report.html` | 위의 HTML 보고서 (대시보드 [보고서] 탭 등재 · verified) |
 | 0.008 | `HANDOFF_2026-08-06_웨이브_자율루프.md` | 직전 핸드오프 (W0.9~W4 재개 지점) |
@@ -63,6 +65,8 @@ HANDOFF 2부(QSP7 G0·QSP8) · `2026-08-04_qsp8r_손익비우선_넓은시간_�
 | 도달 지도 API·화면 | `dashboard/reach_map_api.py` · `frontend/bt-reach-map.jsx` | ✅ 페이지 22~24 |
 | 대시보드 연구 페이지 **29종** | `dashboard/` | ✅ (21 + 22~24 + 25·26·27 + **28·29**, 12 강화) |
 | **엔진 실측 A/B**(진입 고정·매도 교체) | `labeling/run_engine_measure.py` | ✅ W4-b · 3종 전부 기준선 상회 |
+| **엔진 축 심판**(합격선=챔피언·짝지은 검정) | `labeling/engine_ladder.py` + `run_engine_ladder` | ✅ 정본 심판 |
+| 성과 차트 생성기 | `build_w4w5_charts.py` → `artifacts/w4w5_*.png` | ✅ 5종 |
 | **min 레인 판독기** | `labeling/run_min_lane_read.py` | ✅ W5-a · 155일 최초 판독 |
 | **상설화 계획기**(백필·재검증) | `controller/standing.py` | ✅ W5-b · 홀드아웃 잠금 |
 | 매도 축 종합 API·화면 | `dashboard/exit_axis_api.py` · `frontend/bt-exit-axis.jsx` | ✅ 페이지 28 |

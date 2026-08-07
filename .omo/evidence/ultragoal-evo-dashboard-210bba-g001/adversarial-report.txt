@@ -1,0 +1,9 @@
+G001 adversarial checks passed after v2 evidence update.
+
+Cases checked:
+- Wrong branch/HEAD: passed; execution worktree branch is feature/evo-dashboard-condition-discovery-governance and HEAD is 210bba854d03a8680ffebfb94f2544c52e81858b.
+- Dirty worktree: passed; git status --short returned empty after telemetry pytest.
+- Missing 210bba seams: passed; page_data, telemetry contract, /status telemetry attach, /ui/evolution routes, dashboard pages, and telemetry tests exist.
+- Protected/runtime path contamination: passed with classification; .omx/reports/v3k-shadow-manifest.json is tracked baseline reference, git status clean, not modified, not source input. _database, _database_v3k_shadow, _log, backup, backtest/graph, and v3k_settings*.json are clean/absent.
+- Invalid baseline test evidence: passed; telemetry pytest reported 5 passed in 11.33s.
+- Accidental live/export/operating DB/V3K/KHOPENAPI/Transformer work: passed; no implementation was performed in G001 and no dirty protected path status exists.

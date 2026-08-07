@@ -1,0 +1,33 @@
+{
+  "schema": "cl_r07_result_v1",
+  "phase": "CL-R07",
+  "verdict": "CL-R07_ENVIRONMENT_BLOCKED",
+  "is_go": false,
+  "is_no_go": false,
+  "run_started": false,
+  "recorded_at_utc": "2026-07-11T00:00:00Z",
+  "approval": "I approve CL-R07 bounded mini-loop only",
+  "feasibility_probe": {
+    "official_engine_present": true,
+    "min_data_present": "_database/stock_min_back.db (1.4G)",
+    "driver_ready": "ai_strategy_loop/scripts/run_canonical_mini_loop.py (commit c3c12d10, 23 tests, 3-pass architect CLEAR)",
+    "provider_probe": {
+      "provider": "gpt_auth",
+      "proxy_started": true,
+      "llm_call_ok": false,
+      "http_status": 401,
+      "errors": ["refresh_token_invalidated", "token_expired", "session ended - please log in again"],
+      "openrouter_api_key": "unset",
+      "openai_api_key": "unset"
+    }
+  },
+  "reason": "No working LLM provider for autonomous candidate generation: gpt_auth OAuth token expired/invalidated (HTTP 401) and no OPENROUTER/OPENAI API key. CL-R07 requires autonomous LLM generation -> autopsy -> regeneration; a fake/batch provider is not autonomous learning (design conclusion provider_batch_is_not_autonomous_learning), so no fake run was performed.",
+  "blocker_class": "human_blocked",
+  "human_resolution_required": [
+    "ChatGPT OAuth re-login (refresh chatgpt_auth.json token) OR",
+    "set OPENROUTER_API_KEY or OPENAI_API_KEY"
+  ],
+  "resume_contract": "After a working provider is available, run run_canonical_mini_loop.py once with the same frozen profile/hashes (no tuning/retry) against the real provider + official engine on an isolated min-data copy.",
+  "downstream_locked": ["CL-R08", "CL-R09 (also awaiting post-2026-07-11 20 trading days)", "CL-R10"],
+  "no_fake_run": true
+}

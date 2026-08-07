@@ -1,0 +1,9 @@
+﻿- Missing proof: no current successful LLM run shows a generated late-tick candidate with CSV, positive metrics, OOS, and WF evidence.
+  - `wf_t2c3_aggregate.json` has 4 ok windows, policy total 9,882,323 vs baseline 8,933,830.
+- Caveat: the aggregate is a sibling file, not `wf_t2c3_20260613/aggregate.json`; the evidence is useful but the runbook path contract should be fixed.
+THETA is the current champion/baseline, not proof that 09:20~09:25 discovery is complete. THETA validates the seed-family baseline and the need for conservative OOS gates. It should be used as the comparison target for late-tick candidates.
+1. 2-quarter smoke: run the exact 09:20~09:25 template on two separated train-like quarters before full sweep.
+3. 2022/2026 OOS: only after a candidate is frozen by predeclared criteria.
+4. 4-window WF aggregate: create a canonical aggregate path and compare policy vs baseline.
+2. Run exact late-tick 2-quarter smoke.
+4. Produce canonical WF aggregate.

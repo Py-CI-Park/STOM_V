@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "recordedAt": "2026-07-19T08:01:00+00:00",
+  "commit": "7a40bc38de587f8b8db53bf2eea3d9af150ad119",
+  "bundle": "62647d3f",
+  "commands": [
+    {"command": "python -m pytest tests/unit/test_alpha_reporting_manifest.py tests/unit/dashboard/test_reports_security.py tests/unit/dashboard/test_research_docs_api.py tests/unit/dashboard/test_research_index.py -q", "status": "passed", "summary": "29 passed before manifest integration repair; current focused report/writer subset rerun 22 passed including writer-to-API and real symlink tests"},
+    {"command": "python -m pytest tests/unit/dashboard/test_reports_security.py tests/unit/test_alpha_reporting_manifest.py -q", "status": "passed", "summary": "22 passed at current implementation"},
+    {"command": "python -m pytest tests/unit/dashboard -q --maxfail=1", "status": "passed", "summary": "805 passed at current HEAD"},
+    {"command": "npm run typecheck && npm run build", "cwd": "ai_strategy_loop/dashboard/webui-build", "status": "passed", "summary": "runtime JSX PASS 89/537; bundle 62647d3f"},
+    {"command": "python -m pytest tests/unit/dashboard/test_track_z_pr1_harness.py -q", "status": "passed", "summary": "15 passed"},
+    {"command": "python scripts/build_research_report.py --commit 732dda8ffa63f9aafd48546d985c8501136555c6", "status": "passed", "summary": "14 scriptless reports plus manifest generated atomically; unmanaged B1 report preserved"}
+  ],
+  "browserEvidence": "artifacts/g006-final-browser-transcript.json",
+  "blockers": []
+}

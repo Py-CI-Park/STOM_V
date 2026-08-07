@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "bundle": "b8da7096",
+  "fixture": "demo-running-max3",
+  "fixtureSetup": "Unreachable BASE intentionally selected to enter the built-in inert demo simulator; setup transport diagnostics were cleared before the measured interaction window.",
+  "dpr": 1,
+  "zoom": "100%",
+  "storage": {"drawer": "closed", "theme": "dark"},
+  "runtimeWindow": {"consoleErrors": [], "pageErrors": []},
+  "viewports": {
+    "3440x1440": {"scrollY": 0, "scrollHeight": 2586, "scrollRatio": 1.7958333333333334, "horizontalOverflow": 0, "rects": {"situation": {"y": 184.53125, "height": 215.4375, "visibleRatio": 1}, "fitness": {"y": 459.15625, "height": 320, "visibleRatio": 1}, "profit": {"y": 415.96875, "height": 491.171875, "visibleRatio": 1}, "quality": {"y": 415.96875, "height": 491.171875, "visibleRatio": 1}, "equity": {"y": 923.140625, "height": 414.515625, "visibleRatio": 1}}},
+    "2560x1440": {"scrollY": 0, "scrollHeight": 2583, "scrollRatio": 1.79375, "horizontalOverflow": 0, "rects": {"situation": {"y": 184.53125, "height": 215.4375, "visibleRatio": 1}, "fitness": {"y": 459.15625, "height": 320, "visibleRatio": 1}, "profit": {"y": 415.96875, "height": 456.984375, "visibleRatio": 1}, "quality": {"y": 415.96875, "height": 456.984375, "visibleRatio": 1}, "equity": {"y": 888.953125, "height": 445.734375, "visibleRatio": 1}}},
+    "1920x1080": {"scrollY": 0, "scrollHeight": 3099, "scrollRatio": 2.8694444444444445, "horizontalOverflow": 0, "rects": {"situation": {"y": 178.46875, "height": 215.4375, "visibleRatio": 1}, "fitness": {"y": 453.09375, "height": 302.390625, "visibleRatio": 1}, "profit": {"y": 772.484375, "height": 456.984375, "visibleRatio": 0.6729237186720005}, "quality": {"y": 772.484375, "height": 456.984375, "visibleRatio": 0.6729237186720005}, "equity": {"y": 1245.46875, "height": 445.734375, "visibleRatio": 0}}},
+    "320x800": {"scrollY": 0, "scrollHeight": 7840, "scrollRatio": 9.8, "horizontalOverflow": 0, "fitnessHeight": 224, "processTabsWidth": 151.5625, "drawerToggleWidth": 114.4375}
+  },
+  "interactionReceipts": {
+    "keyboard": {"ArrowRight": "백테스트", "Home": "생성", "End": "부검", "focusFollowedSelection": true},
+    "pinning": {"sameRunGenerationPreserved": true, "identityChangeReleasedPin": true, "afterIdentityChange": "생성 active"},
+    "drawer": {"opened": {"ariaExpanded": true, "hidden": false, "display": "flex"}, "focusTraversedInside": true, "closed": {"ariaExpanded": false, "hidden": true, "display": "none", "focusReturnedToToggle": true}},
+    "backtest": {"fieldSourceRows": 5, "displayedEvidenceState": "empty", "enginePanelMounted": true}
+  },
+  "acceptance": {"ultrawideCoreGraphsAtLeast90PercentVisible": true, "ultrawideFitnessMax320": true, "ultrawideScrollRatioAtMost2": true, "allViewportsHorizontalOverflowAtMost3": true, "measuredRuntimeConsoleAndPageErrorsZero": true}
+}

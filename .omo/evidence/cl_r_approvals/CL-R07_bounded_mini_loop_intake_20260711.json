@@ -1,0 +1,35 @@
+{
+  "schema": "cl_r_approval_intake_v1",
+  "phase_gate": "CL-R07",
+  "exact_approval_phrase": "I approve CL-R07 bounded mini-loop only",
+  "approval_source": "user message on 2026-07-11 (verbatim literal phrase)",
+  "recorded_at_utc": "2026-07-11T00:00:00Z",
+  "predecessor": "CL-R01..CL-R06 complete (commits 56d23649..fcc24d07); evidence contracts/store/passport/feedback/2x2/phase-contract landed default-OFF",
+  "authorizes": "CL-R07 bounded three-round mini closed-loop ONLY: (todo13) build isolated preregistration + run_canonical_mini_loop.py driver with fake provider/evaluator tests (NO official engine); (todo14) ONE approved official STOM backtest run on ISOLATED strategy+min-data copies outside tracked/protected paths, frozen learning profile, capturing an unbroken learning chain + budget compliance. Success = process proof (learning chain + budget), NOT profitability.",
+  "frozen_budget": {
+    "rounds": 3,
+    "proposals_per_round": 4,
+    "repair_per_round": 2,
+    "discovery_per_round": 2,
+    "evaluated_per_round": 1,
+    "positive_controls": 1,
+    "negative_controls": 1,
+    "final_2x2_ablation": true,
+    "max_official_evaluations": 9,
+    "max_provider_pack_calls": 3,
+    "wall_clock_cap_minutes": 120,
+    "learning_profile": "min single_stock, 5 trading days, engine 1, betting 5, avg_time 30, timeout 300s, warm 120s, MDD cap 40, min 30 trades, daily-avg fallback 0.5"
+  },
+  "still_locked": {
+    "CL-R08": "requires 'I approve CL-R08 bounded min performance only' + CL-R07 GO_PROCESS_PROOF",
+    "CL-R09": "requires 'I approve CL-R09 sealed OOS/WF only' + CL-R08 survivor + prospective post-2026-07-11 20 trading days (do not exist yet)",
+    "CL-R10": "requires 'I approve CL-R10 benchmark promotion review only' + CL-R09 GO_R10 + executable human cohort"
+  },
+  "forbidden_in_this_scope": [
+    "operating _database/ or runtime *.db writes (use isolated copies)",
+    "CL-R08/R09/R10 execution",
+    "tuning/retrying after reading results (technical failure retry only from same hashes with a written failure receipt)",
+    "committing runtime DB/CSV/log bulk",
+    "git add -A"
+  ]
+}

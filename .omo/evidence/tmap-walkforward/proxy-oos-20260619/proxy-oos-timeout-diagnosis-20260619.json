@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-06-19T19:34:17.070999+00:00",
+  "kind": "proxy_oos_timeout_diagnosis",
+  "observed_problem": "Q4 proxy official OOS attempts timed out during warm-engine data loading before any candidate generation rows were recorded.",
+  "root_cause": "stale orphaned Windows multiprocessing children from prior warm-run parents were still running in the repository cwd after parent processes disappeared. 104 orphan --multiprocessing-fork processes were terminated.",
+  "evidence": {
+    "orphan_pattern": "python.exe -c from multiprocessing.spawn import spawn_main ... --multiprocessing-fork with missing parent PID and cwd C:/System_Trading/STOM/STOM_V.wt-dev",
+    "terminated_count": 104,
+    "prior_failed_runs": [
+      "proxy_oos_q4_20260619 tool timeout before prepare completion",
+      "proxy_oos_q4_e8_20260619 engine data loading timed out after 1810s"
+    ]
+  },
+  "fix_applied": [
+    "terminated orphan multiprocessing fork processes in this repo cwd",
+    "created logged runner with process-tree cleanup on timeout",
+    "kept mutable paths inside proxy run root"
+  ],
+  "rerun_plan": [
+    "rerun Q4 stress with logged cleanup wrapper",
+    "only if Q4 yields official evidence, run 2022, 2023, 2024, 2025, 2026 YTD",
+    "recompute decision card from official rows"
+  ]
+}

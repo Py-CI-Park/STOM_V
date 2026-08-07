@@ -1,0 +1,74 @@
+{
+  "generated_at": "2026-06-19T20:34:20Z",
+  "kind": "proxy_oos_rerun_final_verification",
+  "status": "passed",
+  "decision_status": "completed_no_pass",
+  "json_parse": [
+    {
+      "path": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/proxy-oos-timeout-diagnosis-20260619.json",
+      "json_parse": true,
+      "bytes": 1325
+    },
+    {
+      "path": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/proxy-oos-rerun-summary-20260619.json",
+      "json_parse": true,
+      "bytes": 13027
+    },
+    {
+      "path": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/proxy-oos-decision-card-rerun-20260619.json",
+      "json_parse": true,
+      "bytes": 12682
+    },
+    {
+      "path": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/logs/rerun-manifest.json",
+      "json_parse": true,
+      "bytes": 6829
+    },
+    {
+      "path": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/proxy-oos-post-continuation-cleanup-20260619.json",
+      "json_parse": true,
+      "bytes": 2270
+    }
+  ],
+  "sqlite_counts": {
+    "rerun_run_rows": 6,
+    "rerun_generation_rows": 18,
+    "expected_run_rows": 6,
+    "expected_generation_rows": 18,
+    "all_run_rows_after_cleanup": 9,
+    "accepted_generation_rows_after_cleanup": 18
+  },
+  "candidate_decisions": {
+    "P1_entry_liquidity_proxy": "reject",
+    "P2_defensive_exit_proxy": "reject",
+    "P3_trend_vol_exit_proxy": "reject"
+  },
+  "process_scan": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "no_python_multiprocessing_forks": true
+  },
+  "protected_paths_clean": true,
+  "coverage": "Q4 stress plus 2022, 2023, 2024, 2025 full-year and 2026 YTD official OOS rerun rows exist for all 3 proxy candidates.",
+  "notes": [
+    "No proxy candidate passed approved gates.",
+    "No live/export/operating DB/V3K/KHOPENAPI path was touched.",
+    "2026 remains YTD, not full year."
+  ],
+  "post_continuation_cleanup": {
+    "path": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/proxy-oos-post-continuation-cleanup-20260619.json",
+    "aborted_extra_run_id": "proxy_oos_q4_rerun_e32_20260619",
+    "aborted_extra_run_status_recorded": true,
+    "accepted_decision_evidence_excludes_extra_aborted_run": true,
+    "process_cleanup": {
+      "killed_orphan_children": 52,
+      "post_cleanup_scan": "no python.exe multiprocessing-fork/run_proxy_oos/claude_candidate_batch_eval matches via PowerShell scan"
+    },
+    "runs_by_status_after_cleanup": {
+      "complete": 6,
+      "error": 1,
+      "timeout_aborted": 2
+    }
+  }
+}

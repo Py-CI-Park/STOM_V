@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-06-19T17:19:29+0900",
+  "checked_with": "wmic process where name like \"%python%\" get ProcessId,CommandLine",
+  "target_keywords": [
+    "run_post_q4_oos_wrapper_20260619.py",
+    "run_logged_r8_lowcap_oos_20260619.py"
+  ],
+  "orphan_parent_pid_groups": [
+    "217960",
+    "250464",
+    "244884"
+  ],
+  "remaining_target_processes": [],
+  "remaining_orphan_spawn_workers": [],
+  "cleanup_status": "clean",
+  "notes": [
+    "Timed-out logged 2026 replay attempts left orphan multiprocessing workers; wmic delete/taskkill cleanup was executed for run-specific wrapper parents and orphan parent_pid groups.",
+    "Official successful 2026 OOS result remains the initial wrapper-backed run snapshot/log transcript."
+  ]
+}

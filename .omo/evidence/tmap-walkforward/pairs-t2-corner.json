@@ -1,0 +1,22 @@
+[
+  {
+    "label": "FROZEN_THETA",
+    "buy": "THETA_seed_902905_06_B",
+    "sell": "THETA_seed_902905_06_S"
+  },
+  {
+    "label": "T2C1 91000/4000/4.0",
+    "buy": "T2C1_B",
+    "sell": "T2C1_S"
+  },
+  {
+    "label": "T2C2 91000/4000/3.0",
+    "buy": "T2C2_B",
+    "sell": "T2C2_S"
+  },
+  {
+    "label": "T2C3 91500/4000/4.0",
+    "buy": "T2C3_B",
+    "sell": "T2C3_S"
+  }
+]

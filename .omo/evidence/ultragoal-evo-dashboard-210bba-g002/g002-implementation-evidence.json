@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G002",
+  "executionWorktree": "C:/System_Trading/STOM/STOM_V.wt-evo-governance",
+  "branch": "feature/evo-dashboard-condition-discovery-governance",
+  "baselineHead": "210bba854d03a8680ffebfb94f2544c52e81858b",
+  "changedFiles": [
+    "ai_strategy_loop/config.py",
+    "ai_strategy_loop/controller/condition_discovery.py",
+    "ai_strategy_loop/controller/state.py",
+    "ai_strategy_loop/launch_config.py",
+    "tests/unit/test_condition_discovery_policy.py",
+    "tests/unit/test_launch_config.py"
+  ],
+  "implemented": {
+    "conditionDiscoveryPreset": "LoopConfig.condition_discovery_preset with fast/research/promotion validation and GUI field spec",
+    "policyModule": "ai_strategy_loop.controller.condition_discovery resolves preset policy, tick/min windows, staged MDD caps, evidence health, authority labels, and additive page_data merge",
+    "tickPolicy": "tick research/promotion window is fixed at 09:00-09:28",
+    "minPolicy": "research/promotion min requires full session with 15:18/15:19 candidate boundary metadata",
+    "mddPolicy": "effective_mdd_cap is min(configured_mdd_cap, staged preset cap): fast 35, research 25, promotion 15",
+    "evidenceHealth": "CSV/trades/equity/prompt/validation components normalize to explicit statuses and blockers",
+    "activeConfig": "condition_discovery_preset added to active_config snapshot only; no telemetry or export authority change",
+    "requiredEvidenceNotRequiredBypassGuard": "Required evidence explicitly marked not_required is coerced to missing and produces the same missing_or_invalid_<component>_evidence blocker."
+  },
+  "boundaries": {
+    "liveExportOperatingDb": "not touched",
+    "v3kKhopenapi": "not touched",
+    "transformerMl": "not implemented",
+    "advisoryScoreAuthority": "not introduced in G002",
+    "dashboardRouteRewrite": "not touched"
+  },
+  "verification": [
+    {
+      "command": "python -m pytest tests/unit/test_condition_discovery_policy.py tests/unit/test_launch_config.py -q",
+      "result": "26 passed in 1.05s",
+      "artifact": "artifact://406"
+    },
+    {
+      "command": "git diff --check",
+      "result": "clean"
+    },
+    {
+      "command": "python -m pytest tests/unit/dashboard/test_dashboard_telemetry.py tests/unit/test_condition_discovery_policy.py tests/unit/test_launch_config.py -q",
+      "result": "31 passed in 10.83s",
+      "artifact": "artifact://413"
+    },
+    {
+      "command": "git diff --check",
+      "result": "clean_after_bypass_fix"
+    }
+  ],
+  "verdict": "ready_for_rereview"
+}

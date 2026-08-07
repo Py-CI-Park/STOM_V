@@ -1,0 +1,321 @@
+[
+  {
+    "label": "CSS_V7_COMBO_MIN_01_RETEST_PULLBACK_MASTER_SELL",
+    "buy": "CSS_V7_MIN_B_RETEST_PULLBACK_SWITCH_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_MASTER_0900_1518_FIXCALL",
+    "combo_priority": 1,
+    "combo_id": "CSS_V7_COMBO_MIN_01_RETEST_PULLBACK_MASTER_SELL",
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_b_retest_pullback_switch_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_B_RETEST_PULLBACK_SWITCH_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_RETEST_PULLBACK_SWITCH_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_MASTER_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_COMBO_TICK_01_MASTER_EARLY_SESSION",
+    "buy": "CSS_V7_TICK_B_MASTER_0900_0930_FIXCALL",
+    "sell": "CSS_V7_TICK_S_MASTER_0900_0930_FIXCALL",
+    "combo_priority": 2,
+    "combo_id": "CSS_V7_COMBO_TICK_01_MASTER_EARLY_SESSION",
+    "lane": "tick",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_tick_b_master_0900_0930.md",
+    "source_condition_ids": [
+      "CSS_V7_TICK_B_MASTER_0900_0930",
+      "CSS_V7_TICK_S_MASTER_0900_0930"
+    ],
+    "source_buy": "CSS_V7_TICK_B_MASTER_0900_0930",
+    "source_sell": "CSS_V7_TICK_S_MASTER_0900_0930",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_OPT_MIN_B_MASTER_0900_1518",
+    "buy": "CSS_V7_OPT_MIN_B_MASTER_0900_1518",
+    "sell": "CSS_V7_OPT_MIN_S_MASTER_0900_1518",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_opt_min_b_master_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_OPT_MIN_B_MASTER_0900_1518",
+      "CSS_V7_OPT_MIN_S_MASTER_0900_1518"
+    ],
+    "source_buy": "CSS_V7_OPT_MIN_B_MASTER_0900_1518",
+    "source_sell": "CSS_V7_OPT_MIN_S_MASTER_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_OPT_TICK_B_MASTER_0900_0930",
+    "buy": "CSS_V7_OPT_TICK_B_MASTER_0900_0930",
+    "sell": "CSS_V7_OPT_TICK_S_MASTER_0900_0930",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "tick",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_opt_tick_b_master_0900_0930.md",
+    "source_condition_ids": [
+      "CSS_V7_OPT_TICK_B_MASTER_0900_0930",
+      "CSS_V7_OPT_TICK_S_MASTER_0900_0930"
+    ],
+    "source_buy": "CSS_V7_OPT_TICK_B_MASTER_0900_0930",
+    "source_sell": "CSS_V7_OPT_TICK_S_MASTER_0900_0930",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_MIN_B_BOX_BREAKOUT_EVENT_0900_1518",
+    "buy": "CSS_V7_MIN_B_BOX_BREAKOUT_EVENT_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_MASTER_0900_1518_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_b_box_breakout_event_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_B_BOX_BREAKOUT_EVENT_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_BOX_BREAKOUT_EVENT_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_MASTER_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_MIN_B_BOX_LOW_SUPPORT_0900_1518",
+    "buy": "CSS_V7_MIN_B_BOX_LOW_SUPPORT_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_MASTER_0900_1518_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_b_box_low_support_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_B_BOX_LOW_SUPPORT_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_BOX_LOW_SUPPORT_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_MASTER_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_MIN_B_DOJI_INTERNAL_SUPPORT_0900_1518",
+    "buy": "CSS_V7_MIN_B_DOJI_INTERNAL_SUPPORT_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_MASTER_0900_1518_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_b_doji_internal_support_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_B_DOJI_INTERNAL_SUPPORT_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_DOJI_INTERNAL_SUPPORT_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_MASTER_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_MIN_B_DOJI_UPPER_BREAKOUT_0900_1518",
+    "buy": "CSS_V7_MIN_B_DOJI_UPPER_BREAKOUT_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_MASTER_0900_1518_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_b_doji_upper_breakout_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_B_DOJI_UPPER_BREAKOUT_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_DOJI_UPPER_BREAKOUT_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_MASTER_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_MIN_B_GAP_RESISTANCE_PULLBACK_0900_1518",
+    "buy": "CSS_V7_MIN_B_GAP_RESISTANCE_PULLBACK_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_MASTER_0900_1518_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_b_gap_resistance_pullback_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_B_GAP_RESISTANCE_PULLBACK_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_GAP_RESISTANCE_PULLBACK_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_MASTER_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_MIN_B_LONG_BOX_RAPID_RISER_0900_1518",
+    "buy": "CSS_V7_MIN_B_LONG_BOX_RAPID_RISER_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_MASTER_0900_1518_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_b_long_box_rapid_riser_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_B_LONG_BOX_RAPID_RISER_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_LONG_BOX_RAPID_RISER_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_MASTER_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_MIN_B_MASTER_0900_1518",
+    "buy": "CSS_V7_MIN_B_MASTER_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_MASTER_0900_1518_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_b_master_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_B_MASTER_0900_1518",
+      "CSS_V7_MIN_S_MASTER_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_MASTER_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_MASTER_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_MIN_S_BOX_LOWER_BREAKDOWN_0900_1518",
+    "buy": "CSS_V7_MIN_B_MASTER_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_BOX_LOWER_BREAKDOWN_0900_1518_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_s_box_lower_breakdown_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_S_BOX_LOWER_BREAKDOWN_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_MASTER_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_BOX_LOWER_BREAKDOWN_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_MIN_S_DOJI_LOWER_BREAKDOWN_0900_1518",
+    "buy": "CSS_V7_MIN_B_MASTER_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_DOJI_LOWER_BREAKDOWN_0900_1518_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_s_doji_lower_breakdown_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_S_DOJI_LOWER_BREAKDOWN_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_MASTER_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_DOJI_LOWER_BREAKDOWN_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_MIN_S_STRUCTURE_INVALIDATION_0900_1518",
+    "buy": "CSS_V7_MIN_B_MASTER_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_STRUCTURE_INVALIDATION_0900_1518_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_s_structure_invalidation_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_S_STRUCTURE_INVALIDATION_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_MASTER_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_STRUCTURE_INVALIDATION_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_MIN_S_SUPPORT_TO_RESIST_REJECTION_0900_1518",
+    "buy": "CSS_V7_MIN_B_MASTER_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_SUPPORT_TO_RESIST_REJECTION_0900_1518_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_s_support_to_resist_rejection_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_S_SUPPORT_TO_RESIST_REJECTION_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_MASTER_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_SUPPORT_TO_RESIST_REJECTION_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_MIN_S_TARGET_TRAILING_0900_1518",
+    "buy": "CSS_V7_MIN_B_MASTER_0900_1518_FIXCALL",
+    "sell": "CSS_V7_MIN_S_TARGET_TRAILING_0900_1518_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "min",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_min_s_target_trailing_0900_1518.md",
+    "source_condition_ids": [
+      "CSS_V7_MIN_S_TARGET_TRAILING_0900_1518"
+    ],
+    "source_buy": "CSS_V7_MIN_B_MASTER_0900_1518",
+    "source_sell": "CSS_V7_MIN_S_TARGET_TRAILING_0900_1518",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_TICK_B_MICRO_BOX_BREAKOUT_0900_0930",
+    "buy": "CSS_V7_TICK_B_MICRO_BOX_BREAKOUT_0900_0930_FIXCALL",
+    "sell": "CSS_V7_TICK_S_MASTER_0900_0930_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "tick",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_tick_b_micro_box_breakout_0900_0930.md",
+    "source_condition_ids": [
+      "CSS_V7_TICK_B_MICRO_BOX_BREAKOUT_0900_0930"
+    ],
+    "source_buy": "CSS_V7_TICK_B_MICRO_BOX_BREAKOUT_0900_0930",
+    "source_sell": "CSS_V7_TICK_S_MASTER_0900_0930",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_TICK_B_MICRO_DOJI_COMPRESSION_0900_0930",
+    "buy": "CSS_V7_TICK_B_MICRO_DOJI_COMPRESSION_0900_0930_FIXCALL",
+    "sell": "CSS_V7_TICK_S_MASTER_0900_0930_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "tick",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_tick_b_micro_doji_compression_0900_0930.md",
+    "source_condition_ids": [
+      "CSS_V7_TICK_B_MICRO_DOJI_COMPRESSION_0900_0930"
+    ],
+    "source_buy": "CSS_V7_TICK_B_MICRO_DOJI_COMPRESSION_0900_0930",
+    "source_sell": "CSS_V7_TICK_S_MASTER_0900_0930",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_TICK_B_MICRO_RETEST_SUPPORT_0900_0930",
+    "buy": "CSS_V7_TICK_B_MICRO_RETEST_SUPPORT_0900_0930_FIXCALL",
+    "sell": "CSS_V7_TICK_S_MASTER_0900_0930_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "tick",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_tick_b_micro_retest_support_0900_0930.md",
+    "source_condition_ids": [
+      "CSS_V7_TICK_B_MICRO_RETEST_SUPPORT_0900_0930"
+    ],
+    "source_buy": "CSS_V7_TICK_B_MICRO_RETEST_SUPPORT_0900_0930",
+    "source_sell": "CSS_V7_TICK_S_MASTER_0900_0930",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_TICK_S_FAST_INVALIDATION_0900_0930",
+    "buy": "CSS_V7_TICK_B_MASTER_0900_0930_FIXCALL",
+    "sell": "CSS_V7_TICK_S_FAST_INVALIDATION_0900_0930_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "tick",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_tick_s_fast_invalidation_0900_0930.md",
+    "source_condition_ids": [
+      "CSS_V7_TICK_S_FAST_INVALIDATION_0900_0930"
+    ],
+    "source_buy": "CSS_V7_TICK_B_MASTER_0900_0930",
+    "source_sell": "CSS_V7_TICK_S_FAST_INVALIDATION_0900_0930",
+    "repair_version": "fixcall_v1"
+  },
+  {
+    "label": "CSS_V7_TICK_S_MICRO_DOJI_FAIL_0900_0930",
+    "buy": "CSS_V7_TICK_B_MASTER_0900_0930_FIXCALL",
+    "sell": "CSS_V7_TICK_S_MICRO_DOJI_FAIL_0900_0930_FIXCALL",
+    "combo_priority": null,
+    "combo_id": null,
+    "lane": "tick",
+    "passport": "docs\\research\\condition_research\\condition_passports\\chart_sulsa\\css_v7_tick_s_micro_doji_fail_0900_0930.md",
+    "source_condition_ids": [
+      "CSS_V7_TICK_S_MICRO_DOJI_FAIL_0900_0930"
+    ],
+    "source_buy": "CSS_V7_TICK_B_MASTER_0900_0930",
+    "source_sell": "CSS_V7_TICK_S_MICRO_DOJI_FAIL_0900_0930",
+    "repair_version": "fixcall_v1"
+  }
+]

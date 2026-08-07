@@ -1,0 +1,292 @@
+{
+  "template": "llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1",
+  "run_id": "mbdisc_023_q1",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_000_B",
+      "status": "ok",
+      "profit": -7674974.0,
+      "mdd": 38.62,
+      "trades": 237
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP min_len=5",
+      "param": "min_len",
+      "value": 5,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_001_B",
+      "status": "ok",
+      "profit": -7674974.0,
+      "mdd": 38.62,
+      "trades": 237
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP min_len=10",
+      "param": "min_len",
+      "value": 10,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_002_B",
+      "status": "ok",
+      "profit": -7674974.0,
+      "mdd": 38.62,
+      "trades": 237
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP min_len=40",
+      "param": "min_len",
+      "value": 40,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_003_B",
+      "status": "ok",
+      "profit": -5962014.0,
+      "mdd": 40.3,
+      "trades": 184
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP min_len=60",
+      "param": "min_len",
+      "value": 60,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_004_B",
+      "status": "ok",
+      "profit": -1571491.0,
+      "mdd": 15.14,
+      "trades": 59
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP min_len=90",
+      "param": "min_len",
+      "value": 90,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_005_B",
+      "status": "ok",
+      "profit": -1706521.0,
+      "mdd": 16.51,
+      "trades": 55
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP b1_cap_lo=300",
+      "param": "b1_cap_lo",
+      "value": 300,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_006_B",
+      "status": "ok",
+      "profit": -8922421.0,
+      "mdd": 44.78,
+      "trades": 269
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP b1_cap_lo=700",
+      "param": "b1_cap_lo",
+      "value": 700,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_007_B",
+      "status": "ok",
+      "profit": -9086190.0,
+      "mdd": 45.61,
+      "trades": 259
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP b1_cap_lo=1500",
+      "param": "b1_cap_lo",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_008_B",
+      "status": "ok",
+      "profit": -6099045.0,
+      "mdd": 40.82,
+      "trades": 195
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP b1_cap_lo=2500",
+      "param": "b1_cap_lo",
+      "value": 2500,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_009_B",
+      "status": "ok",
+      "profit": -3688856.0,
+      "mdd": 25.21,
+      "trades": 136
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP b1_cap_lo=4000",
+      "param": "b1_cap_lo",
+      "value": 4000,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_010_B",
+      "status": "ok",
+      "profit": -2447344.0,
+      "mdd": 24.81,
+      "trades": 104
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP b1_cap_hi=3000",
+      "param": "b1_cap_hi",
+      "value": 3000,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_011_B",
+      "status": "ok",
+      "profit": -6290770.0,
+      "mdd": 42.28,
+      "trades": 166
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP b1_cap_hi=5000",
+      "param": "b1_cap_hi",
+      "value": 5000,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_012_B",
+      "status": "ok",
+      "profit": -7091226.0,
+      "mdd": 47.56,
+      "trades": 209
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP b1_cap_hi=8000",
+      "param": "b1_cap_hi",
+      "value": 8000,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_013_B",
+      "status": "ok",
+      "profit": -7791604.0,
+      "mdd": 39.45,
+      "trades": 231
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP b1_cap_hi=20000",
+      "param": "b1_cap_hi",
+      "value": 20000,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_014_B",
+      "status": "ok",
+      "profit": -7743744.0,
+      "mdd": 38.96,
+      "trades": 251
+    },
+    {
+      "gen_no": 15,
+      "label": "TMAP b1_cap_hi=35000",
+      "param": "b1_cap_hi",
+      "value": 35000,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_015_B",
+      "status": "ok",
+      "profit": -7864619.0,
+      "mdd": 31.71,
+      "trades": 274
+    },
+    {
+      "gen_no": 16,
+      "label": "TMAP b1_rate_min=0.0",
+      "param": "b1_rate_min",
+      "value": 0.0,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_016_B",
+      "status": "ok",
+      "profit": -7525040.0,
+      "mdd": 37.85,
+      "trades": 245
+    },
+    {
+      "gen_no": 17,
+      "label": "TMAP b1_rate_min=0.5",
+      "param": "b1_rate_min",
+      "value": 0.5,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_017_B",
+      "status": "ok",
+      "profit": -7772400.0,
+      "mdd": 39.1,
+      "trades": 240
+    },
+    {
+      "gen_no": 18,
+      "label": "TMAP b1_rate_min=2.0",
+      "param": "b1_rate_min",
+      "value": 2.0,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_018_B",
+      "status": "ok",
+      "profit": -7588907.0,
+      "mdd": 38.29,
+      "trades": 229
+    },
+    {
+      "gen_no": 19,
+      "label": "TMAP b1_rate_min=3.5",
+      "param": "b1_rate_min",
+      "value": 3.5,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_019_B",
+      "status": "ok",
+      "profit": -7048580.0,
+      "mdd": 47.26,
+      "trades": 210
+    },
+    {
+      "gen_no": 20,
+      "label": "TMAP b1_rate_min=5.0",
+      "param": "b1_rate_min",
+      "value": 5.0,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_020_B",
+      "status": "ok",
+      "profit": -5499652.0,
+      "mdd": 37.11,
+      "trades": 182
+    },
+    {
+      "gen_no": 21,
+      "label": "TMAP b1_rate_max=6.0",
+      "param": "b1_rate_max",
+      "value": 6.0,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_021_B",
+      "status": "ok",
+      "profit": -5205984.0,
+      "mdd": 34.71,
+      "trades": 135
+    },
+    {
+      "gen_no": 22,
+      "label": "TMAP b1_rate_max=9.0",
+      "param": "b1_rate_max",
+      "value": 9.0,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_022_B",
+      "status": "ok",
+      "profit": -5323313.0,
+      "mdd": 36.25,
+      "trades": 170
+    },
+    {
+      "gen_no": 23,
+      "label": "TMAP b1_rate_max=12.0",
+      "param": "b1_rate_max",
+      "value": 12.0,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_023_B",
+      "status": "ok",
+      "profit": -5782724.0,
+      "mdd": 38.58,
+      "trades": 193
+    },
+    {
+      "gen_no": 24,
+      "label": "TMAP b1_rate_max=24.0",
+      "param": "b1_rate_max",
+      "value": 24.0,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_024_B",
+      "status": "ok",
+      "profit": -8019060.0,
+      "mdd": 40.31,
+      "trades": 258
+    },
+    {
+      "gen_no": 25,
+      "label": "TMAP b1_rate_max=30.0",
+      "param": "b1_rate_max",
+      "value": 30.0,
+      "buy_name": "TMAP_llmgen_min_twozone_midcap_cumbuy_am_uppercap_pm_ma_reaccel_clean_v1_025_B",
+      "status": "ok",
+      "profit": -8081969.0,
+      "mdd": 32.51,
+      "trades": 264
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+G002 adversarial review report
+
+Parent verification:
+- python -m pytest tests/unit/dashboard/test_dashboard_telemetry.py tests/unit/test_condition_discovery_policy.py tests/unit/test_launch_config.py -q -> 31 passed in 10.83s
+- git diff --check -> clean
+
+Architect rereview: agent://49-G002ArchitectRereview -> CLEAR/CLEAR/CLEAR, APPROVE, no blockers.
+Executor QA rereview: agent://50-G002QaRereview -> passed/passed/passed, no blockers.
+
+Adversarial cases covered:
+1. Invalid preset injection (`live`) is rejected directly and through config_from_dict.
+2. Required promotion evidence cannot report `not_required` as a bypass; it is coerced to missing and blocked.
+3. Optional fast evidence can be omitted and is marked not_required only when optional.
+4. Tick policy remains 09:00-09:28 for research/promotion.
+5. MIN research/promotion requires full-session candidate boundary 15:18/15:19.
+6. Effective MDD cap is min(configured cap, preset cap); staged caps win over loose user cap.
+7. Existing page_data peers are preserved when condition_discovery is added.
+8. active_config exposes condition_discovery_preset only as visibility metadata.
+9. No score, promotion, export, live DB, V3K, KHOPENAPI, or Transformer authority leak was found.

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "kind": "web-viewport-metrics",
+  "commit": "366f6de96240a93c5150dcf5e72d7c5224b68b7a",
+  "bundle": "d023a101",
+  "rows": [
+    {"viewport":"1920x1080","scrollWidth":1920,"clientWidth":1920,"horizontalOverflow":0,"buildVisible":true,"artifact":"artifacts/g003-backtest-d023a101-light-1920x1080.jpg"},
+    {"viewport":"2560x1440","scrollWidth":2560,"clientWidth":2560,"horizontalOverflow":0,"buildVisible":true,"primaryTickSeconds":true,"artifact":"artifacts/g003-backtest-d023a101-light-2560x1440.jpg"},
+    {"viewport":"3440x1440","scrollWidth":3440,"clientWidth":3440,"horizontalOverflow":0,"buildVisible":true,"primaryTickSeconds":true,"artifact":"artifacts/g003-backtest-d023a101-light-3440x1440.jpg"}
+  ],
+  "verdict": "passed"
+}

@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "tool": "browser",
+  "commit": "62a13ffdd82bb68b58d6a87be44f4cb9b6cbfa0e",
+  "bundle": "1fde83a6",
+  "surface": "http://127.0.0.1:18774/ui/evolution/records?tab=history",
+  "viewport": {"width": 1920, "height": 1080},
+  "results": {
+    "historySelected": true,
+    "horizontalOverflow": 0,
+    "researchIndexStatus": 200,
+    "researchIndexCount": 3436,
+    "recursiveStringAndKeyPathLeakCount": 0,
+    "researchDocStatus": 200,
+    "researchDocId": "docs/research/condition_research/2026-07-17_alpha_lab_full_research_report.md",
+    "researchDocDrivePathLeakCount": 0,
+    "researchDocUncPathLeakCount": 0,
+    "researchDocPosixPathLeakCount": 0,
+    "publicResearchDocsRoutePreserved": true
+  },
+  "screenshot": "artifacts/g013-history-sealed-62a13ffd-populated-1920x1080.jpg",
+  "environment": {
+    "browser": "Chromium",
+    "dpr": 1,
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  "actions": [
+    {
+      "timestamp": "2026-07-19T04:00:00Z",
+      "type": "navigate",
+      "action": "open canonical History route at frozen bundle",
+      "selector": ".v4-root[data-v4-tab=\"history\"]",
+      "result": "passed"
+    },
+    {
+      "timestamp": "2026-07-19T04:00:01Z",
+      "type": "assertion",
+      "action": "fetch public research index and recursively inspect keys and values for filesystem paths",
+      "result": "passed",
+      "recordCount": 3436,
+      "leakCount": 0
+    },
+    {
+      "timestamp": "2026-07-19T04:00:02Z",
+      "type": "assertion",
+      "action": "fetch known path-bearing Wiki document and verify drive, UNC, and POSIX paths are redacted",
+      "result": "passed",
+      "leakCount": 0
+    },
+    {
+      "timestamp": "2026-07-19T04:00:03Z",
+      "type": "capture",
+      "action": "capture non-uniform History screenshot and horizontal overflow",
+      "result": "passed",
+      "overflowX": 0
+    }
+  ],
+  "verdict": "passed"
+}

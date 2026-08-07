@@ -1,0 +1,303 @@
+{
+  "template": "llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6",
+  "run_id": "mbdisc_016_q1",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_000_B",
+      "status": "ok",
+      "profit": -11468071.0,
+      "mdd": 114.55,
+      "trades": 451
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP b1_sec_money_min=30",
+      "param": "b1_sec_money_min",
+      "value": 30,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_001_B",
+      "status": "ok",
+      "profit": -14753836.0,
+      "mdd": 146.69,
+      "trades": 584
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP b1_sec_money_min=150",
+      "param": "b1_sec_money_min",
+      "value": 150,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_002_B",
+      "status": "ok",
+      "profit": -7390374.0,
+      "mdd": 75.09,
+      "trades": 314
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP b1_sec_money_min=300",
+      "param": "b1_sec_money_min",
+      "value": 300,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_003_B",
+      "status": "ok",
+      "profit": -4700857.0,
+      "mdd": 49.79,
+      "trades": 180
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP b1_sec_money_min=600",
+      "param": "b1_sec_money_min",
+      "value": 600,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_004_B",
+      "status": "ok",
+      "profit": -2308800.0,
+      "mdd": 48.75,
+      "trades": 112
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP b1_sec_money_min=1000",
+      "param": "b1_sec_money_min",
+      "value": 1000,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_005_B",
+      "status": "ok",
+      "profit": -2090113.0,
+      "mdd": 42.86,
+      "trades": 105
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP b1_sec_money_min=1800",
+      "param": "b1_sec_money_min",
+      "value": 1800,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_006_B",
+      "status": "ok",
+      "profit": -2085156.0,
+      "mdd": 42.76,
+      "trades": 101
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP min_len=30",
+      "param": "min_len",
+      "value": 30,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_007_B",
+      "status": "ok",
+      "profit": -14937160.0,
+      "mdd": 147.96,
+      "trades": 585
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP min_len=90",
+      "param": "min_len",
+      "value": 90,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_008_B",
+      "status": "ok",
+      "profit": -9585142.0,
+      "mdd": 95.89,
+      "trades": 335
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP min_len=120",
+      "param": "min_len",
+      "value": 120,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_009_B",
+      "status": "ok",
+      "profit": -7456365.0,
+      "mdd": 74.7,
+      "trades": 261
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP min_len=180",
+      "param": "min_len",
+      "value": 180,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_010_B",
+      "status": "ok",
+      "profit": -4558924.0,
+      "mdd": 47.22,
+      "trades": 176
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP min_len=240",
+      "param": "min_len",
+      "value": 240,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_011_B",
+      "status": "ok",
+      "profit": -2777159.0,
+      "mdd": 29.91,
+      "trades": 135
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP b1_rate_min=0.0",
+      "param": "b1_rate_min",
+      "value": 0.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_012_B",
+      "status": "ok",
+      "profit": -11542331.0,
+      "mdd": 115.29,
+      "trades": 453
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP b1_rate_min=2.0",
+      "param": "b1_rate_min",
+      "value": 2.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_013_B",
+      "status": "ok",
+      "profit": -11494213.0,
+      "mdd": 114.81,
+      "trades": 450
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP b1_rate_min=3.5",
+      "param": "b1_rate_min",
+      "value": 3.5,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_014_B",
+      "status": "ok",
+      "profit": -11752949.0,
+      "mdd": 117.39,
+      "trades": 441
+    },
+    {
+      "gen_no": 15,
+      "label": "TMAP b1_rate_min=5.0",
+      "param": "b1_rate_min",
+      "value": 5.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_015_B",
+      "status": "ok",
+      "profit": -11064762.0,
+      "mdd": 110.55,
+      "trades": 425
+    },
+    {
+      "gen_no": 16,
+      "label": "TMAP b1_rate_min=8.0",
+      "param": "b1_rate_min",
+      "value": 8.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_016_B",
+      "status": "ok",
+      "profit": -9286402.0,
+      "mdd": 92.89,
+      "trades": 365
+    },
+    {
+      "gen_no": 17,
+      "label": "TMAP b1_burst_win=10",
+      "param": "b1_burst_win",
+      "value": 10,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_017_B",
+      "status": "ok",
+      "profit": -11741218.0,
+      "mdd": 117.29,
+      "trades": 432
+    },
+    {
+      "gen_no": 18,
+      "label": "TMAP b1_burst_win=20",
+      "param": "b1_burst_win",
+      "value": 20,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_018_B",
+      "status": "ok",
+      "profit": -11669745.0,
+      "mdd": 116.58,
+      "trades": 449
+    },
+    {
+      "gen_no": 19,
+      "label": "TMAP b1_burst_win=45",
+      "param": "b1_burst_win",
+      "value": 45,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_019_B",
+      "status": "ok",
+      "profit": -11984919.0,
+      "mdd": 119.7,
+      "trades": 459
+    },
+    {
+      "gen_no": 20,
+      "label": "TMAP b1_burst_win=60",
+      "param": "b1_burst_win",
+      "value": 60,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_020_B",
+      "status": "ok",
+      "profit": -12143400.0,
+      "mdd": 121.23,
+      "trades": 467
+    },
+    {
+      "gen_no": 21,
+      "label": "TMAP b1_burst_win=90",
+      "param": "b1_burst_win",
+      "value": 90,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_021_B",
+      "status": "ok",
+      "profit": -12105047.0,
+      "mdd": 120.83,
+      "trades": 481
+    },
+    {
+      "gen_no": 22,
+      "label": "TMAP b1_burst_mult=1.2",
+      "param": "b1_burst_mult",
+      "value": 1.2,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_022_B",
+      "status": "ok",
+      "profit": -12505281.0,
+      "mdd": 124.88,
+      "trades": 473
+    },
+    {
+      "gen_no": 23,
+      "label": "TMAP b1_burst_mult=2.0",
+      "param": "b1_burst_mult",
+      "value": 2.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_023_B",
+      "status": "ok",
+      "profit": -10331189.0,
+      "mdd": 103.29,
+      "trades": 399
+    },
+    {
+      "gen_no": 24,
+      "label": "TMAP b1_burst_mult=3.0",
+      "param": "b1_burst_mult",
+      "value": 3.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_024_B",
+      "status": "ok",
+      "profit": -8891974.0,
+      "mdd": 88.94,
+      "trades": 314
+    },
+    {
+      "gen_no": 25,
+      "label": "TMAP b1_burst_mult=5.0",
+      "param": "b1_burst_mult",
+      "value": 5.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_025_B",
+      "status": "ok",
+      "profit": -6155931.0,
+      "mdd": 63.3,
+      "trades": 222
+    },
+    {
+      "gen_no": 26,
+      "label": "TMAP b1_burst_mult=7.0",
+      "param": "b1_burst_mult",
+      "value": 7.0,
+      "buy_name": "TMAP_llmgen_tick_theta_anchor_midupper_late_strict_reignite_isolated_v6_026_B",
+      "status": "ok",
+      "profit": -4056286.0,
+      "mdd": 81.09,
+      "trades": 175
+    }
+  ]
+}

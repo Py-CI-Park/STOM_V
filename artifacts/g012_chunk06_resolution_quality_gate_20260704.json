@@ -1,0 +1,202 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "Architect re-review agent://14-G012ArchitectClear approved G012 cleanly. It verified read-only SQLite URI usage in helper scripts, process scan artifact with zero processMatches for stale/supplement run IDs, preserved stale first attempt, supplement gen10-23 completion, combined 24/24 honest rows, chunk07-only next action, and min/P6/P7 blocked until official tick export.",
+    "commands": [
+      "architect review agent://14-G012ArchitectClear"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Executor QA agent://13-G012Qa passed read-only QA/red-team. Parent verification then parsed JSON/JSONL artifacts, checked DB invariants, checked process-clean artifact, compiled helper scripts, ran focused pytest with 19 passed, and ran git diff --check with only the known CRLF warning.",
+    "e2eCommands": [
+      "python artifacts/record_chunk06_blocker.py",
+      "python -u -m ai_strategy_loop.scripts.claude_candidate_batch_eval --pairs-json docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk06_supplement10_23_20260704.json --config-json docs/research/condition_research/research_runs/seed_lattice_20260702/smoke_config_tick_official_full_warm64_20260704.json --run-id lat_tick_official_full_warm64_chunk06_supplement10_23_20260704 --fail-fast-timeout",
+      "python artifacts/build_chunk06_receipts.py",
+      "python - <<'PY' ... G012 JSON/DB/process invariant check ... PY"
+    ],
+    "redTeamCommands": [
+      "executor QA/red-team review agent://13-G012Qa",
+      "python -m py_compile artifacts/record_chunk06_blocker.py artifacts/build_chunk06_receipts.py",
+      "pytest tests/unit/test_warm_session_window.py tests/unit/test_lattice_p5_batch_repair.py tests/unit/test_plan_b_p5_profile_audit.py -q",
+      "git diff --check"
+    ],
+    "artifactRefs": [
+      {
+        "id": "A1",
+        "kind": "algorithm-test-report",
+        "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk06_blocker_official_full_warm64_20260704_receipt.json",
+        "description": "Blocker receipt preserving first chunk06 attempt as stale partial with 10/24 rows and missing gen10-23."
+      },
+      {
+        "id": "A2",
+        "kind": "algorithm-test-report",
+        "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/pairs_tick_official_full_warm64_chunk06_supplement10_23_20260704.json",
+        "description": "Supplement manifest covering missing original gen10-23 only."
+      },
+      {
+        "id": "A3",
+        "kind": "algorithm-test-report",
+        "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk06_supplement10_23_official_full_warm64_20260704_receipt.json",
+        "description": "Supplement run receipt with 14/14 honest ok rows."
+      },
+      {
+        "id": "A4",
+        "kind": "algorithm-test-report",
+        "path": "docs/research/condition_research/research_runs/seed_lattice_20260702/p5_tick_chunk06_official_full_warm64_20260704_receipt.json",
+        "description": "Combined official chunk06 receipt with 24/24 honest ok rows and source lineage."
+      },
+      {
+        "id": "A5",
+        "kind": "test-report",
+        "path": "artifacts/g012_chunk06_resolution_verification_20260704.json",
+        "description": "Parent verification artifact summarizing DB, process, test, and constraint evidence."
+      },
+      {
+        "id": "A6",
+        "kind": "test-report",
+        "path": "artifacts/g012_chunk06_process_scan_20260705.json",
+        "description": "Post-resolution process scan artifact showing no live python process for original or supplement run IDs."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "C1",
+        "contractRef": "G012 stale-first-attempt-preservation",
+        "obligation": "Preserve lat_tick_official_full_warm64_chunk06_20260704 as stale partial evidence without DB UPDATE/DELETE.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["S1", "S4"],
+        "adversarialCaseRefs": ["R1", "R4"]
+      },
+      {
+        "id": "C2",
+        "contractRef": "G012 supplement-range",
+        "obligation": "Run only missing gen10-23 in a new supplement run id with --fail-fast-timeout.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["S2", "S3"],
+        "adversarialCaseRefs": ["R2"]
+      },
+      {
+        "id": "C3",
+        "contractRef": "G012 combined-24-row-receipt",
+        "obligation": "Assemble a combined official chunk06 receipt with 24 honest official rows and source lineage.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["S4"],
+        "adversarialCaseRefs": ["R3"]
+      },
+      {
+        "id": "C4",
+        "contractRef": "G012 downstream-blocks",
+        "obligation": "Allow chunk07 next only after chunk06 resolution while keeping min/P6/P7 blocked until official tick export.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["S5"],
+        "adversarialCaseRefs": ["R5"]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "S1",
+        "contractRef": "G012 stale-first-attempt-preservation",
+        "surface": "algorithm",
+        "invocation": "Read blocker handoff/receipt and DB invariant check for original run status running with 10 rows.",
+        "verdict": "passed",
+        "artifactRefs": ["A1", "A5"]
+      },
+      {
+        "id": "S2",
+        "contractRef": "G012 supplement-range",
+        "surface": "algorithm",
+        "invocation": "Read supplement manifest and verify chunk06_original_gen_no 10..23.",
+        "verdict": "passed",
+        "artifactRefs": ["A2"]
+      },
+      {
+        "id": "S3",
+        "contractRef": "G012 supplement-completion",
+        "surface": "algorithm",
+        "invocation": "Run supplement batch and verify supplement receipt status complete with 14 rows.",
+        "verdict": "passed",
+        "artifactRefs": ["A3", "A5"]
+      },
+      {
+        "id": "S4",
+        "contractRef": "G012 combined-24-row-receipt",
+        "surface": "algorithm",
+        "invocation": "Build and validate combined chunk06 receipt official_gen_no 0..23 and 24/24 ok rows.",
+        "verdict": "passed",
+        "artifactRefs": ["A4", "A5"]
+      },
+      {
+        "id": "S5",
+        "contractRef": "G012 downstream-blocks",
+        "surface": "algorithm",
+        "invocation": "Inspect plan, boulder, ledger and combined receipt next_allowed_action/blockers.",
+        "verdict": "passed",
+        "artifactRefs": ["A4", "A5"]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "R1",
+        "contractRef": "G012 stale-first-attempt-preservation",
+        "scenario": "First chunk06 run is accidentally treated as complete despite only 10 rows.",
+        "expectedBehavior": "Reject and preserve as stale partial evidence.",
+        "verdict": "passed",
+        "artifactRefs": ["A1", "A4"]
+      },
+      {
+        "id": "R2",
+        "contractRef": "G012 supplement-range",
+        "scenario": "Supplement skips, duplicates, or overreaches outside gen10-23.",
+        "expectedBehavior": "Reject unless exactly gen10-23 are covered.",
+        "verdict": "passed",
+        "artifactRefs": ["A2", "A3"]
+      },
+      {
+        "id": "R3",
+        "contractRef": "G012 combined-24-row-receipt",
+        "scenario": "Combined receipt hides missing/duplicate official rows.",
+        "expectedBehavior": "Reject unless official_gen_no is exactly 0..23 and rows are honest.",
+        "verdict": "passed",
+        "artifactRefs": ["A4", "A5"]
+      },
+      {
+        "id": "R4",
+        "contractRef": "G012 no-db-mutation",
+        "scenario": "Resolution silently uses DB UPDATE/DELETE to repair stale state.",
+        "expectedBehavior": "Reject any DB UPDATE/DELETE; preserve stale state append-only.",
+        "verdict": "passed",
+        "artifactRefs": ["A1", "A4", "A5"]
+      },
+      {
+        "id": "R5",
+        "contractRef": "G012 downstream-blocks",
+        "scenario": "Chunk06 resolution accidentally unblocks min/P6/P7 or treats rows as survivors.",
+        "expectedBehavior": "Only chunk07 is next; min/P6/P7 remain blocked; rows remain coverage-map evidence only.",
+        "verdict": "passed",
+        "artifactRefs": ["A4", "A5"]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Full G012 verification reran after addressing architect WATCH items: artifacts parse, ledger parses, combined receipt invariants hold, supplement DB status is complete with 14 rows, post-resolution process scan artifact has no matches, helper scripts compile, focused pytest reports 19 passed, git diff --check has only known CRLF warning. Architect review is CLEAR/CLEAR/CLEAR APPROVE and executor QA passed with no blockers.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python - <<'PY' ... G012 JSON/DB/process invariant check ... PY",
+      "python -m py_compile artifacts/record_chunk06_blocker.py artifacts/build_chunk06_receipts.py",
+      "pytest tests/unit/test_warm_session_window.py tests/unit/test_lattice_p5_batch_repair.py tests/unit/test_plan_b_p5_profile_audit.py -q",
+      "git diff --check",
+      "architect review agent://14-G012ArchitectClear",
+      "executor QA agent://13-G012Qa"
+    ],
+    "blockers": []
+  }
+}

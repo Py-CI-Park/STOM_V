@@ -1,0 +1,292 @@
+{
+  "template": "llmgen_theta_anchor_conservative_midlate_capgap_reignite",
+  "run_id": "mbdisc_025_q1",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_000_B",
+      "status": "ok",
+      "profit": -3442494.0,
+      "mdd": 23.58,
+      "trades": 213
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP min_len=10",
+      "param": "min_len",
+      "value": 10,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_001_B",
+      "status": "ok",
+      "profit": -3442494.0,
+      "mdd": 23.58,
+      "trades": 213
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP min_len=60",
+      "param": "min_len",
+      "value": 60,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_002_B",
+      "status": "ok",
+      "profit": -4789765.0,
+      "mdd": 35.99,
+      "trades": 189
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP min_len=90",
+      "param": "min_len",
+      "value": 90,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_003_B",
+      "status": "ok",
+      "profit": -3547839.0,
+      "mdd": 28.35,
+      "trades": 165
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP min_len=120",
+      "param": "min_len",
+      "value": 120,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_004_B",
+      "status": "ok",
+      "profit": -5059269.0,
+      "mdd": 38.15,
+      "trades": 141
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP min_len=180",
+      "param": "min_len",
+      "value": 180,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_005_B",
+      "status": "ok",
+      "profit": -3137113.0,
+      "mdd": 26.43,
+      "trades": 106
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP b1_cap_max=1200",
+      "param": "b1_cap_max",
+      "value": 1200,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_006_B",
+      "status": "ok",
+      "profit": -1036757.0,
+      "mdd": 26.37,
+      "trades": 82
+    },
+    {
+      "gen_no": 7,
+      "label": "TMAP b1_cap_max=1500",
+      "param": "b1_cap_max",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_007_B",
+      "status": "ok",
+      "profit": -1588252.0,
+      "mdd": 29.66,
+      "trades": 122
+    },
+    {
+      "gen_no": 8,
+      "label": "TMAP b1_cap_max=1800",
+      "param": "b1_cap_max",
+      "value": 1800,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_008_B",
+      "status": "ok",
+      "profit": -2304659.0,
+      "mdd": 25.95,
+      "trades": 153
+    },
+    {
+      "gen_no": 9,
+      "label": "TMAP b1_cap_max=2200",
+      "param": "b1_cap_max",
+      "value": 2200,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_009_B",
+      "status": "ok",
+      "profit": -2075042.0,
+      "mdd": 18.13,
+      "trades": 188
+    },
+    {
+      "gen_no": 10,
+      "label": "TMAP b1_cap_max=3000",
+      "param": "b1_cap_max",
+      "value": 3000,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_010_B",
+      "status": "ok",
+      "profit": -4837818.0,
+      "mdd": 28.56,
+      "trades": 242
+    },
+    {
+      "gen_no": 11,
+      "label": "TMAP b1_rate_min=0.8",
+      "param": "b1_rate_min",
+      "value": 0.8,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_011_B",
+      "status": "ok",
+      "profit": -3384771.0,
+      "mdd": 23.61,
+      "trades": 214
+    },
+    {
+      "gen_no": 12,
+      "label": "TMAP b1_rate_min=2.5",
+      "param": "b1_rate_min",
+      "value": 2.5,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_012_B",
+      "status": "ok",
+      "profit": -3610572.0,
+      "mdd": 24.8,
+      "trades": 211
+    },
+    {
+      "gen_no": 13,
+      "label": "TMAP b1_rate_min=3.5",
+      "param": "b1_rate_min",
+      "value": 3.5,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_013_B",
+      "status": "ok",
+      "profit": -3912949.0,
+      "mdd": 24.6,
+      "trades": 205
+    },
+    {
+      "gen_no": 14,
+      "label": "TMAP b1_rate_min=5.0",
+      "param": "b1_rate_min",
+      "value": 5.0,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_014_B",
+      "status": "ok",
+      "profit": -3776085.0,
+      "mdd": 33.39,
+      "trades": 192
+    },
+    {
+      "gen_no": 15,
+      "label": "TMAP b1_rate_min=7.0",
+      "param": "b1_rate_min",
+      "value": 7.0,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_015_B",
+      "status": "ok",
+      "profit": -3397585.0,
+      "mdd": 31.34,
+      "trades": 164
+    },
+    {
+      "gen_no": 16,
+      "label": "TMAP b1_rate_max=8.0",
+      "param": "b1_rate_max",
+      "value": 8.0,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_016_B",
+      "status": "ok",
+      "profit": -3023633.0,
+      "mdd": 35.36,
+      "trades": 108
+    },
+    {
+      "gen_no": 17,
+      "label": "TMAP b1_rate_max=12.0",
+      "param": "b1_rate_max",
+      "value": 12.0,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_017_B",
+      "status": "ok",
+      "profit": -3319641.0,
+      "mdd": 29.68,
+      "trades": 167
+    },
+    {
+      "gen_no": 18,
+      "label": "TMAP b1_rate_max=15.0",
+      "param": "b1_rate_max",
+      "value": 15.0,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_018_B",
+      "status": "ok",
+      "profit": -2669561.0,
+      "mdd": 19.62,
+      "trades": 198
+    },
+    {
+      "gen_no": 19,
+      "label": "TMAP b1_rate_max=22.0",
+      "param": "b1_rate_max",
+      "value": 22.0,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_019_B",
+      "status": "ok",
+      "profit": -4162994.0,
+      "mdd": 26.2,
+      "trades": 225
+    },
+    {
+      "gen_no": 20,
+      "label": "TMAP b1_rate_max=28.0",
+      "param": "b1_rate_max",
+      "value": 28.0,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_020_B",
+      "status": "ok",
+      "profit": -4850390.0,
+      "mdd": 29.59,
+      "trades": 230
+    },
+    {
+      "gen_no": 21,
+      "label": "TMAP b1_day_money_min=1500",
+      "param": "b1_day_money_min",
+      "value": 1500,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_021_B",
+      "status": "ok",
+      "profit": -3980724.0,
+      "mdd": 31.09,
+      "trades": 281
+    },
+    {
+      "gen_no": 22,
+      "label": "TMAP b1_day_money_min=6000",
+      "param": "b1_day_money_min",
+      "value": 6000,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_022_B",
+      "status": "ok",
+      "profit": -1948082.0,
+      "mdd": 29.42,
+      "trades": 116
+    },
+    {
+      "gen_no": 23,
+      "label": "TMAP b1_day_money_min=10000",
+      "param": "b1_day_money_min",
+      "value": 10000,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_023_B",
+      "status": "ok",
+      "profit": -2516635.0,
+      "mdd": 29.86,
+      "trades": 69
+    },
+    {
+      "gen_no": 24,
+      "label": "TMAP b1_day_money_min=20000",
+      "param": "b1_day_money_min",
+      "value": 20000,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_024_B",
+      "status": "ok",
+      "profit": -1768007.0,
+      "mdd": 19.37,
+      "trades": 36
+    },
+    {
+      "gen_no": 25,
+      "label": "TMAP b1_day_money_min=40000",
+      "param": "b1_day_money_min",
+      "value": 40000,
+      "buy_name": "TMAP_llmgen_theta_anchor_conservative_midlate_capgap_reignite_025_B",
+      "status": "ok",
+      "profit": -1354070.0,
+      "mdd": 27.98,
+      "trades": 29
+    }
+  ]
+}

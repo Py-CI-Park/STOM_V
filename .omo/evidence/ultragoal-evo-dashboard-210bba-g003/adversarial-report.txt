@@ -1,0 +1,18 @@
+G003 adversarial review report
+
+Parent verification:
+- python -m pytest tests/unit/dashboard/test_dashboard_telemetry.py tests/unit/test_advisory_scores.py tests/unit/test_condition_discovery_policy.py tests/unit/test_launch_config.py -q -> 37 passed in 10.81s
+- git diff --check -> clean
+
+Final architect review: agent://55-G003ArchitectFinalReview -> CLEAR/CLEAR/CLEAR, APPROVE, no blockers.
+Final executor QA review: agent://56-G003QaFinalReview -> passed/passed/passed, no blockers.
+
+Adversarial cases covered:
+1. High score cannot promote/export/select winner; score payload authority flags remain false.
+2. Missing prompt/equity evidence blocks promotion despite high scores.
+3. Hard gate not passed and missing human approval block promotion review readiness.
+4. Required evidence marked not_required is coerced to missing and blocked.
+5. Invalid numeric strings and NaN/inf cannot propagate as final score values.
+6. Valid give_back_rate=0.0 is credited, while invalid give_back_rate is treated as absent.
+7. Condition quality score penalizes forbidden syntax, low diversity, overfire risk, high cost, and weak exit structure.
+8. No live/export/operating DB/V3K/KHOPENAPI/Transformer behavior was added.

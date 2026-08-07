@@ -1,0 +1,6 @@
+﻿does_not_prove_count=5 
+- Contract tests pass, but this does not prove LLM quality.
+- Template validation passes, but this does not prove profitable candidate generation.
+- Warm-window tests pass, but this does not prove OOS robustness.
+- Preset tests pass, but this does not prove dashboard verdict completion.
+- Min template tests pass, but this does not prove full-day min edge.

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kind": "web-layout-metrics",
+  "commit": "17b0aff85a23a4e80de793120ddc7875b9195da7",
+  "bundle": "e08246bb",
+  "cssRevision": "20260718f8",
+  "beforeArtifact": "artifacts/g002-live-gate-metrics.json",
+  "fixture": {"kind": "fixed-running-production-loopstate", "runId": "prod_shape_run", "status": "running", "currentGen": 14, "currentRunOmitted": true, "analysisExtensionOmitted": true},
+  "storage": {"clearedBeforeMount": true, "defaultsAfterMount": {"stom_v4_strategy": "1", "stom_theme": "dark", "stom_v4_analysis": "1", "stom_v4_process": "1"}},
+  "viewports": [
+    {"viewport": {"width": 1920, "height": 1080, "dpr": 1, "zoom": 1}, "selectors": {"situation": {"x": 94, "y": 178, "width": 1808, "height": 241, "visibleRatio": 1}, "fitness": {"x": 94, "y": 433, "width": 1662, "height": 349, "visibleRatio": 1}, "profit": {"x": 94, "y": 798, "width": 824, "height": 502, "visibleRatio": 0.562}, "quality": {"x": 932, "y": 798, "width": 824, "height": 502, "visibleRatio": 0.562}, "equity": {"x": 94, "y": 1315, "width": 824, "height": 553, "visibleRatio": 0}, "hero": {"x": 95, "y": 478, "width": 1660, "height": 302, "visibleRatio": 1}, "drawerToggle": {"x": 1768, "y": 433, "width": 134, "height": 44, "visibleRatio": 1}, "processTab": {"width": 405, "height": 44}}, "scrollHeight": 3049, "scrollRatio": 2.823, "overflowX": 0, "under14Count": 0, "errors": []},
+    {"viewport": {"width": 2560, "height": 1440, "dpr": 1, "zoom": 1}, "selectors": {"situation": {"x": 94, "y": 185, "width": 2448, "height": 241, "visibleRatio": 1}, "fitness": {"x": 94, "y": 439, "width": 758, "height": 536, "visibleRatio": 1}, "profit": {"x": 866, "y": 441, "width": 758, "height": 534, "visibleRatio": 1}, "quality": {"x": 1638, "y": 441, "width": 758, "height": 534, "visibleRatio": 1}, "equity": {"x": 94, "y": 991, "width": 758, "height": 567, "visibleRatio": 0.792}, "hero": {"x": 95, "y": 485, "width": 756, "height": 300, "visibleRatio": 1}, "drawerToggle": {"x": 2408, "y": 439, "width": 134, "height": 44, "visibleRatio": 1}, "processTab": {"width": 565, "height": 44}}, "scrollHeight": 2619, "scrollRatio": 1.819, "overflowX": 0, "under14Count": 0, "errors": []},
+    {"viewport": {"width": 3440, "height": 1440, "dpr": 1, "zoom": 1}, "selectors": {"situation": {"x": 94, "y": 185, "width": 3328, "height": 241, "visibleRatio": 1}, "fitness": {"x": 94, "y": 439, "width": 1051, "height": 499, "visibleRatio": 1}, "profit": {"x": 1159, "y": 441, "width": 1051, "height": 497, "visibleRatio": 1}, "quality": {"x": 2225, "y": 441, "width": 1051, "height": 497, "visibleRatio": 1}, "equity": {"x": 94, "y": 955, "width": 1051, "height": 510, "visibleRatio": 0.951}, "hero": {"x": 95, "y": 485, "width": 1049, "height": 300, "visibleRatio": 1}, "drawerToggle": {"x": 3288, "y": 439, "width": 134, "height": 44, "visibleRatio": 1}, "processTab": {"width": 785, "height": 44}}, "scrollHeight": 2527, "scrollRatio": 1.755, "overflowX": 0, "under14Count": 0, "errors": []}
+  ],
+  "acceptance": {"ultrawideSituationVisible": true, "ultrawideCoreGraphsAtLeast90Percent": true, "heroAtMost320": true, "ultrawideScrollRatioAtMost2": true, "horizontalOverflowAtMost3": true, "bodyTypographyAtLeast14": true, "targetsAtLeast44": true},
+  "verdict": "passed"
+}

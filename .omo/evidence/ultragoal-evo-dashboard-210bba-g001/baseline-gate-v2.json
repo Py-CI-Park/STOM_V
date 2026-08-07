@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-20T13:05:00+09:00",
+  "goalId": "G001",
+  "planPath": ".gjc/plans/ralplan/2026-06-19-proxy-oos/pending-approval.md",
+  "executionWorktree": "C:/System_Trading/STOM/STOM_V.wt-evo-governance",
+  "branch": "feature/evo-dashboard-condition-discovery-governance",
+  "expectedHead": "210bba854d03a8680ffebfb94f2544c52e81858b",
+  "actualHead": "210bba854d03a8680ffebfb94f2544c52e81858b",
+  "worktreeClean": true,
+  "sourceRuntimeArtifactCheck": {
+    ".gjc": "absent",
+    "_database": "absent/untracked-clean/no tracked files",
+    "_database_v3k_shadow": "absent/untracked-clean/no tracked files",
+    "_log": "absent/untracked-clean/no tracked files",
+    "backup": "absent/untracked-clean/no tracked files",
+    "backtest/graph": "absent/untracked-clean/no tracked files",
+    "ai_strategy_loop/state": "tracked placeholder only: .gitignore",
+    "test-results": "tracked placeholder only: .last-run.json",
+    ".omx/reports": "tracked baseline report only: .omx/reports/v3k-shadow-manifest.json; git status clean; classified as existing baseline reference artifact, not a source input and not modified",
+    "v3k_settings*.json": "absent/untracked-clean/no tracked files",
+    "gitStatusAfterVerification": "clean"
+  },
+  "protectedPathStatusCommand": {
+    "cwd": "C:/System_Trading/STOM/STOM_V.wt-evo-governance",
+    "command": "git status --short -- .omx/reports _database _database_v3k_shadow _log backup backtest/graph v3k_settings*.json",
+    "result": "clean"
+  },
+  "baselineSeams": {
+    "contract_page_data": "present in ai_strategy_loop/controller/contract.py LoopState.page_data",
+    "generation_telemetry_fields": "present in ai_strategy_loop/controller/contract.py GenerationInfo telemetry_events and telemetry_contract",
+    "state_to_loop_state_page_data": "present in ai_strategy_loop/controller/state.py to_loop_state(..., page_data=...)",
+    "telemetry_contract": "present in ai_strategy_loop/controller/telemetry.py",
+    "status_attaches_telemetry": "present in ai_strategy_loop/dashboard/app.py _current_state_payload attach_telemetry_to_status",
+    "evolution_routes": "present in ai_strategy_loop/dashboard/app.py /ui/evolution and aliases",
+    "frontend_dashboard_pages": "present in ai_strategy_loop/dashboard/frontend/dashboard-pages.jsx and research-index.jsx",
+    "telemetry_tests": "present in tests/unit/dashboard/test_dashboard_telemetry.py"
+  },
+  "verificationCommands": [
+    {
+      "cwd": "C:/System_Trading/STOM/STOM_V.wt-evo-governance",
+      "command": "python -m pytest tests/unit/dashboard/test_dashboard_telemetry.py -q",
+      "result": "5 passed in 11.33s",
+      "artifact": "artifact://363"
+    }
+  ],
+  "verdict": "pass_with_tracked_baseline_protected_reference_classified",
+  "nextGoalAllowed": true
+}

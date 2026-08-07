@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "goalId": "G013",
+  "bundle": "c319f9cd",
+  "commands": [
+    {"command":"python -m pytest tests/unit/test_history_api.py tests/unit/dashboard/test_research_records.py tests/unit/dashboard/test_v4_replay_history_ui.py tests/unit/dashboard/test_v4_audit_context_contract.py -q","status":"passed","summary":"61 passed in 51.34s"},
+    {"command":"python -m pytest tests/unit/dashboard/test_track_z_pr1_harness.py -q","status":"passed","summary":"15 passed in 242.71s"},
+    {"command":"python -m pytest tests/unit/dashboard -q --maxfail=1","status":"passed","summary":"790 passed in 428.28s"},
+    {"command":"npm run typecheck && npm run build","status":"passed","summary":"89 JSX / 537 graph files; bundle c319f9cd"}
+  ],
+  "verdict":"passed"
+}

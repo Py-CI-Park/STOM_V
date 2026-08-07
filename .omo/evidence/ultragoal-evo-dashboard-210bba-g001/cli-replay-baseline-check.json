@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "python",
+    "-c",
+    "import json, subprocess; p='C:/System_Trading/STOM/STOM_V.wt-evo-governance'; data={'head': subprocess.check_output(['git','rev-parse','HEAD'], cwd=p, text=True).strip(), 'branch': subprocess.check_output(['git','branch','--show-current'], cwd=p, text=True).strip(), 'status': subprocess.check_output(['git','status','--short'], cwd=p, text=True)}; print(json.dumps(data, sort_keys=True))"
+  ],
+  "recordedStdout": "{\"branch\": \"feature/evo-dashboard-condition-discovery-governance\", \"head\": \"210bba854d03a8680ffebfb94f2544c52e81858b\", \"status\": \"\"}\n"
+}

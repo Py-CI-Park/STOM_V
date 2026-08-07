@@ -1,0 +1,83 @@
+{
+  "template": "llmgen_tick_theta1500_midupper_contiguous_rehigh_strict",
+  "run_id": "mbdisc_004_full",
+  "points": [
+    {
+      "gen_no": 0,
+      "label": "TMAP __default__",
+      "param": "__default__",
+      "value": null,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_contiguous_rehigh_strict_000_B",
+      "status": "ok",
+      "profit": -39739492.0,
+      "mdd": 199.79,
+      "trades": 3540
+    },
+    {
+      "gen_no": 1,
+      "label": "TMAP b2_sec_money_min=50",
+      "param": "b2_sec_money_min",
+      "value": 50,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_contiguous_rehigh_strict_001_B",
+      "status": "ok",
+      "profit": -44880973.0,
+      "mdd": 181.22,
+      "trades": 3850
+    },
+    {
+      "gen_no": 2,
+      "label": "TMAP b2_sec_money_min=80",
+      "param": "b2_sec_money_min",
+      "value": 80,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_contiguous_rehigh_strict_002_B",
+      "status": "ok",
+      "profit": -42062697.0,
+      "mdd": 169.91,
+      "trades": 3736
+    },
+    {
+      "gen_no": 3,
+      "label": "TMAP b2_sec_money_min=200",
+      "param": "b2_sec_money_min",
+      "value": 200,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_contiguous_rehigh_strict_003_B",
+      "status": "ok",
+      "profit": -30588073.0,
+      "mdd": 154.59,
+      "trades": 3222
+    },
+    {
+      "gen_no": 4,
+      "label": "TMAP b2_sec_money_min=350",
+      "param": "b2_sec_money_min",
+      "value": 350,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_contiguous_rehigh_strict_004_B",
+      "status": "ok",
+      "profit": -29311991.0,
+      "mdd": 150.69,
+      "trades": 2853
+    },
+    {
+      "gen_no": 5,
+      "label": "TMAP b2_sec_money_min=600",
+      "param": "b2_sec_money_min",
+      "value": 600,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_contiguous_rehigh_strict_005_B",
+      "status": "ok",
+      "profit": -24153838.0,
+      "mdd": 163.55,
+      "trades": 2595
+    },
+    {
+      "gen_no": 6,
+      "label": "TMAP b2_sec_money_min=1000",
+      "param": "b2_sec_money_min",
+      "value": 1000,
+      "buy_name": "TMAP_llmgen_tick_theta1500_midupper_contiguous_rehigh_strict_006_B",
+      "status": "ok",
+      "profit": -21700906.0,
+      "mdd": 147.05,
+      "trades": 2464
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "tool": "browser",
+  "commit": "536b47f7",
+  "bundle": "deb05d2b",
+  "url": "http://127.0.0.1:8770/ui/",
+  "environment": {"browser": "Chromium", "deviceScaleFactor": 1, "theme": "dark", "fixture": "dashboard demo/live read-only envelopes"},
+  "actions": [
+    {"id": "ia-six-rail", "status": "passed", "detail": "History at 1920x1080 exposed exactly Live, Backtest, Replay, History, 성과, Reports and zero horizontal overflow."},
+    {"id": "context-open-close", "status": "passed", "detail": "AI Context trigger opened role=dialog at ?tab=history&v4_context=1, focused its close control, Escape closed it and restored trigger focus."},
+    {"id": "retired-route-migration", "status": "passed", "detail": "/ui/evolution/lab without rollback migrated to tab=history while preserving base; explicit v4_legacy_extras=1 restored the Lab tab and ten-tab compatibility rail."},
+    {"id": "history-owners", "status": "passed", "detail": "History headings include 엣지·변수 분석, 후보 분석·Compare, 연구 Wiki, governed records/index and audit/verdict sections."},
+    {"id": "live-dual-mount", "status": "passed", "detail": "At 3440x1440 the Backtest process tab exposed the reused /edge_ratio heatmap with explicit advisory/non-OOS caveat; four graph cards were visible above fold with zero horizontal overflow."},
+    {"id": "performance-owner", "status": "passed", "detail": "성과 contained Hall-of-Fame and inventory, with no ResearchPro or RunCompare mount."},
+    {"id": "reports-owner", "status": "passed", "detail": "Reports contained the secure report viewer and a sibling read-only Research Wiki section with zero horizontal overflow."}
+  ],
+  "screenshots": [
+    {"path": "artifacts/g005-history-deb05d2b-1920x1080.jpg", "viewport": "1920x1080", "nonUniform": true},
+    {"path": "artifacts/g005-history-deb05d2b-2560x1440.jpg", "viewport": "2560x1440", "nonUniform": true},
+    {"path": "artifacts/g005-live-backtest-deb05d2b-3440x1440.jpg", "viewport": "3440x1440", "nonUniform": true},
+    {"path": "artifacts/g005-context-drawer-deb05d2b-1920x1080.jpg", "viewport": "1920x1080", "nonUniform": true}
+  ],
+  "verdict": "passed"
+}

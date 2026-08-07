@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-19T12:39:21.353397+00:00",
+  "kind": "combined_research_final_verification",
+  "json_checks": [
+    {
+      "path": ".omo/evidence/tmap-walkforward/post-20260618-combined-portfolio-simulation-readout-20260619.json",
+      "json_parse": true,
+      "error": "",
+      "bytes": 6436
+    },
+    {
+      "path": ".omo/evidence/tmap-walkforward/post-20260618-combined-next-research-decision-20260619.json",
+      "json_parse": true,
+      "error": "",
+      "bytes": 2007
+    }
+  ],
+  "handoff_doc": "docs/update_log/2026-06-19_combined_portfolio_simulation_next_research.md",
+  "handoff_doc_exists": true,
+  "protected_path_status_clean": true,
+  "protected_path_stdout": "",
+  "verdict": "passed"
+}

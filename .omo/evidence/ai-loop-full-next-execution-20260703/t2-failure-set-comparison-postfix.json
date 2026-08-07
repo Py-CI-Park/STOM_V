@@ -1,0 +1,40 @@
+{
+  "step": "T2",
+  "baseline_file": ".omo/evidence/ai-loop-full-next-execution-20260703/t0-baseline-unit-gate.txt",
+  "current_file": ".omo/evidence/ai-loop-full-next-execution-20260703/t2-full-unit-gate-postfix.txt",
+  "baseline_result": {
+    "failed": 9,
+    "passed": 3981,
+    "warnings": 40
+  },
+  "current_result": {
+    "failed": 8,
+    "passed": 3997,
+    "warnings": 40
+  },
+  "baseline_failures": [
+    "tests/unit/dashboard/test_backtest_jobs.py::test_cancel_kills_child_tree_and_releases_queue",
+    "tests/unit/test_backtest_button_contract.py::test_backtest_constructor_contract_is_small_and_queue_driven",
+    "tests/unit/test_backtest_process_protocol_diagnostics.py::test_backtest_start_emits_key_protocol_checkpoints",
+    "tests/unit/test_backtest_process_protocol_diagnostics.py::test_total_emits_key_protocol_checkpoints",
+    "tests/unit/test_backtest_spawn_contract_audit.py::test_stock_backtest_spawn_does_not_pass_legacy_long_signature",
+    "tests/unit/test_backtest_spawn_contract_audit.py::test_coin_backtest_spawn_does_not_pass_legacy_long_signature",
+    "tests/unit/test_runner_helpers.py::TestCliDictSetProcessArgs::test_backtest_process_passes_dict_set_to_constructor",
+    "tests/unit/test_tick_seed_timeout_probe.py::test_run_cold_command_uses_warm_window_and_forbidden_tokens_are_absent",
+    "tests/unit/test_ui_jisu_cleanup.py::test_v270_removed_jisu_chart_references_are_fully_cleaned"
+  ],
+  "current_failures": [
+    "tests/unit/test_backtest_button_contract.py::test_backtest_constructor_contract_is_small_and_queue_driven",
+    "tests/unit/test_backtest_process_protocol_diagnostics.py::test_backtest_start_emits_key_protocol_checkpoints",
+    "tests/unit/test_backtest_process_protocol_diagnostics.py::test_total_emits_key_protocol_checkpoints",
+    "tests/unit/test_backtest_spawn_contract_audit.py::test_stock_backtest_spawn_does_not_pass_legacy_long_signature",
+    "tests/unit/test_backtest_spawn_contract_audit.py::test_coin_backtest_spawn_does_not_pass_legacy_long_signature",
+    "tests/unit/test_runner_helpers.py::TestCliDictSetProcessArgs::test_backtest_process_passes_dict_set_to_constructor",
+    "tests/unit/test_tick_seed_timeout_probe.py::test_run_cold_command_uses_warm_window_and_forbidden_tokens_are_absent",
+    "tests/unit/test_ui_jisu_cleanup.py::test_v270_removed_jisu_chart_references_are_fully_cleaned"
+  ],
+  "new_failures": [],
+  "resolved_or_not_reproduced_baseline_failures": [
+    "tests/unit/dashboard/test_backtest_jobs.py::test_cancel_kills_child_tree_and_releases_queue"
+  ]
+}

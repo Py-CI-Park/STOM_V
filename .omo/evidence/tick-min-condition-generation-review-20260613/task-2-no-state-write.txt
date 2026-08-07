@@ -1,0 +1,20 @@
+﻿git status --short:
+ M .omo/boulder.json
+ M ai_strategy_loop/brain/time_cap_bucket.py
+ M tests/unit/test_time_cap_bucket_generation.py
+?? .gjc/
+?? .omo/evidence/tick-min-condition-generation-review-20260613/
+?? .omo/evidence/tmap-walkforward/llmg9_smoke_log.txt
+?? .omo/evidence/tmap-walkforward/pairs-t2-corner.json
+?? .omo/evidence/tmap-walkforward/pairs-t2c3-placebo.json
+?? .omo/evidence/tmap-walkforward/t2_corner_log.txt
+?? .omo/evidence/tmap-walkforward/t2c3_placebo_log.txt
+?? .omo/plans/tick-min-condition-generation-review-20260613.md
+?? ai_strategy_loop/scripts/research_presets.py
+?? ai_strategy_loop/tmap/templates/min_session_0900_1500_rotation.json
+?? ai_strategy_loop/tmap/templates/tick_late_0920_0925_continuation.json
+?? docs/update_log/2026-06-13_late_tick_min_discovery_roadmap.md
+?? tests/unit/test_late_tick_and_min_templates.py
+?? tests/unit/test_research_presets.py
+
+ai_strategy_loop/state new config check:

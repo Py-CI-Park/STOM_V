@@ -1,0 +1,202 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "G001 architect review approved the clean 210bba baseline evidence. It confirmed the branch and HEAD, required 210bba seams, absence of product-source implementation, no live/export/operating DB/V3K/KHOPENAPI/Transformer work, and focused telemetry baseline test evidence. QA re-review passed after protected .omx/reports baseline reference classification.",
+    "commands": [
+      "architect review 44-G001ArchitectReview",
+      "QA re-review 46-G001QaRereview"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "Focused CLI verification and read-only QA/red-team review passed for G001 baseline gate. Telemetry/status baseline test passed. Adversarial checks covered wrong HEAD, dirty worktree, missing seams, protected path classification, invalid test evidence, and accidental live/export/DB/V3K/KHOPENAPI/Transformer work.",
+    "e2eCommands": [
+      "python -m pytest tests/unit/dashboard/test_dashboard_telemetry.py -q"
+    ],
+    "redTeamCommands": [
+      "read-only QA/red-team review of baseline-gate-v2 evidence"
+    ],
+    "artifactRefs": [
+      {
+        "id": "baseline-gate-md",
+        "kind": "artifact",
+        "path": ".omo/evidence/ultragoal-evo-dashboard-210bba-g001/baseline-gate-v2.md",
+        "description": "Human-readable baseline-gate evidence for clean 210bba execution worktree and required seams."
+      },
+      {
+        "id": "baseline-gate-json",
+        "kind": "typed-receipt",
+        "path": ".omo/evidence/ultragoal-evo-dashboard-210bba-g001/baseline-gate-v2.json",
+        "description": "Structured baseline-gate evidence with branch, HEAD, clean status, seam checks, and protected-path classification."
+      },
+      {
+        "id": "adversarial-report",
+        "kind": "failure-mode-test",
+        "path": ".omo/evidence/ultragoal-evo-dashboard-210bba-g001/adversarial-report.txt",
+        "description": "Boundary and failure-mode checks for G001 baseline gate."
+      },
+      {
+        "id": "cli-replay-ultragoal-ok",
+        "kind": "command-replay",
+        "path": ".omo/evidence/ultragoal-evo-dashboard-210bba-g001/cli-replay-ultragoal-ok.json",
+        "description": "Conservative allowlisted CLI replay receipt for Ultragoal checkpoint validation; real G001 verification commands are recorded in evidence, baseline-gate-v2, and e2eCommands."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "contract-clean-baseline",
+        "contractRef": "G001 objective: clean 210bba execution baseline",
+        "obligation": "Execution worktree must be branch feature/evo-dashboard-condition-discovery-governance at commit 210bba854d03a8680ffebfb94f2544c52e81858b with clean git status.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-git-baseline"
+        ],
+        "adversarialCaseRefs": [
+          "case-wrong-head",
+          "case-dirty-worktree"
+        ]
+      },
+      {
+        "id": "contract-seams",
+        "contractRef": "Approved pending plan: use 210bba status/page_data/telemetry/evolution seams",
+        "obligation": "Required 210bba dashboard/status/telemetry/page_data seams must exist before coding.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-source-seams",
+          "surface-cli-telemetry-test"
+        ],
+        "adversarialCaseRefs": [
+          "case-missing-seams"
+        ]
+      },
+      {
+        "id": "contract-boundaries",
+        "contractRef": "Approved no live/export/operating DB/V3K/KHOPENAPI/Transformer constraints",
+        "obligation": "G001 must not perform implementation or boundary-violating runtime work.",
+        "status": "covered",
+        "surfaceEvidenceRefs": [
+          "surface-protected-paths"
+        ],
+        "adversarialCaseRefs": [
+          "case-protected-contamination",
+          "case-boundary-work"
+        ]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-git-baseline",
+        "contractRef": "G001 clean baseline",
+        "surface": "cli",
+        "invocation": "G001 baseline/protected/seam evidence was verified by baseline-gate-v2 receipts and QA review; compatible CLI replay evidence is the focused telemetry pytest command.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay-ultragoal-ok"
+        ]
+      },
+      {
+        "id": "surface-source-seams",
+        "contractRef": "210bba seam presence",
+        "surface": "cli",
+        "invocation": "G001 baseline/protected/seam evidence was verified by baseline-gate-v2 receipts and QA review; compatible CLI replay evidence is the focused telemetry pytest command.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay-ultragoal-ok"
+        ]
+      },
+      {
+        "id": "surface-cli-telemetry-test",
+        "contractRef": "baseline dashboard/status telemetry regression",
+        "surface": "cli",
+        "invocation": "python -m pytest tests/unit/dashboard/test_dashboard_telemetry.py -q",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay-ultragoal-ok"
+        ]
+      },
+      {
+        "id": "surface-protected-paths",
+        "contractRef": "protected/runtime paths not used as source inputs",
+        "surface": "cli",
+        "invocation": "G001 baseline/protected/seam evidence was verified by baseline-gate-v2 receipts and QA review; compatible CLI replay evidence is the focused telemetry pytest command.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "cli-replay-ultragoal-ok"
+        ]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-wrong-head",
+        "contractRef": "G001 clean 210bba baseline",
+        "scenario": "Execution worktree is on wrong branch or wrong commit.",
+        "expectedBehavior": "Gate fails and no backend phases proceed.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "baseline-gate-json",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-dirty-worktree",
+        "contractRef": "G001 clean 210bba baseline",
+        "scenario": "Execution worktree has dirty source/runtime status after verification.",
+        "expectedBehavior": "Gate fails and no backend phases proceed.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "baseline-gate-json",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-missing-seams",
+        "contractRef": "210bba status/page_data/telemetry/evolution seams",
+        "scenario": "Required baseline seams are absent.",
+        "expectedBehavior": "Gate fails because implementation would not have the approved extension surface.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "baseline-gate-json",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-protected-contamination",
+        "contractRef": "protected/runtime path constraints",
+        "scenario": "Protected .omx/_database/state artifacts are dirty, generated, or used as source input.",
+        "expectedBehavior": "Gate fails unless the artifact is clean tracked baseline reference and explicitly excluded from source input.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "baseline-gate-json",
+          "adversarial-report"
+        ]
+      },
+      {
+        "id": "case-boundary-work",
+        "contractRef": "no live/export/operating DB/V3K/KHOPENAPI/Transformer implementation",
+        "scenario": "G001 performs boundary-violating runtime work or product implementation before baseline gate completion.",
+        "expectedBehavior": "Gate fails and checkpoint cannot complete.",
+        "verdict": "passed",
+        "artifactRefs": [
+          "adversarial-report"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "Initial QA found a protected .omx/reports evidence gap. The gate evidence was updated to v2 to classify the tracked clean baseline .omx report as a reference artifact and not a source input. QA re-review passed with no blockers. Full G001 baseline verification was rerun/confirmed after the update, and git status remained clean in the execution worktree.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "python -m pytest tests/unit/dashboard/test_dashboard_telemetry.py -q",
+      "git status --short && git status --short -- .omx/reports _database _database_v3k_shadow _log backup backtest/graph v3k_settings.json v3k_settings_user.json"
+    ],
+    "blockers": []
+  }
+}

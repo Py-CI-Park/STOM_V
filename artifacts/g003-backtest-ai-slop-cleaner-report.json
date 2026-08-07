@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kind": "ai-slop-cleaner-report",
+  "commit": "366f6de96240a93c5150dcf5e72d7c5224b68b7a",
+  "bundle": "d023a101",
+  "verdict": "PASS",
+  "blockerCount": 0,
+  "advisoryCount": 0,
+  "agentRef": "agent://51-G003UnitCleanerConfirm",
+  "resolvedIterations": [
+    "primary result stale-response ownership",
+    "trade detail integrity and cancellation",
+    "accessible input and detail semantics",
+    "official tick/minute hold-time provenance"
+  ],
+  "evidence": "Both metric-primary and analysis-summary fallback units derive from run_context.timeframe; tick engine provenance and current browser fixtures confirm seconds for tick and minutes for minute timeframe."
+}

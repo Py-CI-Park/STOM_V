@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "config_path": "artifacts\\chart_sulsa_validation_20260702\\timeout_probe_tick_valid_micro_config.json",
+  "warm_config": {
+    "start_date": 20250102,
+    "end_date": 20250103,
+    "start_time": 90000,
+    "end_time": 92800,
+    "engine_count": 2,
+    "is_tick": true,
+    "timeout": 600,
+    "run_timeout": 180,
+    "divid_mode": "종목코드별 분류"
+  },
+  "pairs": [
+    {
+      "label": "probe_css_v7_tick_master_fixcall",
+      "buy": "CSS_V7_TICK_B_MASTER_0900_0930_FIXCALL",
+      "sell": "CSS_V7_TICK_S_MASTER_0900_0930_FIXCALL",
+      "elapsed_sec": 15.755,
+      "raw_status": "success",
+      "raw_message": "백테스트 완료",
+      "ok": true,
+      "status": "success",
+      "reason": "ok",
+      "csv_path": "backtest/csv\\stock_bt_CSS_V7_TICK_B_MASTER_0900_0930_FIXCALL_20260703233804.csv",
+      "metrics": {
+        "trade_count": 26,
+        "daily_avg_trades": 13.0,
+        "win_rate": 57.69,
+        "avg_profit_pct": 0.14,
+        "total_profit_pct": 0.72,
+        "total_profit_krw": 178880,
+        "cagr": 89.43,
+        "mdd_pct": 1.46,
+        "mdd_amount": 0.0,
+        "tpi": 1.11,
+        "seed_capital": 25001528.0,
+        "max_hold_count": 5,
+        "avg_hold_time": 193.85,
+        "day_count": 2,
+        "bootstrap_avg": 0.0,
+        "bootstrap_min": 0.0,
+        "bootstrap_max": 0.0
+      },
+      "fitness_error": null,
+      "fitness": {
+        "score": 1.0293915318064732,
+        "gate_passed": true,
+        "reason": "ok",
+        "trade_count": 26,
+        "daily_avg_trades": 13.0,
+        "mdd": 1.46,
+        "profit": 178880.0,
+        "payoff_ratio": 0.9304718875502007,
+        "give_back_rate": 0.0
+      }
+    }
+  ],
+  "prepare": {
+    "elapsed_sec": 45.822,
+    "status": "ok",
+    "back_count": 66,
+    "timing": {
+      "engine_count": 2,
+      "back_count": 66,
+      "status": "ok",
+      "prepare_elapsed": 45.82204549998278,
+      "spawn_subtotals_elapsed": 0.6089765999931842,
+      "spawn_engines_elapsed": 29.701550800004043,
+      "market_data_load_elapsed": 1.2771483000251465,
+      "engine_data_send_elapsed": 14.178030100010801
+    }
+  },
+  "close": {
+    "status": "ok",
+    "elapsed_sec": 5.175
+  },
+  "new_csv_files": [
+    "backtest/csv\\stock_bt_CSS_V7_TICK_B_MASTER_0900_0930_FIXCALL_20260703233804.csv"
+  ]
+}

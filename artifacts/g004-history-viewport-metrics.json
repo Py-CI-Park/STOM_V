@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "kind": "web-dom-metrics",
+  "commit": "0f9ee95c22aad3fc7ab6855e7c9148c145106f5a",
+  "bundle": "3ef01449",
+  "rows": [
+    {"viewport":"1920x1080","scrollWidth":1920,"clientWidth":1920,"horizontalOverflow":0,"selectedResearchId":"loop_run:g004_run","workspaceVisible":true,"artifact":"artifacts/g004-history-3ef01449-1920x1080.jpg"},
+    {"viewport":"2560x1440","scrollWidth":2560,"clientWidth":2560,"horizontalOverflow":0,"selectedResearchId":"loop_run:g004_run","workspaceVisible":true,"artifact":"artifacts/g004-history-3ef01449-2560x1440.jpg"},
+    {"viewport":"3440x1440","scrollWidth":3440,"clientWidth":3440,"horizontalOverflow":0,"selectedResearchId":"loop_run:g004_run","workspaceVisible":true,"artifact":"artifacts/g004-history-3ef01449-3440x1440.jpg"}
+  ],
+  "verdict": "passed"
+}

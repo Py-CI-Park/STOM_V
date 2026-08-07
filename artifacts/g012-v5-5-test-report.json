@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "commit": "42366d7",
+  "commands": [
+    {
+      "command": "python -m pytest tests/unit/dashboard -q",
+      "status": "passed",
+      "summary": "781 passed in 401.18s"
+    },
+    {
+      "command": "python -m pytest tests/unit/dashboard/test_v4_audit_context_contract.py tests/unit/dashboard/test_v4_lab_workbench_contract.py -q",
+      "status": "passed",
+      "summary": "21 passed in 4.82s"
+    },
+    {
+      "command": "npm run typecheck",
+      "cwd": "ai_strategy_loop/dashboard/webui-build",
+      "status": "passed",
+      "summary": "tsc and runtime-jsx PASS; 89 JSX / 537 graph files"
+    },
+    {
+      "command": "npm run build",
+      "cwd": "ai_strategy_loop/dashboard/webui-build",
+      "status": "passed",
+      "summary": "bundle app.js v=ce177aa4; deterministic manifest/html updated"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "summary": "no whitespace errors before commit"
+    }
+  ],
+  "browserArtifact": "artifacts/g012-v5-5-browser-transcript.json",
+  "screenshots": [
+    "artifacts/g012-history-1920x1080.png",
+    "artifacts/g012-reports-2560x1440.png",
+    "artifacts/g012-live-3440x1440.png",
+    "artifacts/g012-hof-1920x1080.png"
+  ]
+}

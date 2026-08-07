@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-03T06:45:22.276629+00:00",
+  "dry_run": true,
+  "status": "dry_run_ok",
+  "source_db": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database\\strategy.db",
+  "loop_db": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\ai_strategy_loop\\state\\loop_strategies.db",
+  "source_rows": 25,
+  "inserted_rows": 0,
+  "collisions": [],
+  "before_counts": {
+    "stockbuy": 4892,
+    "stocksell": 4800
+  },
+  "after_counts": {
+    "stockbuy": 4892,
+    "stocksell": 4800
+  },
+  "post_insert_sha_bad": 0,
+  "backup_path": null,
+  "restore_command": null,
+  "sql_policy": "INSERT-only; no UPDATE/DELETE used"
+}

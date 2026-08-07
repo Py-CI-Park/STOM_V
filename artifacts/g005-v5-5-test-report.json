@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "kind": "test-report",
+  "commit": "536b47f7",
+  "bundle": "deb05d2b",
+  "focused": {"status": "passed", "tests": 59, "command": "python -m pytest tests/unit/dashboard/test_v4_ui_foundation.py tests/unit/dashboard/test_v4_lab_workbench_contract.py tests/unit/dashboard/test_v4_replay_history_ui.py tests/unit/dashboard/test_shell_wiring_parity.py tests/unit/dashboard/test_reports_security.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q"},
+  "integrated": {"status": "passed", "tests": 143, "command": "python -m pytest tests/unit/dashboard/test_shell_wiring_parity.py tests/unit/dashboard/test_v4_ui_foundation.py tests/unit/test_dashboard_phase_mapping.py tests/unit/test_history_api.py tests/unit/dashboard/test_v4_lab_workbench_contract.py tests/unit/dashboard/test_reports_security.py tests/unit/dashboard/test_research_catalog_api.py tests/unit/dashboard/test_v4_replay_history_ui.py tests/unit/dashboard/test_phase9_spa_tabs.py tests/unit/dashboard/test_dashboard_ui_remodel.py tests/unit/dashboard/test_track_z_pr1_harness.py -q"},
+  "frontend": {"typecheck": "passed", "runtimeJsx": "passed", "build": "passed", "bundle": "deb05d2b"},
+  "diffCheck": "pending-final-review"
+}

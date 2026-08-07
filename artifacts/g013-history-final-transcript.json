@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "kind": "browser-automation-transcript",
+  "commitBase": "ad3bbf0d",
+  "bundle": "3a62d80e",
+  "url": "http://127.0.0.1:18773/ui/evolution/records?tab=history",
+  "viewport": {"width": 1920, "height": 1080},
+  "cases": [
+    {
+      "id": "research-index-path-bearing-detail",
+      "recordId": "doc:docs/research/condition_research/2026-07-02_replay_profile_forensics.md",
+      "selectedDetailRendered": true,
+      "absoluteFilesystemPathVisible": false,
+      "invalidDateVisible": false,
+      "horizontalOverflow": false,
+      "verdict": "passed"
+    },
+    {
+      "id": "evaluation-keyboard-sort",
+      "control": "native button inside th[aria-sort]",
+      "buttonText": "거래수",
+      "initialAriaSort": "none",
+      "afterEnterAriaSort": "descending",
+      "afterSpaceAriaSort": "ascending",
+      "focusRetainedAfterEnter": true,
+      "focusRetainedAfterSpace": true,
+      "sortButtonCount": 7,
+      "verdict": "passed"
+    }
+  ],
+  "screenshot": "artifacts/g013-history-final-3a62d80e-1920x1080.png",
+  "consoleErrors": [],
+  "pageErrors": []
+}

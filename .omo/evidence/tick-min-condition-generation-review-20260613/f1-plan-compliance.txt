@@ -1,0 +1,10 @@
+﻿.omo\evidence\tick-min-condition-generation-review-20260613\review-report.md exists=True
+.omo\evidence\tick-min-condition-generation-review-20260613\completion-score-matrix.json exists=True
+.omo\evidence\tick-min-condition-generation-review-20260613\gap-backlog.md exists=True
+.omo\evidence\tick-min-condition-generation-review-20260613\verification.txt exists=True
+.omo\evidence\tick-min-condition-generation-review-20260613\task-1-evidence-inventory.md exists=True
+.omo\evidence\tick-min-condition-generation-review-20260613\task-2-pipeline-contract.md exists=True
+.omo\evidence\tick-min-condition-generation-review-20260613\task-3-test-coverage.md exists=True
+.omo\evidence\tick-min-condition-generation-review-20260613\task-5-tick-late-readiness.md exists=True
+.omo\evidence\tick-min-condition-generation-review-20260613\task-6-min-fullsession-readiness.md exists=True
+.omo\evidence\tick-min-condition-generation-review-20260613\task-7-cli-runbook-review.md exists=True

@@ -1,0 +1,82 @@
+{
+  "generated_at": "2026-06-19T16:09:14.162530+00:00",
+  "kind": "proxy_oos_decision_card",
+  "status": "evidence_blocker",
+  "reason": "Official OOS could not produce candidate trade/result evidence because warm-engine data loading timed out during Q4 stress prepare before any generation ran.",
+  "source_plan": ".gjc/plans/ralplan/2026-06-19-proxy-oos/pending-approval.md",
+  "run_root": ".omo/evidence/tmap-walkforward/proxy-oos-20260619",
+  "preflight_status": "ok",
+  "candidate_count": 3,
+  "candidates": [
+    {
+      "label": "P1_entry_liquidity_proxy",
+      "buy": "PROXY_P1_entry_liquidity_B",
+      "sell": "PROXY_P1_entry_liquidity_S",
+      "decision": "evidence_blocker"
+    },
+    {
+      "label": "P2_defensive_exit_proxy",
+      "buy": "PROXY_P2_defensive_exit_B",
+      "sell": "PROXY_P2_defensive_exit_S",
+      "decision": "evidence_blocker"
+    },
+    {
+      "label": "P3_trend_vol_exit_proxy",
+      "buy": "PROXY_P3_trend_vol_exit_B",
+      "sell": "PROXY_P3_trend_vol_exit_S",
+      "decision": "evidence_blocker"
+    }
+  ],
+  "attempts": [
+    {
+      "run_id": "proxy_oos_q4_20260619",
+      "config": ".omo/evidence/tmap-walkforward/oos-2025-q4-e32-config.json",
+      "pairs_json": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/pairs-proxy-oos-20260619.json",
+      "observed_result": "tool timeout after 2400 seconds; stdout reached only [BATCH] run_id=proxy_oos_q4_20260619 pairs=3; no prepare completion; run-owned DB row marked timeout_aborted",
+      "status": "timeout_aborted"
+    },
+    {
+      "run_id": "proxy_oos_q4_e8_20260619",
+      "config": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/proxy-2025q4-e8-config.json",
+      "pairs_json": ".omo/evidence/tmap-walkforward/proxy-oos-20260619/pairs-proxy-oos-20260619.json",
+      "observed_stdout": "[BATCH] run_id=proxy_oos_q4_e8_20260619 pairs=3\\n[BATCH] prepare status=error back_count=None elapsed=1810s\\n[BATCH] prepare failed: engine data loading timed out",
+      "returncode": 2,
+      "status": "error"
+    }
+  ],
+  "loop_runs_db_rows": [
+    {
+      "run_id": "proxy_oos_q4_20260619",
+      "status": "timeout_aborted",
+      "started_at": 1781880966.0268037,
+      "finished_at": 1781885329.8376634,
+      "best_gen": null,
+      "best_score": null
+    },
+    {
+      "run_id": "proxy_oos_q4_e8_20260619",
+      "status": "error",
+      "started_at": 1781883438.4005299,
+      "finished_at": 1781885248.7855875,
+      "best_gen": null,
+      "best_score": null
+    }
+  ],
+  "generation_rows": 0,
+  "baseline": {
+    "official_r8_profit_krw": 7292861,
+    "official_r8_max_mdd_pct": 19.09,
+    "official_r8_trades": 263,
+    "official_r8_q4_profit_krw": 310886,
+    "combined_profit_krw": 39402438,
+    "combined_mdd_pct": 7.6823,
+    "combined_q4_profit_krw": 952502
+  },
+  "interpretation": [
+    "Candidate condition pairs were generated into an evidence-local strategy sqlite and passed dry-run/config validation.",
+    "No official OOS performance, trade count, MDD, Q4, or concentration metric exists for these proxy candidates because the official warm runner failed during data loading before candidate execution.",
+    "Under the pending plan, missing official trade-detail/CSV evidence blocks pass; the correct decision is evidence_blocker, not pass or reject.",
+    "No live/export/operating DB/V3K/KHOPENAPI path was touched."
+  ],
+  "next_recommendation": "Resolve the official warm-engine data-loading timeout or rerun this exact run root in a known-good OOS environment, then repeat Q4 stress before annual periods."
+}

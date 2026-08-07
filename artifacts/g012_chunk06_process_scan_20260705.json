@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-07-05T03:04:41+09:00",
+  "subject": "G012 chunk06 post-resolution python process scan",
+  "commandSurface": "PowerShell Get-CimInstance Win32_Process filtered to python process names and run_id command lines",
+  "results": {
+    "lat_tick_official_full_warm64_chunk06_20260704": {
+      "rawStdout": "",
+      "processMatches": []
+    },
+    "lat_tick_official_full_warm64_chunk06_supplement10_23_20260704": {
+      "rawStdout": "",
+      "processMatches": []
+    }
+  }
+}

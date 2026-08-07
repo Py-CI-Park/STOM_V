@@ -1,0 +1,2636 @@
+{
+  "generated_at": "2026-06-18T14:10:00+09:00",
+  "method": "Lookback diagnostic over completed OOS CSV: restrict weakest weekday+5-minute entry slots.",
+  "scenarios": [
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "exclude_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 31179769,
+        "return_pct": 311.7977,
+        "annualized_return_pct_calendar": 43.2619,
+        "mdd_pct": 12.8394,
+        "trade_count": 976,
+        "trading_days": 426,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 17468115
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 520
+        },
+        "negative_days": 209,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 62.3595
+      },
+      "profit_delta_krw": 574063,
+      "mdd_delta_pct": 0.0,
+      "blocked_trades": 30
+    },
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "half_size_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 30892738,
+        "return_pct": 308.9274,
+        "annualized_return_pct_calendar": 43.0076,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 17181084
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 217,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.7855
+      },
+      "profit_delta_krw": 287032,
+      "mdd_delta_pct": 0.0,
+      "scaled_trades": 30
+    },
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "exclude_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 30586449,
+        "return_pct": 305.8645,
+        "annualized_return_pct_calendar": 42.7347,
+        "mdd_pct": 12.9762,
+        "trade_count": 922,
+        "trading_days": 405,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16874795
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 466
+        },
+        "negative_days": 197,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.1729
+      },
+      "profit_delta_krw": -19257,
+      "mdd_delta_pct": 0.1368,
+      "blocked_trades": 84
+    },
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "half_size_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 30596078,
+        "return_pct": 305.9608,
+        "annualized_return_pct_calendar": 42.7433,
+        "mdd_pct": 12.9074,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16884424
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 220,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.1922
+      },
+      "profit_delta_krw": -9628,
+      "mdd_delta_pct": 0.068,
+      "scaled_trades": 84
+    },
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "exclude_worst_5_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        },
+        {
+          "slot": "Thu 09:05-09:09",
+          "profit_krw": 649686,
+          "trades": 29
+        },
+        {
+          "slot": "Fri 09:05-09:09",
+          "profit_krw": 1528984,
+          "trades": 39
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 28407779,
+        "return_pct": 284.0778,
+        "annualized_return_pct_calendar": 40.7483,
+        "mdd_pct": 15.8701,
+        "trade_count": 854,
+        "trading_days": 371,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 14696125
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 398
+        },
+        "negative_days": 179,
+        "worst_day": {
+          "day": "2022-04-29",
+          "profit_krw": -857207
+        },
+        "period_normalized_return_pct": 56.8156
+      },
+      "profit_delta_krw": -2197927,
+      "mdd_delta_pct": 3.0307,
+      "blocked_trades": 152
+    },
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "half_size_worst_5_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        },
+        {
+          "slot": "Thu 09:05-09:09",
+          "profit_krw": 649686,
+          "trades": 29
+        },
+        {
+          "slot": "Fri 09:05-09:09",
+          "profit_krw": 1528984,
+          "trades": 39
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 29506742,
+        "return_pct": 295.0674,
+        "annualized_return_pct_calendar": 41.7605,
+        "mdd_pct": 14.3467,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 15795088
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 220,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 59.0135
+      },
+      "profit_delta_krw": -1098964,
+      "mdd_delta_pct": 1.5073,
+      "scaled_trades": 152
+    },
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "exclude_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 32080054,
+        "return_pct": 320.8005,
+        "annualized_return_pct_calendar": 44.0144,
+        "mdd_pct": 9.2726,
+        "trade_count": 887,
+        "trading_days": 379,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 17468115
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 520
+        },
+        "negative_days": 170,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 64.1601
+      },
+      "profit_delta_krw": 574063,
+      "mdd_delta_pct": -0.1176,
+      "blocked_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "half_size_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 31793022,
+        "return_pct": 317.9302,
+        "annualized_return_pct_calendar": 43.7645,
+        "mdd_pct": 9.2726,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 17181084
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 181,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.586
+      },
+      "profit_delta_krw": 287031,
+      "mdd_delta_pct": -0.1176,
+      "scaled_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "exclude_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 31486734,
+        "return_pct": 314.8673,
+        "annualized_return_pct_calendar": 43.4963,
+        "mdd_pct": 9.3712,
+        "trade_count": 833,
+        "trading_days": 353,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16874795
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 466
+        },
+        "negative_days": 154,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 62.9735
+      },
+      "profit_delta_krw": -19257,
+      "mdd_delta_pct": -0.019,
+      "blocked_trades": 84
+    },
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "half_size_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 31496362,
+        "return_pct": 314.9636,
+        "annualized_return_pct_calendar": 43.5047,
+        "mdd_pct": 9.3216,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16884424
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 181,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 62.9927
+      },
+      "profit_delta_krw": -9629,
+      "mdd_delta_pct": -0.0686,
+      "scaled_trades": 84
+    },
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "exclude_worst_5_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        },
+        {
+          "slot": "Thu 09:05-09:09",
+          "profit_krw": 649686,
+          "trades": 29
+        },
+        {
+          "slot": "Fri 09:05-09:09",
+          "profit_krw": 1528984,
+          "trades": 39
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 29308064,
+        "return_pct": 293.0806,
+        "annualized_return_pct_calendar": 41.5449,
+        "mdd_pct": 12.2611,
+        "trade_count": 765,
+        "trading_days": 315,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 14696125
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 398
+        },
+        "negative_days": 134,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 58.6161
+      },
+      "profit_delta_krw": -2197927,
+      "mdd_delta_pct": 2.8709,
+      "blocked_trades": 152
+    },
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "half_size_worst_5_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        },
+        {
+          "slot": "Thu 09:05-09:09",
+          "profit_krw": 649686,
+          "trades": 29
+        },
+        {
+          "slot": "Fri 09:05-09:09",
+          "profit_krw": 1528984,
+          "trades": 39
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 30407028,
+        "return_pct": 304.0703,
+        "annualized_return_pct_calendar": 42.539,
+        "mdd_pct": 10.7589,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 15795088
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 182,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 60.8141
+      },
+      "profit_delta_krw": -1098963,
+      "mdd_delta_pct": 1.3687,
+      "scaled_trades": 152
+    },
+    {
+      "combo": "r8_4 + exit2 + r2full",
+      "scenario": "exclude_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 15000000,
+        "profit_krw": 45217645,
+        "return_pct": 301.451,
+        "annualized_return_pct_calendar": 42.3039,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2902
+      },
+      "result": {
+        "capital_krw": 15000000,
+        "profit_krw": 45791708,
+        "return_pct": 305.2781,
+        "annualized_return_pct_calendar": 42.647,
+        "mdd_pct": 10.9396,
+        "trade_count": 1343,
+        "trading_days": 426,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 17468115
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 520
+        },
+        "negative_days": 210,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 61.0556
+      },
+      "profit_delta_krw": 574063,
+      "mdd_delta_pct": 0.0,
+      "blocked_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2 + r2full",
+      "scenario": "half_size_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 15000000,
+        "profit_krw": 45217645,
+        "return_pct": 301.451,
+        "annualized_return_pct_calendar": 42.3039,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2902
+      },
+      "result": {
+        "capital_krw": 15000000,
+        "profit_krw": 45504676,
+        "return_pct": 303.3645,
+        "annualized_return_pct_calendar": 42.4758,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 17181084
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 219,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.6729
+      },
+      "profit_delta_krw": 287031,
+      "mdd_delta_pct": 0.0,
+      "scaled_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2 + r2full",
+      "scenario": "exclude_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 15000000,
+        "profit_krw": 45217645,
+        "return_pct": 301.451,
+        "annualized_return_pct_calendar": 42.3039,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2902
+      },
+      "result": {
+        "capital_krw": 15000000,
+        "profit_krw": 45198388,
+        "return_pct": 301.3226,
+        "annualized_return_pct_calendar": 42.2924,
+        "mdd_pct": 11.0166,
+        "trade_count": 1289,
+        "trading_days": 405,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16874795
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 466
+        },
+        "negative_days": 198,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2645
+      },
+      "profit_delta_krw": -19257,
+      "mdd_delta_pct": 0.077,
+      "blocked_trades": 84
+    },
+    {
+      "combo": "r8_4 + exit2 + r2full",
+      "scenario": "half_size_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 15000000,
+        "profit_krw": 45217645,
+        "return_pct": 301.451,
+        "annualized_return_pct_calendar": 42.3039,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2902
+      },
+      "result": {
+        "capital_krw": 15000000,
+        "profit_krw": 45208016,
+        "return_pct": 301.3868,
+        "annualized_return_pct_calendar": 42.2981,
+        "mdd_pct": 10.9779,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16884424
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 220,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2774
+      },
+      "profit_delta_krw": -9629,
+      "mdd_delta_pct": 0.0383,
+      "scaled_trades": 84
+    },
+    {
+      "combo": "r8_4 + exit2 + r2full",
+      "scenario": "exclude_worst_5_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        },
+        {
+          "slot": "Thu 09:05-09:09",
+          "profit_krw": 649686,
+          "trades": 29
+        },
+        {
+          "slot": "Fri 09:05-09:09",
+          "profit_krw": 1528984,
+          "trades": 39
+        }
+      ],
+      "baseline": {
+        "capital_krw": 15000000,
+        "profit_krw": 45217645,
+        "return_pct": 301.451,
+        "annualized_return_pct_calendar": 42.3039,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2902
+      },
+      "result": {
+        "capital_krw": 15000000,
+        "profit_krw": 43019718,
+        "return_pct": 286.7981,
+        "annualized_return_pct_calendar": 40.9672,
+        "mdd_pct": 12.9296,
+        "trade_count": 1221,
+        "trading_days": 371,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 14696125
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 398
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 57.3596
+      },
+      "profit_delta_krw": -2197927,
+      "mdd_delta_pct": 1.99,
+      "blocked_trades": 152
+    },
+    {
+      "combo": "r8_4 + exit2 + r2full",
+      "scenario": "half_size_worst_5_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        },
+        {
+          "slot": "Thu 09:05-09:09",
+          "profit_krw": 649686,
+          "trades": 29
+        },
+        {
+          "slot": "Fri 09:05-09:09",
+          "profit_krw": 1528984,
+          "trades": 39
+        }
+      ],
+      "baseline": {
+        "capital_krw": 15000000,
+        "profit_krw": 45217645,
+        "return_pct": 301.451,
+        "annualized_return_pct_calendar": 42.3039,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2902
+      },
+      "result": {
+        "capital_krw": 15000000,
+        "profit_krw": 44118682,
+        "return_pct": 294.1245,
+        "annualized_return_pct_calendar": 41.6402,
+        "mdd_pct": 11.9311,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 15795088
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 220,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 58.8249
+      },
+      "profit_delta_krw": -1098963,
+      "mdd_delta_pct": 0.9915,
+      "scaled_trades": 152
+    }
+  ],
+  "best_by_mdd_reduction": [
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "exclude_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 32080054,
+        "return_pct": 320.8005,
+        "annualized_return_pct_calendar": 44.0144,
+        "mdd_pct": 9.2726,
+        "trade_count": 887,
+        "trading_days": 379,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 17468115
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 520
+        },
+        "negative_days": 170,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 64.1601
+      },
+      "profit_delta_krw": 574063,
+      "mdd_delta_pct": -0.1176,
+      "blocked_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "half_size_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 31793022,
+        "return_pct": 317.9302,
+        "annualized_return_pct_calendar": 43.7645,
+        "mdd_pct": 9.2726,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 17181084
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 181,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.586
+      },
+      "profit_delta_krw": 287031,
+      "mdd_delta_pct": -0.1176,
+      "scaled_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "half_size_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 31496362,
+        "return_pct": 314.9636,
+        "annualized_return_pct_calendar": 43.5047,
+        "mdd_pct": 9.3216,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16884424
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 181,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 62.9927
+      },
+      "profit_delta_krw": -9629,
+      "mdd_delta_pct": -0.0686,
+      "scaled_trades": 84
+    },
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "exclude_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 31486734,
+        "return_pct": 314.8673,
+        "annualized_return_pct_calendar": 43.4963,
+        "mdd_pct": 9.3712,
+        "trade_count": 833,
+        "trading_days": 353,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16874795
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 466
+        },
+        "negative_days": 154,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 62.9735
+      },
+      "profit_delta_krw": -19257,
+      "mdd_delta_pct": -0.019,
+      "blocked_trades": 84
+    },
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "exclude_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 31179769,
+        "return_pct": 311.7977,
+        "annualized_return_pct_calendar": 43.2619,
+        "mdd_pct": 12.8394,
+        "trade_count": 976,
+        "trading_days": 426,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 17468115
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 520
+        },
+        "negative_days": 209,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 62.3595
+      },
+      "profit_delta_krw": 574063,
+      "mdd_delta_pct": 0.0,
+      "blocked_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2 + r2full",
+      "scenario": "exclude_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 15000000,
+        "profit_krw": 45217645,
+        "return_pct": 301.451,
+        "annualized_return_pct_calendar": 42.3039,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2902
+      },
+      "result": {
+        "capital_krw": 15000000,
+        "profit_krw": 45791708,
+        "return_pct": 305.2781,
+        "annualized_return_pct_calendar": 42.647,
+        "mdd_pct": 10.9396,
+        "trade_count": 1343,
+        "trading_days": 426,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 17468115
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 520
+        },
+        "negative_days": 210,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 61.0556
+      },
+      "profit_delta_krw": 574063,
+      "mdd_delta_pct": 0.0,
+      "blocked_trades": 30
+    },
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "half_size_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 30892738,
+        "return_pct": 308.9274,
+        "annualized_return_pct_calendar": 43.0076,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 17181084
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 217,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.7855
+      },
+      "profit_delta_krw": 287032,
+      "mdd_delta_pct": 0.0,
+      "scaled_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2 + r2full",
+      "scenario": "half_size_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 15000000,
+        "profit_krw": 45217645,
+        "return_pct": 301.451,
+        "annualized_return_pct_calendar": 42.3039,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2902
+      },
+      "result": {
+        "capital_krw": 15000000,
+        "profit_krw": 45504676,
+        "return_pct": 303.3645,
+        "annualized_return_pct_calendar": 42.4758,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 17181084
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 219,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.6729
+      },
+      "profit_delta_krw": 287031,
+      "mdd_delta_pct": 0.0,
+      "scaled_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2 + r2full",
+      "scenario": "half_size_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 15000000,
+        "profit_krw": 45217645,
+        "return_pct": 301.451,
+        "annualized_return_pct_calendar": 42.3039,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2902
+      },
+      "result": {
+        "capital_krw": 15000000,
+        "profit_krw": 45208016,
+        "return_pct": 301.3868,
+        "annualized_return_pct_calendar": 42.2981,
+        "mdd_pct": 10.9779,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16884424
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 220,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2774
+      },
+      "profit_delta_krw": -9629,
+      "mdd_delta_pct": 0.0383,
+      "scaled_trades": 84
+    },
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "half_size_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 30596078,
+        "return_pct": 305.9608,
+        "annualized_return_pct_calendar": 42.7433,
+        "mdd_pct": 12.9074,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16884424
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 220,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.1922
+      },
+      "profit_delta_krw": -9628,
+      "mdd_delta_pct": 0.068,
+      "scaled_trades": 84
+    }
+  ],
+  "best_by_profit_delta": [
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "exclude_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 31179769,
+        "return_pct": 311.7977,
+        "annualized_return_pct_calendar": 43.2619,
+        "mdd_pct": 12.8394,
+        "trade_count": 976,
+        "trading_days": 426,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 17468115
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 520
+        },
+        "negative_days": 209,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 62.3595
+      },
+      "profit_delta_krw": 574063,
+      "mdd_delta_pct": 0.0,
+      "blocked_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "exclude_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 32080054,
+        "return_pct": 320.8005,
+        "annualized_return_pct_calendar": 44.0144,
+        "mdd_pct": 9.2726,
+        "trade_count": 887,
+        "trading_days": 379,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 17468115
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 520
+        },
+        "negative_days": 170,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 64.1601
+      },
+      "profit_delta_krw": 574063,
+      "mdd_delta_pct": -0.1176,
+      "blocked_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2 + r2full",
+      "scenario": "exclude_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 15000000,
+        "profit_krw": 45217645,
+        "return_pct": 301.451,
+        "annualized_return_pct_calendar": 42.3039,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2902
+      },
+      "result": {
+        "capital_krw": 15000000,
+        "profit_krw": 45791708,
+        "return_pct": 305.2781,
+        "annualized_return_pct_calendar": 42.647,
+        "mdd_pct": 10.9396,
+        "trade_count": 1343,
+        "trading_days": 426,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 17468115
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 520
+        },
+        "negative_days": 210,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 61.0556
+      },
+      "profit_delta_krw": 574063,
+      "mdd_delta_pct": 0.0,
+      "blocked_trades": 30
+    },
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "half_size_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 30892738,
+        "return_pct": 308.9274,
+        "annualized_return_pct_calendar": 43.0076,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 17181084
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 217,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.7855
+      },
+      "profit_delta_krw": 287032,
+      "mdd_delta_pct": 0.0,
+      "scaled_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "half_size_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 31793022,
+        "return_pct": 317.9302,
+        "annualized_return_pct_calendar": 43.7645,
+        "mdd_pct": 9.2726,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 17181084
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 181,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.586
+      },
+      "profit_delta_krw": 287031,
+      "mdd_delta_pct": -0.1176,
+      "scaled_trades": 30
+    },
+    {
+      "combo": "r8_4 + exit2 + r2full",
+      "scenario": "half_size_worst_1_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        }
+      ],
+      "baseline": {
+        "capital_krw": 15000000,
+        "profit_krw": 45217645,
+        "return_pct": 301.451,
+        "annualized_return_pct_calendar": 42.3039,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2902
+      },
+      "result": {
+        "capital_krw": 15000000,
+        "profit_krw": 45504676,
+        "return_pct": 303.3645,
+        "annualized_return_pct_calendar": 42.4758,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 17181084
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 219,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.6729
+      },
+      "profit_delta_krw": 287031,
+      "mdd_delta_pct": 0.0,
+      "scaled_trades": 30
+    },
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "half_size_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 30596078,
+        "return_pct": 305.9608,
+        "annualized_return_pct_calendar": 42.7433,
+        "mdd_pct": 12.9074,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16884424
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 220,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.1922
+      },
+      "profit_delta_krw": -9628,
+      "mdd_delta_pct": 0.068,
+      "scaled_trades": 84
+    },
+    {
+      "combo": "r8_4 + exit2",
+      "scenario": "half_size_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 31505991,
+        "return_pct": 315.0599,
+        "annualized_return_pct_calendar": 43.5132,
+        "mdd_pct": 9.3902,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 180,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 63.012
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 31496362,
+        "return_pct": 314.9636,
+        "annualized_return_pct_calendar": 43.5047,
+        "mdd_pct": 9.3216,
+        "trade_count": 917,
+        "trading_days": 399,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r8_4": 16884424
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r8_4": 550
+        },
+        "negative_days": 181,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -800050
+        },
+        "period_normalized_return_pct": 62.9927
+      },
+      "profit_delta_krw": -9629,
+      "mdd_delta_pct": -0.0686,
+      "scaled_trades": 84
+    },
+    {
+      "combo": "r8_4 + exit2 + r2full",
+      "scenario": "half_size_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 15000000,
+        "profit_krw": 45217645,
+        "return_pct": 301.451,
+        "annualized_return_pct_calendar": 42.3039,
+        "mdd_pct": 10.9396,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2902
+      },
+      "result": {
+        "capital_krw": 15000000,
+        "profit_krw": 45208016,
+        "return_pct": 301.3868,
+        "annualized_return_pct_calendar": 42.2981,
+        "mdd_pct": 10.9779,
+        "trade_count": 1373,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "exit2_balance": 14611939,
+          "r2full_mdd": 13711654,
+          "r8_4": 16884424
+        },
+        "strategy_trade_count": {
+          "exit2_balance": 367,
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 220,
+        "worst_day": {
+          "day": "2025-05-07",
+          "profit_krw": -990983
+        },
+        "period_normalized_return_pct": 60.2774
+      },
+      "profit_delta_krw": -9629,
+      "mdd_delta_pct": 0.0383,
+      "scaled_trades": 84
+    },
+    {
+      "combo": "r8_4 + r2full",
+      "scenario": "exclude_worst_3_weekday_5m_slots",
+      "diagnostic_not_deploy_rule": true,
+      "blocked_slots": [
+        {
+          "slot": "Wed 09:05-09:09",
+          "profit_krw": -574063,
+          "trades": 30
+        },
+        {
+          "slot": "Tue 09:05-09:09",
+          "profit_krw": 11633,
+          "trades": 31
+        },
+        {
+          "slot": "Mon 09:05-09:09",
+          "profit_krw": 581687,
+          "trades": 23
+        }
+      ],
+      "baseline": {
+        "capital_krw": 10000000,
+        "profit_krw": 30605706,
+        "return_pct": 306.0571,
+        "annualized_return_pct_calendar": 42.7519,
+        "mdd_pct": 12.8394,
+        "trade_count": 1006,
+        "trading_days": 442,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16894052
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 550
+        },
+        "negative_days": 218,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.2114
+      },
+      "result": {
+        "capital_krw": 10000000,
+        "profit_krw": 30586449,
+        "return_pct": 305.8645,
+        "annualized_return_pct_calendar": 42.7347,
+        "mdd_pct": 12.9762,
+        "trade_count": 922,
+        "trading_days": 405,
+        "strategy_profit_krw": {
+          "r2full_mdd": 13711654,
+          "r8_4": 16874795
+        },
+        "strategy_trade_count": {
+          "r2full_mdd": 456,
+          "r8_4": 466
+        },
+        "negative_days": 197,
+        "worst_day": {
+          "day": "2023-03-10",
+          "profit_krw": -850210
+        },
+        "period_normalized_return_pct": 61.1729
+      },
+      "profit_delta_krw": -19257,
+      "mdd_delta_pct": 0.1368,
+      "blocked_trades": 84
+    }
+  ]
+}

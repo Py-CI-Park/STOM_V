@@ -1,0 +1,3 @@
+tick smoke: 7/7 timeout at 300s; see smoke_tick.log
+min smoke: stopped after prepare and long first-pair runtime; config bt_warm_run_timeout=1200s; see smoke_min.log
+decision: no train/OOS/WF opened; all pairs hold

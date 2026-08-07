@@ -100,7 +100,7 @@ def test_joins_three_sources_on_rule_name(labels):
     payload = ea.exit_axis()
     assert payload["available"] is True
     assert payload["sources"] == {"reproduction_gate": True, "walkforward": True,
-                                  "engine": True, "ladder": False}
+                                  "engine": True, "ladder": False, "engine_ladder": False}
 
     row = next(r for r in payload["rows"] if r["rule"] == "trailing(arm+3/give1.5)")
     assert row["map_expectancy_pct"] == pytest.approx(0.2493)      # 지도

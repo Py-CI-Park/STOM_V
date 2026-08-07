@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "kind": "ai-slop-cleanup-report",
+  "scope": {"commit": "17b0aff85a23a4e80de793120ddc7875b9195da7", "files": ["ai_strategy_loop/dashboard/frontend/v4-research.jsx", "ai_strategy_loop/dashboard/frontend/v4.css", "ai_strategy_loop/dashboard/frontend/v4.html", "tests/unit/dashboard/test_v4_ui_foundation.py"]},
+  "taxonomy": {
+    "fallbackMasking": "clear: wrong identity, unavailable, stale, error, and empty states are explicit and fail closed",
+    "duplication": "clear: production uses one canonical GET /strategy_code request per run/gen; demo partials are gated by wsStatus=demo",
+    "deadCode": "clear: tuple helper, record state, drawer class, and typography/density rules are exercised by tests and browser paths",
+    "needlessAbstraction": "clear: one pure tuple binder prevents cross-run display without adding a publisher or client cache",
+    "boundaryViolations": "clear: dashboard remains read-only and protected trading/runtime paths are untouched",
+    "uiDesignSlop": "clear: computed Live leaf text has zero entries below 14px; 44px controls and 3440 graph exposure are measured",
+    "missingTests": "clear: 84 focused regressions plus production, mismatch, keyboard, pin/reset, drawer, and 3-viewport browser evidence"
+  },
+  "blockingFindings": [],
+  "advisoryFindings": [],
+  "rerunRequired": false,
+  "verdict": "passed"
+}

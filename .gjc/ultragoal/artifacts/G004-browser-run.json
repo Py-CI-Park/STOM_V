@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "surface": "web",
+  "tool": "GJC browser/puppeteer",
+  "actions": [
+    {
+      "type": "goto",
+      "url": "http://127.0.0.1:8870/ui/",
+      "timestamp": 1
+    },
+    {
+      "type": "click",
+      "selector": "role=tab[name=\"프로세스 흐름\"]",
+      "timestamp": 2
+    },
+    {
+      "type": "observe",
+      "selector": ".process-live-strip",
+      "timestamp": 3
+    },
+    {
+      "type": "observe",
+      "selector": ".process-timing-grid",
+      "timestamp": 4
+    },
+    {
+      "type": "screenshot",
+      "selector": "#root",
+      "timestamp": 5
+    }
+  ],
+  "assertions": [
+    {
+      "status": "passed",
+      "selector": "[role=\"tab\"][aria-selected=\"true\"]",
+      "timestamp": 6,
+      "description": "프로세스 흐름 tab selected"
+    },
+    {
+      "status": "passed",
+      "selector": ".process-live-strip",
+      "timestamp": 7,
+      "description": "current node, phase, current_step, latest log strip rendered"
+    },
+    {
+      "status": "passed",
+      "selector": ".process-timing-grid",
+      "timestamp": 8,
+      "description": "per-step timing grid rendered above legacy explanatory iframe"
+    },
+    {
+      "status": "passed",
+      "selector": "iframe[src$=\"/process_flow\"]",
+      "timestamp": 9,
+      "description": "existing process_flow explanatory document remains embedded"
+    }
+  ],
+  "artifactRefs": [
+    "G004-process-tab.png"
+  ]
+}

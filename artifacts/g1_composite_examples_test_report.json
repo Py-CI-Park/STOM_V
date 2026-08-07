@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "kind": "algorithm-test-report",
+  "story": "G001 composite_examples asset",
+  "generated_at": "2026-07-12T13:05:08.784880+00:00",
+  "commands": [
+    "python -m pytest tests/unit/test_composite_examples_asset.py tests/unit/test_context_pack_builder.py -q"
+  ],
+  "exit_code": 0,
+  "summary_line": "20 passed in 9.09s",
+  "assertions": [
+    "buy samples >= 12, sell samples >= 8",
+    "all samples ast-parse + variable-scope clean per declared timeframe/kind",
+    "buy samples exclude sell-only variables",
+    "composite_examples registered in _FULL_STOM_SOURCE_ASSETS and file exists",
+    "hypothesis comments >= 20 and 무근거 가설 disclaimer present"
+  ]
+}

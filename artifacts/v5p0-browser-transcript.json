@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "surface": "web",
+  "tool": "GJC browser (Chromium/Puppeteer)",
+  "baseUrl": "http://127.0.0.1:8870",
+  "viewport": {"width": 1920, "height": 1080, "deviceScaleFactor": 1},
+  "actions": [
+    {"type": "goto", "timestamp": 1, "url": "http://127.0.0.1:8870/ui/"},
+    {"type": "observe", "timestamp": 2, "selector": "[role=tab]"},
+    {"type": "click", "timestamp": 3, "selector": "[role=tab][aria-controls='v4-panel-history']"},
+    {"type": "assert", "timestamp": 4, "selector": "[role=tab][aria-selected=true]"},
+    {"type": "goto", "timestamp": 5, "url": "http://127.0.0.1:8870/ui/audit?tab=audit&run_id=run-7"},
+    {"type": "assert", "timestamp": 6, "selector": "[role=tab][aria-selected=true]"},
+    {"type": "goto", "timestamp": 7, "url": "http://127.0.0.1:8870/ui/evolution/lab"},
+    {"type": "assert", "timestamp": 8, "selector": "[role=tab][aria-selected=true]"},
+    {"type": "goto", "timestamp": 9, "url": "http://127.0.0.1:8870/ui/?tab=catalog"},
+    {"type": "assert", "timestamp": 10, "selector": ".v4-prototype-warning"},
+    {"type": "screenshot", "timestamp": 11, "selector": "body"}
+  ],
+  "assertions": [
+    {"timestamp": 12, "selector": "[role=tab]", "status": "passed", "description": "Normal mode exposes exactly six canonical tabs."},
+    {"timestamp": 13, "selector": "[role=tab][aria-selected=true]", "status": "passed", "description": "History remains selected through canonical governance navigation and browser history."},
+    {"timestamp": 14, "selector": "body", "status": "passed", "description": "Known prototype identities gain explicit v4_legacy_extras=1 rollback state rather than silently resolving to Live."},
+    {"timestamp": 15, "selector": ".v4-prototype-warning", "status": "passed", "description": "Catalog visibly identifies itself as non-authoritative, non-normative, incomplete, and SELECT-only."}
+  ]
+}

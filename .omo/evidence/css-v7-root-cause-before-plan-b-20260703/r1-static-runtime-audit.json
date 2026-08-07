@@ -1,0 +1,894 @@
+{
+  "summary": {
+    "catalog_path": "ai_strategy_loop\\brain\\data\\chart_sulsa_v7_conditions.json",
+    "catalog_sha256": "9574c50cb2cad0537f6f385175e285f14e2d75615bc01d0454d3e3a45eae0626",
+    "condition_count": 25,
+    "engine_contract": {
+      "Buy": {
+        "required_positional_args": 0,
+        "max_positional_args": 1,
+        "line": 791
+      },
+      "Sell": {
+        "required_positional_args": 0,
+        "max_positional_args": 1,
+        "line": 859
+      }
+    },
+    "catalog_sha_mismatch_count": 0,
+    "main_db_mismatch_count": 0,
+    "loop_db_mismatch_count": 0,
+    "compile_gate_fail_count": 0,
+    "invalid_runtime_call_condition_count": 21,
+    "invalid_runtime_call_count": 21,
+    "invalid_runtime_call_ids": [
+      "CSS_V7_MIN_B_BOX_BREAKOUT_EVENT_0900_1518",
+      "CSS_V7_MIN_B_BOX_LOW_SUPPORT_0900_1518",
+      "CSS_V7_MIN_B_DOJI_INTERNAL_SUPPORT_0900_1518",
+      "CSS_V7_MIN_B_DOJI_UPPER_BREAKOUT_0900_1518",
+      "CSS_V7_MIN_B_GAP_RESISTANCE_PULLBACK_0900_1518",
+      "CSS_V7_MIN_B_LONG_BOX_RAPID_RISER_0900_1518",
+      "CSS_V7_MIN_B_MASTER_0900_1518",
+      "CSS_V7_MIN_B_RETEST_PULLBACK_SWITCH_0900_1518",
+      "CSS_V7_MIN_S_BOX_LOWER_BREAKDOWN_0900_1518",
+      "CSS_V7_MIN_S_DOJI_LOWER_BREAKDOWN_0900_1518",
+      "CSS_V7_MIN_S_MASTER_0900_1518",
+      "CSS_V7_MIN_S_STRUCTURE_INVALIDATION_0900_1518",
+      "CSS_V7_MIN_S_SUPPORT_TO_RESIST_REJECTION_0900_1518",
+      "CSS_V7_MIN_S_TARGET_TRAILING_0900_1518",
+      "CSS_V7_TICK_B_MASTER_0900_0930",
+      "CSS_V7_TICK_B_MICRO_BOX_BREAKOUT_0900_0930",
+      "CSS_V7_TICK_B_MICRO_DOJI_COMPRESSION_0900_0930",
+      "CSS_V7_TICK_B_MICRO_RETEST_SUPPORT_0900_0930",
+      "CSS_V7_TICK_S_FAST_INVALIDATION_0900_0930",
+      "CSS_V7_TICK_S_MASTER_0900_0930",
+      "CSS_V7_TICK_S_MICRO_DOJI_FAIL_0900_0930"
+    ],
+    "mismatch_ids": []
+  },
+  "conditions": [
+    {
+      "id": "CSS_V7_TICK_B_MICRO_BOX_BREAKOUT_0900_0930",
+      "side": "buy",
+      "lane": "tick",
+      "catalog_sha_expected": "5e1f7b2e5e94741a7a9f3b2bc017f93a63bcae443093ac4bc347d850cab26831",
+      "catalog_sha_actual": "5e1f7b2e5e94741a7a9f3b2bc017f93a63bcae443093ac4bc347d850cab26831",
+      "main_db_sha": "5e1f7b2e5e94741a7a9f3b2bc017f93a63bcae443093ac4bc347d850cab26831",
+      "loop_db_sha": "5e1f7b2e5e94741a7a9f3b2bc017f93a63bcae443093ac4bc347d850cab26831",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 26,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_TICK_B_MICRO_BOX_BREAKOUT_0900_0930",
+          "method": "Buy",
+          "line": 26,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_TICK_B_MICRO_RETEST_SUPPORT_0900_0930",
+      "side": "buy",
+      "lane": "tick",
+      "catalog_sha_expected": "a5d1e54f5be1195b683bc8efd76cfa4bbd305b90872387b3d95843cb4549a5e4",
+      "catalog_sha_actual": "a5d1e54f5be1195b683bc8efd76cfa4bbd305b90872387b3d95843cb4549a5e4",
+      "main_db_sha": "a5d1e54f5be1195b683bc8efd76cfa4bbd305b90872387b3d95843cb4549a5e4",
+      "loop_db_sha": "a5d1e54f5be1195b683bc8efd76cfa4bbd305b90872387b3d95843cb4549a5e4",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 28,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_TICK_B_MICRO_RETEST_SUPPORT_0900_0930",
+          "method": "Buy",
+          "line": 28,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_TICK_B_MICRO_DOJI_COMPRESSION_0900_0930",
+      "side": "buy",
+      "lane": "tick",
+      "catalog_sha_expected": "77265a7c2f8d22ba44f7533d1b134fcc76f857950d1432dc06393b96faffde99",
+      "catalog_sha_actual": "77265a7c2f8d22ba44f7533d1b134fcc76f857950d1432dc06393b96faffde99",
+      "main_db_sha": "77265a7c2f8d22ba44f7533d1b134fcc76f857950d1432dc06393b96faffde99",
+      "loop_db_sha": "77265a7c2f8d22ba44f7533d1b134fcc76f857950d1432dc06393b96faffde99",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 26,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_TICK_B_MICRO_DOJI_COMPRESSION_0900_0930",
+          "method": "Buy",
+          "line": 26,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_TICK_B_MASTER_0900_0930",
+      "side": "buy",
+      "lane": "tick",
+      "catalog_sha_expected": "ba3421962481b8ad895794c11bc75e912dada2161bf2a13f940c71a40b816f25",
+      "catalog_sha_actual": "ba3421962481b8ad895794c11bc75e912dada2161bf2a13f940c71a40b816f25",
+      "main_db_sha": "ba3421962481b8ad895794c11bc75e912dada2161bf2a13f940c71a40b816f25",
+      "loop_db_sha": "ba3421962481b8ad895794c11bc75e912dada2161bf2a13f940c71a40b816f25",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 44,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_TICK_B_MASTER_0900_0930",
+          "method": "Buy",
+          "line": 44,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_TICK_S_FAST_INVALIDATION_0900_0930",
+      "side": "sell",
+      "lane": "tick",
+      "catalog_sha_expected": "eafcedd962bd9e45822f8729479b2ecfae833d0d656a8ff2ed6fb340b989505d",
+      "catalog_sha_actual": "eafcedd962bd9e45822f8729479b2ecfae833d0d656a8ff2ed6fb340b989505d",
+      "main_db_sha": "eafcedd962bd9e45822f8729479b2ecfae833d0d656a8ff2ed6fb340b989505d",
+      "loop_db_sha": "eafcedd962bd9e45822f8729479b2ecfae833d0d656a8ff2ed6fb340b989505d",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Sell",
+          "line": 32,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_TICK_S_FAST_INVALIDATION_0900_0930",
+          "method": "Sell",
+          "line": 32,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_TICK_S_MICRO_DOJI_FAIL_0900_0930",
+      "side": "sell",
+      "lane": "tick",
+      "catalog_sha_expected": "f93b031c4a24d68ab3fb01b02b60150196d73b9f0b34a0d5a51fc19dc54807a0",
+      "catalog_sha_actual": "f93b031c4a24d68ab3fb01b02b60150196d73b9f0b34a0d5a51fc19dc54807a0",
+      "main_db_sha": "f93b031c4a24d68ab3fb01b02b60150196d73b9f0b34a0d5a51fc19dc54807a0",
+      "loop_db_sha": "f93b031c4a24d68ab3fb01b02b60150196d73b9f0b34a0d5a51fc19dc54807a0",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Sell",
+          "line": 26,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_TICK_S_MICRO_DOJI_FAIL_0900_0930",
+          "method": "Sell",
+          "line": 26,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_TICK_S_MASTER_0900_0930",
+      "side": "sell",
+      "lane": "tick",
+      "catalog_sha_expected": "68bedcf47100da014064336f80e31451247902aefba2e2f6e617880de9f7331b",
+      "catalog_sha_actual": "68bedcf47100da014064336f80e31451247902aefba2e2f6e617880de9f7331b",
+      "main_db_sha": "68bedcf47100da014064336f80e31451247902aefba2e2f6e617880de9f7331b",
+      "loop_db_sha": "68bedcf47100da014064336f80e31451247902aefba2e2f6e617880de9f7331b",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Sell",
+          "line": 37,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_TICK_S_MASTER_0900_0930",
+          "method": "Sell",
+          "line": 37,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_B_BOX_LOW_SUPPORT_0900_1518",
+      "side": "buy",
+      "lane": "min",
+      "catalog_sha_expected": "af96faa1454bbe5fcd252a954c8cb528641917022434d80f79e57e0fe27b7e87",
+      "catalog_sha_actual": "af96faa1454bbe5fcd252a954c8cb528641917022434d80f79e57e0fe27b7e87",
+      "main_db_sha": "af96faa1454bbe5fcd252a954c8cb528641917022434d80f79e57e0fe27b7e87",
+      "loop_db_sha": "af96faa1454bbe5fcd252a954c8cb528641917022434d80f79e57e0fe27b7e87",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 26,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_B_BOX_LOW_SUPPORT_0900_1518",
+          "method": "Buy",
+          "line": 26,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_B_BOX_BREAKOUT_EVENT_0900_1518",
+      "side": "buy",
+      "lane": "min",
+      "catalog_sha_expected": "439d934d35a8724f63756de210d1d70b5625448d761057ea6e6bdd9514192c9e",
+      "catalog_sha_actual": "439d934d35a8724f63756de210d1d70b5625448d761057ea6e6bdd9514192c9e",
+      "main_db_sha": "439d934d35a8724f63756de210d1d70b5625448d761057ea6e6bdd9514192c9e",
+      "loop_db_sha": "439d934d35a8724f63756de210d1d70b5625448d761057ea6e6bdd9514192c9e",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 23,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_B_BOX_BREAKOUT_EVENT_0900_1518",
+          "method": "Buy",
+          "line": 23,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_B_RETEST_PULLBACK_SWITCH_0900_1518",
+      "side": "buy",
+      "lane": "min",
+      "catalog_sha_expected": "33f3b0ee27fac694f0d2844c2f7818448d0dde5533ba4dc5caa772bd033145e6",
+      "catalog_sha_actual": "33f3b0ee27fac694f0d2844c2f7818448d0dde5533ba4dc5caa772bd033145e6",
+      "main_db_sha": "33f3b0ee27fac694f0d2844c2f7818448d0dde5533ba4dc5caa772bd033145e6",
+      "loop_db_sha": "33f3b0ee27fac694f0d2844c2f7818448d0dde5533ba4dc5caa772bd033145e6",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 27,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_B_RETEST_PULLBACK_SWITCH_0900_1518",
+          "method": "Buy",
+          "line": 27,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_B_DOJI_INTERNAL_SUPPORT_0900_1518",
+      "side": "buy",
+      "lane": "min",
+      "catalog_sha_expected": "5b4253e997b470210e63935f3dd716952ab38c38432e3f4facc564014dd221fd",
+      "catalog_sha_actual": "5b4253e997b470210e63935f3dd716952ab38c38432e3f4facc564014dd221fd",
+      "main_db_sha": "5b4253e997b470210e63935f3dd716952ab38c38432e3f4facc564014dd221fd",
+      "loop_db_sha": "5b4253e997b470210e63935f3dd716952ab38c38432e3f4facc564014dd221fd",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 23,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_B_DOJI_INTERNAL_SUPPORT_0900_1518",
+          "method": "Buy",
+          "line": 23,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_B_DOJI_UPPER_BREAKOUT_0900_1518",
+      "side": "buy",
+      "lane": "min",
+      "catalog_sha_expected": "6a5577983e88919a267533b54ce1a15f7ad851acdb4de032b71a7ca2ae1c902a",
+      "catalog_sha_actual": "6a5577983e88919a267533b54ce1a15f7ad851acdb4de032b71a7ca2ae1c902a",
+      "main_db_sha": "6a5577983e88919a267533b54ce1a15f7ad851acdb4de032b71a7ca2ae1c902a",
+      "loop_db_sha": "6a5577983e88919a267533b54ce1a15f7ad851acdb4de032b71a7ca2ae1c902a",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 21,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_B_DOJI_UPPER_BREAKOUT_0900_1518",
+          "method": "Buy",
+          "line": 21,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_B_GAP_RESISTANCE_PULLBACK_0900_1518",
+      "side": "buy",
+      "lane": "min",
+      "catalog_sha_expected": "0b334d2278bfe4244ba9004822a5193ab73cc3fe4b0e7780e7c0930197464bad",
+      "catalog_sha_actual": "0b334d2278bfe4244ba9004822a5193ab73cc3fe4b0e7780e7c0930197464bad",
+      "main_db_sha": "0b334d2278bfe4244ba9004822a5193ab73cc3fe4b0e7780e7c0930197464bad",
+      "loop_db_sha": "0b334d2278bfe4244ba9004822a5193ab73cc3fe4b0e7780e7c0930197464bad",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 20,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_B_GAP_RESISTANCE_PULLBACK_0900_1518",
+          "method": "Buy",
+          "line": 20,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_B_LONG_BOX_RAPID_RISER_0900_1518",
+      "side": "buy",
+      "lane": "min",
+      "catalog_sha_expected": "1ac90222b7c32f64a9465e3b47d0690538eef81a1d7113a3021df4f34a492021",
+      "catalog_sha_actual": "1ac90222b7c32f64a9465e3b47d0690538eef81a1d7113a3021df4f34a492021",
+      "main_db_sha": "1ac90222b7c32f64a9465e3b47d0690538eef81a1d7113a3021df4f34a492021",
+      "loop_db_sha": "1ac90222b7c32f64a9465e3b47d0690538eef81a1d7113a3021df4f34a492021",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 22,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_B_LONG_BOX_RAPID_RISER_0900_1518",
+          "method": "Buy",
+          "line": 22,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_B_MASTER_0900_1518",
+      "side": "buy",
+      "lane": "min",
+      "catalog_sha_expected": "a9844ee87061a420672a8dcb5c0f866ca7cdb4fafcfe59d4fa2e44fe7d60173f",
+      "catalog_sha_actual": "a9844ee87061a420672a8dcb5c0f866ca7cdb4fafcfe59d4fa2e44fe7d60173f",
+      "main_db_sha": "a9844ee87061a420672a8dcb5c0f866ca7cdb4fafcfe59d4fa2e44fe7d60173f",
+      "loop_db_sha": "a9844ee87061a420672a8dcb5c0f866ca7cdb4fafcfe59d4fa2e44fe7d60173f",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 58,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_B_MASTER_0900_1518",
+          "method": "Buy",
+          "line": 58,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_S_STRUCTURE_INVALIDATION_0900_1518",
+      "side": "sell",
+      "lane": "min",
+      "catalog_sha_expected": "f058b15c25349c0c9e13a145b5b2b57e3a7ddfddad490e70e4058bcd23085984",
+      "catalog_sha_actual": "f058b15c25349c0c9e13a145b5b2b57e3a7ddfddad490e70e4058bcd23085984",
+      "main_db_sha": "f058b15c25349c0c9e13a145b5b2b57e3a7ddfddad490e70e4058bcd23085984",
+      "loop_db_sha": "f058b15c25349c0c9e13a145b5b2b57e3a7ddfddad490e70e4058bcd23085984",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Sell",
+          "line": 32,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_S_STRUCTURE_INVALIDATION_0900_1518",
+          "method": "Sell",
+          "line": 32,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_S_BOX_LOWER_BREAKDOWN_0900_1518",
+      "side": "sell",
+      "lane": "min",
+      "catalog_sha_expected": "e5da09eb9e8184f52378c92ee5e32ac29b45028a29ece54a999d9a7d3c2cbfed",
+      "catalog_sha_actual": "e5da09eb9e8184f52378c92ee5e32ac29b45028a29ece54a999d9a7d3c2cbfed",
+      "main_db_sha": "e5da09eb9e8184f52378c92ee5e32ac29b45028a29ece54a999d9a7d3c2cbfed",
+      "loop_db_sha": "e5da09eb9e8184f52378c92ee5e32ac29b45028a29ece54a999d9a7d3c2cbfed",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Sell",
+          "line": 20,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_S_BOX_LOWER_BREAKDOWN_0900_1518",
+          "method": "Sell",
+          "line": 20,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_S_DOJI_LOWER_BREAKDOWN_0900_1518",
+      "side": "sell",
+      "lane": "min",
+      "catalog_sha_expected": "82e26ce3dadc4c1d20bab4c327f8d263b9ee14183c54545c94bdda88bfe87480",
+      "catalog_sha_actual": "82e26ce3dadc4c1d20bab4c327f8d263b9ee14183c54545c94bdda88bfe87480",
+      "main_db_sha": "82e26ce3dadc4c1d20bab4c327f8d263b9ee14183c54545c94bdda88bfe87480",
+      "loop_db_sha": "82e26ce3dadc4c1d20bab4c327f8d263b9ee14183c54545c94bdda88bfe87480",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Sell",
+          "line": 23,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_S_DOJI_LOWER_BREAKDOWN_0900_1518",
+          "method": "Sell",
+          "line": 23,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_S_SUPPORT_TO_RESIST_REJECTION_0900_1518",
+      "side": "sell",
+      "lane": "min",
+      "catalog_sha_expected": "fc08184c6bc7d31abdbdd8b8bae51a40e8aa3d8889214f9f71e1f065d12958ff",
+      "catalog_sha_actual": "fc08184c6bc7d31abdbdd8b8bae51a40e8aa3d8889214f9f71e1f065d12958ff",
+      "main_db_sha": "fc08184c6bc7d31abdbdd8b8bae51a40e8aa3d8889214f9f71e1f065d12958ff",
+      "loop_db_sha": "fc08184c6bc7d31abdbdd8b8bae51a40e8aa3d8889214f9f71e1f065d12958ff",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Sell",
+          "line": 21,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_S_SUPPORT_TO_RESIST_REJECTION_0900_1518",
+          "method": "Sell",
+          "line": 21,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_S_TARGET_TRAILING_0900_1518",
+      "side": "sell",
+      "lane": "min",
+      "catalog_sha_expected": "ca4263f1a352ca798237f737ed8a4729c0c08684435a81b3ee73b3336ab801b9",
+      "catalog_sha_actual": "ca4263f1a352ca798237f737ed8a4729c0c08684435a81b3ee73b3336ab801b9",
+      "main_db_sha": "ca4263f1a352ca798237f737ed8a4729c0c08684435a81b3ee73b3336ab801b9",
+      "loop_db_sha": "ca4263f1a352ca798237f737ed8a4729c0c08684435a81b3ee73b3336ab801b9",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Sell",
+          "line": 19,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_S_TARGET_TRAILING_0900_1518",
+          "method": "Sell",
+          "line": 19,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_MIN_S_MASTER_0900_1518",
+      "side": "sell",
+      "lane": "min",
+      "catalog_sha_expected": "1a2c00eb766f11e8db179a83afc44ddc2be35317bf6bdfa115fefa322971f442",
+      "catalog_sha_actual": "1a2c00eb766f11e8db179a83afc44ddc2be35317bf6bdfa115fefa322971f442",
+      "main_db_sha": "1a2c00eb766f11e8db179a83afc44ddc2be35317bf6bdfa115fefa322971f442",
+      "loop_db_sha": "1a2c00eb766f11e8db179a83afc44ddc2be35317bf6bdfa115fefa322971f442",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Sell",
+          "line": 50,
+          "arg_count": 7
+        }
+      ],
+      "invalid_runtime_calls": [
+        {
+          "id": "CSS_V7_MIN_S_MASTER_0900_1518",
+          "method": "Sell",
+          "line": 50,
+          "arg_count": 7,
+          "engine_max_positional_args": 1
+        }
+      ]
+    },
+    {
+      "id": "CSS_V7_OPT_TICK_B_MASTER_0900_0930",
+      "side": "buy",
+      "lane": "tick",
+      "catalog_sha_expected": "c4775e12f4db4e7f54580c024202d7f8446ce304504c158b36bfcf9718a85179",
+      "catalog_sha_actual": "c4775e12f4db4e7f54580c024202d7f8446ce304504c158b36bfcf9718a85179",
+      "main_db_sha": "c4775e12f4db4e7f54580c024202d7f8446ce304504c158b36bfcf9718a85179",
+      "loop_db_sha": "c4775e12f4db4e7f54580c024202d7f8446ce304504c158b36bfcf9718a85179",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 35,
+          "arg_count": 0
+        }
+      ],
+      "invalid_runtime_calls": []
+    },
+    {
+      "id": "CSS_V7_OPT_TICK_S_MASTER_0900_0930",
+      "side": "sell",
+      "lane": "tick",
+      "catalog_sha_expected": "72549be977ecf17e434b1c671c74180c7409ac3d187c467a3362b811cdaad16b",
+      "catalog_sha_actual": "72549be977ecf17e434b1c671c74180c7409ac3d187c467a3362b811cdaad16b",
+      "main_db_sha": "72549be977ecf17e434b1c671c74180c7409ac3d187c467a3362b811cdaad16b",
+      "loop_db_sha": "72549be977ecf17e434b1c671c74180c7409ac3d187c467a3362b811cdaad16b",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Sell",
+          "line": 28,
+          "arg_count": 0
+        }
+      ],
+      "invalid_runtime_calls": []
+    },
+    {
+      "id": "CSS_V7_OPT_MIN_B_MASTER_0900_1518",
+      "side": "buy",
+      "lane": "min",
+      "catalog_sha_expected": "fed494cac9aab1b4e388458d5a996f275bec254f1cdf260e19a3876d3a27196b",
+      "catalog_sha_actual": "fed494cac9aab1b4e388458d5a996f275bec254f1cdf260e19a3876d3a27196b",
+      "main_db_sha": "fed494cac9aab1b4e388458d5a996f275bec254f1cdf260e19a3876d3a27196b",
+      "loop_db_sha": "fed494cac9aab1b4e388458d5a996f275bec254f1cdf260e19a3876d3a27196b",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Buy",
+          "line": 35,
+          "arg_count": 0
+        }
+      ],
+      "invalid_runtime_calls": []
+    },
+    {
+      "id": "CSS_V7_OPT_MIN_S_MASTER_0900_1518",
+      "side": "sell",
+      "lane": "min",
+      "catalog_sha_expected": "4a3e7575bc3ac7397f2543ae3e8a9b58408749e33e28f2f11b338b19d4490db1",
+      "catalog_sha_actual": "4a3e7575bc3ac7397f2543ae3e8a9b58408749e33e28f2f11b338b19d4490db1",
+      "main_db_sha": "4a3e7575bc3ac7397f2543ae3e8a9b58408749e33e28f2f11b338b19d4490db1",
+      "loop_db_sha": "4a3e7575bc3ac7397f2543ae3e8a9b58408749e33e28f2f11b338b19d4490db1",
+      "main_db_present": true,
+      "loop_db_present": true,
+      "catalog_sha_match": true,
+      "main_db_matches_catalog": true,
+      "loop_db_matches_catalog": true,
+      "compile_gate": {
+        "compiled": true,
+        "events": []
+      },
+      "ast_error": null,
+      "self_buy_sell_calls": [
+        {
+          "method": "Sell",
+          "line": 31,
+          "arg_count": 0
+        }
+      ],
+      "invalid_runtime_calls": []
+    }
+  ]
+}

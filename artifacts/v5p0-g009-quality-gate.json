@@ -1,0 +1,160 @@
+{
+  "architectReview": {
+    "architectureStatus": "CLEAR",
+    "productStatus": "CLEAR",
+    "codeStatus": "CLEAR",
+    "recommendation": "APPROVE",
+    "evidence": "agent://24-V5P0ArchitectRerun verified the canonical six-destination owner matrix, explicit default-off prototype rollback, non-authoritative Catalog labeling, History governance ownership, approval/export separation, accessibility, and bundle/manifest parity.",
+    "commands": [
+      "architect review agent://24-V5P0ArchitectRerun"
+    ],
+    "blockers": []
+  },
+  "executorQa": {
+    "status": "passed",
+    "e2eStatus": "passed",
+    "redTeamStatus": "passed",
+    "evidence": "agent://25-V5P0ExecutorQaFinal reviewed the frozen app.js v=08f6ed8b change set; leader browser automation verified canonical navigation, History governance, explicit prototype rollback, query preservation, Back/Forward focus, and visible Catalog warnings after 48 focused tests passed.",
+    "e2eCommands": [
+      "python -m pytest tests/unit/dashboard/test_v4_ui_foundation.py tests/unit/test_dashboard_route_parity.py tests/unit/dashboard/test_shell_wiring_parity.py tests/unit/dashboard/test_v4_uat.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q",
+      "browser automation against http://127.0.0.1:8870/ui/"
+    ],
+    "redTeamCommands": [
+      "browser Back/Forward, deep-link, query-preservation, rollback, and unknown-route adversarial replay",
+      "executor QA agent://25-V5P0ExecutorQaFinal"
+    ],
+    "artifactRefs": [
+      {
+        "id": "v5p0-six-tabs",
+        "kind": "web-browser-screenshot",
+        "path": "artifacts/v5p0-six-tabs-light-1920.jpg",
+        "description": "Live browser evidence of the normal six-destination V5 rail at 1920x1080."
+      },
+      {
+        "id": "v5p0-history-governance",
+        "kind": "web-browser-screenshot",
+        "path": "artifacts/v5p0-history-light-1920.jpg",
+        "description": "Live browser evidence that History owns governance, ResultDetail, and Compare."
+      },
+      {
+        "id": "v5p0-browser-transcript",
+        "kind": "web-browser-automation",
+        "path": "artifacts/v5p0-browser-transcript.json",
+        "description": "Structured Chromium automation transcript for navigation, governance aliases, prototype rollback, and Catalog authority boundaries."
+      }
+    ],
+    "contractCoverage": [
+      {
+        "id": "p0-six-destinations",
+        "contractRef": "V5.P0 canonical owner matrix",
+        "obligation": "Normal navigation exposes exactly Live, Backtest, Replay, History, 성과, Reports from one owner matrix.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-normal-rail"],
+        "adversarialCaseRefs": ["case-default-off-rollback"]
+      },
+      {
+        "id": "p0-history-owner",
+        "contractRef": "V5.P0 History governance ownership",
+        "obligation": "Audit/verdict aliases and governance evidence resolve to History without losing query identity.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-history"],
+        "adversarialCaseRefs": ["case-alias-query-preservation"]
+      },
+      {
+        "id": "p0-prototype-boundary",
+        "contractRef": "V5.P0 prototype rollback boundary",
+        "obligation": "Known prototype identities remain explicit under default-off rollback and Catalog cannot overclaim authority.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-prototype-rollback"],
+        "adversarialCaseRefs": ["case-prototype-masking", "case-authority-overclaim"]
+      },
+      {
+        "id": "p0-accessibility",
+        "contractRef": "V5.P0 navigation accessibility",
+        "obligation": "Roving tabindex, keyboard wrap, tab/tabpanel relationships, and popstate focus restoration remain operational.",
+        "status": "covered",
+        "surfaceEvidenceRefs": ["surface-normal-rail"],
+        "adversarialCaseRefs": ["case-browser-history-focus"]
+      }
+    ],
+    "surfaceEvidence": [
+      {
+        "id": "surface-normal-rail",
+        "contractRef": "V5.P0 canonical navigation",
+        "surface": "web",
+        "invocation": "Chromium opened http://127.0.0.1:8870/ui/ at 1920x1080 and exercised click, keyboard, Back, and Forward navigation.",
+        "verdict": "passed",
+        "artifactRefs": ["v5p0-six-tabs", "v5p0-browser-transcript"]
+      },
+      {
+        "id": "surface-history",
+        "contractRef": "V5.P0 History governance owner",
+        "surface": "web",
+        "invocation": "Chromium opened /ui/audit?tab=audit&run_id=run-7 and /ui/evolution/verdict?tab=verdict&run_id=run-9, observing canonical History selection and retained query parameters.",
+        "verdict": "passed",
+        "artifactRefs": ["v5p0-history-governance", "v5p0-browser-transcript"]
+      },
+      {
+        "id": "surface-prototype-rollback",
+        "contractRef": "V5.P0 explicit prototype rollback",
+        "surface": "web",
+        "invocation": "Chromium opened /ui/evolution/lab and /ui/?tab=catalog, observing v4_legacy_extras=1 canonicalization and the visible non-authoritative warning.",
+        "verdict": "passed",
+        "artifactRefs": ["v5p0-six-tabs", "v5p0-browser-transcript"]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "case-default-off-rollback",
+        "contractRef": "V5.P0 six-destination default",
+        "scenario": "Load the dashboard without a rollback flag and inspect all rail tabs.",
+        "expectedBehavior": "Only six canonical destinations appear; Lab, Context, Alpha, and Catalog remain absent.",
+        "verdict": "passed",
+        "artifactRefs": ["v5p0-six-tabs", "v5p0-browser-transcript"]
+      },
+      {
+        "id": "case-alias-query-preservation",
+        "contractRef": "V5.P0 governance aliases",
+        "scenario": "Open audit and verdict deep links with tab and run_id query values.",
+        "expectedBehavior": "Navigation canonicalizes to History while preserving unrelated query identity.",
+        "verdict": "passed",
+        "artifactRefs": ["v5p0-history-governance", "v5p0-browser-transcript"]
+      },
+      {
+        "id": "case-prototype-masking",
+        "contractRef": "V5.P0 prototype identity",
+        "scenario": "Open known Lab and Catalog prototype identities outside rollback mode.",
+        "expectedBehavior": "The URL explicitly gains v4_legacy_extras=1 and preserves the requested prototype instead of silently masking it as Live.",
+        "verdict": "passed",
+        "artifactRefs": ["v5p0-six-tabs", "v5p0-browser-transcript"]
+      },
+      {
+        "id": "case-authority-overclaim",
+        "contractRef": "V5.P0 Catalog authority boundary",
+        "scenario": "Inspect Catalog for completion, verdict, promotion, or write authority claims.",
+        "expectedBehavior": "Catalog visibly states it is non-authoritative, non-normative, incomplete, and SELECT-only.",
+        "verdict": "passed",
+        "artifactRefs": ["v5p0-six-tabs", "v5p0-browser-transcript"]
+      },
+      {
+        "id": "case-browser-history-focus",
+        "contractRef": "V5.P0 accessible navigation",
+        "scenario": "Navigate between destinations, then use browser Back and Forward and keyboard Arrow/Home/End controls.",
+        "expectedBehavior": "The selected tab, roving tabindex, panel relationship, and focus remain synchronized.",
+        "verdict": "passed",
+        "artifactRefs": ["v5p0-six-tabs", "v5p0-browser-transcript"]
+      }
+    ],
+    "blockers": []
+  },
+  "iteration": {
+    "status": "passed",
+    "evidence": "AI SLOP CLEANUP REPORT: changed P0/G009 files were reviewed for masking fallbacks, duplication, dead code, needless abstraction, boundary violations, UI slop, and missing tests; blocking findings: none; gate result: PASS. The rebuilt frozen bundle was then fully rerun through 48 focused tests, browser automation, executor red-team QA, and final architect review with no blockers.",
+    "fullRerun": true,
+    "rerunCommands": [
+      "cd ai_strategy_loop/dashboard/webui-build && npm run build",
+      "python -m pytest tests/unit/dashboard/test_v4_ui_foundation.py tests/unit/test_dashboard_route_parity.py tests/unit/dashboard/test_shell_wiring_parity.py tests/unit/dashboard/test_v4_uat.py tests/unit/dashboard/test_dashboard_ui_remodel.py -q"
+    ],
+    "blockers": []
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "kind": "cli-replay",
+  "replaySafe": true,
+  "command": [
+    "git",
+    "-C",
+    "C:/System_Trading/STOM/STOM_V.wt-evo-governance",
+    "rev-parse",
+    "HEAD"
+  ],
+  "recordedStdout": "210bba854d03a8680ffebfb94f2544c52e81858b\n"
+}

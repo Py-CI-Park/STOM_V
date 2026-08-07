@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "goalId": "G003",
+  "executionWorktree": "C:/System_Trading/STOM/STOM_V.wt-evo-governance",
+  "changedFiles": [
+    "ai_strategy_loop/controller/advisory_scores.py",
+    "tests/unit/test_advisory_scores.py"
+  ],
+  "implemented": {
+    "performance_score_100": "0-100 advisory score with profit, MDD, Calmar, uptrend R2, trade frequency, exit quality, and multi-period stability reason components",
+    "condition_quality_score_100": "0-100 advisory score with syntax safety, variable diversity, market niche, composition creativity, overfire guard, execution cost, and exit structure reason components",
+    "authorityGuard": "score_can_promote/export/winner_authority are always false; promotion_review_ready requires hard gate, evidence, and human approval outside the score itself",
+    "scoreRobustnessFixes": "Invalid stability metrics now fall back/continue safely, yearly_positive_ratio fallback is used, and give_back_rate=0.0 earns valid give-back contribution instead of being treated as missing.",
+    "nonFiniteScoreGuard": "NaN/inf numeric inputs are ignored by _num/_clamp; invalid give_back_rate is treated as absent while valid 0.0 remains a perfect give-back value."
+  },
+  "boundaries": {
+    "advisoryOnly": true,
+    "exportAllowed": false,
+    "winnerAuthority": false,
+    "liveExportOperatingDb": "not touched",
+    "v3kKhopenapi": "not touched",
+    "transformerMl": "not implemented"
+  },
+  "verification": [
+    {
+      "command": "python -m pytest tests/unit/test_advisory_scores.py tests/unit/test_condition_discovery_policy.py tests/unit/test_launch_config.py -q",
+      "result": "30 passed in 1.62s",
+      "artifact": "artifact://421"
+    },
+    {
+      "command": "git diff --check",
+      "result": "clean"
+    },
+    {
+      "command": "git diff --check",
+      "result": "clean_after_score_robustness_fix"
+    },
+    {
+      "command": "python -m pytest tests/unit/dashboard/test_dashboard_telemetry.py tests/unit/test_advisory_scores.py tests/unit/test_condition_discovery_policy.py tests/unit/test_launch_config.py -q",
+      "result": "37 passed in 10.81s",
+      "artifact": "artifact://435"
+    },
+    {
+      "command": "git diff --check",
+      "result": "clean_after_non_finite_fix"
+    }
+  ],
+  "verdict": "ready_for_final_review"
+}

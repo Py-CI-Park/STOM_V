@@ -1,0 +1,95 @@
+{
+  "status": "complete",
+  "config_path": "artifacts\\chart_sulsa_validation_20260702\\timeout_probe_tick_valid_micro_config.json",
+  "warm_config": {
+    "start_date": 20250102,
+    "end_date": 20250103,
+    "start_time": 90000,
+    "end_time": 92800,
+    "engine_count": 2,
+    "is_tick": true,
+    "timeout": 600,
+    "run_timeout": 180,
+    "divid_mode": "종목코드별 분류"
+  },
+  "pairs": [
+    {
+      "label": "probe_comparator_rr8_12",
+      "buy": "GATE_rr8_12_turnover_min_902_1_5_B",
+      "sell": "GATE_rr8_12_turnover_min_902_1_5_S",
+      "elapsed_sec": 12.863,
+      "raw_status": "success",
+      "raw_message": "백테스트 완료",
+      "ok": true,
+      "status": "success",
+      "reason": "ok",
+      "csv_path": "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260703180848.csv",
+      "metrics": {
+        "trade_count": 2,
+        "daily_avg_trades": 1.0,
+        "win_rate": 100.0,
+        "avg_profit_pct": 3.99,
+        "total_profit_pct": 3.99,
+        "total_profit_krw": 399613,
+        "cagr": 498.98,
+        "mdd_pct": 3.99,
+        "mdd_amount": 0.0,
+        "tpi": 1.0,
+        "seed_capital": 10010770.0,
+        "max_hold_count": 2,
+        "avg_hold_time": 329.5,
+        "day_count": 2,
+        "bootstrap_avg": 0.0,
+        "bootstrap_min": 0.0,
+        "bootstrap_max": 0.0
+      },
+      "fitness_error": null,
+      "fitness": {
+        "score": 126.05764411027569,
+        "gate_passed": true,
+        "reason": "ok",
+        "trade_count": 2,
+        "daily_avg_trades": 1.0,
+        "mdd": 3.99,
+        "profit": 399613.0,
+        "payoff_ratio": 999.0,
+        "give_back_rate": 0.0
+      }
+    },
+    {
+      "label": "probe_css_v7_tick_master",
+      "buy": "CSS_V7_TICK_B_MASTER_0900_0930",
+      "sell": "CSS_V7_TICK_S_MASTER_0900_0930",
+      "elapsed_sec": 203.022,
+      "raw_status": "error",
+      "raw_message": "백테스트 시간 초과 (180초)",
+      "ok": false,
+      "status": "error",
+      "reason": "warm backtest non-success: status=error message=백테스트 시간 초과 (180초) csv=no",
+      "csv_path": null,
+      "metrics": null
+    }
+  ],
+  "prepare": {
+    "elapsed_sec": 29.719,
+    "status": "ok",
+    "back_count": 66,
+    "timing": {
+      "engine_count": 2,
+      "back_count": 66,
+      "status": "ok",
+      "prepare_elapsed": 29.719142699963413,
+      "spawn_subtotals_elapsed": 0.5248728000442497,
+      "spawn_engines_elapsed": 16.525486500002444,
+      "market_data_load_elapsed": 0.9343086999724619,
+      "engine_data_send_elapsed": 11.69074140000157
+    }
+  },
+  "close": {
+    "status": "ok",
+    "elapsed_sec": 4.402
+  },
+  "new_csv_files": [
+    "backtest/csv\\stock_bt_GATE_rr8_12_turnover_min_902_1_5_B_20260703180848.csv"
+  ]
+}

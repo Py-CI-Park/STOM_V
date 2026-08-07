@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "kind": "web-test-report",
+  "commit": "0f9ee95c22aad3fc7ab6855e7c9148c145106f5a",
+  "bundle": "3ef01449",
+  "commands": [
+    {"command":"python -m pytest tests/unit/test_history_api.py tests/unit/dashboard/test_v4_replay_history_ui.py -q","status":"passed","summary":"33 passed in 4.49s"},
+    {"command":"python -m pytest <History API/UI, records, phase9, remodel, track-z, shell wiring files> -q","status":"passed","summary":"86 passed in 214.01s"},
+    {"command":"npm run typecheck && npm run build","cwd":"ai_strategy_loop/dashboard/webui-build","status":"passed","summary":"runtime JSX PASS; bundle app.js v=3ef01449"},
+    {"command":"git diff --check","status":"passed","summary":"tracked worktree clean; no whitespace errors"}
+  ],
+  "verdict": "passed"
+}
