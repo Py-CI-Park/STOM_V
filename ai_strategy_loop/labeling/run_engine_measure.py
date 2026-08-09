@@ -56,9 +56,13 @@ OWNED_PREFIX = "W4_S_"
 _TRAILING_LABEL = re.compile(r"^trailing\(arm\+([0-9.]+)/give([0-9.]+)\)$")
 
 
-def _gate_cells(out_name: str) -> tuple[dict, list[dict]]:
-    """재현 게이트 결과에서 엔진에 올릴 셀을 뽑는다(정확 셀만)."""
-    path = os.path.join(_LABEL_ROOT, out_name, "_reproduction_gate.json")
+def _gate_cells(out_name: str, gate_tag: str = "") -> tuple[dict, list[dict]]:
+    """재현 게이트 결과에서 엔진에 올릴 셀을 뽑는다(정확 셀만).
+
+    `gate_tag` 로 wide 격자 게이트(`_reproduction_gate_wide.json`)를 지목할 수 있다.
+    응답면 1위 셀은 기본 격자(6셀)에 없으므로 그 셀을 엔진에 올리려면 필요하다.
+    """
+    path = os.path.join(_LABEL_ROOT, out_name, f"_reproduction_gate{gate_tag}.json")
     with open(path, "r", encoding="utf-8") as handle:
         gate = json.load(handle)
     reproducing = set(gate.get("reproducing") or [])
@@ -120,16 +124,29 @@ def main() -> None:
                         help="구간 시작(YYYYMMDD). 연기 시험용 — 기본은 레인 설계 구간")
     parser.add_argument("--end", type=int, default=None)
     parser.add_argument("--tag", default="", help="리포트 파일 접미(연기 시험 분리용)")
+    parser.add_argument("--gate-tag", default="",
+                        help="재현 게이트 접미(_wide 등). 응답면 1위 셀을 올릴 때 쓴다")
+    parser.add_argument("--cells", default="",
+                        help="쉼표 구분 규칙 라벨. 주면 --top 대신 이 셀만 올린다")
     args = parser.parse_args()
 
     lane = LANES[args.lane]
     period = (args.start, args.end) if (args.start and args.end) else None
-    gate, cells = _gate_cells(args.out_name)
+    gate, cells = _gate_cells(args.out_name, args.gate_tag)
     if gate.get("verdict") != "PASS":
         raise SystemExit(f"재현 게이트가 {gate.get('verdict')} 다 — 엔진 실측 대상이 아니다.")
     if not cells:
         raise SystemExit("엔진에 올릴 정확(exact) 트레일링 셀이 없다.")
-    picks = cells[:args.top]
+    if args.cells:
+        wanted = [c.strip() for c in args.cells.split(",") if c.strip()]
+        index = {c["rule"]: c for c in cells}
+        missing = [w for w in wanted if w not in index]
+        if missing:
+            raise SystemExit(f"게이트에 없는 셀: {missing}\n"
+                             f"  가능: {sorted(index)[:12]}{' …' if len(index) > 12 else ''}")
+        picks = [index[w] for w in wanted]
+    else:
+        picks = cells[:args.top]
 
     client = Client()
     t0 = time.time()
