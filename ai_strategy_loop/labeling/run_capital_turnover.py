@@ -56,8 +56,12 @@ def _assert_owned(name: str) -> None:
         raise ValueError(f"쓰기 금지 이름: {name} (허용 접두 {OWNED_PREFIX!r})")
 
 
-def _load_baseline(out_name: str, tag: str) -> tuple[dict, list[int]]:
-    """같은 구간의 기준선 실측을 읽는다 — 없으면 만들라고 말하고 멈춘다."""
+def _load_baseline(out_name: str, tag: str) -> tuple[dict, list[int], dict]:
+    """같은 구간의 기준선 실측을 읽는다 — 없으면 만들라고 말하고 멈춘다.
+
+    기준선 **팔 전체**(job_id 포함)도 함께 돌려준다. 짝지은 검정은 기준선의
+    거래 기록이 있어야 하고, 그 기록은 job_id 로만 찾을 수 있다.
+    """
     path = os.path.join(_LABEL_ROOT, out_name, f"_p5_engine_report{tag}.json")
     if not os.path.exists(path):
         raise SystemExit(f"기준선 실측이 없다: {path}\n"
@@ -67,7 +71,30 @@ def _load_baseline(out_name: str, tag: str) -> tuple[dict, list[int]]:
     metrics = report.get("baseline_metrics") or {}
     if not metrics.get("trade_count"):
         raise SystemExit("기준선 거래 수가 없다 — 실측이 완료되지 않았다.")
-    return metrics, list(report.get("design") or [])
+    arm = next((o for o in report.get("outcomes") or []
+                if o.get("arm") == "baseline"), None)
+    if arm is None:
+        raise SystemExit("기준선 팔 기록이 없다 — 짝지은 검정을 할 수 없다.")
+    return metrics, list(report.get("design") or []), arm
+
+
+def write_standard_report(path: str, *, lane_name: str, span: list[int],
+                          baseline_arm: dict, baseline: dict,
+                          outcomes: list[dict], note: str) -> None:
+    """심판·원장 러너가 읽는 **표준 모양**으로 한 벌 더 남긴다.
+
+    두 러너(`run_engine_ladder`·`run_ledger_sync`)는 `_p5_engine_report*.json`
+    한 가지 모양만 안다. 자본 회전 실험을 위해 그 둘을 고치는 대신, 이쪽에서
+    같은 모양을 한 벌 더 써 준다 — 심판 경로는 하나로 유지하는 편이 안전하다.
+    """
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump({
+            "lane": lane_name, "design": span,
+            "champion_buy": CHAMPION_BUY, "baseline_sell": CHAMPION_SELL,
+            "baseline_metrics": baseline,
+            "outcomes": [baseline_arm] + outcomes,
+            "note": note,
+        }, handle, ensure_ascii=False, indent=1, default=float)
 
 
 def _gate(baseline: dict, engine: dict) -> dict:
@@ -109,7 +136,7 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"허용되지 않은 규칙: {unknown} (가능: {sorted(EARLY_EXIT_RULES)})")
 
-    baseline, span = _load_baseline(args.out_name, args.tag)
+    baseline, span, baseline_arm = _load_baseline(args.out_name, args.tag)
     print(f"[기준선] {CHAMPION_BUY} + {CHAMPION_SELL} 구간 {span} "
           f"거래={baseline.get('trade_count')} 건당={baseline.get('avg_profit_pct')}% "
           f"총수익률={baseline.get('total_profit_pct')}% "
@@ -121,6 +148,11 @@ def main() -> None:
     outcomes: list[dict] = []
     t0 = time.time()
 
+    note = ("B3(트레일링)에 조기 청산 한 줄씩만 얹은 A/B. "
+            "판정은 자본 대비(총수익률·최대동시보유)로 한다.")
+    report_path = os.path.join(_LABEL_ROOT, args.out_name,
+                               f"_p5_engine_report{args.tag}_turn.json")
+
     def _save() -> None:
         """팔 하나가 끝날 때마다 저장한다 — 엔진 시간을 잃으면 아프다."""
         with open(out_path, "w", encoding="utf-8") as handle:
@@ -131,9 +163,12 @@ def main() -> None:
                 "base_rule": {"arm_pct": args.arm, "give_pct": args.give},
                 "outcomes": outcomes,
                 "complete": len(outcomes) == len(rules),
-                "note": ("B3(트레일링)에 조기 청산 한 줄씩만 얹은 A/B. "
-                         "판정은 자본 대비(총수익률·최대동시보유)로 한다."),
+                "note": note,
             }, handle, ensure_ascii=False, indent=1, default=float)
+        # 심판·원장이 읽는 표준 모양으로 한 벌 더.
+        write_standard_report(report_path, lane_name=lane.name, span=span,
+                              baseline_arm=baseline_arm, baseline=baseline,
+                              outcomes=outcomes, note=note)
 
     for index, rule_key in enumerate(rules, start=1):
         label, _ = EARLY_EXIT_RULES[rule_key]
