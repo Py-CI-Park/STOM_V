@@ -68,6 +68,55 @@ def champion_buy_code(db_path: str | None = None) -> str:
     return str(row[0])
 
 
+def sync_ledger(report: dict, *, source: str = "ai") -> int:
+    """진입 후보를 원장에 적재한다.
+
+    ## 왜 별도 경로인가 — 짝지은 검정이 성립하지 않는다
+
+    짝지은 비교의 전제는 두 팔이 **같은 진입을 공유**한다는 것이다. 진입 절을
+    빼면 그 전제가 깨진다: 공유되는 거래는 매도가 같으니 차이가 정확히 0 이고,
+    새로 늘어난 거래는 짝이 없다. 그래서 `run_ledger_sync`(짝지은 필드 포함)를
+    쓰지 않고 **집계 지표만** 적는다.
+
+    폐기된 후보도 남긴다 — "이건 이미 해 봤다"를 아는 것이 원장의 값이다.
+    """
+    from datetime import datetime, timezone
+
+    from ai_strategy_loop.controller.strategy_ledger import CandidateRecord, append
+
+    stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    design = report.get("design") or [None, None]
+    written = 0
+    for outcome in report.get("outcomes") or []:
+        engine = outcome.get("engine") or {}
+        gate = outcome.get("gate") or {}
+        append(CandidateRecord(
+            candidate_id=f"{outcome.get('buy')}::{outcome.get('sell')}",
+            family="entry", source=source, lane=str(report.get("lane") or "tick"),
+            verdict="PASS" if gate.get("pass") else "REJECT",
+            recorded_at=stamp,
+            buy_name=outcome.get("buy"), sell_name=outcome.get("buy"),
+            period_start=design[0], period_end=design[1],
+            job_id=outcome.get("job_id"),
+            trades=engine.get("trade_count"), win_rate=engine.get("win_rate"),
+            avg_profit_pct=engine.get("avg_profit_pct"),
+            total_profit_krw=engine.get("total_profit_krw"),
+            seed_capital=engine.get("seed_capital"),
+            total_profit_pct=engine.get("total_profit_pct"),
+            cagr=engine.get("cagr"), mdd_pct=engine.get("mdd_pct"),
+            tpi=engine.get("tpi"), avg_hold_sec=engine.get("avg_hold_time"),
+            max_hold_count=engine.get("max_hold_count"),
+            baseline_id=f"{report.get('champion_buy')}::{report.get('baseline_sell')}",
+            verdict_reason=(
+                f"진입 절 제거 · 거래 {gate.get('trade_gain'):+d} · "
+                f"건당 {'통과' if gate.get('per_trade_pass') else '미달'} · "
+                f"자본 {'통과' if gate.get('capital_pass') else '미달'}"),
+            notes=("짝지은 검정 없음 — 진입이 다르면 짝이 성립하지 않는다."),
+        ))
+        written += 1
+    return written
+
+
 def _gate(baseline: dict, engine: dict) -> dict:
     """완화는 **공짜여야** 채택 후보다 — 셋 다 넘어야 한다."""
     def ge(key: str) -> bool:
@@ -96,6 +145,8 @@ def main() -> None:
                         help="쉼표 구분. DSL 앵커가 등록된 절만 가능")
     parser.add_argument("--engines", type=int, default=16)
     parser.add_argument("--timeout", type=int, default=9000)
+    parser.add_argument("--sync-only", action="store_true",
+                        help="엔진 실행 없이 기존 결과를 원장에 적재만 한다")
     args = parser.parse_args()
 
     lane = LANES[args.lane]
@@ -103,6 +154,15 @@ def main() -> None:
     unknown = [k for k in keys if k not in cc.DSL_ANCHOR]
     if unknown:
         raise SystemExit(f"DSL 앵커가 없는 절: {unknown} (등록됨: {sorted(cc.DSL_ANCHOR)})")
+
+    if args.sync_only:
+        path = os.path.join(_LABEL_ROOT, args.out_name, f"_entry_relax{args.tag}.json")
+        if not os.path.exists(path):
+            raise SystemExit(f"적재할 결과가 없다: {path}")
+        with open(path, "r", encoding="utf-8") as handle:
+            written = sync_ledger(json.load(handle))
+        print(f"원장 적재 {written}행 (진입 계열 · 짝지은 검정 없음)")
+        return
 
     baseline, span, baseline_arm = _load_baseline(args.out_name, args.tag)
     champion = champion_buy_code()
