@@ -128,6 +128,10 @@ def main() -> None:
     parser.add_argument("--engines", type=int, default=16)
     parser.add_argument("--timeout", type=int, default=9000)
     parser.add_argument("--rules", default=",".join(sorted(EARLY_EXIT_RULES)))
+    # 엔진을 다시 돌리지 않고 표준 리포트만 다시 쓴다 — 표준 모양 산출이 추가되기
+    #   전에 돈 실행분을 심판·원장에 태우기 위한 경로다.
+    parser.add_argument("--rebuild-report", action="store_true",
+                        help="엔진 실행 없이 기존 결과에서 표준 리포트만 재생성")
     args = parser.parse_args()
 
     lane = LANES[args.lane]
@@ -142,11 +146,26 @@ def main() -> None:
           f"총수익률={baseline.get('total_profit_pct')}% "
           f"필요자금={baseline.get('seed_capital')}", flush=True)
 
-    client = Client()
     out_path = os.path.join(_LABEL_ROOT, args.out_name,
                             f"_capital_turnover{args.tag}.json")
     outcomes: list[dict] = []
     t0 = time.time()
+
+    if args.rebuild_report:
+        if not os.path.exists(out_path):
+            raise SystemExit(f"재생성할 결과가 없다: {out_path}")
+        with open(out_path, "r", encoding="utf-8") as handle:
+            outcomes = json.load(handle).get("outcomes") or []
+        target = os.path.join(_LABEL_ROOT, args.out_name,
+                              f"_p5_engine_report{args.tag}_turn.json")
+        write_standard_report(
+            target, lane_name=lane.name, span=span, baseline_arm=baseline_arm,
+            baseline=baseline, outcomes=outcomes,
+            note="자본 회전 교정 A/B — 표준 모양 재생성(엔진 재실행 없음).")
+        print(f"표준 리포트 재생성: {target} (팔 {len(outcomes) + 1}개)")
+        return
+
+    client = Client()
 
     note = ("B3(트레일링)에 조기 청산 한 줄씩만 얹은 A/B. "
             "판정은 자본 대비(총수익률·최대동시보유)로 한다.")
