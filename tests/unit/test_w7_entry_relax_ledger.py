@@ -168,3 +168,51 @@ def test_arm_without_trades_is_refused():
     report["outcomes"][1]["engine"]["trade_count"] = 0
     with pytest.raises(SystemExit):
         rr.resolve_baseline(report, B3_SELL)
+
+
+# ---------------------------------------------------------------------------
+# 자본 정책 (2026-08-09 사람 결정) — 심판과 같은 두 정책을 쓴다
+# ---------------------------------------------------------------------------
+
+BASE_FULL = {"trade_count": 352, "avg_profit_pct": 1.06,
+             "total_profit_pct": 185.66, "total_profit_krw": 3_706_986,
+             "seed_capital": 1_996_660}
+
+
+def test_entry_gate_default_is_the_conservative_ratio():
+    """기본은 총수익률 — 자본이 희소하다는 가정."""
+    g = rr._gate(BASE_FULL, {"trade_count": 400, "avg_profit_pct": 1.10,
+                             "total_profit_pct": 150.0, "total_profit_krw": 4_500_000,
+                             "seed_capital": 3_000_000})
+    assert g["capital_policy"] == "ratio"
+    assert g["pass"] is False                     # 150 < 185.66
+
+
+def test_entry_gate_limit_policy_ranks_by_absolute_money():
+    """★ 자본이 구속하지 않으면 총수익금으로 잰다.
+
+    총수익률로 재면 자본을 더 쓰고 **더 버는** 후보가 부당하게 떨어진다 —
+    심판과 같은 결함을 진입 쪽에 남겨 두지 않는다.
+    """
+    better = {"trade_count": 400, "avg_profit_pct": 1.10, "total_profit_pct": 150.0,
+              "total_profit_krw": 4_500_000, "seed_capital": 3_000_000}
+    g = rr._gate(BASE_FULL, better, capital_limit_krw=20_000_000)
+    assert g["capital_policy"] == "limit"
+    assert (g["capital_pass"], g["money_pass"], g["pass"]) == (True, True, True)
+
+
+def test_entry_gate_limit_policy_refuses_what_exceeds_the_budget():
+    g = rr._gate(BASE_FULL, {"trade_count": 400, "avg_profit_pct": 1.10,
+                             "total_profit_pct": 150.0, "total_profit_krw": 4_500_000,
+                             "seed_capital": 30_000_000},
+                 capital_limit_krw=20_000_000)
+    assert g["capital_pass"] is False and g["pass"] is False
+
+
+def test_entry_gate_limit_policy_still_needs_per_trade_and_money():
+    """자본이 남아돌아도 건당이나 총수익금이 밀리면 통과 못 한다."""
+    for worse in ({"avg_profit_pct": 0.90, "total_profit_krw": 4_500_000},
+                  {"avg_profit_pct": 1.10, "total_profit_krw": 3_000_000}):
+        engine = {"trade_count": 400, "total_profit_pct": 150.0,
+                  "seed_capital": 2_000_000, **worse}
+        assert rr._gate(BASE_FULL, engine, capital_limit_krw=20_000_000)["pass"] is False

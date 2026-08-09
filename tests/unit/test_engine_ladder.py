@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from ai_strategy_loop.labeling import engine_ladder as el
 from ai_strategy_loop.labeling.engine_ladder import (
     Arm,
     capital_view,
@@ -204,3 +205,84 @@ def test_verdict_promising_when_direction_right_but_unproven():
     if out["verdict"] == "PROMISING":
         assert out["paired"]["significant"] is False
         assert "표본" in out["verdict_meaning"]
+
+
+# ---------------------------------------------------------------------------
+# 자본 정책 (2026-08-09 사람 결정) — 자본이 희소한가, 아닌가
+# ---------------------------------------------------------------------------
+
+def _capital_arm(name, profits, seed, tpp):
+    frame = pd.DataFrame({
+        "매수시간": [f"2024030{1 + i % 9}09{(i % 5) + 1:02d}00" for i in range(len(profits))],
+        "종목명": [f"S{i:03d}" for i in range(len(profits))],
+        "수익률": profits, "수익금": [p * 1000 for p in profits],
+    })
+    frame["일자"] = frame["매수시간"].str[:8].astype(int)
+    frame["entry_key"] = frame["매수시간"] + "|" + frame["종목명"]
+    return el.Arm(name=name, trades=frame, seed_capital=seed, total_profit_pct=tpp)
+
+
+def _capital_pair():
+    """실측을 본뜬 짝 — 챔피언 100만원/241%, B3 200만원/186% 이나 건당은 B3 우세."""
+    rng = np.random.default_rng(17)
+    base_p = rng.normal(0.67, 2.0, 300).round(4)
+    chal_p = (base_p + rng.normal(0.36, 1.2, 300)).round(4)
+    base = _capital_arm("champ", list(base_p), 1_004_095, 241.16)
+    chal = _capital_arm("b3", list(chal_p), 1_996_660, 185.66)
+    return base, chal
+
+
+def test_default_policy_is_the_conservative_ratio():
+    """★ 기본은 '자본이 희소하다' 다 — 한도를 말해 주지 않으면 바뀌지 않는다."""
+    base, chal = _capital_pair()
+    gate = el.capital_gate(base, chal)
+    assert gate["policy"] == el.CAPITAL_POLICY_RATIO
+    assert gate["pass"] is False                      # 185.66 < 241.16
+    assert el.judge(base, chal)["verdict"] == "MIXED"
+
+
+def test_limit_policy_passes_what_fits_the_budget():
+    """★ 자본이 구속하지 않으면 실행 가능성만 본다 — 총수익률은 참고 지표."""
+    base, chal = _capital_pair()
+    gate = el.capital_gate(base, chal, limit_krw=20_000_000)
+    assert gate["policy"] == el.CAPITAL_POLICY_LIMIT
+    assert gate["pass"] is True                       # 199만원 <= 2,000만원
+    assert gate["challenger_total_profit_pct"] == 185.66   # 감추지 않는다
+
+
+def test_limit_policy_can_flip_mixed_to_pass():
+    """가정이 바뀌면 판정도 바뀐다 — 그래서 정책을 함께 기록한다."""
+    base, chal = _capital_pair()
+    assert el.judge(base, chal)["verdict"] == "MIXED"
+    view = el.judge(base, chal, capital_limit_krw=20_000_000)
+    assert view["verdict"] == "PASS"
+    assert view["capital_efficiency"]["policy"] == el.CAPITAL_POLICY_LIMIT
+    assert view["capital_efficiency"]["limit_krw"] == 20_000_000
+
+
+def test_limit_policy_still_refuses_what_does_not_fit():
+    base, chal = _capital_pair()
+    view = el.judge(base, chal, capital_limit_krw=1_500_000)
+    assert view["verdict"] == "MIXED"                 # 199만원 > 150만원
+    assert "실행 불가" in view["verdict_meaning"]
+
+
+def test_policy_is_always_recorded_in_the_verdict():
+    """★ 어느 가정에서 나온 판정인지 되짚을 수 있어야 한다."""
+    base, chal = _capital_pair()
+    for limit in (None, 20_000_000):
+        gate = el.judge(base, chal, capital_limit_krw=limit)["capital_efficiency"]
+        assert gate["policy"] in (el.CAPITAL_POLICY_RATIO, el.CAPITAL_POLICY_LIMIT)
+        assert gate["note"]
+        assert gate["seed_capital"] == 1_996_660      # 자본을 감추지 않는다
+
+
+def test_capital_policy_never_rescues_a_losing_candidate():
+    """★ 자본 한도를 넉넉히 줘도 건당이 밀리면 REJECT 다."""
+    base, _ = _capital_pair()
+    rng = np.random.default_rng(5)
+    worse = _capital_arm("bad",
+                         list((base.trades["수익률"].to_numpy() - 0.5).round(4)),
+                         1_000_000, 100.0)
+    view = el.judge(base, worse, capital_limit_krw=20_000_000)
+    assert view["verdict"] == "REJECT"

@@ -180,11 +180,77 @@ def capital_view(baseline: Arm, challenger: Arm) -> dict[str, Any]:
                      "(총수익률·CAGR)와 위험 대비 지표(Calmar)를 함께 읽는다.")}
 
 
+#: 자본 정책 — **자본이 희소한가, 아닌가.** 이 선택은 사람이 한다.
+#:
+#: | 정책 | 게이트 | 언제 |
+#: |---|---|---|
+#: | `ratio` | 총수익률 ≥ 챔피언 | 자본이 희소하다 — 같은 돈으로 더 벌어야 한다 |
+#: | `limit` | 필요자금 ≤ 한도 | 자본이 구속하지 않는다 — 실행 가능하기만 하면 된다 |
+#:
+#: 기본은 `ratio` 다(보수적). `limit` 은 **사람이 한도를 말해 줘야** 켜진다.
+#: 정책이 판정을 바꾸므로 원장에 어떤 정책이었는지 함께 적는다.
+CAPITAL_POLICY_RATIO: Final = "ratio"
+CAPITAL_POLICY_LIMIT: Final = "limit"
+
+
+def capital_gate(baseline: Arm, challenger: Arm, *,
+                 limit_krw: float | None = None) -> dict[str, Any]:
+    """자본 축 게이트. `limit_krw` 를 주면 **실행 가능성**으로 바뀐다.
+
+    ## 왜 두 정책인가 (2026-08-09 사람 결정)
+
+    지금까지는 `총수익률 = 총수익금 / 필요자금` 으로 순위를 매겼다. 그것은
+    **자본이 희소하다**는 가정이다. 그 가정 아래서는 자본을 2배 쓰고 수익을
+    1.8배 내는 후보가 진다.
+
+    그런데 실측 필요자금은 **약 100만원**(챔피언)~**200만원**(B3)이고,
+    사용자가 운용 가능하다고 확정한 자본은 그보다 훨씬 크다. 자본이 구속하지
+    않으면 총수익률은 **순위 기준이 아니라 참고 지표**이고, 실제로 봐야 할 것은
+    **총수익금**이다.
+
+    가정이 바뀌면 판정도 바뀌어야 한다. 다만 조용히 바꾸지 않는다 —
+    정책 이름과 한도를 판정과 함께 기록해서, 나중에 "어느 가정에서 나온
+    PASS 인가"를 되짚을 수 있게 한다.
+    """
+    base_seed = baseline.seed_capital
+    chal_seed = challenger.seed_capital
+    base_tpp, chal_tpp = baseline.total_profit_pct, challenger.total_profit_pct
+
+    if limit_krw is not None:
+        known = chal_seed is not None
+        passed = (not known) or float(chal_seed) <= float(limit_krw)
+        return {
+            "policy": CAPITAL_POLICY_LIMIT, "limit_krw": float(limit_krw),
+            "known": known, "pass": bool(passed),
+            "seed_capital": chal_seed, "baseline_seed_capital": base_seed,
+            "baseline_total_profit_pct": base_tpp,
+            "challenger_total_profit_pct": chal_tpp,
+            "note": ("자본이 구속하지 않는다는 사람 결정 아래 **실행 가능성**만 본다. "
+                     "총수익률은 참고 지표로 남긴다."),
+        }
+
+    known = base_tpp is not None and chal_tpp is not None
+    passed = (not known) or float(chal_tpp) >= float(base_tpp)
+    return {
+        "policy": CAPITAL_POLICY_RATIO, "limit_krw": None,
+        "known": known, "pass": bool(passed),
+        "seed_capital": chal_seed, "baseline_seed_capital": base_seed,
+        "baseline_total_profit_pct": base_tpp,
+        "challenger_total_profit_pct": chal_tpp,
+        "note": ("총수익률 = 총수익금 / 필요자금. 자본을 더 쓰고 총액만 늘린 후보는 "
+                 "여기서 걸린다(자본이 희소하다는 가정)."),
+    }
+
+
 def judge(baseline: Arm, challenger: Arm, *,
-          segments: int = REGIME_SEGMENTS) -> dict[str, Any]:
+          segments: int = REGIME_SEGMENTS,
+          capital_limit_krw: float | None = None) -> dict[str, Any]:
     """챔피언을 합격선으로 삼아 도전자를 심판한다.
 
     절대 기준(예: 4/4 양수)을 쓰지 않는다 — 챔피언이 3/4 라면 3/4 가 합격선이다.
+
+    `capital_limit_krw` 를 주면 자본 축이 **실행 가능성**으로 바뀐다
+    (`capital_gate` 참조). 그 선택은 사람이 하고, 판정과 함께 기록된다.
     """
     days = sorted(set(baseline.trades["일자"]) | set(challenger.trades["일자"]))
     base_segments = regime_split(baseline, segments=segments, days=days)
@@ -202,12 +268,10 @@ def judge(baseline: Arm, challenger: Arm, *,
     profit_pass = bool(paired.get("available")) and paired["mean_diff_pct"] >= 0
     proven = bool(paired.get("significant"))
 
-    # **자본 대비**로도 챔피언 이상인가. 총수익률 = 총수익금 / 필요자금 이므로
-    #   자본을 2배 쓰고 수익이 1.8배면 이 값이 떨어진다. 건당 수익률만 보면
-    #   그 사실이 통째로 가려진다(실측: B1 은 건당 +0.06%p 인데 총수익률은 −36%p).
-    base_tpp, chal_tpp = baseline.total_profit_pct, challenger.total_profit_pct
-    capital_known = base_tpp is not None and chal_tpp is not None
-    capital_pass = (not capital_known) or float(chal_tpp) >= float(base_tpp)
+    gate = capital_gate(baseline, challenger, limit_krw=capital_limit_krw)
+    capital_pass, capital_known = gate["pass"], gate["known"]
+    base_tpp = gate["baseline_total_profit_pct"]
+    chal_tpp = gate["challenger_total_profit_pct"]
 
     if not (consistency_pass and profit_pass):
         verdict = "REJECT"
@@ -236,20 +300,16 @@ def judge(baseline: Arm, challenger: Arm, *,
         },
         "paired": paired,
         "capital": capital,
-        "capital_efficiency": {
-            "baseline_total_profit_pct": base_tpp,
-            "challenger_total_profit_pct": chal_tpp,
-            "pass": capital_pass,
-            "known": capital_known,
-            "note": ("총수익률 = 총수익금 / 필요자금. 자본을 더 쓰고 총액만 늘린 후보는 "
-                     "여기서 걸린다."),
-        },
+        "capital_efficiency": gate,
         "verdict": verdict,
         "verdict_meaning": {
             "PASS": "챔피언 이상이고 통계적으로도 확정됐다 — 사람 보고 대상.",
             "PROMISING": "챔피언 이상이지만 표본이 얇아 확정 못했다 — 표본을 늘려 재판정.",
-            "MIXED": ("건당·일관성은 챔피언 이상이지만 **자본 대비 수익률이 낮다**. "
-                      "무엇을 중시하는지에 따라 갈리므로 자동 판정하지 않는다."),
+            "MIXED": (
+                "건당·일관성은 챔피언 이상이지만 **자본 축에서 걸렸다** — "
+                + ("필요자금이 한도를 넘는다(실행 불가)."
+                   if gate["policy"] == CAPITAL_POLICY_LIMIT
+                   else "총수익률이 챔피언보다 낮다(자본이 희소하다는 가정).")),
             "REJECT": "챔피언에 못 미친다 — 폐기.",
         }[verdict],
     }
