@@ -135,7 +135,12 @@ def main() -> None:
             transfer_ratio=outcome.get("transfer_ratio"),
             verdict_reason=verdict_row.get("verdict_meaning")
                            or ("합격선(챔피언) 그 자체" if is_baseline else None),
-            notes=f"엔진 A/B · 진입 고정 · out_name={args.out_name}",
+            # 자본 정책은 판정을 바꾸므로 원장에 함께 남긴다 —
+            #   "어느 가정에서 나온 PASS 인가"를 나중에 되짚을 수 있어야 한다.
+            notes=(f"엔진 A/B · 진입 고정 · out_name={args.out_name} · "
+                   f"자본정책={ladder.get('capital_policy', 'ratio')}"
+                   + (f"(한도 {ladder['capital_limit_krw']:,.0f}원)"
+                      if ladder.get("capital_limit_krw") else "")),
         )
         append(record)
         written += 1

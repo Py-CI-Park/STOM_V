@@ -56,6 +56,10 @@ def main() -> None:
     parser.add_argument("--segments", type=int, default=4)
     # 구간을 바꿔 잰 실측(예: `_ext`)을 정본과 나란히 심판하기 위한 접미.
     parser.add_argument("--tag", default="", help="리포트 접미(_ext 등)")
+    # 자본이 구속하지 않는다고 사람이 확정한 경우에만 준다. 판정이 바뀌므로
+    #   산출에 정책과 한도를 함께 남긴다(engine_ladder.capital_gate 참조).
+    parser.add_argument("--capital-limit", type=float, default=None,
+                        help="운용 가능 자본(원). 주면 자본 축이 실행 가능성으로 바뀐다")
     args = parser.parse_args()
 
     report_path = os.path.join(_LABEL_ROOT, args.out_name,
@@ -95,7 +99,8 @@ def main() -> None:
     for key in order:
         if key == "baseline":
             continue
-        verdict = judge(baseline, arms[key], segments=args.segments)
+        verdict = judge(baseline, arms[key], segments=args.segments,
+                        capital_limit_krw=args.capital_limit)
         results.append(verdict)
 
     print(f"\n=== 엔진 축 사다리 (합격선 = 챔피언) ===", flush=True)
@@ -120,6 +125,8 @@ def main() -> None:
             "axis": "engine_executed_trades",
             "baseline": baseline.name,
             "segments": args.segments,
+            "capital_policy": ("limit" if args.capital_limit is not None else "ratio"),
+            "capital_limit_krw": args.capital_limit,
             "results": results,
             "note": ("심판은 엔진 체결 기록이다. 합격선은 절대 기준이 아니라 챔피언이며, "
                      "챔피언이 떨어지는 기준은 기준이 틀린 것이다."),

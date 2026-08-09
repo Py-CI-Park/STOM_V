@@ -159,21 +159,46 @@ def resolve_baseline(report: dict, sell_name: str) -> tuple[dict, dict]:
     return metrics, arm
 
 
-def _gate(baseline: dict, engine: dict) -> dict:
-    """완화는 **공짜여야** 채택 후보다 — 셋 다 넘어야 한다."""
+def _gate(baseline: dict, engine: dict, *,
+          capital_limit_krw: float | None = None) -> dict:
+    """완화는 **공짜여야** 채택 후보다 — 셋 다 넘어야 한다.
+
+    자본 축은 `engine_ladder.capital_gate` 와 **같은 두 정책**을 쓴다:
+
+    | 정책 | 자본 게이트 | 수익 게이트 |
+    |---|---|---|
+    | `ratio`(기본) | 총수익률 ≥ 기준선 | 건당 ≥ 기준선 |
+    | `limit` | 필요자금 ≤ 한도 | 건당 ≥ 기준선 **AND 총수익금 ≥ 기준선** |
+
+    자본이 구속하지 않으면 볼 것은 **총수익금**이다. 총수익률로 재면 자본을
+    더 쓰고 더 버는 후보가 부당하게 떨어진다(심판과 같은 결함을 진입 쪽에
+    남겨 두지 않는다).
+    """
     def ge(key: str) -> bool:
         mine, base = engine.get(key), baseline.get(key)
         return mine is not None and base is not None and float(mine) >= float(base)
 
     more = (engine.get("trade_count") or 0) > (baseline.get("trade_count") or 0)
-    per_trade, capital = ge("avg_profit_pct"), ge("total_profit_pct")
+    per_trade = ge("avg_profit_pct")
+    if capital_limit_krw is None:
+        policy, capital, money = "ratio", ge("total_profit_pct"), True
+    else:
+        seed = engine.get("seed_capital")
+        policy = "limit"
+        capital = seed is not None and float(seed) <= float(capital_limit_krw)
+        money = ge("total_profit_krw")
     return {
+        "capital_policy": policy,
+        "capital_limit_krw": capital_limit_krw,
         "more_trades": bool(more),
         "per_trade_pass": bool(per_trade),
         "capital_pass": bool(capital),
-        "pass": bool(more and per_trade and capital),
+        "money_pass": bool(money),
+        "pass": bool(more and per_trade and capital and money),
         "trade_gain": (engine.get("trade_count") or 0) - (baseline.get("trade_count") or 0),
-        "note": "빈도를 위해 기대값을 팔지 않는다 — 건당·총수익률이 함께 유지돼야 한다.",
+        "note": ("빈도를 위해 기대값을 팔지 않는다 — 건당이 유지돼야 한다. "
+                 + ("자본은 실행 가능성만 본다(총수익금으로 순위)."
+                    if policy == "limit" else "자본은 총수익률로 잰다.")),
     }
 
 
@@ -192,6 +217,8 @@ def main() -> None:
                              f"(지도와 맞추려면 W4_S_TRAIL_5_2)")
     parser.add_argument("--out-tag", default=None,
                         help="산출 파일 접미. 생략하면 --tag 와 같다")
+    parser.add_argument("--capital-limit", type=float, default=None,
+                        help="운용 가능 자본(원). 주면 자본 축이 실행 가능성으로 바뀐다")
     parser.add_argument("--engines", type=int, default=16)
     parser.add_argument("--timeout", type=int, default=9000)
     parser.add_argument("--sync-only", action="store_true",
@@ -259,7 +286,7 @@ def main() -> None:
                        engines=args.engines, timeout=args.timeout,
                        period=(span[0], span[1]) if len(span) == 2 else None)
         metrics = run["metrics"]
-        gate = _gate(baseline, metrics)
+        gate = _gate(baseline, metrics, capital_limit_krw=args.capital_limit)
         outcomes.append({
             "name": buy_name, "rule": f"champion − {key}", "clause": key,
             "arm": f"relax_{index}", "buy": buy_name, "sell": args.sell,
