@@ -145,13 +145,21 @@ def analyze(cells: Sequence[dict[str, Any]], *, metric: str = "expectancy_pct",
         "best_plateau": best_plateau,
         "best_is_plateau": bool(best and best.get("verdict") == "고원"),
         "overfit_gap": overfit_gap,
+        # 지도는 **채택을 권고하지 않는다**(헌법 9항). 이 응답면이 말할 수 있는 것은
+        #   "어디가 안전한가"뿐이고, 그 안에서 누가 이기는지는 엔진이 정한다.
+        #   실측: 지도 1위 trailing(4/1) 은 엔진에서 2위였고 전이율도 최저(2.80)였다.
         "recommendation": (
-            "최고점이 고원 위다 — 채택 가능." if (best and best.get("verdict") == "고원")
-            else ("최고점이 고원이 아니다. 채택하려면 고원 최고 셀을 쓴다."
+            f"고원 영역이 {len(plateau)}셀이다 — 이 안에서 **엔진으로** 승자를 고른다. "
+            f"지도 최고 셀({best['rule']})은 후보일 뿐 채택 근거가 아니다."
+            if (best and best.get("verdict") == "고원")
+            else (f"지도 최고 셀({best['rule'] if best else '—'})은 고원이 아니다. "
+                  f"엔진에 올릴 후보는 고원 셀 중에서 고른다."
                   if best_plateau else
-                  "고원 셀이 하나도 없다 — 이 축에서 채택할 값이 없다.")),
+                  "고원 셀이 하나도 없다 — 이 축에는 안전한 영역이 없다.")),
         "note": ("판정은 이웃 4칸 기준이다. 격자 모서리는 '가장자리'로 남기고 "
-                 "고원으로 승격시키지 않는다 — 한쪽을 못 봤을 뿐이다."),
+                 "고원으로 승격시키지 않는다 — 한쪽을 못 봤을 뿐이다. "
+                 "그리고 이 값들은 지도 추정이라 **순위 근거가 아니다** — "
+                 "실측 전이율이 셀마다 2.80~4.86 배로 흩어진다."),
     }
 
 

@@ -92,7 +92,7 @@ def test_recommends_the_plateau_peak_not_the_global_peak():
     assert report["best_is_plateau"] is False
     assert report["best_plateau"]["expectancy_pct"] == 2.0
     assert report["overfit_gap"] == pytest.approx(7.0)
-    assert "고원 최고 셀" in report["recommendation"]
+    assert "고원 셀 중에서" in report["recommendation"]
 
 
 def test_when_the_peak_is_flat_it_is_simply_adopted():
@@ -103,13 +103,15 @@ def test_when_the_peak_is_flat_it_is_simply_adopted():
     ]))
     assert report["best_is_plateau"] is True
     assert report["overfit_gap"] is None
-    assert "채택 가능" in report["recommendation"]
+    # 지도는 채택을 권고하지 않는다 — 안전 영역만 말하고 승자는 엔진이 고른다.
+    assert "엔진으로" in report["recommendation"]
+    assert "채택 가능" not in report["recommendation"]
 
 
 def test_all_negative_surface_recommends_nothing():
     report = rs.analyze(_plane([[-1.0, -1.0, -1.0]] * 3))
     assert report["best_plateau"] is None
-    assert "채택할 값이 없다" in report["recommendation"]
+    assert "안전한 영역이 없다" in report["recommendation"]
 
 
 def test_empty_surface_says_so():
