@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-07T02:16:02.538522+00:00",
-  "source_fingerprint": "201eaf339053c894d20538ce5eea3a5776453fe333ef56a92cab58b2e7707a08",
-  "count": 999,
+  "generated_at": "2026-08-09T08:27:08.904412+00:00",
+  "source_fingerprint": "02fa1e1ab0686aaac6bb24f12d2ab554c8780968dfe5a87f4dac11f9e8d81701",
+  "count": 1002,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6700,8 +6700,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-07_마스터로드맵_조건식개발.md",
       "title": "마스터 로드맵 — 좋은 조건식을 성공적으로 개발하기 위한 전체 계획 (2026-08-07)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-07T02:14:09.585451+00:00",
-      "size": 7042
+      "updated_at": "2026-08-09T08:13:55.538011+00:00",
+      "size": 8164
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-07_성공기록과_방법론.md",
@@ -6716,6 +6716,20 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-08-07T02:12:32.326880+00:00",
       "size": 9477
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-09_w6_자본회전_응답면_진입절.md",
+      "title": "W6 단계 3·4·5 — 자본 회전 · 응답면 · 진입 절 (2026-08-09)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-09T08:20:25.967745+00:00",
+      "size": 8443
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-09_w6_표본확장_결과.md",
+      "title": "W6 단계 1·2 — 표본 확장과 재판정 (2026-08-09)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-09T06:49:17.526408+00:00",
+      "size": 3959
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
@@ -6767,11 +6781,18 @@
       "size": 9879
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-09_W6_전단계실행.md",
+      "title": "핸드오프 — W6 전 단계 실행 (2026-08-09)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-09T08:26:40.038210+00:00",
+      "size": 8944
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-07T02:15:38.455350+00:00",
-      "size": 5909
+      "updated_at": "2026-08-09T07:54:21.331279+00:00",
+      "size": 6277
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
@@ -6798,8 +6819,8 @@
       "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
       "title": "QSP1 한계 원장 (Limitation Ledger)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-06T19:15:55.483666+00:00",
-      "size": 21027
+      "updated_at": "2026-08-09T07:43:22.684694+00:00",
+      "size": 23010
     },
     {
       "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/analysis_to_revision.md",
