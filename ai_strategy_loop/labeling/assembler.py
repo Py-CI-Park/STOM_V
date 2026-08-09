@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 
+from typing import Final
+
 import numpy as np
 import pandas as pd
 
@@ -152,6 +154,73 @@ def render_trailing_sell_expression(*, name: str, arm_pct: float, give_pct: floa
         "매도 = False",
         "",
         f"if 최고수익률 >= {arm_pct:g} and (최고수익률 - 수익률) >= {give_pct:g}:",
+        "    매도 = True",
+        f"elif 보유시간 >= {horizon}:",
+        "    매도 = True",
+        f"elif 시분초 >= {forced_exit}:",
+        "    매도 = True",
+        "",
+        "if 매도:",
+        "    self.Sell()",
+    ])
+
+
+#: 자본 회전 교정용 조기 청산 규칙 — **허용 목록**이다.
+#:
+#: 왜 목록으로 묶는가: 이 렌더 결과는 `strategy.db` 에 등록되어 엔진이 실행한다.
+#: 조건식을 문자열로 자유롭게 받으면 임의 코드를 등록하는 통로가 된다. 규칙을
+#: 늘리려면 이 표를 고치고 테스트를 추가한다 — 호출부에서 문자열을 넘기지 않는다.
+EARLY_EXIT_RULES: Final = {
+    # 물속에서 오래 버티지 않는다 — 자본을 묶는 주범이 이 구간이다.
+    "time_stop": ("시간손절", "보유시간 > 180 and 수익률 < 0"),
+    # 챔피언 ③절을 빌려온다: 최근 60초 최저가를 깨면 추세가 끝난 것으로 본다.
+    "trend_break": ("추세이탈", "보유시간 > 60 and 현재가 < 최저현재가(int(60), int(보유시간))"),
+    # 단순 하한. 비교군으로 둔다 — 복잡한 규칙이 단순한 것보다 나은지 재려면 필요하다.
+    "hard_stop": ("손절", "수익률 <= -3.0"),
+}
+
+
+def render_capital_turnover_sell_expression(*, name: str, arm_pct: float, give_pct: float,
+                                            horizon: int, rule_key: str,
+                                            forced_exit: int = 92800) -> str:
+    """트레일링 + **조기 청산 한 줄** → STOM 매도 DSL.
+
+    ## 왜 필요한가
+
+    트레일링 후보는 건당 수익률에서 챔피언을 이겼지만 **자본 대비로는 졌다**.
+    원인은 하나다: 평균 보유가 373초 → 540초로 늘어 최대 동시보유가 1 → 2가 되고,
+    필요자금이 2배가 됐다. 총수익률 = 총수익금 / 필요자금 이므로 분모가 2배면
+    수익이 1.8배여도 진다.
+
+    그래서 **보유를 끊는 규칙 하나만** 얹는다. 한 번에 하나씩만 얹는 이유는
+    헌법 7항(진입과 매도를 동시에 바꾸지 않는다)의 같은 정신이다 — 두 개를 같이
+    얹으면 어느 쪽이 효과인지 못 가린다.
+
+    ## 분기 순서
+
+    트레일링 → 조기 청산 → 지평 → 전체청산.
+
+    조기 청산을 트레일링 **뒤**에 두는 이유: 둘 다 참이면 같은 틱에 팔리므로
+    손익은 같고 `매도조건` 기록만 달라진다. 트레일링을 앞에 두면 "B3 와 다른 틱에
+    팔린 거래 = 새 규칙 때문"이 되어 원인 추적이 깔끔하다.
+    """
+    if rule_key not in EARLY_EXIT_RULES:
+        raise ValueError(f"허용되지 않은 조기 청산 규칙: {rule_key} "
+                         f"(가능: {sorted(EARLY_EXIT_RULES)})")
+    if arm_pct <= 0:
+        raise ValueError("무장 임계는 양수여야 한다 — 0 이하면 손절로 동작한다")
+    if give_pct <= 0:
+        raise ValueError("되돌림 폭은 양수여야 한다")
+
+    label, condition = EARLY_EXIT_RULES[rule_key]
+    return "\n".join([
+        f"# {name} — 트레일링(무장 +{arm_pct:g}% / 되돌림 {give_pct:g}%p) + {label}",
+        f"#   목적: 보유를 끊어 자본 회전을 올린다(최대동시보유 2 → 1).",
+        "매도 = False",
+        "",
+        f"if 최고수익률 >= {arm_pct:g} and (최고수익률 - 수익률) >= {give_pct:g}:",
+        "    매도 = True",
+        f"elif {condition}:",                     # ← 이 한 줄만 B3 와 다르다
         "    매도 = True",
         f"elif 보유시간 >= {horizon}:",
         "    매도 = True",
