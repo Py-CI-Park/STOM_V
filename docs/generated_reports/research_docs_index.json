@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-09T12:33:07.679322+00:00",
-  "source_fingerprint": "2527711efb91a786bebbd4f35b5439447ca0d21c9a083277303fea70395f7108",
-  "count": 1006,
+  "generated_at": "2026-08-09T18:04:11.795448+00:00",
+  "source_fingerprint": "7c4dcac1adf2143eea2e570a12c366fe769af020477d62159c8911f4e0833aad",
+  "count": 1009,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6746,6 +6746,20 @@
       "size": 5626
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-09_홀드아웃_사전등록.md",
+      "title": "홀드아웃 개봉 사전 등록 (2026-08-09)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-09T17:55:03.093631+00:00",
+      "size": 2421
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-10_홀드아웃_개봉결과.md",
+      "title": "홀드아웃 개봉 결과 — 탈락 (2026-08-10)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-09T18:01:23.393603+00:00",
+      "size": 3008
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
       "title": "핸드오프 — QSP7 매도식 연구 (2026-08-01)",
       "category": "quant_scoring_pipeline",
@@ -6803,10 +6817,10 @@
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-09C_W8_첫승격.md",
-      "title": "핸드오프 — W8 첫 승격 (2026-08-09 C)",
+      "title": "핸드오프 — W8 (2026-08-09 C)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-09T12:32:26.162325+00:00",
-      "size": 5783
+      "updated_at": "2026-08-09T18:02:21.420274+00:00",
+      "size": 5999
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-09_W6_전단계실행.md",
@@ -6816,11 +6830,18 @@
       "size": 9068
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-10_홀드아웃후.md",
+      "title": "핸드오프 — 홀드아웃 이후 (2026-08-10)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-09T18:03:31.430306+00:00",
+      "size": 5520
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-09T12:14:57.665591+00:00",
-      "size": 6576
+      "updated_at": "2026-08-09T18:02:21.424354+00:00",
+      "size": 6799
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
@@ -6847,8 +6868,8 @@
       "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
       "title": "QSP1 한계 원장 (Limitation Ledger)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-09T12:14:57.675207+00:00",
-      "size": 24145
+      "updated_at": "2026-08-09T18:02:00.901163+00:00",
+      "size": 25069
     },
     {
       "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/analysis_to_revision.md",
