@@ -89,6 +89,7 @@ from ai_strategy_loop.dashboard.strategy_ledger_api import strategy_ledger_route
 from ai_strategy_loop.dashboard.power_gauge_api import power_gauge_router  # noqa: E402
 from ai_strategy_loop.dashboard.response_surface_api import response_surface_router  # noqa: E402
 from ai_strategy_loop.dashboard.condition_diff_api import condition_diff_router  # noqa: E402
+from ai_strategy_loop.dashboard.trade_pairs_api import trade_pairs_router  # noqa: E402
 from ai_strategy_loop.fitness.research_criteria import normalize_research_oos_mode, research_mode_payload  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
@@ -3588,6 +3589,7 @@ def create_app(
     app.include_router(power_gauge_router)
     app.include_router(response_surface_router)
     app.include_router(condition_diff_router)
+    app.include_router(trade_pairs_router)
 
     @app.get("/", response_class=HTMLResponse)
     def root(request: Request) -> HTMLResponse:
