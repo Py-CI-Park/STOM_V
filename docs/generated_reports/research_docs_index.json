@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-09T12:10:52.415363+00:00",
-  "source_fingerprint": "b6bcfe758a9a4f5589ba3f4fe9a430e97f014f0fcf8f6e6804c22de5ce98c9b4",
+  "generated_at": "2026-08-09T12:33:07.679322+00:00",
+  "source_fingerprint": "2527711efb91a786bebbd4f35b5439447ca0d21c9a083277303fea70395f7108",
   "count": 1006,
   "docs": [
     {
@@ -6742,8 +6742,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-09_w8_자본정책_첫승격.md",
       "title": "W8 — 자본 정책 확정과 원장 최초 승격 (2026-08-09)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-09T12:03:25.980413+00:00",
-      "size": 4039
+      "updated_at": "2026-08-09T12:30:32.344088+00:00",
+      "size": 5626
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
@@ -6798,15 +6798,15 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-09B_W7_교환곡선.md",
       "title": "핸드오프 — W7 (2026-08-09 B)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-09T12:09:25.147460+00:00",
+      "updated_at": "2026-08-09T12:14:57.646923+00:00",
       "size": 7543
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-09C_W8_첫승격.md",
       "title": "핸드오프 — W8 첫 승격 (2026-08-09 C)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-09T12:08:42.314088+00:00",
-      "size": 5212
+      "updated_at": "2026-08-09T12:32:26.162325+00:00",
+      "size": 5783
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-09_W6_전단계실행.md",
@@ -6819,7 +6819,7 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-09T12:09:25.154993+00:00",
+      "updated_at": "2026-08-09T12:14:57.665591+00:00",
       "size": 6576
     },
     {
@@ -6847,7 +6847,7 @@
       "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
       "title": "QSP1 한계 원장 (Limitation Ledger)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-09T12:09:57.630794+00:00",
+      "updated_at": "2026-08-09T12:14:57.675207+00:00",
       "size": 24145
     },
     {
