@@ -65,12 +65,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out-name", default="design_v4")
     parser.add_argument("--source", default="ai", choices=("human", "ai", "optimizer"))
+    parser.add_argument("--tag", default="", help="리포트 접미(_ext 등)")
     args = parser.parse_args()
 
-    report = _read(args.out_name, "_p5_engine_report.json")
+    report = _read(args.out_name, f"_p5_engine_report{args.tag}.json")
     if report is None:
         raise SystemExit("엔진 A/B 리포트가 없다 — run_engine_measure 를 먼저 돌려라.")
-    ladder = _read(args.out_name, "_engine_ladder.json") or {}
+    ladder = _read(args.out_name, f"_engine_ladder{args.tag}.json") or {}
     judged = {str(r.get("challenger")): r for r in ladder.get("results") or []}
 
     db_path = os.path.abspath(_BT_DB)
