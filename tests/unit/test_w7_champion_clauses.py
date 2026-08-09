@@ -137,3 +137,95 @@ def test_both_branches_are_fully_described():
 def test_clause_keys_are_unique():
     keys = [r["key"] for r in cc.summary()]
     assert len(keys) == len(set(keys))
+
+
+# ---------------------------------------------------------------------------
+# DSL 절 제거 — 지도에서 고른 완화 후보를 엔진에 올리기 위한 경로
+# ---------------------------------------------------------------------------
+
+CHAMPION_DSL = """\
+매수 = True
+if not (관심종목 == 1):
+    매수 = False
+elif 시분초 < 90200:
+    if not (1.0 < 등락율 <= 8.0):
+        매수 = False
+    elif not (초당거래대금 / 초당거래대금평균(30) > 3.0):
+        매수 = False
+    elif not (회전율 > 2):
+        매수 = False
+elif 90200 <= 시분초 < 90500:
+    if not (2.0 < 등락율 <= 15.0):
+        매수 = False
+    elif not (3.0 <= 시가대비등락율 < 8.0):
+        매수 = False
+    elif not (전일비 > 5 and 전일동시간비 > 0):
+        매수 = False
+    elif not (초당거래대금 / 초당거래대금평균(30) > 2.0):
+        매수 = False
+else:
+    매수 = False
+if 매수:
+    self.Buy()
+"""
+
+
+@pytest.mark.parametrize("key", sorted(cc.DSL_ANCHOR))
+def test_anchor_is_unique_in_the_real_champion_code(key):
+    """★ 902/905 는 같은 변수를 다른 임계로 쓴다 — 앵커가 겹치면 엉뚱한 절을 뺀다."""
+    import sqlite3
+    con = sqlite3.connect("_database/strategy.db")
+    try:
+        row = con.execute('SELECT 전략코드 FROM stockbuy WHERE "index"=?',
+                          ("Tick_B_902_905",)).fetchone()
+    finally:
+        con.close()
+    if row is None:
+        pytest.skip("챔피언 매수식이 이 환경에 없다")
+    assert str(row[0]).count(cc.DSL_ANCHOR[key]) == 1
+
+
+@pytest.mark.parametrize("key", ["905_시가대비", "905_전일비", "905_거래대금급증",
+                                 "902_거래대금급증", "902_회전율"])
+def test_dropping_a_clause_keeps_the_code_parseable(key):
+    import ast
+    out = cc.drop_clause_from_dsl(CHAMPION_DSL, key)
+    ast.parse(out)
+
+
+def test_dropping_changes_exactly_two_lines():
+    """절 하나 = elif 한 줄 + 매수=False 한 줄. 더 바뀌면 다른 것도 건드린 것이다."""
+    out = cc.drop_clause_from_dsl(CHAMPION_DSL, "905_시가대비")
+    changed = [(a, b) for a, b in zip(CHAMPION_DSL.splitlines(), out.splitlines()) if a != b]
+    assert len(changed) == 2
+    assert all(b.lstrip().startswith("#") for _, b in changed)
+
+
+def test_removed_clause_is_commented_not_deleted():
+    """★ 지우면 '챔피언에서 무엇을 뺐는지'가 조건식에서 사라진다."""
+    out = cc.drop_clause_from_dsl(CHAMPION_DSL, "905_시가대비")
+    assert "[완화] 905_시가대비 제거" in out
+    assert "시가대비등락율" in out            # 흔적이 남아 있다
+
+
+def test_first_branch_of_a_chain_cannot_be_dropped(monkeypatch):
+    """★ 사슬의 첫 `if` 를 주석 처리하면 뒤의 elif 가 고아가 되어 SyntaxError 다.
+
+    905 분기의 첫 조건 `if not (2.0 < 등락율 <= 15.0)` 을 가리키는 앵커를 임시로
+    등록해 그 경로를 태운다 — 앵커 표에 이런 절을 실제로 넣으면 안 된다는 것이
+    이 테스트가 지키는 계약이다.
+    """
+    monkeypatch.setitem(cc.DSL_ANCHOR, "905_등락율", "2.0 < 등락율 <= 15.0")
+    with pytest.raises(ValueError, match="첫 분기"):
+        cc.drop_clause_from_dsl(CHAMPION_DSL, "905_등락율")
+
+
+def test_unregistered_clause_is_refused():
+    with pytest.raises(KeyError, match="DSL 앵커"):
+        cc.drop_clause_from_dsl(CHAMPION_DSL, "902_체결강도")
+
+
+def test_ambiguous_anchor_is_refused():
+    doubled = CHAMPION_DSL + "\n# 3.0 <= 시가대비등락율 < 8.0\n"
+    with pytest.raises(ValueError, match="유일해야"):
+        cc.drop_clause_from_dsl(doubled, "905_시가대비")

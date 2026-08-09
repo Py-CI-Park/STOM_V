@@ -162,6 +162,53 @@ def champion_mask(frame: pd.DataFrame, *, drop: str | None = None) -> pd.Series:
     return branch_mask(frame, "902", drop=drop) | branch_mask(frame, "905", drop=drop)
 
 
+#: 절 → 챔피언 매수 DSL 안에서 그 절을 **유일하게** 가리키는 문자열.
+#:
+#: 지도에서 "완화 후보"로 나온 절을 엔진에 올리려면 실제 조건식에서 빼야 한다.
+#: 자동 매칭 대신 문자열을 손으로 등록하는 이유: 902/905 분기가 같은 변수를 다른
+#: 임계로 쓰기 때문에(예: 전일비 > 0 / > 5) 변수 이름만으로는 어느 분기인지
+#: 구분되지 않는다. 유일성은 테스트가 확인한다.
+DSL_ANCHOR: Final[dict[str, str]] = {
+    "905_시가대비": "3.0 <= 시가대비등락율 < 8.0",
+    "905_거래대금급증": "초당거래대금 / 초당거래대금평균(30) > 2.0",
+    "905_전일비": "전일비 > 5 and 전일동시간비 > 0",
+    "902_거래대금급증": "초당거래대금 / 초당거래대금평균(30) > 3.0",
+    "902_회전율": "회전율 > 2",
+    "905_거래대금": "당일거래대금 > 50 * 100",
+}
+
+
+def drop_clause_from_dsl(code: str, clause_key: str) -> str:
+    """챔피언 매수 DSL 에서 절 하나를 **주석 처리**한다.
+
+    지우지 않고 주석으로 남기는 이유: 엔진에 올라간 조건식만 보고도 "챔피언에서
+    무엇을 뺐는지" 알 수 있어야 한다. 삭제하면 그 사실이 사라진다.
+
+    `elif not (...):` 와 바로 뒤의 `매수 = False` 두 줄이 한 절이다.
+    """
+    anchor = DSL_ANCHOR.get(clause_key)
+    if anchor is None:
+        raise KeyError(f"DSL 앵커가 등록되지 않은 절: {clause_key} "
+                       f"(등록됨: {sorted(DSL_ANCHOR)})")
+    if code.count(anchor) != 1:
+        raise ValueError(f"앵커가 {code.count(anchor)}회 나타난다 — 유일해야 한다: {anchor}")
+
+    lines = code.splitlines()
+    index = next(i for i, line in enumerate(lines) if anchor in line)
+    # 사슬의 **첫** 분기(`if`)를 주석 처리하면 뒤의 `elif` 가 고아가 되어
+    #   SyntaxError 다. `elif` 만 뺀다.
+    if not lines[index].lstrip().startswith("elif "):
+        raise ValueError(
+            f"사슬의 첫 분기는 뺄 수 없다(뒤의 elif 가 고아가 된다): {lines[index].strip()!r}")
+    if "매수 = False" not in lines[index + 1]:
+        raise ValueError(f"절 구조가 예상과 다르다: {lines[index + 1]!r}")
+
+    marker = f"  # [완화] {clause_key} 제거"
+    lines[index] = "# " + lines[index].lstrip() + marker
+    lines[index + 1] = "# " + lines[index + 1].lstrip()
+    return "\n".join(lines)
+
+
 def clause_by_key(key: str) -> Clause:
     for clauses in BRANCHES.values():
         for clause in clauses:
