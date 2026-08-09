@@ -127,6 +127,38 @@ def sync_ledger(report: dict, *, source: str = "ai") -> int:
     return written
 
 
+def resolve_baseline(report: dict, sell_name: str) -> tuple[dict, dict]:
+    """**그 매도식을 쓰는** 기준선을 고른다.
+
+    ## 왜 필요한가 (W6 실패의 교정)
+
+    W6 진입 완화는 지도에서 `trailing(5/2)` 청산으로 재고, 엔진 확인은 챔피언
+    청산으로 했다. 그래서 지도 예측과 엔진 실측의 **부호가 뒤집혔다**
+    (지도 +0.063%p → 엔진 −0.27%p). 거래 수 예측은 정확했으니 틀린 것은
+    비교 대상이었다.
+
+    진입 절 하나만 바꾸는 실험이 되려면 기준선의 **매도식이 후보와 같아야 한다**
+    (헌법 10항 — 비교하려면 나머지 축이 같아야 한다).
+
+    반환: (지표, 팔 전체). 팔에는 job_id 가 들어 있다.
+    """
+    if sell_name == CHAMPION_SELL:
+        arm = next((o for o in report.get("outcomes") or []
+                    if o.get("arm") == "baseline"), None)
+        metrics = report.get("baseline_metrics") or {}
+    else:
+        arm = next((o for o in report.get("outcomes") or []
+                    if o.get("sell") == sell_name), None)
+        metrics = (arm or {}).get("engine") or {}
+    if arm is None or not metrics.get("trade_count"):
+        available = sorted({str(o.get("sell")) for o in report.get("outcomes") or []})
+        raise SystemExit(
+            f"매도식 {sell_name!r} 을 쓰는 기준선 실측이 없다.\n"
+            f"  이 리포트에 있는 매도식: {available}\n"
+            f"  같은 구간에서 그 매도식을 먼저 재라 — 기준선이 다르면 비교가 성립하지 않는다.")
+    return metrics, arm
+
+
 def _gate(baseline: dict, engine: dict) -> dict:
     """완화는 **공짜여야** 채택 후보다 — 셋 다 넘어야 한다."""
     def ge(key: str) -> bool:
@@ -153,6 +185,13 @@ def main() -> None:
     parser.add_argument("--tag", default="_ext")
     parser.add_argument("--clauses", default="905_시가대비",
                         help="쉼표 구분. DSL 앵커가 등록된 절만 가능")
+    # 매도식을 고를 수 있어야 지도와 같은 축에서 비교된다(헌법 10항).
+    #   기준선도 이 매도식을 쓰는 팔로 자동으로 바뀐다.
+    parser.add_argument("--sell", default=CHAMPION_SELL,
+                        help=f"고정할 매도식. 기본 {CHAMPION_SELL} "
+                             f"(지도와 맞추려면 W4_S_TRAIL_5_2)")
+    parser.add_argument("--out-tag", default=None,
+                        help="산출 파일 접미. 생략하면 --tag 와 같다")
     parser.add_argument("--engines", type=int, default=16)
     parser.add_argument("--timeout", type=int, default=9000)
     parser.add_argument("--sync-only", action="store_true",
@@ -165,35 +204,45 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"DSL 앵커가 없는 절: {unknown} (등록됨: {sorted(cc.DSL_ANCHOR)})")
 
+    out_tag = args.out_tag if args.out_tag is not None else args.tag
+    out_path = os.path.join(_LABEL_ROOT, args.out_name, f"_entry_relax{out_tag}.json")
+
     if args.sync_only:
-        path = os.path.join(_LABEL_ROOT, args.out_name, f"_entry_relax{args.tag}.json")
-        if not os.path.exists(path):
-            raise SystemExit(f"적재할 결과가 없다: {path}")
-        with open(path, "r", encoding="utf-8") as handle:
+        if not os.path.exists(out_path):
+            raise SystemExit(f"적재할 결과가 없다: {out_path}")
+        with open(out_path, "r", encoding="utf-8") as handle:
             written = sync_ledger(json.load(handle))
         print(f"원장 적재 {written}행 (진입 계열 · 짝지은 검정 없음)")
         return
 
-    baseline, span, baseline_arm = _load_baseline(args.out_name, args.tag)
+    report_path = os.path.join(_LABEL_ROOT, args.out_name,
+                               f"_p5_engine_report{args.tag}.json")
+    if not os.path.exists(report_path):
+        raise SystemExit(f"기준선 실측이 없다: {report_path}")
+    with open(report_path, "r", encoding="utf-8") as handle:
+        report = json.load(handle)
+    span = list(report.get("design") or [])
+    baseline, baseline_arm = resolve_baseline(report, args.sell)
+
     champion = champion_buy_code()
-    print(f"[기준선] {CHAMPION_BUY} + {CHAMPION_SELL} 구간 {span} "
+    print(f"[기준선] {CHAMPION_BUY} + {args.sell} 구간 {span} "
           f"거래={baseline.get('trade_count')} 건당={baseline.get('avg_profit_pct')}% "
           f"총수익률={baseline.get('total_profit_pct')}%", flush=True)
 
     client = Client()
     outcomes: list[dict] = []
-    out_path = os.path.join(_LABEL_ROOT, args.out_name, f"_entry_relax{args.tag}.json")
     t0 = time.time()
 
     def _save() -> None:
         with open(out_path, "w", encoding="utf-8") as handle:
             json.dump({
                 "lane": lane.name, "design": span,
-                "champion_buy": CHAMPION_BUY, "baseline_sell": CHAMPION_SELL,
+                "champion_buy": CHAMPION_BUY, "baseline_sell": args.sell,
                 "baseline_metrics": baseline, "outcomes": outcomes,
                 "complete": len(outcomes) == len(keys),
-                "note": ("진입 절 하나만 뺀 A/B. 매도는 챔피언 원본 그대로다 "
-                         "— 진입과 매도를 동시에 바꾸지 않는다(헌법 7항)."),
+                "note": (f"진입 절 하나만 뺀 A/B. 매도는 {args.sell} 로 고정 "
+                         "— 진입과 매도를 동시에 바꾸지 않는다(헌법 7항). "
+                         "기준선도 같은 매도식을 쓴다(헌법 10항)."),
             }, handle, ensure_ascii=False, indent=1, default=float)
 
     for index, key in enumerate(keys, start=1):
@@ -206,14 +255,14 @@ def main() -> None:
         print(f"[R{index}] 매수 등록 {buy_name} ({cc.clause_by_key(key).label}) "
               f"{saved.get('status')}", flush=True)
 
-        run = _run_arm(client, buy=buy_name, sell=CHAMPION_SELL, lane=lane,
+        run = _run_arm(client, buy=buy_name, sell=args.sell, lane=lane,
                        engines=args.engines, timeout=args.timeout,
                        period=(span[0], span[1]) if len(span) == 2 else None)
         metrics = run["metrics"]
         gate = _gate(baseline, metrics)
         outcomes.append({
             "name": buy_name, "rule": f"champion − {key}", "clause": key,
-            "arm": f"relax_{index}", "buy": buy_name, "sell": CHAMPION_SELL,
+            "arm": f"relax_{index}", "buy": buy_name, "sell": args.sell,
             "job_id": run.get("job_id"), "status": run["status"],
             "predicted": None,
             "engine": {k: metrics.get(k) for k in _METRIC_KEYS},
@@ -225,9 +274,10 @@ def main() -> None:
               f"{'PASS' if gate['pass'] else 'FAIL'}", flush=True)
         _save()
 
-    print(f"\n=== 진입 완화 요약 (구간 {span}) · {time.time() - t0:.0f}초 ===")
+    print(f"\n=== 진입 완화 요약 (구간 {span} · 매도 {args.sell}) "
+          f"· {time.time() - t0:.0f}초 ===")
     print(f" {'후보':<30}{'거래':>6}{'건당':>9}{'총수익률':>10}  판정")
-    print(f" {'챔피언(합격선)':<30}{baseline.get('trade_count'):>6}"
+    print(f" {'기준선 ' + args.sell:<30}{baseline.get('trade_count'):>6}"
           f"{baseline.get('avg_profit_pct'):>8}%{baseline.get('total_profit_pct'):>9}%  —")
     for row in outcomes:
         e, g = row["engine"], row["gate"]

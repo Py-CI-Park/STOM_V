@@ -110,3 +110,61 @@ def test_baseline_link_is_recorded(db):
     rr.sync_ledger(_report(_outcome("relax_a", 378, 0.68, 253.34)))
     row = sl.latest_per_candidate(db_path=db)[0]
     assert row["baseline_id"] == "Tick_B_902_905::Tick_S_902_905"
+
+
+# ---------------------------------------------------------------------------
+# 기준선 해소 — W6 실패(축 불일치)의 교정
+# ---------------------------------------------------------------------------
+
+CHAMP_SELL = rr.CHAMPION_SELL
+B3_SELL = "W4_S_TRAIL_5_2"
+
+
+def _engine_report():
+    """확장 구간 실측 리포트의 모양 — 기준선 팔 + 도전자 팔들."""
+    return {
+        "design": [20220323, 20250822],
+        "champion_buy": "Tick_B_902_905", "baseline_sell": CHAMP_SELL,
+        "baseline_metrics": {"trade_count": 361, "avg_profit_pct": 0.67,
+                             "total_profit_pct": 241.16},
+        "outcomes": [
+            {"arm": "baseline", "sell": CHAMP_SELL, "job_id": "champ",
+             "engine": {"trade_count": 361, "avg_profit_pct": 0.67,
+                        "total_profit_pct": 241.16}},
+            {"arm": "challenger_3", "sell": B3_SELL, "job_id": "b3",
+             "engine": {"trade_count": 352, "avg_profit_pct": 1.06,
+                        "total_profit_pct": 185.66}},
+        ],
+    }
+
+
+def test_champion_sell_resolves_to_the_champion_pair():
+    metrics, arm = rr.resolve_baseline(_engine_report(), CHAMP_SELL)
+    assert metrics["total_profit_pct"] == 241.16
+    assert arm["job_id"] == "champ"
+
+
+def test_b3_sell_resolves_to_the_b3_arm_not_the_champion():
+    """★ W6 실패의 교정 — 매도가 B3 면 기준선도 B3 여야 한다.
+
+    챔피언 기준선(241.16%)으로 재면 B3 청산 후보는 전부 떨어진다(B3 자체가
+    185.66%). 그러면 진입 절의 효과가 아니라 청산 차이를 재는 셈이다.
+    """
+    metrics, arm = rr.resolve_baseline(_engine_report(), B3_SELL)
+    assert metrics["total_profit_pct"] == 185.66
+    assert metrics["avg_profit_pct"] == 1.06
+    assert arm["job_id"] == "b3"
+
+
+def test_unmeasured_sell_refuses_with_the_available_list():
+    """없는 매도식으로 조용히 챔피언 기준선을 쓰지 않는다."""
+    with pytest.raises(SystemExit) as err:
+        rr.resolve_baseline(_engine_report(), "W4_S_TRAIL_9_9")
+    assert "W4_S_TRAIL_5_2" in str(err.value)      # 가능한 목록을 알려 준다
+
+
+def test_arm_without_trades_is_refused():
+    report = _engine_report()
+    report["outcomes"][1]["engine"]["trade_count"] = 0
+    with pytest.raises(SystemExit):
+        rr.resolve_baseline(report, B3_SELL)
