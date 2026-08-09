@@ -15,6 +15,7 @@ import { LoopStandingPanel } from "./loop-standing.jsx";
 import { LoopStrategyLedgerPanel } from "./loop-strategy-ledger.jsx";
 import { LoopPowerGaugePanel } from "./loop-power-gauge.jsx";
 import { LoopResponseSurfacePanel } from "./loop-response-surface.jsx";
+import { LoopConditionDiffPanel } from "./loop-condition-diff.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
 import { ResearchImprovementCard } from "./research-improvement.jsx";
@@ -634,6 +635,11 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <section className="v6-stage-lab v54-span-all" aria-label="파라미터 응답면(페이지 32)">
               <h3 className="stom-section-label">파라미터 응답면 · 고원인가 절벽인가</h3>
               <LoopResponseSurfacePanel />
+            </section>
+            {/* 페이지 33 — 조건식 비교: 두 조건식이 정확히 무엇이 다른가 */}
+            <section className="v6-stage-lab v54-span-all" aria-label="조건식 비교 뷰어(페이지 33)">
+              <h3 className="stom-section-label">조건식 비교 · 절 단위 diff</h3>
+              <LoopConditionDiffPanel />
             </section>
           </div>
         )}
