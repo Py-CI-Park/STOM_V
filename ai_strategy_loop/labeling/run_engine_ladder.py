@@ -54,9 +54,12 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out-name", default="design_v4")
     parser.add_argument("--segments", type=int, default=4)
+    # 구간을 바꿔 잰 실측(예: `_ext`)을 정본과 나란히 심판하기 위한 접미.
+    parser.add_argument("--tag", default="", help="리포트 접미(_ext 등)")
     args = parser.parse_args()
 
-    report_path = os.path.join(_LABEL_ROOT, args.out_name, "_p5_engine_report.json")
+    report_path = os.path.join(_LABEL_ROOT, args.out_name,
+                               f"_p5_engine_report{args.tag}.json")
     with open(report_path, "r", encoding="utf-8") as handle:
         report = json.load(handle)
 
@@ -111,7 +114,7 @@ def main() -> None:
             print(f"   └ 표본 {p['pairs']}건 → 확정하려면 {need:,.0f}건 필요 "
                   f"({p.get('sample_shortfall_ratio', 0):.1f}배)", flush=True)
 
-    out_path = os.path.join(_LABEL_ROOT, args.out_name, "_engine_ladder.json")
+    out_path = os.path.join(_LABEL_ROOT, args.out_name, f"_engine_ladder{args.tag}.json")
     with open(out_path, "w", encoding="utf-8") as handle:
         json.dump({
             "axis": "engine_executed_trades",
