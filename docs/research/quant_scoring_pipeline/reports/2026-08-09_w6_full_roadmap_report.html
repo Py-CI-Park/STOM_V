@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W6 전 단계 실행 — 자본 문제는 풀렸고, 푸는 과정에서 우위를 잃었다</title>
+</head>
+<body>
+<style>
+:root{
+  --bg:#FAFAF7; --ink:#1A2332; --muted:#5A6B7D; --surface:#F0F1EC; --border:#D5D9D2;
+  --accent:#0B7A5C; --pass:#0B7A5C; --fail:#B42318; --warn:#B7791F; --link:#075DC4; --code:#EDEFE8;
+  color-scheme:light dark;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#12181F; --ink:#E4EAEF; --muted:#9FAEBC; --surface:#1A222B; --border:#33404D;
+  --accent:#4CC49A; --pass:#4CC49A; --fail:#E0776A; --warn:#D9A441; --link:#7FB3F5; --code:#1F2933;
+}}
+:root[data-theme="dark"]{
+  --bg:#12181F; --ink:#E4EAEF; --muted:#9FAEBC; --surface:#1A222B; --border:#33404D;
+  --accent:#4CC49A; --pass:#4CC49A; --fail:#E0776A; --warn:#D9A441; --link:#7FB3F5; --code:#1F2933;
+}
+:root[data-theme="light"]{
+  --bg:#FAFAF7; --ink:#1A2332; --muted:#5A6B7D; --surface:#F0F1EC; --border:#D5D9D2;
+  --accent:#0B7A5C; --pass:#0B7A5C; --fail:#B42318; --warn:#B7791F; --link:#075DC4; --code:#EDEFE8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.65 system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:clamp(16px,4vw,48px)}
+.cover{background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--accent);
+  border-radius:10px;padding:clamp(18px,3vw,36px);margin-bottom:26px}
+.eyebrow{color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+h1{font-size:clamp(23px,3.6vw,34px);line-height:1.2;margin:.35em 0 .3em;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:64ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;font-size:13px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:0 0 30px}
+.kpi{border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:12px 14px}
+.kpi b{display:block;font-size:21px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi span{font-size:12px;color:var(--muted)}
+.kpi.ok b{color:var(--pass)} .kpi.amber b{color:var(--warn)} .kpi.bad b{color:var(--fail)}
+h2{font-size:20px;margin:42px 0 6px;scroll-margin-top:16px}
+h2 .no{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:6px}
+h3{font-size:15.5px;margin:24px 0 8px}
+.sub{color:var(--muted);margin:0 0 14px;max-width:72ch}
+.tw{overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin:12px 0}
+table{width:100%;min-width:600px;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 11px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:none}
+th{background:var(--surface);font-weight:600;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.hi td{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:12.5px;
+  font-family:ui-monospace,Consolas,monospace}
+.pass{color:var(--pass);font-weight:600}.fail{color:var(--fail);font-weight:600}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid var(--border)}
+.pill.p{color:var(--pass);border-color:var(--pass)}
+.pill.w{color:var(--warn);border-color:var(--warn)}
+.pill.f{color:var(--fail);border-color:var(--fail)}
+.callout{border:1px solid var(--border);border-left:4px solid var(--accent);background:var(--surface);
+  border-radius:8px;padding:14px 18px;margin:16px 0}
+.callout.amber{border-left-color:var(--warn)}
+.callout.red{border-left-color:var(--fail)}
+.callout p{margin:.3em 0}
+.flow{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:14px 18px;
+  overflow-x:auto;font:13px/1.7 ui-monospace,Consolas,monospace;white-space:pre;margin:12px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:14px 0}
+.card{border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:14px 16px}
+.card h4{margin:0 0 8px;font-size:14px}
+.card ul{margin:0;padding-left:18px} .card li{margin:4px 0}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)}
+a{color:var(--link)}
+.heat{font-variant-numeric:tabular-nums}
+.heat td{text-align:right;white-space:nowrap}
+.heat td.flat{background:color-mix(in srgb,var(--pass) 16%,transparent)}
+.heat td.slope{background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.heat th[scope=row]{background:var(--surface);text-align:right}
+</style>
+<div class="wrap">
+
+<header class="cover">
+  <div class="eyebrow">STOM 조건식 개발 · W6 라운드</div>
+  <h1>자본 문제는 풀렸다. 푸는 과정에서 우위를 잃었다.</h1>
+  <p class="lede">마스터 로드맵 5단계를 전부 실행했다. 표본을 2.2배로 늘리자 판정이
+    “모르겠다”에서 “어느 축에서 이기고 어느 축에서 지는지”로 바뀌었고, 두 개의
+    반쪽 해법이 나왔다. 그 둘을 합치는 것이 다음 실험이다.</p>
+  <div class="meta">
+    <span><b>구간</b> 2022-03-23 ~ 2025-08-22 (833 거래일)</span>
+    <span><b>진입</b> Tick_B_902_905 고정</span>
+    <span><b>홀드아웃</b> 119일 미접촉 🔒</span>
+    <span><b>브랜치</b> research/program-reassessment-20260806</span>
+  </div>
+</header>
+
+<div class="kpis">
+  <div class="kpi ok"><b>361→</b><span>표본 161 → 361건 (2.2배)</span></div>
+  <div class="kpi ok"><b>296%</b><span>최고 총수익률 (챔피언 241%)</span></div>
+  <div class="kpi amber"><b>0</b><span>PASS 후보 (PROMISING 1)</span></div>
+  <div class="kpi ok"><b>0</b><span>응답면 절벽 셀 (36셀 중)</span></div>
+  <div class="kpi"><b>7종</b><span>원장 후보 · 20행</span></div>
+  <div class="kpi"><b>3</b><span>새 화면 (30·31·32)</span></div>
+</div>
+
+<h2><span class="no">1</span> 무엇을 실행했나</h2>
+<p class="sub">로드맵 5단계를 순서대로 전부 돌렸다. 각 단계는 브랜치에서 작업하고
+  <code>--no-ff</code> 로 병합했다.</p>
+
+<div class="tw"><table>
+<thead><tr><th>단계</th><th>내용</th><th class="num">비용</th><th>결과</th></tr></thead>
+<tbody>
+<tr><td>S1</td><td>엔진 A/B 구간 확장 (라벨 백필 없이)</td><td class="num">34분</td><td>표본 161 → 361건</td></tr>
+<tr><td>S2</td><td>짝지은 재판정 + 원장 적재</td><td class="num">3분</td><td>B3 건당 우위 <span class="pass">확정</span></td></tr>
+<tr><td>S4</td><td>자본 회전 교정 3후보</td><td class="num">43분</td><td>시간손절 <span class="pass">자본 통과</span></td></tr>
+<tr><td>S5</td><td>페이지 31 표본·검정력 계기판</td><td class="num">—</td><td>B1·B2 포기 근거 확보</td></tr>
+<tr><td>S6</td><td>매도축 응답면 36셀</td><td class="num">36초</td><td>절벽 0 · 고원 33</td></tr>
+<tr><td>S7</td><td>진입 절 34개 제거 A/B</td><td class="num">5분</td><td>완화 후보 6 · 무효 9</td></tr>
+<tr><td>S3</td><td>라벨 백필 478일 (탐색용)</td><td class="num">진행 중</td><td>design_v5 wide 격자</td></tr>
+</tbody></table></div>
+
+<h2><span class="no">2</span> 계획 자체가 틀렸던 곳 네 군데</h2>
+<p class="sub">실행이 계획을 교정했다. 이것이 이번 라운드의 가장 큰 소득이다.</p>
+
+<div class="tw"><table>
+<thead><tr><th style="width:32%">계획이 말한 것</th><th>실행이 밝힌 것</th></tr></thead>
+<tbody>
+<tr><td>단계 1(라벨 백필 70분)이 표본을 늘린다</td>
+    <td><b>엔진 A/B 는 라벨을 쓰지 않는다.</b> 표본은 엔진 <b>구간</b>이 정한다.
+        설계 구간이 DB 952일의 <b>37%</b>만 쓰고 있었다 → <code>--start 20220323</code> 으로
+        161→361건, <b>34분</b></td></tr>
+<tr><td>단계 5 = 매도축 Optuna 200 시행</td>
+    <td>확장 구간 엔진 기준 <b>약 50시간</b>. 목적이 “고원 확인”이므로 지도 36셀
+        (<b>36초</b>) + 엔진 확인으로 같은 질문을 답했다</td></tr>
+<tr><td>자본 회전 = 보유시간을 줄이면 된다</td>
+    <td><code>mhct</code> 는 상위 1%를 뺀 <b>최대</b> 동시보유다. 평균 432초 후보가
+        동시보유 2, 평균 464초 챔피언이 1 — <b>꼬리를 잘라야 한다</b></td></tr>
+<tr><td>지도에서 통과한 완화 후보를 엔진으로 확인</td>
+    <td>진입축은 지도→엔진 전이가 <b>부호까지 뒤집혔다</b>
+        (지도 +0.063%p → 엔진 −0.27%p). 청산 축이 달랐던 것이 원인</td></tr>
+</tbody></table></div>
+
+<h2><span class="no">3</span> 표본 확장 — “모르겠다”가 “어디서 지는지”로</h2>
+
+<div class="tw"><table>
+<thead><tr><th>후보</th><th class="num">거래</th><th class="num">건당</th>
+<th class="num">필요자금</th><th class="num">총수익률</th><th class="num">MDD</th>
+<th>짝지은 95% CI</th><th>판정</th></tr></thead>
+<tbody>
+<tr class="hi"><td><b>챔피언</b> Tick_S_902_905</td><td class="num">361</td><td class="num">+0.67%</td>
+    <td class="num">1,004,095</td><td class="num"><b>241.16%</b></td><td class="num">8.17</td>
+    <td>—</td><td><span class="pill">합격선</span></td></tr>
+<tr><td>B1 trailing(3/1.5)</td><td class="num">356</td><td class="num">+0.84%</td>
+    <td class="num">1,993,320</td><td class="num">148.66%</td><td class="num">7.31</td>
+    <td>[−0.135, +0.437]</td><td><span class="pill w">MIXED</span></td></tr>
+<tr><td>B2 trailing(3/1)</td><td class="num">358</td><td class="num">+0.77%</td>
+    <td class="num">1,991,640</td><td class="num">138.66%</td><td class="num">7.52</td>
+    <td>[−0.178, +0.385]</td><td><span class="pill w">MIXED</span></td></tr>
+<tr><td><b>B3 trailing(5/2)</b></td><td class="num">352</td><td class="num"><b>+1.06%</b></td>
+    <td class="num">1,996,660</td><td class="num">185.66%</td><td class="num"><b>6.38</b></td>
+    <td class="pass">[+0.059, +0.658] ✅</td><td><span class="pill w">MIXED</span></td></tr>
+</tbody></table></div>
+
+<div class="callout">
+  <p><b>B3 는 건당으로 챔피언을 이긴다는 것이 통계적으로 확정됐다.</b>
+     신뢰구간 하한이 0을 넘었다. 그런데 자본 대비로는 진다.</p>
+</div>
+
+<div class="flow">되돌림 2%p 로 늦게 팔린다  →  평균 보유 464 → 540초  →  09:0X 진입이 겹친다
+   →  최대동시보유 1 → 2   →  필요자금 2배   →  총수익률 −55%p</div>
+
+<h3>페이지 31 이 말해 준 것 — B1·B2 는 포기한다</h3>
+<div class="tw"><table>
+<thead><tr><th>후보</th><th>상태</th><th class="num">관측 차이</th><th class="num">MDE(눈금)</th>
+<th class="num">차이/눈금</th><th class="num">검정력</th><th class="num">추가 거래일</th></tr></thead>
+<tbody>
+<tr class="hi"><td>B3</td><td><span class="pill p">확정</span></td><td class="num">+0.3582%p</td>
+    <td class="num">0.4279%p</td><td class="num">0.84배</td><td class="num">64.9%</td><td class="num">—</td></tr>
+<tr><td>B1</td><td><span class="pill w">표본 부족</span></td><td class="num">+0.1507%p</td>
+    <td class="num">0.4086%p</td><td class="num">0.37배</td><td class="num">17.7%</td>
+    <td class="num fail">+5,174일</td></tr>
+<tr><td>B2</td><td><span class="pill f">표본 절망</span></td><td class="num">+0.1035%p</td>
+    <td class="num">0.4018%p</td><td class="num">0.26배</td><td class="num">10.8%</td>
+    <td class="num fail">+11,459일</td></tr>
+</tbody></table></div>
+<p class="sub">체중계 눈금이 1kg 단위면 500g 감량은 잰 게 아니라 안 보이는 것이다.
+  B1·B2 의 효과는 눈금의 0.37배·0.26배 — 확정하려면 20년·45년치가 더 필요하다.</p>
+
+<h2><span class="no">4</span> 자본 회전 — 두 개의 반쪽</h2>
+
+<div class="tw"><table>
+<thead><tr><th>후보</th><th class="num">거래</th><th class="num">건당</th><th class="num">평균보유</th>
+<th class="num">동시보유</th><th class="num">총수익률</th><th>짝지은 CI</th><th>판정</th></tr></thead>
+<tbody>
+<tr class="hi"><td><b>챔피언</b></td><td class="num">361</td><td class="num">+0.67%</td>
+    <td class="num">464초</td><td class="num"><b>1</b></td><td class="num"><b>241.16%</b></td>
+    <td>—</td><td><span class="pill">합격선</span></td></tr>
+<tr><td>B3 단독</td><td class="num">352</td><td class="num">+1.06%</td><td class="num">540초</td>
+    <td class="num fail">2</td><td class="num">185.66%</td>
+    <td class="pass">[+0.059, +0.658] ✅</td><td><span class="pill w">MIXED</span></td></tr>
+<tr><td>B3 + 손절(−3%)</td><td class="num">355</td><td class="num">+0.94%</td><td class="num">432초</td>
+    <td class="num fail">2</td><td class="num">167.35%</td>
+    <td>[−0.027, +0.492]</td><td><span class="pill w">MIXED</span></td></tr>
+<tr class="hi"><td><b>B3 + 시간손절</b></td><td class="num">352</td><td class="num">+0.85%</td>
+    <td class="num"><b>300초</b></td><td class="num pass"><b>1</b></td>
+    <td class="num pass"><b>296.02%</b></td>
+    <td>[−0.130, +0.426]</td><td><span class="pill w">PROMISING</span></td></tr>
+<tr><td>B3 + 추세이탈</td><td class="num">353</td><td class="num">+0.99%</td><td class="num">402초</td>
+    <td class="num fail">2</td><td class="num">174.94%</td>
+    <td class="pass">[+0.041, +0.536] ✅</td><td><span class="pill w">MIXED</span></td></tr>
+</tbody></table></div>
+
+<div class="grid2">
+  <div class="card"><h4>추세이탈 — 우위는 있는데 자본이 안 돈다</h4>
+    <ul><li>짝지은 CI [+0.041, +0.536] — 건당 우위 <b>확정</b></li>
+        <li>동시보유 2 → 필요자금 2배</li>
+        <li>총수익률 174.94% (챔피언 241.16% 미달)</li></ul></div>
+  <div class="card"><h4>시간손절 — 자본은 도는데 우위가 흐려진다</h4>
+    <ul><li>동시보유 1 · 총수익률 <b>296.02%</b> — 자본 <b>통과</b></li>
+        <li>건당 우위가 +0.3582 → +0.1479%p 로 깎여 유의성 상실</li>
+        <li>물속 3분에 끊으면 되살아났을 거래도 끊긴다</li></ul></div>
+</div>
+
+<div class="callout amber">
+  <p><b>다음 실험 (사전 등록)</b> — <code>추세이탈 OR 시간손절</code>.
+     가설: 추세이탈이 우위를 만들고 시간손절이 회전을 만든다.
+     근거는 위 표다 — 각각이 정확히 한쪽만 통과했다.</p>
+</div>
+
+<h2><span class="no">5</span> 매도축 응답면 — 전부 고원이다</h2>
+<p class="sub">무장 6 × 되돌림 6 = 36셀을 챔피언 진입 344건 위에서 계산했다(36초).
+  값은 지도 건당 기대값(%)이다.</p>
+
+<div class="tw"><table class="heat">
+<thead><tr><th>무장 \ 되돌림</th><th class="num">0.5</th><th class="num">1</th><th class="num">1.5</th>
+<th class="num">2</th><th class="num">2.5</th><th class="num">3</th></tr></thead>
+<tbody>
+<tr><th scope="row">+2%</th><td class="flat">0.04</td><td class="flat">0.06</td><td class="slope">0.21</td><td class="flat">0.27</td><td class="flat">0.24</td><td class="flat">0.29</td></tr>
+<tr><th scope="row">+3%</th><td class="slope">0.15</td><td class="slope">0.23</td><td class="flat">0.25</td><td class="flat">0.27</td><td class="flat">0.21</td><td class="flat">0.25</td></tr>
+<tr><th scope="row">+4%</th><td class="flat">0.19</td><td class="flat"><b>0.30</b></td><td class="flat">0.29</td><td class="flat">0.27</td><td class="flat">0.23</td><td class="flat">0.25</td></tr>
+<tr><th scope="row">+5%</th><td class="flat">0.20</td><td class="flat">0.22</td><td class="flat">0.22</td><td class="flat">0.22</td><td class="flat">0.18</td><td class="flat">0.19</td></tr>
+<tr><th scope="row">+6%</th><td class="flat">0.19</td><td class="flat">0.22</td><td class="flat">0.21</td><td class="flat">0.20</td><td class="flat">0.18</td><td class="flat">0.18</td></tr>
+<tr><th scope="row">+7%</th><td class="flat">0.25</td><td class="flat">0.26</td><td class="flat">0.23</td><td class="flat">0.22</td><td class="flat">0.21</td><td class="flat">0.20</td></tr>
+</tbody></table></div>
+<p class="sub">초록 = 고원(이웃도 버틴다) · 노랑 = 경사(민감).
+  <b>절벽 0셀 · 음수 0셀 · 고원 33셀 · 경사 3셀.</b></p>
+
+<div class="callout">
+  <p><b>매도축 전체가 평평하다.</b> 임계를 조금 빗나가도 무너지지 않는다 —
+     이 축에서는 과최적을 걱정할 필요가 없다는 뜻이다.
+     산등성이가 아니라 고원 위에 텐트를 치고 있었다.</p>
+</div>
+
+<h3>왜 Optuna 200 시행을 하지 않았나</h3>
+<div class="tw"><table>
+<thead><tr><th>방법</th><th class="num">시행</th><th class="num">소요</th><th>답하는 질문</th></tr></thead>
+<tbody>
+<tr><td>매도축 전수</td><td class="num">46,875</td><td class="num">1년</td><td>최고값은?</td></tr>
+<tr><td>로드맵 원안 Optuna</td><td class="num">200</td><td class="num fail">약 50시간</td><td>최고값은?</td></tr>
+<tr class="hi"><td><b>실제 수행</b> — 지도 격자 + 엔진 확인</td><td class="num">36 + 1~2</td>
+    <td class="num pass">36초 + 20분</td><td><b>지금 값이 고원 위인가?</b></td></tr>
+</tbody></table></div>
+
+<div class="callout amber">
+  <p><b>⚠️ 지도 순위 ≠ 엔진 순위.</b> 전이율이 셀마다 3.32~4.86배로 흩어진다.
+     지도 1위는 <code>trailing(4/1)</code>인데 엔진 1위는 <code>trailing(5/2)</code>다.
+     <b>지도는 모양을 보는 도구지 순위를 매기는 도구가 아니다.</b></p>
+</div>
+
+<h2><span class="no">6</span> 진입 절 34개 — 6개는 공짜, 9개는 죽어 있다</h2>
+<p class="sub">챔피언 진입 조건을 이름 붙은 절 34개(902 17 + 905 17)로 분해하고
+  하나씩 뺐다. 등가성(전부 AND = 원본 마스크)은 테스트로 고정했다.</p>
+
+<div class="tw"><table>
+<thead><tr><th>판정</th><th class="num">절 수</th><th>뜻</th></tr></thead>
+<tbody>
+<tr><td><span class="pill p">완화 후보</span></td><td class="num">6</td><td>진입 늘고 건당 유지 — 지도에서는 공짜</td></tr>
+<tr><td><span class="pill w">값 지불</span></td><td class="num">17</td><td>빈도를 기대값으로 샀다</td></tr>
+<tr><td><span class="pill">무효</span></td><td class="num">9</td><td>다른 절이 이미 막고 있다 — 지도에서 죽은 절</td></tr>
+</tbody></table></div>
+
+<h3>수익원을 지키는 절 셋</h3>
+<div class="tw"><table>
+<thead><tr><th>절</th><th>설명</th><th class="num">빼면 Δ건당</th></tr></thead>
+<tbody>
+<tr><td><code>905_시총</code></td><td>시가총액 &lt; 3,000억</td><td class="num fail">−0.2698%p</td></tr>
+<tr><td><code>905_일중위치</code></td><td>일중위치 &gt; 0.8 (고가 근처)</td><td class="num fail">−0.2071%p</td></tr>
+<tr><td><code>902_시가등락율</code></td><td>시가등락율 2~4%</td><td class="num fail">−0.1902%p</td></tr>
+</tbody></table></div>
+
+<div class="callout red">
+  <p><b>그러나 엔진에서 뒤집혔다.</b> 지도 1위 완화 후보 <code>905_시가대비</code> 제거를
+     엔진에 올리니 거래는 예측대로 늘었지만(361 → 489, 1.35배 · 지도 예측 1.37배)
+     건당이 <b>+0.67% → +0.40%</b>, 총수익률이 <b>241.16% → 97.79%</b> 로 무너졌다.</p>
+  <p><b>원인</b>: 지도 제거 A/B 는 <code>trailing(5/2)</code> 청산으로 쟀는데 엔진 확인은
+     챔피언 청산으로 했다. <b>청산 축이 다르면 비교가 성립하지 않는다.</b>
+     거래 수 예측은 정확했다(1.37 vs 1.35) — 틀린 것은 수익 예측이다.</p>
+  <p><b>교정</b>: 진입 완화의 기준선을 B3(챔피언 진입 + trailing 5/2)로 바꿔 재실험한다.
+     그래야 바뀌는 것이 진입 절 하나뿐이다.</p>
+</div>
+
+<h2><span class="no">7</span> 화면 — 채택 결정의 세 축</h2>
+<div class="grid2">
+  <div class="card"><h4>페이지 30 · 조건식 성과 원장</h4>
+    <ul><li>“이 후보가 나은가”</li><li>후보 7종 · 누적 20행 (append-only)</li>
+        <li>합격선(챔피언) 맨 위 · 자본 지표 동반</li></ul></div>
+  <div class="card"><h4>페이지 31 · 표본·검정력 <span class="pill p">신규</span></h4>
+    <ul><li>“그 판정을 믿을 만한가”</li><li>MDE(눈금 폭) · 검정력 · 부족분을 거래일로</li>
+        <li>B1·B2 포기 결정의 근거를 만들었다</li></ul></div>
+  <div class="card"><h4>페이지 32 · 파라미터 응답면 <span class="pill p">신규</span></h4>
+    <ul><li>“채택해도 표본 밖에서 살아남는가”</li>
+        <li>고원/경사/절벽 판정 · 과최적 격차</li>
+        <li>권고는 최고 셀이 아니라 <b>최고 고원 셀</b></li></ul></div>
+</div>
+
+<h2><span class="no">8</span> 냉정한 결산</h2>
+<div class="tw"><table>
+<thead><tr><th>질문</th><th>답</th></tr></thead>
+<tbody>
+<tr><td>챔피언을 이기는 조건식을 찾았나</td>
+    <td><b>아직이다.</b> 원장 PASS <b>0</b>종. 가장 가까운 것은 PROMISING 1종</td></tr>
+<tr><td>진전이 있었나</td>
+    <td><b>있다.</b> “모르겠다”가 “건당은 확정, 자본은 통과, 둘이 다른 후보”로 좁혀졌다</td></tr>
+<tr><td>다음이 명확한가</td>
+    <td><b>명확하다.</b> 두 반쪽을 합치는 실험 하나 — 가설과 격자를 사전 등록했다</td></tr>
+<tr><td>홀드아웃을 열었나</td>
+    <td><b>열지 않았다.</b> 119일 그대로 잠겨 있다 — 사람 결정 사항이다</td></tr>
+</tbody></table></div>
+
+<div class="callout">
+  <p><b>이번 라운드가 가장 크게 판 것은 후보가 아니라 방법이다.</b>
+     계획의 오류 네 건이 실행으로 드러났고, 그 교정이 문서·코드·화면에 남았다.
+     특히 “지도는 모양, 엔진은 순위”는 앞으로 모든 라운드가 따를 규율이다.</p>
+</div>
+
+<footer>
+  <p>정본 문서 — <code>2026-08-09_w6_표본확장_결과.md</code> ·
+     <code>2026-08-09_w6_자본회전_응답면_진입절.md</code> ·
+     <code>limitation_ledger.md</code> L-2026-08-09</p>
+  <p>안전 경계: 운영 DB 쓰기 없음 · 실거래 반영 없음 · 전체청산 이후 시세 미사용 ·
+     홀드아웃 재학습 없음 · 후보 자동 채택 없음. 사람 게이트는 실전 투입 1곳뿐.</p>
+</footer>
+
+</div>
+</body>
+</html>
