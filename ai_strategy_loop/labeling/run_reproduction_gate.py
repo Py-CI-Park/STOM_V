@@ -90,6 +90,10 @@ def main() -> None:
     parser.add_argument("--grid", default="default",
                         help="트레일링 격자: default(6쌍) | wide(36쌍)")
     parser.add_argument("--warmup", type=int, default=60)
+    # 격자를 바꿔 돌릴 때 정본 게이트를 덮어쓰지 않기 위한 접미.
+    #   `--grid wide` 를 태그 없이 돌리면 엔진 후보 선택의 근거였던 default 격자
+    #   게이트가 사라져 그 라운드를 재현할 수 없게 된다.
+    parser.add_argument("--tag", default="", help="산출 파일 접미(_wide 등)")
     args = parser.parse_args()
 
     lane = LANES["tick"]
@@ -160,10 +164,12 @@ def main() -> None:
         print("\n판정: 지도의 청산 표현력이 챔피언을 재현하지 못한다.", flush=True)
         print("      → 매도 축 탐색을 시작하지 않는다. 지도 보강이 먼저다.", flush=True)
 
-    out_path = os.path.join(_LABEL_ROOT, args.out_name, "_reproduction_gate.json")
+    out_path = os.path.join(_LABEL_ROOT, args.out_name,
+                            f"_reproduction_gate{args.tag}.json")
     with open(out_path, "w", encoding="utf-8") as handle:
         json.dump({
             "verdict": verdict,
+            "grid": args.grid,
             "champion_engine": CHAMPION_ENGINE,
             "reproduction_ratio": REPRODUCTION_RATIO,
             "entry_seconds": int(mask.sum()),
