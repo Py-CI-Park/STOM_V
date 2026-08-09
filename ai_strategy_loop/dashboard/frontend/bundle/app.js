@@ -37400,6 +37400,70 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     )), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, loopPgNum(g.pairs)), /* @__PURE__ */ React.createElement("td", { className: "num mono " + ((g.mean_diff_pct || 0) >= 0 ? "pos" : "neg") }, loopPgNum(g.mean_diff_pct, 4), "%p"), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, loopPgNum(g.mde_pct, 4), "%p"), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, g.effect_vs_mde === null || g.effect_vs_mde === void 0 ? "\u2014" : /* @__PURE__ */ React.createElement("span", { className: Number(g.effect_vs_mde) >= 1 ? "pos" : "neg" }, loopPgNum(g.effect_vs_mde, 2), "\uBC30")), /* @__PURE__ */ React.createElement("td", { className: "num" }, /* @__PURE__ */ React.createElement(LoopPgPowerBar, { value: g.achieved_power, target: g.target_power })), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, loopPgNum(g.required_pairs, 0)), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, g.extra_pairs_needed === null || g.extra_pairs_needed === void 0 ? "\u2014" : "+" + loopPgNum(g.extra_pairs_needed, 0)), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, g.extra_days_needed === null || g.extra_days_needed === void 0 ? "\u2014" : "+" + loopPgNum(g.extra_days_needed, 0) + "\uC77C")))))))));
   }
 
+  // ai_strategy_loop/dashboard/frontend/loop-response-surface.jsx
+  var { useState: useState_rs, useEffect: useEffect_rs, useCallback: useCallback_rs } = React;
+  function loopRsGet(path) {
+    return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+  }
+  function loopRsNum(value, digits) {
+    if (value === null || value === void 0 || Number.isNaN(Number(value))) return "\u2014";
+    return Number(value).toLocaleString(void 0, {
+      minimumFractionDigits: digits === void 0 ? 0 : digits,
+      maximumFractionDigits: digits === void 0 ? 0 : digits
+    });
+  }
+  var LOOP_RS_STYLE = {
+    "\uACE0\uC6D0": { bg: "rgba(46,158,91,.20)", mark: "O" },
+    "\uACBD\uC0AC": { bg: "rgba(201,138,27,.20)", mark: "/" },
+    "\uC808\uBCBD": { bg: "rgba(200,60,60,.24)", mark: "!" },
+    "\uC74C\uC218": { bg: "rgba(127,127,127,.16)", mark: "\u2212" },
+    "\uAC00\uC7A5\uC790\uB9AC": { bg: "transparent", mark: "\xB7" },
+    "\uBE48\uCE78": { bg: "transparent", mark: "" }
+  };
+  function LoopRsSummary({ payload }) {
+    const counts = payload && payload.verdict_counts || {};
+    const best = payload && payload.best;
+    const flat = payload && payload.best_plateau;
+    return /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-grid" }, ["\uACE0\uC6D0", "\uACBD\uC0AC", "\uC808\uBCBD", "\uC74C\uC218", "\uAC00\uC7A5\uC790\uB9AC"].map((key) => /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card", key }, /* @__PURE__ */ React.createElement("b", null, key), /* @__PURE__ */ React.createElement("span", { className: "mono " + (key === "\uC808\uBCBD" && counts[key] ? "neg" : "") }, loopRsNum(counts[key] || 0), "\uC140"))), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "\uCD5C\uACE0 \uC140"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, best ? best.rule : "\u2014"), /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, best ? `${loopRsNum(best[payload.metric], 4)}% \xB7 ${best.verdict}` : "")), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "\uACE0\uC6D0 \uCD5C\uACE0"), /* @__PURE__ */ React.createElement("span", { className: "mono " + (flat ? "pos" : "neg") }, flat ? flat.rule : "\uC5C6\uC74C"), /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, flat ? `\uC774\uC6C3\uCD5C\uC18C ${loopRsNum(flat.neighbour_min, 4)}% (\uC720\uC9C0 ${loopRsNum(flat.retention * 100, 0)}%)` : "\uCC44\uD0DD\uD560 \uAC12\uC774 \uC5C6\uB2E4")), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "\uACFC\uCD5C\uC801 \uACA9\uCC28"), /* @__PURE__ */ React.createElement("span", { className: "mono " + (payload && payload.overfit_gap ? "neg" : "pos") }, payload && payload.overfit_gap ? loopRsNum(payload.overfit_gap, 4) + "%p" : "\uC5C6\uC74C"), /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uCD5C\uACE0\uAC12 \uCC44\uD0DD \uC2DC \uC783\uC744 \uAC01\uC624")));
+  }
+  function LoopResponseSurfacePanel() {
+    const [payload, setPayload] = useState_rs(null);
+    const [error, setError] = useState_rs("");
+    const load = useCallback_rs(() => {
+      loopRsGet("/loop/response-surface").then((d) => {
+        setPayload(d);
+        setError(d && d.available ? "" : d && d.reason || "\uC751\uB2F5\uBA74\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.");
+      }).catch(() => setError("\uC751\uB2F5\uBA74 \uC694\uCCAD \uC2E4\uD328"));
+    }, []);
+    useEffect_rs(() => {
+      load();
+    }, [load]);
+    const arms = payload && payload.arms || [];
+    const gives = payload && payload.gives || [];
+    const metric = payload && payload.metric || "expectancy_pct";
+    const byAxis = {};
+    (payload && payload.cells || []).forEach((c) => {
+      byAxis[`${c.arm}|${c.give}`] = c;
+    });
+    return /* @__PURE__ */ React.createElement("div", { className: "loop-response-surface", "aria-label": "\uD30C\uB77C\uBBF8\uD130 \uC751\uB2F5\uBA74 (\uD398\uC774\uC9C0 32)" }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uD30C\uB77C\uBBF8\uD130 \uC751\uB2F5\uBA74 ", /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uD398\uC774\uC9C0 32 \xB7 \uACE0\uC6D0\uC778\uAC00 \uC808\uBCBD\uC778\uAC00")), /* @__PURE__ */ React.createElement("span", { className: "badge", title: "\uC9C0\uB3C4 \uCD95 \uACC4\uC0B0\uC785\uB2C8\uB2E4. \uCC44\uD0DD\uC740 \uC5D4\uC9C4 \uD655\uC778 \uD6C4\uC785\uB2C8\uB2E4." }, "map")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uC0B0\uB4F1\uC131\uC774\uC5D0\uC11C \uC57C\uC601\uC9C0\uB97C \uACE0\uB974\uB294 \uAC83\uACFC \uAC19\uC2B5\uB2C8\uB2E4. \uAC00\uC7A5 \uB192\uC740 \uACF3\uC740", /* @__PURE__ */ React.createElement("b", null, " \uCE7C\uB0A0 \uB2A5\uC120"), "\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4 \u2014 \uD55C \uAC78\uC74C\uB9CC \uC5B4\uAE0B\uB098\uB3C4 \uAD74\uB7EC\uB5A8\uC5B4\uC9D1\uB2C8\uB2E4. \uC870\uAE08 \uB0AE\uC544\uB3C4 ", /* @__PURE__ */ React.createElement("b", null, "\uD3C9\uD3C9\uD55C \uACF3"), "\uC5D0 \uD150\uD2B8\uB97C \uCE69\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(LoopRsSummary, { payload }), /* @__PURE__ */ React.createElement("div", { className: "v4s-log-controls" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", type: "button", onClick: load }, "\uC0C8\uB85C\uACE0\uCE68"), payload && payload.source && /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, payload.out_name, " \xB7 ", payload.source)), error && /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, error), payload && payload.recommendation && /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, /* @__PURE__ */ React.createElement("b", null, "\uAD8C\uACE0"), " \u2014 ", payload.recommendation), payload && (payload.reading_rules || []).map((rule, i) => /* @__PURE__ */ React.createElement("p", { key: i, className: "v4s-note", style: { fontSize: 11.5 } }, "\xB7 ", rule)))), arms.length > 0 && /* @__PURE__ */ React.createElement("section", { className: "panel", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uBB34\uC7A5 \xD7 \uB418\uB3CC\uB9BC \uACA9\uC790"), /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uC9C4\uC785 ", loopRsNum(payload.entry_positions), "\uAC74 \xB7 \uC774\uC6C3 \uC720\uC9C0 \uAE30\uC900 ", loopRsNum(payload.retain * 100, 0), "%")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uBB34\uC7A5 \\ \uB418\uB3CC\uB9BC"), gives.map((g) => /* @__PURE__ */ React.createElement("th", { className: "num", key: g }, g, "%p")))), /* @__PURE__ */ React.createElement("tbody", null, arms.map((arm) => /* @__PURE__ */ React.createElement("tr", { key: arm }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "mono" }, "+", arm, "%"), gives.map((give) => {
+      const cell = byAxis[`${arm}|${give}`];
+      if (!cell) return /* @__PURE__ */ React.createElement("td", { className: "num mono", key: give }, "\u2014");
+      const style2 = LOOP_RS_STYLE[cell.verdict] || LOOP_RS_STYLE["\uBE48\uCE78"];
+      return /* @__PURE__ */ React.createElement(
+        "td",
+        {
+          className: "num mono",
+          key: give,
+          style: { background: style2.bg },
+          title: `${cell.verdict_label} \xB7 \uC774\uC6C3 ${cell.neighbours}\uCE78 \xB7 \uCD5C\uC18C ${loopRsNum(cell.neighbour_min, 4)}%`
+        },
+        loopRsNum(cell[metric], 3),
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " ", style2.mark),
+        /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, cell.verdict)
+      );
+    })))))), /* @__PURE__ */ React.createElement("p", { className: "v4s-note", style: { fontSize: 11.5 } }, "O \uACE0\uC6D0 \xB7 / \uACBD\uC0AC \xB7 ! \uC808\uBCBD \xB7 \u2212 \uC74C\uC218 \xB7 \xB7 \uAC00\uC7A5\uC790\uB9AC \xA0|\xA0 \uAC12\uC740 ", metric === "expectancy_pct" ? "\uAC74\uB2F9 \uAE30\uB300\uAC12" : "\uC77C\uD3C9\uADE0", "(%)\uC785\uB2C8\uB2E4."))));
+  }
+
   // ai_strategy_loop/dashboard/frontend/research-improvement.jsx
   var { useMemo: useMemo_ri, useEffect: useEffect_ri, useState: useState_ri } = React;
   function _riNum(value) {
@@ -38172,7 +38236,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           onApprove: requestApproval,
           onViewCode: viewCode
         }
-      ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement("div", { className: "v54-span-all" }, /* @__PURE__ */ React.createElement(ResearchImprovementCard, { state: s, baseUrl, runId })), /* @__PURE__ */ React.createElement("div", { className: "v54-span-all" }, /* @__PURE__ */ React.createElement(ResearchNextStepsCard, { state: s })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC138\uB300 \uC9C4\uD654 \uBD84\uC11D(\uC804\uD3ED)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC138\uB300 \uC9C4\uD654 \uBD84\uC11D \xB7 \uAC1C\uBCC4 \uADF8\uB798\uD504"), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC790\uC728 \uB8E8\uD504 \uAD00\uC81C(\uD398\uC774\uC9C0 26)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC790\uC728 \uB8E8\uD504 \uAD00\uC81C \xB7 \uAC00\uC815 \uD310\uC815\uACFC \uC218\uC815 \uC608\uC0B0"), /* @__PURE__ */ React.createElement(LoopAutonomyPanel, null)), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC0C1\uC124\uD654 \uD604\uD669(\uD398\uC774\uC9C0 29)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC0C1\uC124\uD654 \xB7 \uBC31\uD544\uACFC \uC0C1\uC124 \uC7AC\uAC80\uC99D"), /* @__PURE__ */ React.createElement(LoopStandingPanel, null)), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC870\uAC74\uC2DD \uC131\uACFC \uC6D0\uC7A5(\uD398\uC774\uC9C0 30)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC870\uAC74\uC2DD \uC131\uACFC \uC6D0\uC7A5 \xB7 \uCC54\uD53C\uC5B8 \uB300\uBE44 \uB204\uC801"), /* @__PURE__ */ React.createElement(LoopStrategyLedgerPanel, null)), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uD45C\uBCF8\xB7\uAC80\uC815\uB825 \uACC4\uAE30\uD310(\uD398\uC774\uC9C0 31)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD45C\uBCF8\xB7\uAC80\uC815\uB825 \xB7 \uC9C0\uAE08 \uD655\uC815\uD560 \uC218 \uC788\uB294 \uAC83"), /* @__PURE__ */ React.createElement(LoopPowerGaugePanel, null)))
+      ) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BestCard, { best: s.best, onViewCode: viewCode }), /* @__PURE__ */ React.createElement(WinnerCard, { winner: s.winner, onApprove: requestApproval, onViewCode: viewCode })), s.winner && approvalBlockReason && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, "\uCD5C\uC885 \uC2B9\uC778 \uCC28\uB2E8 \xB7 ", approvalBlockReason), /* @__PURE__ */ React.createElement(PopulationPanel, { state: s, wsStatus }), /* @__PURE__ */ React.createElement("div", { className: "v54-span-all" }, /* @__PURE__ */ React.createElement(ResearchImprovementCard, { state: s, baseUrl, runId })), /* @__PURE__ */ React.createElement("div", { className: "v54-span-all" }, /* @__PURE__ */ React.createElement(ResearchNextStepsCard, { state: s })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC138\uB300 \uC9C4\uD654 \uBD84\uC11D(\uC804\uD3ED)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC138\uB300 \uC9C4\uD654 \uBD84\uC11D \xB7 \uAC1C\uBCC4 \uADF8\uB798\uD504"), /* @__PURE__ */ React.createElement(EvolutionAnalysisPanel, { baseUrl, wsStatus, runId })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC790\uC728 \uB8E8\uD504 \uAD00\uC81C(\uD398\uC774\uC9C0 26)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC790\uC728 \uB8E8\uD504 \uAD00\uC81C \xB7 \uAC00\uC815 \uD310\uC815\uACFC \uC218\uC815 \uC608\uC0B0"), /* @__PURE__ */ React.createElement(LoopAutonomyPanel, null)), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC0C1\uC124\uD654 \uD604\uD669(\uD398\uC774\uC9C0 29)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC0C1\uC124\uD654 \xB7 \uBC31\uD544\uACFC \uC0C1\uC124 \uC7AC\uAC80\uC99D"), /* @__PURE__ */ React.createElement(LoopStandingPanel, null)), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC870\uAC74\uC2DD \uC131\uACFC \uC6D0\uC7A5(\uD398\uC774\uC9C0 30)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC870\uAC74\uC2DD \uC131\uACFC \uC6D0\uC7A5 \xB7 \uCC54\uD53C\uC5B8 \uB300\uBE44 \uB204\uC801"), /* @__PURE__ */ React.createElement(LoopStrategyLedgerPanel, null)), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uD45C\uBCF8\xB7\uAC80\uC815\uB825 \uACC4\uAE30\uD310(\uD398\uC774\uC9C0 31)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD45C\uBCF8\xB7\uAC80\uC815\uB825 \xB7 \uC9C0\uAE08 \uD655\uC815\uD560 \uC218 \uC788\uB294 \uAC83"), /* @__PURE__ */ React.createElement(LoopPowerGaugePanel, null)), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uD30C\uB77C\uBBF8\uD130 \uC751\uB2F5\uBA74(\uD398\uC774\uC9C0 32)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD30C\uB77C\uBBF8\uD130 \uC751\uB2F5\uBA74 \xB7 \uACE0\uC6D0\uC778\uAC00 \uC808\uBCBD\uC778\uAC00"), /* @__PURE__ */ React.createElement(LoopResponseSurfacePanel, null)))
     ), /* @__PURE__ */ React.createElement(
       ApprovalDialog,
       {
@@ -38835,7 +38899,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   Object.assign(window, { BtLossPockets });
 
   // ai_strategy_loop/dashboard/frontend/bt-removal-sim.jsx
-  var { useState: useState_rs } = React;
+  var { useState: useState_rs2 } = React;
   function _rsNum(value, digits = 0) {
     const number = Number(value);
     return Number.isFinite(number) ? number.toLocaleString(void 0, { maximumFractionDigits: digits }) : "\u2014";
@@ -38861,13 +38925,13 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     return `${interval2.low} < ${interval2.column} \u2264 ${interval2.high}`;
   }
   function BtRemovalSim({ baseUrl, jobId, lane }) {
-    const [draft, setDraft] = useState_rs("");
-    const [cart, setCart] = useState_rs([]);
-    const [pending, setPending] = useState_rs([]);
-    const [payload, setPayload] = useState_rs(null);
-    const [error, setError] = useState_rs("");
-    const [busy, setBusy] = useState_rs(false);
-    const [autos, setAutos] = useState_rs(null);
+    const [draft, setDraft] = useState_rs2("");
+    const [cart, setCart] = useState_rs2([]);
+    const [pending, setPending] = useState_rs2([]);
+    const [payload, setPayload] = useState_rs2(null);
+    const [error, setError] = useState_rs2("");
+    const [busy, setBusy] = useState_rs2(false);
+    const [autos, setAutos] = useState_rs2(null);
     const addInterval = () => {
       const parsed = _rsParse(draft);
       if (!parsed) {

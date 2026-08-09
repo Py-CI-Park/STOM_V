@@ -14,6 +14,7 @@ import { LoopAutonomyPanel } from "./loop-autonomy.jsx";
 import { LoopStandingPanel } from "./loop-standing.jsx";
 import { LoopStrategyLedgerPanel } from "./loop-strategy-ledger.jsx";
 import { LoopPowerGaugePanel } from "./loop-power-gauge.jsx";
+import { LoopResponseSurfacePanel } from "./loop-response-surface.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
 import { ResearchImprovementCard } from "./research-improvement.jsx";
@@ -628,6 +629,11 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <section className="v6-stage-lab v54-span-all" aria-label="표본·검정력 계기판(페이지 31)">
               <h3 className="stom-section-label">표본·검정력 · 지금 확정할 수 있는 것</h3>
               <LoopPowerGaugePanel />
+            </section>
+            {/* 페이지 32 — 파라미터 응답면: 그 값을 채택해도 표본 밖에서 살아남는가 */}
+            <section className="v6-stage-lab v54-span-all" aria-label="파라미터 응답면(페이지 32)">
+              <h3 className="stom-section-label">파라미터 응답면 · 고원인가 절벽인가</h3>
+              <LoopResponseSurfacePanel />
             </section>
           </div>
         )}
