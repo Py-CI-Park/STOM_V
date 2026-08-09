@@ -1,6 +1,6 @@
 {
  "schema_version": "stom-research-report-v1",
- "generated_at": "2026-08-09T16:48:58",
+ "generated_at": "2026-08-09T17:24:38",
  "count": 12,
  "reports": [
   {
@@ -14,13 +14,13 @@
    "status": "published",
    "publication_status": "published",
    "generator": "quant_scoring_pipeline",
-   "title": "W6 전 단계 실행 — 자본 문제는 풀렸고, 푸는 과정에서 우위를 잃었다",
+   "title": "W6 전 단계 실행 — 회전과 우위는 직접 교환 관계다",
    "path": "reports/2026-08-09_w6_full_roadmap_report.html",
-   "content_sha256": "dfe940ba8a45cbb0a21fb21889cc495d99323777ae29db3c4a71913489b6154a",
-   "source_sha256": "dfe940ba8a45cbb0a21fb21889cc495d99323777ae29db3c4a71913489b6154a",
-   "sha256": "dfe940ba8a45cbb0a21fb21889cc495d99323777ae29db3c4a71913489b6154a",
-   "bytes": 22413,
-   "generated_at": "2026-08-09T17:00:00",
+   "content_sha256": "19b5d2c34e692674f684af4732ef076b2b4dc2a6e668d987f5ac0d8aaf6a3bfa",
+   "source_sha256": "19b5d2c34e692674f684af4732ef076b2b4dc2a6e668d987f5ac0d8aaf6a3bfa",
+   "sha256": "19b5d2c34e692674f684af4732ef076b2b4dc2a6e668d987f5ac0d8aaf6a3bfa",
+   "bytes": 26311,
+   "generated_at": "2026-08-09T17:40:00",
    "trust": "verified",
    "provenance": "quant_scoring_pipeline builders",
    "toc": [],

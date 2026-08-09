@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>W6 전 단계 실행 — 자본 문제는 풀렸고, 푸는 과정에서 우위를 잃었다</title>
+<title>W6 전 단계 실행 — 회전과 우위는 직접 교환 관계다</title>
 </head>
 <body>
 <style>
@@ -81,10 +81,11 @@ a{color:var(--link)}
 
 <header class="cover">
   <div class="eyebrow">STOM 조건식 개발 · W6 라운드</div>
-  <h1>자본 문제는 풀렸다. 푸는 과정에서 우위를 잃었다.</h1>
+  <h1>자본 문제는 풀렸다. 우위는 잃었고, 합쳐도 돌아오지 않았다.</h1>
   <p class="lede">마스터 로드맵 5단계를 전부 실행했다. 표본을 2.2배로 늘리자 판정이
-    “모르겠다”에서 “어느 축에서 이기고 어느 축에서 지는지”로 바뀌었고, 두 개의
-    반쪽 해법이 나왔다. 그 둘을 합치는 것이 다음 실험이다.</p>
+    “모르겠다”에서 “어느 축에서 이기고 어느 축에서 지는지”로 바뀌었다. 두 개의
+    반쪽 해법이 나왔고, 사전 등록한 <b>합성 실험까지 돌렸다</b> —
+    회전과 우위가 <b>직접 교환 관계</b>라는 것이 이번 라운드의 확정 지식이다.</p>
   <div class="meta">
     <span><b>구간</b> 2022-03-23 ~ 2025-08-22 (833 거래일)</span>
     <span><b>진입</b> Tick_B_902_905 고정</span>
@@ -95,10 +96,10 @@ a{color:var(--link)}
 
 <div class="kpis">
   <div class="kpi ok"><b>361→</b><span>표본 161 → 361건 (2.2배)</span></div>
-  <div class="kpi ok"><b>296%</b><span>최고 총수익률 (챔피언 241%)</span></div>
-  <div class="kpi amber"><b>0</b><span>PASS 후보 (PROMISING 1)</span></div>
+  <div class="kpi ok"><b>301%</b><span>최고 총수익률 (챔피언 241%)</span></div>
+  <div class="kpi amber"><b>0</b><span>PASS 후보 (PROMISING 3)</span></div>
   <div class="kpi ok"><b>0</b><span>응답면 절벽 셀 (36셀 중)</span></div>
-  <div class="kpi"><b>7종</b><span>원장 후보 · 20행</span></div>
+  <div class="kpi"><b>12종</b><span>원장 후보 · 30행</span></div>
   <div class="kpi"><b>3</b><span>새 화면 (30·31·32)</span></div>
 </div>
 
@@ -115,6 +116,8 @@ a{color:var(--link)}
 <tr><td>S5</td><td>페이지 31 표본·검정력 계기판</td><td class="num">—</td><td>B1·B2 포기 근거 확보</td></tr>
 <tr><td>S6</td><td>매도축 응답면 36셀</td><td class="num">36초</td><td>절벽 0 · 고원 33</td></tr>
 <tr><td>S7</td><td>진입 절 34개 제거 A/B</td><td class="num">5분</td><td>완화 후보 6 · 무효 9</td></tr>
+<tr><td>S4b</td><td><b>합성 청산</b> (사전 등록 가설)</td><td class="num">8분</td><td>총수익률 <b>301.39%</b> · 우위 미회복</td></tr>
+<tr><td>S6b</td><td>응답면 1위 <code>trailing(4/1)</code> 엔진 확인</td><td class="num">14분</td><td>지도 1위 = 엔진 2위</td></tr>
 <tr><td>S3</td><td>라벨 백필 478일 (탐색용)</td><td class="num">진행 중</td><td>design_v5 wide 격자</td></tr>
 </tbody></table></div>
 
@@ -220,10 +223,32 @@ a{color:var(--link)}
         <li>물속 3분에 끊으면 되살아났을 거래도 끊긴다</li></ul></div>
 </div>
 
-<div class="callout amber">
-  <p><b>다음 실험 (사전 등록)</b> — <code>추세이탈 OR 시간손절</code>.
-     가설: 추세이탈이 우위를 만들고 시간손절이 회전을 만든다.
-     근거는 위 표다 — 각각이 정확히 한쪽만 통과했다.</p>
+<h3>합성 실험 — 가설은 <b>절반만</b> 맞았다</h3>
+<p class="sub">사전 등록한 규칙 <code>추세이탈 OR 시간손절</code>.
+  가설: 추세이탈이 우위를 만들고 시간손절이 회전을 만든다.</p>
+<div class="tw"><table>
+<thead><tr><th>후보</th><th class="num">건당</th><th class="num">보유</th><th class="num">동시</th>
+<th class="num">총수익률</th><th class="num">짝지은 차이</th><th>95% CI</th><th>판정</th></tr></thead>
+<tbody>
+<tr><td>추세이탈 단독</td><td class="num">+0.99%</td><td class="num">402초</td><td class="num fail">2</td>
+    <td class="num">174.94%</td><td class="num">+0.2888%p</td>
+    <td class="pass">[+0.041, +0.536] ✅</td><td><span class="pill w">MIXED</span></td></tr>
+<tr><td>시간손절 단독</td><td class="num">+0.85%</td><td class="num">300초</td><td class="num pass">1</td>
+    <td class="num">296.02%</td><td class="num">+0.1479%p</td>
+    <td>[−0.130, +0.426]</td><td><span class="pill w">PROMISING</span></td></tr>
+<tr class="hi"><td><b>합성</b></td><td class="num">+0.86%</td><td class="num"><b>282초</b></td>
+    <td class="num pass"><b>1</b></td><td class="num pass"><b>301.39%</b></td>
+    <td class="num">+0.1587%p</td><td>[−0.111, +0.428]</td>
+    <td><span class="pill w">PROMISING</span></td></tr>
+</tbody></table></div>
+
+<div class="callout red">
+  <p><b>자본은 얻었고(총수익률 최고 301.39%) 우위는 못 되찾았다.</b>
+     합성의 짝지은 차이(+0.1587%p)는 시간손절 단독(+0.1479%p)에 붙어 있지
+     추세이탈 단독(+0.2888%p)으로 올라가지 않았다.</p>
+  <p><b>두 규칙은 가산적이지 않다.</b> 시간손절을 넣는 순간 건당 우위가 깎이고,
+     추세이탈이 함께 있어도 회복되지 않는다. <b>회전과 우위가 직접 교환 관계에 있다</b>
+     — 이것이 이번 라운드의 확정 지식이다.</p>
 </div>
 
 <h2><span class="no">5</span> 매도축 응답면 — 전부 고원이다</h2>
@@ -260,10 +285,34 @@ a{color:var(--link)}
     <td class="num pass">36초 + 20분</td><td><b>지금 값이 고원 위인가?</b></td></tr>
 </tbody></table></div>
 
-<div class="callout amber">
-  <p><b>⚠️ 지도 순위 ≠ 엔진 순위.</b> 전이율이 셀마다 3.32~4.86배로 흩어진다.
-     지도 1위는 <code>trailing(4/1)</code>인데 엔진 1위는 <code>trailing(5/2)</code>다.
-     <b>지도는 모양을 보는 도구지 순위를 매기는 도구가 아니다.</b></p>
+<h3>지도 순위와 엔진 순위는 <b>정확히 역순</b>이었다</h3>
+<p class="sub">응답면 1위 <code>trailing(4/1)</code>을 엔진에 올려 4셀 대조를 완성했다.</p>
+<div class="tw"><table>
+<thead><tr><th>셀</th><th class="num">지도 건당</th><th class="num">지도 순위</th>
+<th class="num">엔진 건당</th><th class="num">엔진 순위</th><th class="num">전이율</th>
+<th class="num">필요자금</th></tr></thead>
+<tbody>
+<tr><td><code>trailing(4/1)</code></td><td class="num">+0.3033%</td><td class="num"><b>1위</b></td>
+    <td class="num">+0.85%</td><td class="num">2위</td><td class="num fail">2.80</td>
+    <td class="num">1,995,375</td></tr>
+<tr><td><code>trailing(3/1.5)</code></td><td class="num">+0.25%</td><td class="num">2위</td>
+    <td class="num">+0.84%</td><td class="num">3위</td><td class="num">3.37</td>
+    <td class="num">1,993,320</td></tr>
+<tr><td><code>trailing(3/1)</code></td><td class="num">+0.23%</td><td class="num">3위</td>
+    <td class="num">+0.77%</td><td class="num">4위</td><td class="num">3.32</td>
+    <td class="num">1,991,640</td></tr>
+<tr class="hi"><td><code>trailing(5/2)</code></td><td class="num">+0.22%</td><td class="num">4위</td>
+    <td class="num"><b>+1.06%</b></td><td class="num"><b>1위</b></td><td class="num pass">4.86</td>
+    <td class="num">1,996,660</td></tr>
+</tbody></table></div>
+
+<div class="callout red">
+  <p><b>순위 상관 Spearman ρ = −0.20.</b> 지도 1위가 전이율이 가장 낮고(2.80),
+     지도 꼴찌가 가장 높다(4.86). <b>지도는 모양을 보는 도구지 순위를 매기는
+     도구가 아니다</b> — 매도축과 진입축에서 <b>독립적으로 같은 결론</b>이 나왔다.</p>
+  <p>이 발견 때문에 페이지 32의 권고 문구도 고쳤다. 원래 "최고점이 고원 위다 —
+     채택 가능"이라고 말하고 있었는데, 지도는 채택을 권고할 수 없다.
+     지금은 <b>"고원 영역 N셀 — 이 안에서 엔진으로 승자를 고른다"</b>고 말한다.</p>
 </div>
 
 <h2><span class="no">6</span> 진입 절 34개 — 6개는 공짜, 9개는 죽어 있다</h2>
@@ -317,11 +366,11 @@ a{color:var(--link)}
 <thead><tr><th>질문</th><th>답</th></tr></thead>
 <tbody>
 <tr><td>챔피언을 이기는 조건식을 찾았나</td>
-    <td><b>아직이다.</b> 원장 PASS <b>0</b>종. 가장 가까운 것은 PROMISING 1종</td></tr>
+    <td><b>아직이다.</b> 원장 PASS <b>0</b>종. 세 후보가 챔피언 총수익률을 넘었지만 셋 다 통계 확정이 없다</td></tr>
 <tr><td>진전이 있었나</td>
     <td><b>있다.</b> “모르겠다”가 “건당은 확정, 자본은 통과, 둘이 다른 후보”로 좁혀졌다</td></tr>
 <tr><td>다음이 명확한가</td>
-    <td><b>명확하다.</b> 두 반쪽을 합치는 실험 하나 — 가설과 격자를 사전 등록했다</td></tr>
+    <td><b>명확하다.</b> 합성이 실패했으므로 다음은 <b>교환 곡선 찾기</b> — 시간손절 문턱을 180초 → 240·300초로 올려 덜 자르면서 동시보유 1을 지킬 수 있는지</td></tr>
 <tr><td>홀드아웃을 열었나</td>
     <td><b>열지 않았다.</b> 119일 그대로 잠겨 있다 — 사람 결정 사항이다</td></tr>
 </tbody></table></div>
