@@ -123,6 +123,10 @@ def main() -> None:
     parser.add_argument("--out-name", default="design_v4")
     parser.add_argument("--lane", choices=sorted(LANES), default="tick")
     parser.add_argument("--tag", default="_ext", help="기준선 리포트 접미(구간 구분)")
+    # 산출 접미를 따로 두는 이유: 같은 기준선 위에서 라운드를 더 돌릴 때, 앞 라운드
+    #   결과 파일을 덮어쓰면 그 실측이 사라진다(엔진 시간은 시간 단위다).
+    parser.add_argument("--out-tag", default=None,
+                        help="산출 파일 접미. 생략하면 --tag 와 같다")
     parser.add_argument("--arm", type=float, default=5.0, help="B3 무장 임계")
     parser.add_argument("--give", type=float, default=2.0, help="B3 되돌림 폭")
     parser.add_argument("--engines", type=int, default=16)
@@ -146,8 +150,9 @@ def main() -> None:
           f"총수익률={baseline.get('total_profit_pct')}% "
           f"필요자금={baseline.get('seed_capital')}", flush=True)
 
+    out_tag = args.out_tag if args.out_tag is not None else args.tag
     out_path = os.path.join(_LABEL_ROOT, args.out_name,
-                            f"_capital_turnover{args.tag}.json")
+                            f"_capital_turnover{out_tag}.json")
     outcomes: list[dict] = []
     t0 = time.time()
 
@@ -157,7 +162,7 @@ def main() -> None:
         with open(out_path, "r", encoding="utf-8") as handle:
             outcomes = json.load(handle).get("outcomes") or []
         target = os.path.join(_LABEL_ROOT, args.out_name,
-                              f"_p5_engine_report{args.tag}_turn.json")
+                              f"_p5_engine_report{out_tag}_turn.json")
         write_standard_report(
             target, lane_name=lane.name, span=span, baseline_arm=baseline_arm,
             baseline=baseline, outcomes=outcomes,
@@ -170,7 +175,7 @@ def main() -> None:
     note = ("B3(트레일링)에 조기 청산 한 줄씩만 얹은 A/B. "
             "판정은 자본 대비(총수익률·최대동시보유)로 한다.")
     report_path = os.path.join(_LABEL_ROOT, args.out_name,
-                               f"_p5_engine_report{args.tag}_turn.json")
+                               f"_p5_engine_report{out_tag}_turn.json")
 
     def _save() -> None:
         """팔 하나가 끝날 때마다 저장한다 — 엔진 시간을 잃으면 아프다."""
