@@ -159,3 +159,32 @@ def test_standing_status_skips_revalidation_without_today(dirs):
                                 db_dir=str(db), label_root=str(labels.parent))
     assert status["revalidation"] is None       # 시계를 몰래 읽지 않는다
     assert status["actions_are_planned_only"] is True
+
+
+# ---------------------------------------------------------------------------
+# 정본 라벨 세트 (2026-08-09 백필 이후)
+# ---------------------------------------------------------------------------
+
+def test_default_out_name_points_at_the_full_coverage_set():
+    """★ 화면이 옛 세트를 보면 백필을 끝내도 "결손 597일"이라고 계속 말한다.
+
+    실측으로 그 상태를 확인하고 정본을 옮겼다: `design_v4` 는 355일·6셀 격자,
+    `design_v5` 는 wide 36셀로 설계 구간 전체(832일)를 덮는다.
+    """
+    assert st.DEFAULT_OUT_NAME == "design_v5"
+
+
+def test_api_default_delegates_to_the_controller(monkeypatch):
+    """기본값을 API 쪽에 문자열로 박으면 두 곳이 어긋난다."""
+    from ai_strategy_loop.dashboard import autoloop_api as api
+
+    seen = {}
+
+    def _spy(out_name, lane, **kw):
+        seen["out_name"] = out_name
+        return {}
+
+    monkeypatch.setattr(api, "_standing_candidates", lambda: [])
+    monkeypatch.setattr(st, "standing_status", _spy)
+    api.standing()
+    assert seen["out_name"] == st.DEFAULT_OUT_NAME

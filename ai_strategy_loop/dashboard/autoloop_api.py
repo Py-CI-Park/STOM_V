@@ -206,7 +206,7 @@ def autonomy_budget(run_id: RunId = "") -> dict[str, Any]:
 
 
 @autoloop_router.get("/loop/standing")
-def standing(out_name: str = "design_v4", lane: str = "tick",
+def standing(out_name: str = "", lane: str = "tick",
              today: int = 0, max_age_days: int = 0) -> dict[str, Any]:
     """상설화 현황 (W5) — 백필 계획 + 후보 재검증 계획.
 
@@ -220,7 +220,9 @@ def standing(out_name: str = "design_v4", lane: str = "tick",
         return {"available": False, "reason": "unknown_lane", "lane": lane}
 
     records = _standing_candidates()
-    payload = st.standing_status(out_name, lane, records=records, today=today)
+    # 기본값을 여기서 문자열로 박지 않는다 — 정본 라벨 세트는 controller 가 안다.
+    payload = st.standing_status(out_name or st.DEFAULT_OUT_NAME, lane,
+                                 records=records, today=today)
     if today and max_age_days:
         payload["revalidation"] = st.revalidation_plan(
             records, today=today, max_age_days=max_age_days)

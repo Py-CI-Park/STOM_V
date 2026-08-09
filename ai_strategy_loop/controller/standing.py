@@ -159,8 +159,17 @@ def revalidation_plan(
     }
 
 
+#: 기본 라벨 세트 — **정본은 `design_v5`** 다.
+#:
+#: `design_v4` 는 355일·트레일링 6셀로 구워진 옛 세트다. `design_v5` 는 wide 36셀
+#: 격자로 설계 구간 전체(832일)를 덮는다(2026-08-09 백필 완료).
+#: 화면이 옛 세트를 보면 백필을 끝내도 "결손 597일"이라고 계속 말한다 — 실측으로
+#: 그 상태를 확인하고 정본을 옮겼다.
+DEFAULT_OUT_NAME: Final = "design_v5"
+
+
 def standing_status(
-    out_name: str = "design_v4",
+    out_name: str = DEFAULT_OUT_NAME,
     lane_name: str = "tick",
     *,
     records: list[dict[str, Any]] | None = None,

@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-09T08:27:08.904412+00:00",
-  "source_fingerprint": "02fa1e1ab0686aaac6bb24f12d2ab554c8780968dfe5a87f4dac11f9e8d81701",
+  "generated_at": "2026-08-09T09:42:00.482522+00:00",
+  "source_fingerprint": "54991da75d22d67f855827260e1391e0a48187c8c3e3ddd5ae38f443b63bce05",
   "count": 1002,
   "docs": [
     {
@@ -6721,8 +6721,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-09_w6_자본회전_응답면_진입절.md",
       "title": "W6 단계 3·4·5 — 자본 회전 · 응답면 · 진입 절 (2026-08-09)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-09T08:20:25.967745+00:00",
-      "size": 8443
+      "updated_at": "2026-08-09T09:39:02.017577+00:00",
+      "size": 10546
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-09_w6_표본확장_결과.md",

@@ -36,17 +36,22 @@ VERDICT_LABEL: Final = {
 
 
 def _find(out_name: str, tag: str) -> str | None:
-    path = os.path.join(_LABEL_ROOT, out_name, f"_exit_response_surface{tag}.json")
-    if os.path.exists(path):
-        return path
-    # 태그를 모르고 들어온 경우 — 하나뿐이면 그것을 쓴다. 여럿이면 고르지 않는다.
-    found = sorted(glob.glob(os.path.join(
-        _LABEL_ROOT, out_name, "_exit_response_surface*.json")))
-    return found[0] if len(found) == 1 else None
+    """태그를 주면 그것을, 안 주면 **가장 최근 산출**을 쓴다.
+
+    태그를 고정하면 안 되는 이유: 라벨이 넓어질 때마다 새 태그로 산출한다
+    (`_wide` 355일 → `_wide832` 832일). 화면이 옛 태그를 붙들고 있으면
+    백필을 끝내도 옛 표본의 그림을 계속 보여준다 — 페이지 29 에서 실제로 겪었다.
+    """
+    if tag:
+        path = os.path.join(_LABEL_ROOT, out_name, f"_exit_response_surface{tag}.json")
+        return path if os.path.exists(path) else None
+    found = glob.glob(os.path.join(
+        _LABEL_ROOT, out_name, "_exit_response_surface*.json"))
+    return max(found, key=os.path.getmtime) if found else None
 
 
 @response_surface_router.get("/loop/response-surface")
-def response_surface(out_name: str = "design_v5", tag: str = "_wide") -> dict[str, Any]:
+def response_surface(out_name: str = "design_v5", tag: str = "") -> dict[str, Any]:
     path = _find(out_name, tag)
     if path is None:
         return {"available": False, "out_name": out_name, "tag": tag,

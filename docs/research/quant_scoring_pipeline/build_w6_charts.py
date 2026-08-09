@@ -157,10 +157,14 @@ def chart_forest(led) -> None:
 # ---------------------------------------------------------------------------
 
 def chart_surface() -> None:
-    path = LABELS / "design_v5" / "_exit_response_surface_wide.json"
-    if not path.exists():
+    # 태그를 고정하지 않는다 — 라벨이 넓어지면 새 태그로 산출된다(_wide → _wide832).
+    #   가장 최근 산출을 그린다.
+    found = sorted((LABELS / "design_v5").glob("_exit_response_surface*.json"),
+                   key=lambda q: q.stat().st_mtime)
+    if not found:
         print("  (응답면 산출 없음 — 건너뜀)")
         return
+    path = found[-1]
     rep = json.loads(path.read_text(encoding="utf-8"))
     arms, gives = rep["arms"], rep["gives"]
     grid = np.array([[np.nan if v is None else v for v in row] for row in rep["matrix"]])
@@ -175,8 +179,10 @@ def chart_surface() -> None:
                 continue
             mark = {"고원": "O", "경사": "/", "절벽": "!", "음수": "-"}.get(
                 verdict.get((a, g), ""), "")
+            # 진한 칸에 어두운 글자를 얹으면 안 읽힌다 — 명도에 따라 뒤집는다.
+            share = (v - np.nanmin(grid)) / max(np.nanmax(grid) - np.nanmin(grid), 1e-9)
             ax.text(j, i, f"{v:.2f}\n{mark}", ha="center", va="center",
-                    fontsize=9, color=INK)
+                    fontsize=9, color="white" if share > 0.55 else INK)
     ax.set_xticks(range(len(gives))); ax.set_xticklabels([f"{g:g}" for g in gives])
     ax.set_yticks(range(len(arms))); ax.set_yticklabels([f"+{a:g}%" for a in arms])
     ax.set_xlabel("되돌림 허용 (%p)"); ax.set_ylabel("무장 임계")
@@ -184,7 +190,8 @@ def chart_surface() -> None:
     for side in ("top", "right", "bottom", "left"):
         ax.spines[side].set_visible(False)
     counts = rep["verdict_counts"]
-    ax.text(0, 1.13, "매도축 응답면 — 36셀 전부 안전지대", transform=ax.transAxes,
+    ax.text(0, 1.13, f"매도축 응답면 — {rep['entry_positions']:,}건 진입 · {len(rep['cells'])}셀",
+            transform=ax.transAxes,
             fontsize=13, fontweight="bold", color=INK, va="bottom")
     ax.text(0, 1.03,
             f"고원 {counts.get('고원', 0)} · 경사 {counts.get('경사', 0)} · "
