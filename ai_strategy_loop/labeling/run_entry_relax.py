@@ -78,6 +78,15 @@ def sync_ledger(report: dict, *, source: str = "ai") -> int:
     새로 늘어난 거래는 짝이 없다. 그래서 `run_ledger_sync`(짝지은 필드 포함)를
     쓰지 않고 **집계 지표만** 적는다.
 
+    ## 진입 후보는 PASS 를 받을 수 없다
+
+    원장에서 `PASS` 는 "챔피언 이상 **+ 통계적으로 확정**"이다. 진입 후보는 짝지은
+    검정을 쓸 수 없으므로 통계 확정 수단이 없다 — 집계 지표가 아무리 좋아도
+    `PROMISING`(방향은 맞으나 확정 못 함)이 상한이다.
+
+    이 구분을 흐리면 원장의 `승격 0종`이라는 핵심 정보가 무의미해진다.
+    확정은 홀드아웃 또는 독립 구간에서만 온다.
+
     폐기된 후보도 남긴다 — "이건 이미 해 봤다"를 아는 것이 원장의 값이다.
     """
     from datetime import datetime, timezone
@@ -93,7 +102,7 @@ def sync_ledger(report: dict, *, source: str = "ai") -> int:
         append(CandidateRecord(
             candidate_id=f"{outcome.get('buy')}::{outcome.get('sell')}",
             family="entry", source=source, lane=str(report.get("lane") or "tick"),
-            verdict="PASS" if gate.get("pass") else "REJECT",
+            verdict="PROMISING" if gate.get("pass") else "REJECT",
             recorded_at=stamp,
             buy_name=outcome.get("buy"), sell_name=outcome.get("buy"),
             period_start=design[0], period_end=design[1],
@@ -111,7 +120,8 @@ def sync_ledger(report: dict, *, source: str = "ai") -> int:
                 f"진입 절 제거 · 거래 {gate.get('trade_gain'):+d} · "
                 f"건당 {'통과' if gate.get('per_trade_pass') else '미달'} · "
                 f"자본 {'통과' if gate.get('capital_pass') else '미달'}"),
-            notes=("짝지은 검정 없음 — 진입이 다르면 짝이 성립하지 않는다."),
+            notes=("짝지은 검정 없음 — 진입이 다르면 짝이 성립하지 않는다. "
+                   "따라서 통계 확정 수단이 없어 PROMISING 이 상한이다."),
         ))
         written += 1
     return written
