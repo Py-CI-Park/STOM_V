@@ -13,6 +13,7 @@ import { HypothesisPanel } from "./hypothesis.jsx";
 import { LoopAutonomyPanel } from "./loop-autonomy.jsx";
 import { LoopStandingPanel } from "./loop-standing.jsx";
 import { LoopStrategyLedgerPanel } from "./loop-strategy-ledger.jsx";
+import { LoopPowerGaugePanel } from "./loop-power-gauge.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
 import { ResearchImprovementCard } from "./research-improvement.jsx";
@@ -622,6 +623,11 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <section className="v6-stage-lab v54-span-all" aria-label="조건식 성과 원장(페이지 30)">
               <h3 className="stom-section-label">조건식 성과 원장 · 챔피언 대비 누적</h3>
               <LoopStrategyLedgerPanel />
+            </section>
+            {/* 페이지 31 — 표본·검정력: 판정을 믿을 만한가, 못 믿겠으면 며칠 더 재야 하나 */}
+            <section className="v6-stage-lab v54-span-all" aria-label="표본·검정력 계기판(페이지 31)">
+              <h3 className="stom-section-label">표본·검정력 · 지금 확정할 수 있는 것</h3>
+              <LoopPowerGaugePanel />
             </section>
           </div>
         )}
