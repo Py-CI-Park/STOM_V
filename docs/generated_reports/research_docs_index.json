@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-09T09:42:00.482522+00:00",
-  "source_fingerprint": "54991da75d22d67f855827260e1391e0a48187c8c3e3ddd5ae38f443b63bce05",
-  "count": 1002,
+  "generated_at": "2026-08-09T11:05:33.433540+00:00",
+  "source_fingerprint": "f22145467fbb72012c4df80c1947b191f1ac177e7eaf66001240a9ecfd7c784d",
+  "count": 1004,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6732,6 +6732,13 @@
       "size": 3959
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-09_w7_교환곡선_진입축_페이지33_34.md",
+      "title": "W7 — 교환 곡선 · 진입축 반증 · 페이지 33·34 (2026-08-09)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-09T11:03:03.082282+00:00",
+      "size": 7059
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
       "title": "핸드오프 — QSP7 매도식 연구 (2026-08-01)",
       "category": "quant_scoring_pipeline",
@@ -6781,18 +6788,25 @@
       "size": 9879
     },
     {
-      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-09_W6_전단계실행.md",
-      "title": "핸드오프 — W6 전 단계 실행 (2026-08-09)",
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-09B_W7_교환곡선.md",
+      "title": "핸드오프 — W7 교환 곡선 (2026-08-09 B)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-09T08:26:40.038210+00:00",
-      "size": 8944
+      "updated_at": "2026-08-09T11:04:46.921209+00:00",
+      "size": 7323
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-09_W6_전단계실행.md",
+      "title": "핸드오프 — W6 (2026-08-09)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-09T11:03:45.866132+00:00",
+      "size": 9068
     },
     {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-09T07:54:21.331279+00:00",
-      "size": 6277
+      "updated_at": "2026-08-09T11:05:11.630059+00:00",
+      "size": 6435
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
