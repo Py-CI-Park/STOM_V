@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-10T22:37:08.532354+00:00",
-  "source_fingerprint": "fe50bd26a2e6f7f0971d1bca5407eaed00fd635f4c1932e1e56a0f540e596403",
-  "count": 1020,
+  "generated_at": "2026-08-11T11:17:42.787836+00:00",
+  "source_fingerprint": "af646c1fbc8379daab133135d925e11358601f9866c812150b956a46a6ee0f2b",
+  "count": 1022,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6823,6 +6823,13 @@
       "size": 5006
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-11_HOF_마스터로드맵_v2.md",
+      "title": "HOF 마스터 로드맵 v2 — 과거 전수 · 재검토 · 자가 감사 프로토콜 · 미래 상세 (2026-08-11)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-11T11:16:33.808537+00:00",
+      "size": 8768
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
       "title": "핸드오프 — QSP7 매도식 연구 (2026-08-01)",
       "category": "quant_scoring_pipeline",
@@ -6910,15 +6917,22 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-10T22:36:35.716173+00:00",
-      "size": 7862
+      "updated_at": "2026-08-11T11:16:45.111681+00:00",
+      "size": 8022
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
       "title": "프로그램 등록부 (PROGRAM LEDGER) — 전 연구 프로그램 계보·중복 감사·닫힌 방향",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-10T22:36:27.693583+00:00",
-      "size": 3698
+      "updated_at": "2026-08-11T11:17:04.682336+00:00",
+      "size": 3874
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/ROUND_TEMPLATE.md",
+      "title": "라운드 표준 템플릿 — 자가 감사 프로토콜 (헌법 17항의 실행형)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-11T11:14:23.265657+00:00",
+      "size": 2120
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
