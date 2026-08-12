@@ -61,16 +61,21 @@ def _fmt(value: float) -> str:
     return f"{float(value):g}"
 
 
-def render_band_clauses(features: dict, variant: str, *, indent: str) -> list[str]:
-    """한 시간밴드의 피처 절을 만든다. `SEG_ONLY` 는 빈 목록."""
+def render_band_clauses(features: dict, variant: str, *, indent: str,
+                        quantile: str = "q25") -> list[str]:
+    """한 시간밴드의 피처 절을 만든다. `SEG_ONLY` 는 빈 목록.
+
+    `quantile` 은 하한으로 쓸 분위(G5 선택도 사다리가 q50·q75 로 올린다).
+    기본 `q25` 는 G2 사전 등록 값이라 기존 산출과 바이트 동일하다.
+    """
     if variant == "SEG_ONLY":
         return []
     lines: list[str] = []
     for name in BAND_FEATURES:
         stats = features.get(name)
-        if not stats:
+        if not stats or quantile not in stats:
             continue
-        lo, hi = float(stats["q25"]), float(stats["q75"])
+        lo, hi = float(stats[quantile]), float(stats.get("q75", 0.0))
         if variant == "LOWER":
             lines.append(f"{indent}if not ({name} >= {_fmt(lo)}):")
         else:                                    # IQR
@@ -81,10 +86,18 @@ def render_band_clauses(features: dict, variant: str, *, indent: str) -> list[st
     return lines
 
 
-def render_strategy(seeds: Sequence[dict], variant: str) -> str:
-    """G1 시드 → 새 골격 매수식. 챔피언 절은 쓰지 않는다."""
+def render_strategy(seeds: Sequence[dict], variant: str, *,
+                    quantile: str = "q25",
+                    bands: Sequence[tuple] = BANDS) -> str:
+    """G1 시드 → 새 골격 매수식. 챔피언 절은 쓰지 않는다.
+
+    `quantile`·`bands` 는 G5 선택도 사다리용 파라미터다. 기본값은 G2 사전 등록
+    값이라 기존 호출부의 산출이 바뀌지 않는다.
+    """
     if variant not in VARIANTS:
         raise ValueError(f"격자 밖 변형: {variant} (허용 {VARIANTS})")
+    if not bands:
+        raise ValueError("시간밴드가 비었다 — 매수 시점이 없는 조건식이 된다")
     by_segment = {str(s.get("time_segment")): (s.get("features") or {}) for s in seeds}
 
     out: list[str] = [
@@ -108,16 +121,13 @@ def render_strategy(seeds: Sequence[dict], variant: str) -> str:
         "    매수 = False",
         "",
     ]
-    first = True
-    for lo, hi, segment in BANDS:
-        keyword = "elif" if first else "elif"
+    for lo, hi, segment in bands:
         out.append(f"# --- 밴드 {segment} ---")
-        out.append(f"{keyword} {lo} <= 시분초 < {hi}:")
+        out.append(f"elif {lo} <= 시분초 < {hi}:")
         clauses = render_band_clauses(by_segment.get(segment, {}), variant,
-                                      indent="    ")
+                                      indent="    ", quantile=quantile)
         out.extend(clauses if clauses else ["    pass"])
         out.append("")
-        first = False
     out += ["# --- 밴드 밖 ---", "else:", "    매수 = False", "",
             "if 매수:", "    self.Buy()", ""]
     return "\n".join(out)
