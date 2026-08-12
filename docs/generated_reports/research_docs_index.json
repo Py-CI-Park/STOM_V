@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-12T02:27:55.417944+00:00",
-  "source_fingerprint": "63f612cb4afa8d8c6712f7cdbd688a7e13cdc1385678bcfe1d171d731d854277",
-  "count": 1026,
+  "generated_at": "2026-08-12T03:47:32.121279+00:00",
+  "source_fingerprint": "29217cd9687b7cf08a8476e9ef18088bdecd42d8f4c1c9e30ec29e45638a268a",
+  "count": 1027,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6858,6 +6858,13 @@
       "size": 2857
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-12_레인_가용성_실사.md",
+      "title": "레인 가용성 실사 — 존재하는 DB 로 무엇을 할 수 있나 (2026-08-12)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-12T03:45:52.407746+00:00",
+      "size": 3006
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
       "title": "핸드오프 — QSP7 매도식 연구 (2026-08-01)",
       "category": "quant_scoring_pipeline",
@@ -6945,8 +6952,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-12T02:27:06.879537+00:00",
-      "size": 8381
+      "updated_at": "2026-08-12T03:47:10.615005+00:00",
+      "size": 8513
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
@@ -6959,8 +6966,8 @@
       "id": "docs/research/quant_scoring_pipeline/ROUND_TEMPLATE.md",
       "title": "라운드 표준 템플릿 — 자가 감사 프로토콜 (헌법 17항의 실행형)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-11T11:14:23.265657+00:00",
-      "size": 2120
+      "updated_at": "2026-08-12T03:46:36.423851+00:00",
+      "size": 2341
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
@@ -6987,8 +6994,8 @@
       "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
       "title": "QSP1 한계 원장 (Limitation Ledger)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-10T14:53:34.122595+00:00",
-      "size": 26294
+      "updated_at": "2026-08-12T02:32:24.423317+00:00",
+      "size": 26916
     },
     {
       "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/analysis_to_revision.md",
