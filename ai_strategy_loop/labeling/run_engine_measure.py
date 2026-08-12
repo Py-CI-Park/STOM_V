@@ -84,15 +84,32 @@ def _assert_owned(name: str) -> None:
         raise ValueError(f"쓰기 금지 이름: {name} (허용 접두 {OWNED_PREFIX!r})")
 
 
+def _session_hhmmss(lane) -> tuple[int, int]:
+    """레인 세션을 CLI 계약 단위(**HHMMSS**)로 돌려준다.
+
+    ## 2026-08-12 결함 교정 (min 레인 3년 방치의 원인)
+
+    CLI·엔진 계약은 tick/min 모두 시각을 HHMMSS 로 받고, min 쿼리가 내부에서
+    /100 해 12자리 index(YYYYMMDDHHMM)를 만든다(`GetBackloadCodeQuery`).
+    그런데 lane 스펙의 min 시각은 HHMM(900/1528)이라 그대로 보내면
+    `int(900/100)=9` → `YYYYMMDD0009~0015` 라는 빈 구간이 되고, 로더가
+    조용히 0건을 돌려줘 **모든 min 백테가 no_trades 로 위장**됐다.
+    """
+    if lane.name == "min":
+        return lane.entry_start * 100, lane.forced_exit * 100
+    return 90000, lane.forced_exit
+
+
 def _run_arm(client: Client, *, buy: str, sell: str, lane, engines: int,
              timeout: int, period: tuple[int, int] | None = None) -> dict:
     """한 팔을 엔진에 올리고 끝날 때까지 기다린다."""
     start, end = period or lane.design
+    start_time, end_time = _session_hhmmss(lane)
     started = client.call("POST", "/bt/run", {
         "buy": buy, "sell": sell,
         "start": start, "end": end,
-        "start_time": lane.entry_start if lane.name == "min" else 90000,
-        "end_time": lane.forced_exit,
+        "start_time": start_time,
+        "end_time": end_time,
         "timeframe": lane.name, "engines": engines, "timeout": timeout,
     })
     job_id = started.get("job_id")
