@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-11T11:17:42.787836+00:00",
-  "source_fingerprint": "af646c1fbc8379daab133135d925e11358601f9866c812150b956a46a6ee0f2b",
-  "count": 1022,
+  "generated_at": "2026-08-12T02:27:55.417944+00:00",
+  "source_fingerprint": "63f612cb4afa8d8c6712f7cdbd688a7e13cdc1385678bcfe1d171d731d854277",
+  "count": 1026,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6830,6 +6830,34 @@
       "size": 8768
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-12_HOF4_결과.md",
+      "title": "HOF4 결과 — 문턱 프런티어는 비어 있다 · 진짜 병목 2개 발견 (2026-08-12)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-12T01:53:46.389083+00:00",
+      "size": 3137
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-12_HOF4_사전등록.md",
+      "title": "HOF4 사전 등록 — 놓친 승자 관찰 (2026-08-12)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-12T01:41:18.125140+00:00",
+      "size": 3286
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-12_HOF5_결과.md",
+      "title": "HOF5 결과 — 회전율 REJECT(부호 반전) · 전일비 PROMISING(효과 미미) (2026-08-12)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-12T02:26:08.956062+00:00",
+      "size": 2563
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-12_HOF5_사전등록.md",
+      "title": "HOF5 사전 등록 — 고고학 2종 학습 구간 재판정 (2026-08-12)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-12T01:54:39.171529+00:00",
+      "size": 2857
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
       "title": "핸드오프 — QSP7 매도식 연구 (2026-08-01)",
       "category": "quant_scoring_pipeline",
@@ -6917,15 +6945,15 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-11T11:16:45.111681+00:00",
-      "size": 8022
+      "updated_at": "2026-08-12T02:27:06.879537+00:00",
+      "size": 8381
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
       "title": "프로그램 등록부 (PROGRAM LEDGER) — 전 연구 프로그램 계보·중복 감사·닫힌 방향",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-11T11:17:04.682336+00:00",
-      "size": 3874
+      "updated_at": "2026-08-12T02:26:47.357736+00:00",
+      "size": 4281
     },
     {
       "id": "docs/research/quant_scoring_pipeline/ROUND_TEMPLATE.md",

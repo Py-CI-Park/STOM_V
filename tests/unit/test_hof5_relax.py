@@ -69,8 +69,14 @@ def _report(stage_pass: bool) -> dict:
 
 
 class TestLedger:
-    @pytest.fixture
+    @pytest.fixture(autouse=True)
     def records(self, monkeypatch):
+        """★ autouse — 이 클래스의 **모든** 테스트에서 실제 원장 append 를 막는다.
+
+        2026-08-12 실제 사고: autouse 가 아니던 시절, 픽스처 없이 sync_ledger 를
+        호출한 테스트가 픽스처 값(1,500,000)을 **운영 원장에 적재**해 실측
+        REJECT 를 가렸다(원장 row 60·65 · 정정 행으로 복구). 재발 방지 장치다.
+        """
         captured = []
         monkeypatch.setattr(
             "ai_strategy_loop.controller.strategy_ledger.append",
@@ -79,10 +85,6 @@ class TestLedger:
 
     def test_후보는_2종으로_고정(self):
         assert CANDIDATES == ("902_회전율", "905_전일비")
-
-    def test_1차_통과는_MIXED_검증_대기(self):
-        sync_ledger(_report(True), stage="train")
-        # records fixture 없이 직접 검증하지 않도록 아래 테스트에서 다룬다.
 
     def test_1차_통과_판정(self, records):
         sync_ledger(_report(True), stage="train")
