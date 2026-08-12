@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-12T07:58:55.832101+00:00",
-  "source_fingerprint": "032d2446ef2ef32a000129dde96d145118c51d49f55259b0eaa05ebef83f6981",
-  "count": 1029,
+  "generated_at": "2026-08-12T13:24:09.353352+00:00",
+  "source_fingerprint": "1a89a93c4dee60b8f7345cd5f7245f4e3386f1bc1dbd743483fa954355136b07",
+  "count": 1030,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6865,6 +6865,13 @@
       "size": 3006
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-12_마스터플랜_v3.md",
+      "title": "마스터플랜 v3 — 조건식 개발 프로그램 단일 정본 (2026-08-12)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-12T13:23:19.980677+00:00",
+      "size": 7055
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/2026-08-12_전체플랜_감사와_재편.md",
       "title": "전체 플랜 감사와 재편 — 왜 도구를 계속 안 썼나 · tick \"고갈\"의 재해석 · 생성 레인 신설 (2026-08-12)",
       "category": "quant_scoring_pipeline",
@@ -6966,15 +6973,15 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-12T07:58:33.751850+00:00",
-      "size": 8765
+      "updated_at": "2026-08-12T13:23:48.570722+00:00",
+      "size": 8851
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
       "title": "프로그램 등록부 (PROGRAM LEDGER) — 전 연구 프로그램 계보·중복 감사·닫힌 방향",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-12T07:58:33.603269+00:00",
-      "size": 5491
+      "updated_at": "2026-08-12T07:59:28.838326+00:00",
+      "size": 5602
     },
     {
       "id": "docs/research/quant_scoring_pipeline/ROUND_TEMPLATE.md",
