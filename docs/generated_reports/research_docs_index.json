@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-12T13:24:44.920360+00:00",
-  "source_fingerprint": "1a89a93c4dee60b8f7345cd5f7245f4e3386f1bc1dbd743483fa954355136b07",
+  "generated_at": "2026-08-12T13:25:47.074444+00:00",
+  "source_fingerprint": "c8663f929161c72ccb16067b96b0c5a8e87a510be65719340bb46349c228e312",
   "count": 1030,
   "docs": [
     {
@@ -6973,8 +6973,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-12T13:24:33.313871+00:00",
-      "size": 8851
+      "updated_at": "2026-08-12T13:25:19.016124+00:00",
+      "size": 8785
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
