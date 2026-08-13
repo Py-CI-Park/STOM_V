@@ -116,10 +116,10 @@ class TestGate:
                     capital_limit_krw=20_000_000)["pass"] is False
 
 
-def _report(passed: bool) -> dict:
+def _report(passed: bool, *, status: str = "success") -> dict:
     return {"span": [20220323, 20231121],
             "outcomes": [{"variant": "SEG_ONLY", "buy": "G2_B_SEG_ONLY",
-                          "engine": dict(BASE),
+                          "status": status, "engine": dict(BASE),
                           "gate": {"pass": passed, "champion_krw": 1_316_746.0}}]}
 
 
@@ -148,3 +148,13 @@ class TestLedger:
     def test_독립_골격임이_notes_에_남는다(self, records):
         sync_ledger(_report(True), stage="train")
         assert "독립 골격" in records[0].notes
+
+    @pytest.mark.parametrize("status", ["timeout", "error", "cancelled"])
+    def test_완주하지_못한_팔은_원장에_넣지_않는다(self, records, status):
+        """타임아웃은 '측정된 실패'가 아니다 — 원장을 오염시키면 안 된다.
+
+        실제 사고(2026-08-13 · row 68~70): 지표가 전부 None 인 REJECT 3행이
+        적재돼 '측정 불가'와 '측정된 실패'가 구별되지 않았다(L-2026-08-13B).
+        """
+        assert sync_ledger(_report(False, status=status), stage="train") == 0
+        assert records == []

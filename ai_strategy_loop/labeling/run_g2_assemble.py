@@ -165,6 +165,11 @@ def sync_ledger(report: dict, *, stage: str) -> int:
     for outcome in report.get("outcomes") or []:
         if not outcome.get("gate"):
             continue
+        # ★ 2026-08-13 교정: 타임아웃·오류는 **성적이 아니다**. 지표가 전부 None 인
+        #   행을 REJECT 로 적으면 원장이 "측정된 실패"와 "측정 불가"를 구별하지
+        #   못한다(실제로 row 68~70 이 그렇게 오염됐다 — L-2026-08-13B).
+        if outcome.get("status") != "success":
+            continue
         engine, g = outcome["engine"], outcome["gate"]
         if stage == "train":
             verdict = "MIXED" if g["pass"] else "REJECT"
@@ -295,10 +300,11 @@ def main() -> None:
           f"{report['champion_metrics'].get('seed_capital'):>12,.0f}  기준")
     for row in outcomes:
         e = row["engine"]
-        print(f" {row['variant']:<18}{e.get('trade_count'):>7}"
-              f"{e.get('avg_profit_pct'):>8}%{e.get('total_profit_krw') or 0:>13,.0f}"
+        # 타임아웃 팔은 지표가 전부 None 이다 — 포맷이 죽지 않게 0 으로 떨군다.
+        print(f" {row['variant']:<18}{e.get('trade_count') or 0:>7}"
+              f"{e.get('avg_profit_pct') or 0:>7}%{e.get('total_profit_krw') or 0:>13,.0f}"
               f"{e.get('seed_capital') or 0:>12,.0f}  "
-              f"{'PASS' if row['gate']['pass'] else 'FAIL'}")
+              f"{row['status']:<8}{'PASS' if row['gate']['pass'] else 'FAIL'}")
     if not any(o["gate"]["pass"] for o in outcomes):
         print("\n사전 등록 §6: 1차 전멸 → 반대 가설 성립 절차로 간다.")
     print(f"\n기록: {out_path}", flush=True)
