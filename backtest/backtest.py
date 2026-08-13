@@ -5,6 +5,7 @@ import re
 import sys
 import time
 import sqlite3
+from queue import Empty
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -64,6 +65,52 @@ def _emit_cli_protocol_checkpoint(queue, source, checkpoint, detail=None):
         ui_num.get('시스템로그', 1),
         '[CLI_DIAG] ' + json.dumps(payload, ensure_ascii=False, default=str),
     ))
+
+
+_TQ_HEARTBEAT_TIMEOUT_SECONDS = 5
+_TQ_HEARTBEAT_CONTEXT_KEYS = (
+    'engine_count',
+    'subtotal_count',
+    'row_count',
+    'day_count',
+    'avgtime',
+    'buystg_name',
+    'sellstg_name',
+)
+
+
+def _bounded_protocol_scalar(value, limit=128):
+    if value is None or isinstance(value, (bool, int, float)):
+        return value
+    return str(value)[:limit]
+
+
+def _tq_message_kind(data):
+    if isinstance(data, str):
+        return data[:128]
+    if isinstance(data, tuple) and data:
+        return _bounded_protocol_scalar(data[0])
+    return type(data).__name__
+
+
+def _wait_for_tq_message(tq, wq, heartbeat_context, timeout_seconds=_TQ_HEARTBEAT_TIMEOUT_SECONDS,
+                         monotonic=time.monotonic):
+    if os.environ.get('STOM_CLI_BACKTEST_PROTOCOL_DIAG') != '1':
+        return tq.get()
+
+    started_at = monotonic()
+    while True:
+        try:
+            return tq.get(timeout=timeout_seconds)
+        except Empty:
+            detail = {
+                key: _bounded_protocol_scalar(heartbeat_context.get(key))
+                for key in _TQ_HEARTBEAT_CONTEXT_KEYS
+            }
+            detail['elapsed_seconds'] = max(0, int(monotonic() - started_at))
+            _emit_cli_protocol_checkpoint(
+                wq, 'BackTest', 'backtest_child_waiting_mq_heartbeat', detail
+            )
 
 
 class BackTest:
@@ -212,15 +259,26 @@ class BackTest:
             'engine_count': len(self.beq_list),
         })
 
+        mq_heartbeat_context = {
+            'engine_count': len(self.beq_list),
+            'subtotal_count': len(self.bstq_list),
+            'row_count': len(df_mt),
+            'day_count': self.day_count,
+            'avgtime': self.avgtime,
+            'buystg_name': self.buystg_name,
+            'sellstg_name': self.sellstg_name,
+        }
         bc = 0
         sc = 0
         first_mq_message = True
         while True:
             checkpoint = 'backtest_child_waiting_mq_first' if first_mq_message else 'backtest_child_waiting_mq_second'
             _emit_cli_protocol_checkpoint(self.wq, 'BackTest', checkpoint)
-            data = self.tq.get()
+            data = _wait_for_tq_message(self.tq, self.wq, mq_heartbeat_context)
             if first_mq_message:
-                _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_mq_first_received')
+                _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_mq_first_received', {
+                    'message_kind': _tq_message_kind(data),
+                })
                 first_mq_message = False
             if data == '백테완료':
                 bc += 1
