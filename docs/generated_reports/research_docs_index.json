@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-13T12:43:28.109856+00:00",
-  "source_fingerprint": "894f7292b56b6f1b8c984b7d04f159642efd45c71d6bf5db71b7708ab80a8a15",
-  "count": 1037,
+  "generated_at": "2026-08-13T21:25:02.696139+00:00",
+  "source_fingerprint": "d4928d66b35ed8b5169ba96b7f64010019b3c4d9641a0bb92265c04e070b81d1",
+  "count": 1038,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6921,6 +6921,13 @@
       "size": 3262
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-13_연구종결과_확률적발견체계_마스터플랜_v4.md",
+      "title": "연구 종결과 확률적 조건식 발견 체계 — 마스터플랜 v4 (2026-08-13)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-13T21:24:01.573334+00:00",
+      "size": 9206
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/2026-08-13_종합분석_실패원인과_방향.md",
       "title": "종합 분석 — 전 연구 리뷰 · 실패 원인 3층 구조 · 해결책 · 방향 (2026-08-13)",
       "category": "quant_scoring_pipeline",
@@ -7022,15 +7029,15 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-13T12:42:56.749820+00:00",
-      "size": 9444
+      "updated_at": "2026-08-13T21:24:27.902232+00:00",
+      "size": 9597
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
       "title": "프로그램 등록부 (PROGRAM LEDGER) — 전 연구 프로그램 계보·중복 감사·닫힌 방향",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-13T03:23:36.048066+00:00",
-      "size": 5988
+      "updated_at": "2026-08-13T21:24:28.536146+00:00",
+      "size": 5906
     },
     {
       "id": "docs/research/quant_scoring_pipeline/ROUND_TEMPLATE.md",
