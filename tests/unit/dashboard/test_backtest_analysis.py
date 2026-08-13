@@ -390,6 +390,16 @@ def test_monte_carlo_moving_block_reproducible_and_records_contract():
     assert mc1["ruin_pct"] == 30.0
 
 
+def test_monte_carlo_records_generated_seed_for_replay():
+    mc = A.monte_carlo(_multiday_trades(), n=10, method="moving_block")
+    assert isinstance(mc["seed"], int)
+    replay = A.monte_carlo(
+        _multiday_trades(), n=10, seed=mc["seed"],
+        method="moving_block", block_length=mc["block_length"],
+    )
+    assert replay["fan"] == mc["fan"]
+
+
 def test_monte_carlo_moving_block_one_matches_bootstrap():
     trades = _multiday_trades()
     bootstrap = A.monte_carlo(trades, n=200, seed=23, method="bootstrap")

@@ -1093,11 +1093,11 @@ def _rng_seeded(seed: Optional[int]):
     try:
         import numpy as np  # noqa: WPS433 - 선택 의존(가용 시만).
 
-        return np.random.default_rng(int(actual)), "numpy"
+        return np.random.default_rng(int(actual)), "numpy", int(actual)
     except Exception:  # noqa: BLE001 - numpy 없으면 표준 random 으로 폴백.
         import random
 
-        return random.Random(int(actual)), "random"
+        return random.Random(int(actual)), "random", int(actual)
 
 
 def monte_carlo(
@@ -1156,7 +1156,7 @@ def monte_carlo(
         capital = 1.0
     ruin_threshold = -capital * (float(ruin_pct) / 100.0)
 
-    rng, backend = _rng_seeded(seed)
+    rng, backend, actual_seed = _rng_seeded(seed)
     mdd_krws: List[float] = []
     finals: List[float] = []
     ruin_hits = 0
@@ -1240,7 +1240,7 @@ def monte_carlo(
         "fan": fan,
         "observed": observed,
         "method": method,
-        "seed": seed,
+        "seed": actual_seed,
         "block_length": block_length if method == "moving_block" else None,
         # shuffle 은 날의 집합이 보존되므로 최종손익이 항상 한 점이다(차트가 이 사실을 표기).
         "final_degenerate": method == "shuffle",
@@ -1628,7 +1628,7 @@ def mdd_random_curves(
     actual_mdd = _mdd_pct(actual_cum)
 
     n_runs = max(0, int(n_curves))
-    rng, backend = _rng_seeded(seed if seed is not None else _DEMO_SEED_GUI)
+    rng, backend, _ = _rng_seeded(seed if seed is not None else _DEMO_SEED_GUI)
     curves: List[List[Dict[str, Any]]] = []
     rand_mdds: List[float] = []
     for _ in range(n_runs):
