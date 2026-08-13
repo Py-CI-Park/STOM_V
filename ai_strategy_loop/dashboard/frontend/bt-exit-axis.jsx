@@ -9,8 +9,8 @@
 
 const { useState: useState_ea, useEffect: useEffect_ea, useCallback: useCallback_ea } = React;
 
-function btEaGet(path) {
-  return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+function btEaGet(baseUrl, path) {
+  return fetch((baseUrl || "") + path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
 }
 
 function btEaNum(value, digits) {
@@ -176,20 +176,20 @@ function BtEaFolds({ folds }) {
   );
 }
 
-export function BtExitAxisPanel({ outName }) {
+export function BtExitAxisPanel({ baseUrl, outName }) {
   const [payload, setPayload] = useState_ea(null);
   const [error, setError] = useState_ea("");
   const [judgeableOnly, setJudgeableOnly] = useState_ea(true);
   const name = outName || "design_v4";
 
   const load = useCallback_ea(() => {
-    btEaGet("/bt/exit-axis?out_name=" + encodeURIComponent(name))
+    btEaGet(baseUrl, "/bt/exit-axis?out_name=" + encodeURIComponent(name))
       .then((d) => {
         setPayload(d);
         setError(d && d.available ? "" : "매도 축 기록이 아직 없습니다 — 재현 게이트를 한 번 돌리면 채워집니다.");
       })
       .catch(() => setError("매도 축 요청 실패"));
-  }, [name]);
+  }, [baseUrl, name]);
 
   useEffect_ea(() => { load(); }, [load]);
 

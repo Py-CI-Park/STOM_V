@@ -26,6 +26,8 @@ def test_pages_25_to_34_receive_the_selected_base_url() -> None:
 
     assert "<BtAnalysisCardTab baseUrl={baseUrl} jobId={jobId}/>" in trade_path
     assert "<BtExitAxisPanel baseUrl={baseUrl}/>" in trade_path
+    assert 'fetch((baseUrl || "") + path' in _read("bt-analysis-card.jsx")
+    assert 'fetch((baseUrl || "") + path' in _read("bt-exit-axis.jsx")
     assert "<AiProviderStatusPanel baseUrl={baseUrl} />" in settings
     for panel in ("LoopAutonomyPanel", "LoopStandingPanel"):
         assert f"<{panel} baseUrl={{baseUrl}} />" in research

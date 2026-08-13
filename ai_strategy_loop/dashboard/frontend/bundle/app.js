@@ -37609,8 +37609,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       }).catch(() => setError("\uAC70\uB798 \uC9DD \uC694\uCCAD \uC2E4\uD328"));
     }, [baseUrl]);
     useEffect_tp(() => {
-      load("");
-    }, [load]);
+      const selected2 = reviewContext && reviewContext.candidate_id || "";
+      setCandidate(selected2);
+      load(selected2);
+    }, [load, reviewContext]);
     const picks = payload && payload.candidates || [];
     const reasons = payload && payload.exit_reasons || [];
     return /* @__PURE__ */ React.createElement("div", { className: "loop-trade-pairs", "aria-label": "\uAC70\uB798 \uC9DD \uBDF0\uC5B4 (\uD398\uC774\uC9C0 34)" }, reviewContext && reviewContext.candidate_id && /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uAC80\uD1A0 \uD6C4\uBCF4: ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, reviewContext.candidate_id)), /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uAC70\uB798 \uC9DD \uBDF0\uC5B4 ", /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uD398\uC774\uC9C0 34 \xB7 \uC65C \uADF8\uB7F0\uC9C0 \uC9C1\uC811 \uBCF8\uB2E4")), /* @__PURE__ */ React.createElement("span", { className: "badge", title: "\uC5D4\uC9C4 \uCCB4\uACB0 \uAE30\uB85D\uB9CC \uC77D\uC2B5\uB2C8\uB2E4." }, "official")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uC9DD\uC9C0\uC740 \uAC80\uC815\uC740 \uC22B\uC790 \uD55C \uC904\uC744 \uC90D\uB2C8\uB2E4. \uADF8 \uD55C \uC904\uB85C\uB294", /* @__PURE__ */ React.createElement("b", null, " \uC65C"), " \uADF8\uB7F0\uC9C0 \uC54C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 \uC5EC\uAE30\uC11C \uADF8 \uAC70\uB798\uB97C \uC9C1\uC811 \uC5FD\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4s-log-controls", style: { flexWrap: "wrap", gap: 8 } }, /* @__PURE__ */ React.createElement(
@@ -39510,8 +39512,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/bt-analysis-card.jsx
   var { useState: useState_ac2, useEffect: useEffect_ac2, useCallback: useCallback_ac } = React;
-  function btCardGet(path) {
-    return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+  function btCardGet(baseUrl, path) {
+    return fetch((baseUrl || "") + path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
   }
   function btCardNum(value, digits) {
     if (value === null || value === void 0 || Number.isNaN(Number(value))) return "\u2014";
@@ -39573,22 +39575,22 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uC5E3\uC9C0\uBE44\uAC00 1\uBCF4\uB2E4 \uD06C\uBA74 \u201C\uBA39\uC744 \uC218 \uC788\uC5C8\uB358 \uD3ED\u201D\uC774 \u201C\uB9DE\uC740 \uD3ED\u201D\uBCF4\uB2E4 \uD06C\uB2E4\uB294 \uB73B\uC774\uB2E4 \u2014 \uC9C4\uC785\uC740 \uB9DE\uC558\uACE0 ", /* @__PURE__ */ React.createElement("b", null, "\uCCAD\uC0B0\uC774 \uB2A6\uAC70\uB098 \uC774\uB974\uB2E4"), "\uB294 \uC2E0\uD638\uC77C \uC218 \uC788\uB2E4.")
     );
   }
-  function BtCardLosers({ jobId }) {
+  function BtCardLosers({ baseUrl, jobId }) {
     const [rows, setRows] = useState_ac2([]);
     const [error, setError] = useState_ac2("");
     useEffect_ac2(() => {
       if (!jobId) return;
-      btCardGet(`/bt/analysis-card/losers?job_id=${encodeURIComponent(jobId)}&limit=20`).then((d) => {
+      btCardGet(baseUrl, `/bt/analysis-card/losers?job_id=${encodeURIComponent(jobId)}&limit=20`).then((d) => {
         if (d && d.available) setRows(d.rows || []);
         else setError(d && d.reason || "\uC190\uC2E4 \uAC70\uB798\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.");
       }).catch(() => setError("\uC190\uC2E4 \uAC70\uB798 \uC694\uCCAD \uC2E4\uD328"));
-    }, [jobId]);
+    }, [baseUrl, jobId]);
     if (error) return /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, error);
     if (rows.length === 0) return null;
     const columns = Object.keys(rows[0]);
     return /* @__PURE__ */ React.createElement("section", { className: "panel", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uCD5C\uC545 \uC190\uC2E4 \uAC70\uB798 20\uAC74"), /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uADFC\uBCF8\uC6D0\uC778\uC744 \uB208\uC73C\uB85C \uD655\uC778")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, columns.map((c) => /* @__PURE__ */ React.createElement("th", { key: c }, c)))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((row, index2) => /* @__PURE__ */ React.createElement("tr", { key: index2 }, columns.map((c) => /* @__PURE__ */ React.createElement("td", { key: c, className: "mono" }, row[c] === null ? "\u2014" : String(row[c]))))))))));
   }
-  function BtAnalysisCardTab({ jobId }) {
+  function BtAnalysisCardTab({ baseUrl, jobId }) {
     const [payload, setPayload] = useState_ac2(null);
     const [error, setError] = useState_ac2("");
     const [loading, setLoading] = useState_ac2(false);
@@ -39599,7 +39601,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       }
       setLoading(true);
       setError("");
-      btCardGet(`/bt/analysis-card?job_id=${encodeURIComponent(jobId)}`).then((d) => {
+      btCardGet(baseUrl, `/bt/analysis-card?job_id=${encodeURIComponent(jobId)}`).then((d) => {
         setLoading(false);
         if (d && d.available) setPayload(d);
         else setError(`\uCE74\uB4DC\uB97C \uB9CC\uB4E4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 ${d && d.reason || "\uC54C \uC218 \uC5C6\uB294 \uC774\uC720"}`);
@@ -39607,12 +39609,12 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         setLoading(false);
         setError("\uBD84\uC11D \uCE74\uB4DC \uC694\uCCAD \uC2E4\uD328");
       });
-    }, [jobId]);
+    }, [baseUrl, jobId]);
     useEffect_ac2(() => {
       if (jobId) load();
     }, [jobId, load]);
     const card = payload && payload.card;
-    return /* @__PURE__ */ React.createElement("div", { className: "bt-analysis-card", "aria-label": "\uBD84\uC11D \uCE74\uB4DC \uBDF0\uC5B4 (\uD398\uC774\uC9C0 25)" }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uBD84\uC11D \uCE74\uB4DC v2 ", /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uD398\uC774\uC9C0 25 \xB7 \uAD00\uCE21 \uC804\uC6A9")), /* @__PURE__ */ React.createElement("span", { className: "badge warn", title: "\uC5F0\uAD6C \uBD84\uC11D \uC804\uC6A9 \uCE74\uB4DC\uC785\uB2C8\uB2E4. \uC2B9\uACA9\xB7\uC2E4\uC804 \uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }, "research_analysis_card_only")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uC758 ", /* @__PURE__ */ React.createElement("b", null, "\uADFC\uBCF8\uC6D0\uC778"), "\uACFC ", /* @__PURE__ */ React.createElement("b", null, "\uBCC0\uC774\uCD95"), "\uC744 \uD55C \uD654\uBA74\uC5D0\uC11C \uBD05\uB2C8\uB2E4. \uC790\uC728 \uB8E8\uD504\uB294 \uAC19\uC740 \uCE74\uB4DC\uB97C \uC77D\uC5B4 \uB2E4\uC74C \uC218\uC815 1\uC808\uC744 \uACB0\uC815\uD569\uB2C8\uB2E4 \u2014 \uC774 \uD654\uBA74\uC740 \uADF8 \uD310\uB2E8\uC744 \uAD00\uCE21\uD558\uAE30 \uC704\uD55C \uAC83\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4s-log-controls" }, /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", type: "button", onClick: load, disabled: loading || !jobId }, loading ? "\uCE74\uB4DC \uC0DD\uC131 \uC911\u2026" : "\uBD84\uC11D \uCE74\uB4DC \uC5F4\uAE30"), payload && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11.5 } }, "\uAC70\uB798 ", btCardNum(payload.trade_count), "\uAC74 \xB7 ", payload.cached ? "\uCE90\uC2DC" : "\uC0C8\uB85C \uACC4\uC0B0")), error && /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, error))), card && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BtCardRootCause, { card }), /* @__PURE__ */ React.createElement(BtCardEdge, { card }), /* @__PURE__ */ React.createElement(BtCardFeatures, { card }), /* @__PURE__ */ React.createElement(BtCardZones, { card }), /* @__PURE__ */ React.createElement(BtCardLosers, { jobId })));
+    return /* @__PURE__ */ React.createElement("div", { className: "bt-analysis-card", "aria-label": "\uBD84\uC11D \uCE74\uB4DC \uBDF0\uC5B4 (\uD398\uC774\uC9C0 25)" }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uBD84\uC11D \uCE74\uB4DC v2 ", /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uD398\uC774\uC9C0 25 \xB7 \uAD00\uCE21 \uC804\uC6A9")), /* @__PURE__ */ React.createElement("span", { className: "badge warn", title: "\uC5F0\uAD6C \uBD84\uC11D \uC804\uC6A9 \uCE74\uB4DC\uC785\uB2C8\uB2E4. \uC2B9\uACA9\xB7\uC2E4\uC804 \uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }, "research_analysis_card_only")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uBC31\uD14C\uC2A4\uD2B8 \uACB0\uACFC\uC758 ", /* @__PURE__ */ React.createElement("b", null, "\uADFC\uBCF8\uC6D0\uC778"), "\uACFC ", /* @__PURE__ */ React.createElement("b", null, "\uBCC0\uC774\uCD95"), "\uC744 \uD55C \uD654\uBA74\uC5D0\uC11C \uBD05\uB2C8\uB2E4. \uC790\uC728 \uB8E8\uD504\uB294 \uAC19\uC740 \uCE74\uB4DC\uB97C \uC77D\uC5B4 \uB2E4\uC74C \uC218\uC815 1\uC808\uC744 \uACB0\uC815\uD569\uB2C8\uB2E4 \u2014 \uC774 \uD654\uBA74\uC740 \uADF8 \uD310\uB2E8\uC744 \uAD00\uCE21\uD558\uAE30 \uC704\uD55C \uAC83\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4s-log-controls" }, /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", type: "button", onClick: load, disabled: loading || !jobId }, loading ? "\uCE74\uB4DC \uC0DD\uC131 \uC911\u2026" : "\uBD84\uC11D \uCE74\uB4DC \uC5F4\uAE30"), payload && /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11.5 } }, "\uAC70\uB798 ", btCardNum(payload.trade_count), "\uAC74 \xB7 ", payload.cached ? "\uCE90\uC2DC" : "\uC0C8\uB85C \uACC4\uC0B0")), error && /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, error))), card && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(BtCardRootCause, { card }), /* @__PURE__ */ React.createElement(BtCardEdge, { card }), /* @__PURE__ */ React.createElement(BtCardFeatures, { card }), /* @__PURE__ */ React.createElement(BtCardZones, { card }), /* @__PURE__ */ React.createElement(BtCardLosers, { baseUrl, jobId })));
   }
 
   // ai_strategy_loop/dashboard/frontend/bt-transfer-ledger.jsx
@@ -39687,8 +39689,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/bt-exit-axis.jsx
   var { useState: useState_ea2, useEffect: useEffect_ea2, useCallback: useCallback_ea2 } = React;
-  function btEaGet(path) {
-    return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+  function btEaGet(baseUrl, path) {
+    return fetch((baseUrl || "") + path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
   }
   function btEaNum(value, digits) {
     if (value === null || value === void 0 || Number.isNaN(Number(value))) return "\u2014";
@@ -39739,17 +39741,17 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     if (!folds || !folds.length) return null;
     return /* @__PURE__ */ React.createElement("section", { className: "panel", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uC6CC\uD06C\uD3EC\uC6CC\uB4DC \uD3F4\uB4DC"), /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "\uC55E\uC73C\uB85C\uB9CC \uAC00\uB294 \uBD84\uD560 \xB7 \uAC80\uC99D\uC740 \uD56D\uC0C1 \uD559\uC2B5 \uB4A4")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uD3C9\uADE0\uB9CC \uBCF4\uBA74 \uD3B8\uCC28\uAC00 \uC0AC\uB77C\uC9D1\uB2C8\uB2E4. ", /* @__PURE__ */ React.createElement("b", null, "\uC5B4\uB290 \uD3F4\uB4DC\uAC00 \uC74C\uC218\uC600\uB294\uC9C0"), "\uAC00 \uADF8 \uADDC\uCE59\uC744 \uBBFF\uC5B4\uB3C4 \uB418\uB294\uC9C0\uB97C \uB9D0\uD574 \uC90D\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uD3F4\uB4DC"), /* @__PURE__ */ React.createElement("th", null, "\uC120\uD0DD\uB41C \uCCAD\uC0B0"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uD559\uC2B5\uC77C"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uAC80\uC99D\uC77C"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uD559\uC2B5 \uC77C\uD3C9\uADE0"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uD45C\uBCF8 \uBC16 \uC77C\uD3C9\uADE0"), /* @__PURE__ */ React.createElement("th", { className: "num" }, "\uAC04\uADF9"))), /* @__PURE__ */ React.createElement("tbody", null, folds.map((fold) => /* @__PURE__ */ React.createElement("tr", { key: fold.fold, className: Number(fold.valid_day_mean_pct) < 0 ? "row-warn" : "" }, /* @__PURE__ */ React.createElement("td", { className: "num mono" }, fold.fold), /* @__PURE__ */ React.createElement("td", { className: "mono" }, fold.chosen), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, btEaNum(fold.train_days)), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, btEaNum(fold.valid_days)), /* @__PURE__ */ React.createElement("td", { className: "num mono " + btEaSign(fold.train_day_mean_pct) }, btEaNum(fold.train_day_mean_pct, 4), "%"), /* @__PURE__ */ React.createElement("td", { className: "num mono " + btEaSign(fold.valid_day_mean_pct) }, btEaNum(fold.valid_day_mean_pct, 4), "%"), /* @__PURE__ */ React.createElement("td", { className: "num mono" }, btEaNum(fold.gap_pct, 4), "%p"))))))));
   }
-  function BtExitAxisPanel({ outName }) {
+  function BtExitAxisPanel({ baseUrl, outName }) {
     const [payload, setPayload] = useState_ea2(null);
     const [error, setError] = useState_ea2("");
     const [judgeableOnly, setJudgeableOnly] = useState_ea2(true);
     const name = outName || "design_v4";
     const load = useCallback_ea2(() => {
-      btEaGet("/bt/exit-axis?out_name=" + encodeURIComponent(name)).then((d) => {
+      btEaGet(baseUrl, "/bt/exit-axis?out_name=" + encodeURIComponent(name)).then((d) => {
         setPayload(d);
         setError(d && d.available ? "" : "\uB9E4\uB3C4 \uCD95 \uAE30\uB85D\uC774 \uC544\uC9C1 \uC5C6\uC2B5\uB2C8\uB2E4 \u2014 \uC7AC\uD604 \uAC8C\uC774\uD2B8\uB97C \uD55C \uBC88 \uB3CC\uB9AC\uBA74 \uCC44\uC6CC\uC9D1\uB2C8\uB2E4.");
       }).catch(() => setError("\uB9E4\uB3C4 \uCD95 \uC694\uCCAD \uC2E4\uD328"));
-    }, [name]);
+    }, [baseUrl, name]);
     useEffect_ea2(() => {
       load();
     }, [load]);

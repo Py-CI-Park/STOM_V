@@ -8,8 +8,8 @@
 
 const { useState: useState_ac, useEffect: useEffect_ac, useCallback: useCallback_ac } = React;
 
-function btCardGet(path) {
-  return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+function btCardGet(baseUrl, path) {
+  return fetch((baseUrl || "") + path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
 }
 
 function btCardNum(value, digits) {
@@ -153,15 +153,15 @@ function BtCardEdge({ card }) {
 }
 
 /* 손실 거래 목록 — 숫자를 실제 거래로 확인한다. */
-function BtCardLosers({ jobId }) {
+function BtCardLosers({ baseUrl, jobId }) {
   const [rows, setRows] = useState_ac([]);
   const [error, setError] = useState_ac("");
   useEffect_ac(() => {
     if (!jobId) return;
-    btCardGet(`/bt/analysis-card/losers?job_id=${encodeURIComponent(jobId)}&limit=20`)
+    btCardGet(baseUrl, `/bt/analysis-card/losers?job_id=${encodeURIComponent(jobId)}&limit=20`)
       .then((d) => { if (d && d.available) setRows(d.rows || []); else setError((d && d.reason) || "손실 거래를 불러오지 못했습니다."); })
       .catch(() => setError("손실 거래 요청 실패"));
-  }, [jobId]);
+  }, [baseUrl, jobId]);
   if (error) return <p className="tp-error" role="alert">{error}</p>;
   if (rows.length === 0) return null;
   const columns = Object.keys(rows[0]);
@@ -185,7 +185,7 @@ function BtCardLosers({ jobId }) {
   );
 }
 
-export function BtAnalysisCardTab({ jobId }) {
+export function BtAnalysisCardTab({ baseUrl, jobId }) {
   const [payload, setPayload] = useState_ac(null);
   const [error, setError] = useState_ac("");
   const [loading, setLoading] = useState_ac(false);
@@ -193,14 +193,14 @@ export function BtAnalysisCardTab({ jobId }) {
   const load = useCallback_ac(() => {
     if (!jobId) { setError("완료된 백테스트 job 을 먼저 선택하세요."); return; }
     setLoading(true); setError("");
-    btCardGet(`/bt/analysis-card?job_id=${encodeURIComponent(jobId)}`)
+    btCardGet(baseUrl, `/bt/analysis-card?job_id=${encodeURIComponent(jobId)}`)
       .then((d) => {
         setLoading(false);
         if (d && d.available) setPayload(d);
         else setError(`카드를 만들 수 없습니다 — ${(d && d.reason) || "알 수 없는 이유"}`);
       })
       .catch(() => { setLoading(false); setError("분석 카드 요청 실패"); });
-  }, [jobId]);
+  }, [baseUrl, jobId]);
 
   useEffect_ac(() => { if (jobId) load(); }, [jobId, load]);
 
@@ -229,7 +229,7 @@ export function BtAnalysisCardTab({ jobId }) {
         <BtCardEdge card={card}/>
         <BtCardFeatures card={card}/>
         <BtCardZones card={card}/>
-        <BtCardLosers jobId={jobId}/>
+        <BtCardLosers baseUrl={baseUrl} jobId={jobId}/>
       </>}
     </div>
   );

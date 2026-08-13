@@ -75,7 +75,11 @@ export function LoopTradePairsPanel({ baseUrl, reviewContext }) {
       .catch(() => setError("거래 짝 요청 실패"));
   }, [baseUrl]);
 
-  useEffect_tp(() => { load(""); }, [load]);
+  useEffect_tp(() => {
+    const selected = (reviewContext && reviewContext.candidate_id) || "";
+    setCandidate(selected);
+    load(selected);
+  }, [load, reviewContext]);
 
   const picks = (payload && payload.candidates) || [];
   const reasons = (payload && payload.exit_reasons) || [];
