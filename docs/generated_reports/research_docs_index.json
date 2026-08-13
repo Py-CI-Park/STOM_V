@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-13T00:05:22.102908+00:00",
-  "source_fingerprint": "c619e267614700626bbb10e0a3f637e5f153da2396fff80b477f6a40dd2e0de8",
-  "count": 1034,
+  "generated_at": "2026-08-13T03:24:48.254467+00:00",
+  "source_fingerprint": "ae96f142a840f6bf0b1b9020449aa83ebcb2850bf4e069d4a4866c8942726950",
+  "count": 1035,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6894,10 +6894,10 @@
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-13_G2_G4_결과.md",
-      "title": "G2~G4 결과 — 3셀 전부 엔진 타임아웃 · **선택도 격차 7,469배** 발견 (2026-08-13)",
+      "title": "G2~G4 결과 — 3셀 전부 엔진 타임아웃 (2026-08-13)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-13T00:04:14.304479+00:00",
-      "size": 3717
+      "updated_at": "2026-08-13T03:23:27.279033+00:00",
+      "size": 3949
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-13_G2_G4_사전등록.md",
@@ -6905,6 +6905,13 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-08-12T16:25:27.476959+00:00",
       "size": 4630
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-13_G5_결과.md",
+      "title": "G5 결과 — 전 셀 완주 실패 · **생성 골격은 엔진에서 시뮬레이션되지 않는다** (2026-08-13)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-13T03:23:04.055465+00:00",
+      "size": 4011
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-13_G5_사전등록.md",
@@ -7001,22 +7008,22 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-12T23:04:07.844906+00:00",
-      "size": 9007
+      "updated_at": "2026-08-13T03:24:32.454795+00:00",
+      "size": 9123
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
       "title": "프로그램 등록부 (PROGRAM LEDGER) — 전 연구 프로그램 계보·중복 감사·닫힌 방향",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-12T23:03:38.464746+00:00",
-      "size": 5935
+      "updated_at": "2026-08-13T03:23:36.048066+00:00",
+      "size": 5988
     },
     {
       "id": "docs/research/quant_scoring_pipeline/ROUND_TEMPLATE.md",
       "title": "라운드 표준 템플릿 — 자가 감사 프로토콜 (헌법 17항의 실행형)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-13T00:04:41.496638+00:00",
-      "size": 2599
+      "updated_at": "2026-08-13T03:24:07.616253+00:00",
+      "size": 2837
     },
     {
       "id": "docs/research/quant_scoring_pipeline/agent_intervention_guidelines.md",
@@ -7043,8 +7050,8 @@
       "id": "docs/research/quant_scoring_pipeline/limitation_ledger.md",
       "title": "QSP1 한계 원장 (Limitation Ledger)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-13T00:04:41.316124+00:00",
-      "size": 29760
+      "updated_at": "2026-08-13T03:24:07.441717+00:00",
+      "size": 30868
     },
     {
       "id": "docs/research/quant_scoring_pipeline/prompt_v2_drafts/analysis_to_revision.md",
