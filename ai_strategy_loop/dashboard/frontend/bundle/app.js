@@ -25665,7 +25665,7 @@ ${sellCode}` : code);
       "button",
       {
         type: "button",
-        className: "btn ghost sm" + (method !== "bootstrap" ? " active" : ""),
+        className: "btn ghost sm" + (method === "shuffle" ? " active" : ""),
         disabled: loading,
         onClick: () => onRun("shuffle"),
         title: "\uAC19\uC740 \uB0A0\uB4E4\uC744 \uC21C\uC11C\uB9CC \uBC14\uAFC9\uB2C8\uB2E4 \u2014 '\uC6B4 \uB098\uC05C \uC21C\uC11C\uC600\uB2E4\uBA74 \uB099\uD3ED\uC774 \uC5BC\uB9C8\uC600\uC744\uAE4C'"
@@ -25681,11 +25681,21 @@ ${sellCode}` : code);
         title: "\uAC19\uC740 \uC131\uD5A5\uC758 \uB0A0\uC5D0\uC11C \uC0C8 \uAE30\uAC04\uC744 \uB2E4\uC2DC \uBF51\uC2B5\uB2C8\uB2E4 \u2014 '\uB2E4\uC2DC \uB3CC\uB9AC\uBA74 \uC5BC\uB9C8\uB098 \uD754\uB4E4\uB9B4\uAE4C'"
       },
       "\uBCF5\uC6D0\uCD94\uCD9C"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "btn ghost sm" + (method === "moving_block" ? " active" : ""),
+        disabled: loading,
+        onClick: () => onRun("moving_block"),
+        title: "\uC5F0\uC18D\uB41C \uAC70\uB798\uC77C \uBB36\uC74C\uC744 \uBCF5\uC6D0\uCD94\uCD9C\uD574 \uC790\uAE30\uC0C1\uAD00\uACFC \uAD6D\uBA74 \uAD70\uC9D1\uC744 \uC77C\uBD80 \uBCF4\uC874\uD569\uB2C8\uB2E4"
+      },
+      "\uC774\uB3D9 \uBE14\uB85D"
     )), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, mc && mc.n ? `${mc.n.toLocaleString("ko-KR")}\uD68C \xB7 ${mc.days}\uC77C` : "\uBBF8\uC2E4\uD589"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => onRun(method), disabled: loading }, loading ? "\uACC4\uC0B0\uC911\u2026" : "\u21BB \uC7AC\uACC4\uC0B0"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
-      method === "bootstrap" ? "\uAC19\uC740 \uC131\uD5A5\uC758 \uB0A0\uC744 \uBCF5\uC6D0\uCD94\uCD9C\uD574 \uB2E4\uC2DC \uB9CC\uB4E0 \uBD84\uD3EC" : "\uAC19\uC740 \uB0A0\uB4E4\uC744 \uC21C\uC11C\uB9CC \uBC14\uAFBC \uBD84\uD3EC",
+      method === "moving_block" ? "\uC5F0\uC18D\uB41C \uAC70\uB798\uC77C \uBE14\uB85D\uC744 \uBCF5\uC6D0\uCD94\uCD9C\uD55C \uBD84\uD3EC" : method === "bootstrap" ? "\uAC19\uC740 \uC131\uD5A5\uC758 \uB0A0\uC744 \uBCF5\uC6D0\uCD94\uCD9C\uD574 \uB2E4\uC2DC \uB9CC\uB4E0 \uBD84\uD3EC" : "\uAC19\uC740 \uB0A0\uB4E4\uC744 \uC21C\uC11C\uB9CC \uBC14\uAFBC \uBD84\uD3EC",
       "\uBC34\uB4DC = p5~p95 / \uC9C4\uD55C\uC120 = \uC911\uC559\uAC12(p50)",
       method === "bootstrap" ? "\uD45C\uBCF8\uC774 \uB2EC\uB790\uB2E4\uBA74? \u2014 \uACB0\uACFC\uC758 \uD754\uB4E4\uB9BC \uC9C4\uB2E8" : "\uC21C\uC11C\uAC00 \uB2EC\uB790\uB2E4\uBA74? \u2014 \uB099\uD3ED \uC704\uD5D8 \uC9C4\uB2E8"
-    ] }), mc && mc.method_note && /* @__PURE__ */ React.createElement("p", { className: "bt-mc-note" }, mc.method_note), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Mini, { label: "\uAE30\uB300 MDD p95", value: fmtPct(mddPct.p95), color: "var(--red)" }), /* @__PURE__ */ React.createElement(Mini, { label: "MDD \uC911\uC559\uAC12", value: fmtPct(mddPct.p50) }), /* @__PURE__ */ React.createElement(
+    ] }), mc && mc.method_note && /* @__PURE__ */ React.createElement("p", { className: "bt-mc-note" }, mc.method_note, mc.method === "moving_block" ? ` \xB7 block=${mc.block_length}` : "", mc.seed != null ? ` \xB7 seed=${mc.seed}` : ""), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 22, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Mini, { label: "\uAE30\uB300 MDD p95", value: fmtPct(mddPct.p95), color: "var(--red)" }), /* @__PURE__ */ React.createElement(Mini, { label: "MDD \uC911\uC559\uAC12", value: fmtPct(mddPct.p50) }), /* @__PURE__ */ React.createElement(
       Mini,
       {
         label: "\uCD5C\uC885\uC190\uC775 p50",
