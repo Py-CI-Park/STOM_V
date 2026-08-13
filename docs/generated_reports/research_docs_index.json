@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-13T03:24:48.254467+00:00",
-  "source_fingerprint": "ae96f142a840f6bf0b1b9020449aa83ebcb2850bf4e069d4a4866c8942726950",
+  "generated_at": "2026-08-13T03:44:35.273197+00:00",
+  "source_fingerprint": "7c16bf556a35a03a6905aebf63923baf2a423b33c6a3437b3112ddd8e7da09b7",
   "count": 1035,
   "docs": [
     {
@@ -6910,8 +6910,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-13_G5_결과.md",
       "title": "G5 결과 — 전 셀 완주 실패 · **생성 골격은 엔진에서 시뮬레이션되지 않는다** (2026-08-13)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-13T03:23:04.055465+00:00",
-      "size": 4011
+      "updated_at": "2026-08-13T03:44:03.058017+00:00",
+      "size": 4214
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-13_G5_사전등록.md",
