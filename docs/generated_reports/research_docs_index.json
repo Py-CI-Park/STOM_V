@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-13T03:44:35.273197+00:00",
-  "source_fingerprint": "7c16bf556a35a03a6905aebf63923baf2a423b33c6a3437b3112ddd8e7da09b7",
-  "count": 1035,
+  "generated_at": "2026-08-13T06:58:29.345439+00:00",
+  "source_fingerprint": "289346ed30c6469e0a692a327aeba78f54f24dc069b473e71372ad544ebc2df2",
+  "count": 1036,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6919,6 +6919,13 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-08-12T23:06:38.277124+00:00",
       "size": 3262
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-13_종합분석_실패원인과_방향.md",
+      "title": "종합 분석 — 전 연구 리뷰 · 실패 원인 3층 구조 · 해결책 · 방향 (2026-08-13)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-13T06:54:57.548836+00:00",
+      "size": 7219
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",

@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>실패의 해부도</title>
+<style>
+  :root{
+    --bg:#FAFAF7; --panel:#FFFFFF; --ink:#1C2321; --muted:#5C6763;
+    --accent:#0E7C6B; --accent-soft:#E3F0ED; --warn:#B4552D; --warn-soft:#F6E9E1;
+    --line:#E2E2DA; --good:#2E7D4F; --mono:'IBM Plex Mono','Consolas','D2Coding',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14181B; --panel:#1B2126; --ink:#E8EAE6; --muted:#9AA5A0;
+      --accent:#3FBFA8; --accent-soft:#1E332F; --warn:#E08A5C; --warn-soft:#332621;
+      --line:#2A3236; --good:#5FBF87;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14181B; --panel:#1B2126; --ink:#E8EAE6; --muted:#9AA5A0;
+    --accent:#3FBFA8; --accent-soft:#1E332F; --warn:#E08A5C; --warn-soft:#332621;
+    --line:#2A3236; --good:#5FBF87;
+  }
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Pretendard Variable',Pretendard,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;
+    line-height:1.65; font-size:15.5px;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:40px 22px 80px}
+  header.masthead{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:8px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+  h1{font-size:34px;line-height:1.2;margin:0 0 8px;font-weight:800;text-wrap:balance}
+  .sub{color:var(--muted);margin:0;max-width:62ch}
+  .statband{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:22px 0 6px}
+  .stat{background:var(--panel);border:1px solid var(--line);padding:12px 14px}
+  .stat b{display:block;font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums}
+  .stat span{font-size:12px;color:var(--muted)}
+  .stat.bad b{color:var(--warn)} .stat.ok b{color:var(--accent)}
+  nav.tabs{display:flex;gap:2px;margin:26px 0 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  nav.tabs button{
+    appearance:none;border:none;background:none;color:var(--muted);
+    font:inherit;font-weight:600;font-size:14px;padding:9px 14px;cursor:pointer;
+    border-bottom:2px solid transparent;margin-bottom:-1px;
+  }
+  nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+  nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  section.tabpane{display:none;padding-top:26px}
+  section.tabpane.active{display:block}
+  h2{font-size:20px;margin:34px 0 10px;font-weight:750;text-wrap:balance}
+  h2:first-child{margin-top:0}
+  h3{font-size:15.5px;margin:22px 0 6px;font-weight:700}
+  p{margin:8px 0;max-width:70ch}
+  .lede{font-size:16.5px}
+  ol.keyfive{margin:12px 0;padding-left:22px;max-width:72ch}
+  ol.keyfive li{margin:7px 0}
+  .tablewrap{overflow-x:auto;margin:12px 0}
+  table{border-collapse:collapse;width:100%;font-size:13.8px}
+  th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+     text-align:left;border-bottom:1.5px solid var(--ink);padding:7px 10px 5px;white-space:nowrap}
+  td{border-bottom:1px solid var(--line);padding:8px 10px;vertical-align:top}
+  td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+  tr.hl td{background:var(--accent-soft)}
+  .pill{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:2px;white-space:nowrap}
+  .pill.fail{background:var(--warn-soft);color:var(--warn)}
+  .pill.pass{background:var(--accent-soft);color:var(--accent)}
+  .pill.gray{background:var(--line);color:var(--muted)}
+  .callout{border-left:3px solid var(--accent);background:var(--panel);padding:12px 16px;margin:16px 0;max-width:72ch}
+  .callout.warn{border-left-color:var(--warn)}
+  .callout p{margin:4px 0}
+  figure{margin:20px 0}
+  figcaption{font-size:12px;color:var(--muted);margin-top:6px}
+  .funnel{width:100%;max-width:760px}
+  .small{font-size:12.5px;color:var(--muted)}
+  footer{margin-top:48px;border-top:1px solid var(--line);padding-top:14px;font-size:12px;color:var(--muted)}
+  code{font-family:var(--mono);font-size:.92em;background:var(--panel);border:1px solid var(--line);padding:0 4px}
+</style>
+
+<div class="wrap">
+<header class="masthead">
+  <p class="eyebrow">STOM 조건식 개발 프로그램 · 종합 분석 · 2026-08-13</p>
+  <h1>실패의 해부도</h1>
+  <p class="sub">7개 프로그램·40여 라운드의 전체 리뷰 — 실패는 무작위가 아니라 3층 구조였고,
+  층마다 해법이 다르며, 진짜 병목은 이제 아이디어가 아니라 <strong>판정 자원</strong>이다.</p>
+</header>
+
+<div class="statband">
+  <div class="stat bad"><b>0</b><span>실전 후보 (④관문 통과)</span></div>
+  <div class="stat"><b>13</b><span>닫힌 방향 — 근거 있는 재진입 금지</span></div>
+  <div class="stat"><b>73행</b><span>후보 원장 (28종 · append-only)</span></div>
+  <div class="stat ok"><b>6 / 6</b><span>기준선 재현 일치 (드리프트 0)</span></div>
+  <div class="stat"><b>22건</b><span>기록된 실수 (발견자·교정 장치 포함)</span></div>
+</div>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="t1">요약</button>
+  <button role="tab" aria-selected="false" data-tab="t2">연구 리뷰</button>
+  <button role="tab" aria-selected="false" data-tab="t3">실패 해부</button>
+  <button role="tab" aria-selected="false" data-tab="t4">방향</button>
+</nav>
+
+<!-- ─────────────── 요약 ─────────────── -->
+<section id="t1" class="tabpane active" role="tabpanel">
+  <h2>다섯 줄 요약</h2>
+  <ol class="keyfive lede">
+    <li>7개 프로그램이 <strong>실전 후보 0</strong>으로 끝났다. 그러나 실패는 층위가 뚜렷하다 —
+        통계(편의) → 탐색 공간(천장) → 실행 가능성(엔진 제약).</li>
+    <li>1층 <strong>선택 편의는 절차로 해결됐다.</strong> 분할 판정이 부호 반전(+24만→−9.5만원)을
+        라운드 안에서 잡아냈다.</li>
+    <li>2층 <strong>챔피언 주변 공간은 비어 있음이 증명됐다.</strong> 닫힌 방향 13건이 그 지도다.</li>
+    <li>3층 <strong>새 골격은 판정 이전에 막혔다.</strong> 6변형이 시뮬레이션 자체에 실패 — 원인 미특정.</li>
+    <li>가장 깊은 병목은 <strong>판정 자원의 고갈</strong> — 홀드아웃 소진, 수집 정지, min 기준선 부재.
+        방향은 <strong>살아 있는 심판</strong>(신규 데이터·감독 실전)의 확보다.</li>
+  </ol>
+
+  <figure>
+    <svg class="funnel" viewBox="0 0 760 240" role="img" aria-label="실패의 3층 구조 깔때기">
+      <style>
+        .fl-box{fill:var(--panel);stroke:var(--line)}
+        .fl-t{font:600 13px Pretendard,'Malgun Gothic',sans-serif;fill:var(--ink)}
+        .fl-s{font:11px 'IBM Plex Mono',Consolas,monospace;fill:var(--muted)}
+        .fl-x{font:700 12px Pretendard,'Malgun Gothic',sans-serif;fill:var(--warn)}
+        .fl-a{stroke:var(--muted);stroke-width:1.2;marker-end:url(#arr)}
+      </style>
+      <defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="var(--muted)"/></marker></defs>
+      <rect class="fl-box" x="8"   y="30" width="150" height="64"/>
+      <rect class="fl-box" x="208" y="30" width="150" height="64"/>
+      <rect class="fl-box" x="408" y="30" width="150" height="64"/>
+      <rect class="fl-box" x="608" y="30" width="144" height="64"/>
+      <text class="fl-t" x="24" y="55">아이디어</text>
+      <text class="fl-s" x="24" y="76">수백만 가설</text>
+      <text class="fl-t" x="224" y="55">① 통계 생존</text>
+      <text class="fl-s" x="224" y="76">편의 0.54~0.62%p</text>
+      <text class="fl-t" x="424" y="55">② 우위 존재</text>
+      <text class="fl-s" x="424" y="76">천장 +0.37%p</text>
+      <text class="fl-t" x="622" y="55">③ 실행 가능</text>
+      <text class="fl-s" x="622" y="76">엔진 완주</text>
+      <line class="fl-a" x1="158" y1="62" x2="204" y2="62"/>
+      <line class="fl-a" x1="358" y1="62" x2="404" y2="62"/>
+      <line class="fl-a" x1="558" y1="62" x2="604" y2="62"/>
+      <text class="fl-x" x="60"  y="130">✗ 자율루프 · QSP</text>
+      <text class="fl-s" x="60"  y="148">죽은 표본 재사용 → 편의에 전멸</text>
+      <text class="fl-x" x="262" y="130">✗ W4~W9</text>
+      <text class="fl-s" x="262" y="148">설계 PASS → 홀드아웃 REJECT</text>
+      <text class="fl-x" x="462" y="130">✗ G1~G5</text>
+      <text class="fl-s" x="462" y="148">6변형 시뮬레이션 불가 (미특정)</text>
+      <text class="fl-t" x="60" y="200" fill="var(--accent)">메타 원인 — 판정 자원 고갈: 홀드아웃 소진 · 신규 수집 정지 · min 기준선 부재</text>
+      <text class="fl-s" x="60" y="220">"맞다"고 확인해 줄 심판이 없으면 어떤 연구도 확정에 도달하지 못한다.</text>
+    </svg>
+    <figcaption>실패의 3층 깔때기 — 각 프로그램은 서로 다른 층에서 떨어졌다.</figcaption>
+  </figure>
+
+  <div class="callout">
+    <p><strong>그래서 방향은 하나다.</strong> 백테스트만으로 다음 승자를 찾을 확률은 이제 정직하게
+    한 자릿수(&lt;5~10%)다. 확률을 바꾸는 것은 더 좋은 아이디어가 아니라
+    <strong>살아 있는 심판</strong> — ① tick 데이터 수집 재개 ② 챔피언 감독형 소액 실전이다.
+    인간 명예의 전당이 이기는 구조가 정확히 그것이었다.</p>
+  </div>
+</section>
+
+<!-- ─────────────── 연구 리뷰 ─────────────── -->
+<section id="t2" class="tabpane" role="tabpanel">
+  <h2>프로그램 연대기 (2026-06 ~ 08-13)</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>프로그램</th><th>방법의 본질</th><th>결과</th><th>결정적 숫자</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1</td><td>AI 자율 루프 <span class="small">~06월</span></td><td>LLM 생성 × 격자 · 규율 낮음</td><td><span class="pill fail">승격 0</span></td><td class="num">—</td></tr>
+      <tr><td class="num">2</td><td>알파 <span class="small">06~07-17</span></td><td>DB 절 단위 발굴 · 엔진 A/B 도입</td><td><span class="pill fail">승격 0</span> 양성 4</td><td class="num">B1 ΣΔ+1.54M</td></tr>
+      <tr><td class="num">3</td><td>open30 <span class="small">07말</span></td><td>넓은 창 09:00~09:30</td><td><span class="pill fail">승격 0</span></td><td class="num">—</td></tr>
+      <tr><td class="num">4</td><td>QSP1~13 <span class="small">07-30~08-05</span></td><td>지도·라벨 · 수백만 가설</td><td><span class="pill fail">승격 0</span></td><td class="num">편의 0.6225%p 측정</td></tr>
+      <tr><td class="num">5</td><td>W0.9~W9 <span class="small">08-06~10</span></td><td>챔피언 국소 · 짝지은 검정 · 사전등록</td><td>설계 PASS 5 → <span class="pill fail">홀드아웃 REJECT</span></td><td class="num">편의 0.5365%p 실증</td></tr>
+      <tr><td class="num">6</td><td>HOF1~6 <span class="small">08-10~12</span></td><td>시간창·부검·재판정·min 복구</td><td><span class="pill fail">전 방향 닫힘</span></td><td class="num">감쇠 +1.13→−0.11%/건</td></tr>
+      <tr><td class="num">7</td><td>G1~G5 <span class="small">08-12~13</span></td><td>채굴→조립→판정 (생성)</td><td>채굴 <span class="pill pass">성공</span> · 판정 <span class="pill fail">도달 실패</span></td><td class="num">lift 5.19 · 완주 0/6</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>숫자로 보는 프로그램</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>항목</th><th>값</th><th>주석</th></tr></thead>
+    <tbody>
+      <tr><td>후보 원장</td><td class="num">28종 · 73행</td><td>PASS 4는 <em>설계 구간 판정일 뿐</em> — 실전 후보 아님</td></tr>
+      <tr><td>닫힌 방향</td><td class="num">13건</td><td>전부 근거(실측) 첨부 · 재진입 금지</td></tr>
+      <tr><td>확정 지식</td><td class="num">13+건</td><td>다시 재지 않는다</td></tr>
+      <tr><td>기록된 실수</td><td class="num">22건</td><td>구현 6 · 판단 5 · 프로세스 공백 6 · 기록 3 · 측정법 2</td></tr>
+      <tr class="hl"><td>기준선 재현</td><td class="num">6 / 6 일치</td><td>411일 1,316,746원 ×3 · 검증 637,513원 ×2 — 측정 인프라 신뢰</td></tr>
+      <tr><td>판정 자원</td><td class="num">사실상 0</td><td>홀드아웃 소진 · 수집 정지(20260227) · min OOS는 대상 부재</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>남은 자산 대차대조표</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>자산</th><th>내용</th><th>값어치</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><strong>챔피언</strong></td><td class="num">학습 +0.755% · 검증 +0.888% · 확인 +0.423%</td><td>3구간 전부 양수인 유일 전략 — 운용 가능</td></tr>
+      <tr><td>판정 인프라</td><td>분할·사전등록·원장·엔진 A/B</td><td>새 심판이 생기는 즉시 가동</td></tr>
+      <tr><td>실패 지도</td><td>닫힌 방향 13 · 확정 지식 13</td><td>같은 곳을 다시 파지 않게 함</td></tr>
+      <tr><td>관찰·채굴 파이프라인</td><td>차트 부검 · backfinder 직접 채굴</td><td>E2/E1 해소 시 재가동</td></tr>
+      <tr><td>미검정 가설</td><td>초소형 lift 5.19 · q50 전방 +0.209%</td><td>엔진 제약 해소가 전제</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ─────────────── 실패 해부 ─────────────── -->
+<section id="t3" class="tabpane" role="tabpanel">
+  <h2>① 선택 편의 — <span class="pill pass">절차로 해결됨</span></h2>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td>기전</td><td>유한 표본(833일) × 다수 가설 → 설계 성적이 부풀고 표본 밖에서 사라진다</td></tr>
+      <tr><td>실측</td><td class="num">QSP13 워크포워드 0.6225%p ↔ W9 홀드아웃 0.5365%p — 독립 측정 일치</td></tr>
+      <tr><td>산수</td><td class="num">필요 설계 우위 +0.7%p · 역대 최고 +0.37%p</td></tr>
+      <tr class="hl"><td>작동 증거</td><td class="num">회전율 완화: 학습 +242,361원 → 검증 −95,194원 <strong>부호 반전을 라운드 안에서 검출</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>② 국소 천장 — <span class="pill gray">소진 증명 · 중단이 해법</span></h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>축</th><th>시도</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td>시간창</td><td>무수정 확장 · 필터 264규칙 · 밴드3 외삽/스왑</td><td>3방향 독립 실패 — 09:05 이후 원재료 전 자리 음수</td></tr>
+      <tr><td>진입 문턱</td><td>완화(회전율·전일비) · 놓친 승자 프런티어</td><td class="num">부호 반전 · 단일 절 실패 0.09% (성곽)</td></tr>
+      <tr><td>출구</td><td>트레일링 격자 · 조기 청산</td><td class="num">설계 PASS → 홀드아웃 REJECT · −93~−107%p</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>챔피언은 국소 최적점이다.</strong> 주변에 편의 세금을 내고도 남는 개선은 없다 — 이 층에서 더 파는 것은 낭비임이 증명됐다.</p>
+
+  <h2>③ 실행 가능성 — <span class="pill fail">미해결 · 최신 발견</span></h2>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td>실측</td><td class="num">새 골격 6변형 — 5·60·411일 <strong>어디서도 완주 실패</strong>. 챔피언은 5일 81초 · 411일 215초</td></tr>
+      <tr><td>기각된 가설</td><td>절 순서(동치 재정렬) · 매도식 윈도우(단순식 교체) · 밀도 단독(최협 셀) — <strong>3건 전부 통제 실험으로 기각</strong></td></tr>
+      <tr><td>단서</td><td><code>backtest_child_waiting_mq_first</code> — 첫 결과 이전 단계에서 정지</td></tr>
+      <tr class="hl"><td>함의</td><td>"엔진에서 돌 수 있는 조건식"에는 미지의 제약이 있다. <strong>챔피언은 사람의 시행착오가 그 제약을 이미 통과한 형태</strong>다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>메타 — 판정 자원의 고갈</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>심판</th><th>상태</th></tr></thead>
+    <tbody>
+      <tr><td>tick 홀드아웃 119일</td><td><span class="pill fail">소진</span> 2026-08-10 개봉 · 1회용</td></tr>
+      <tr><td>신규 거래일</td><td><span class="pill fail">0일</span> 수집이 20260227 정지</td></tr>
+      <tr><td>min OOS 60일</td><td><span class="pill gray">잠금</span> 흑자 기준선이 없어 쓸 대상 부재 (기준선 −3,754만원)</td></tr>
+      <tr><td>설계 구간 재사용</td><td><span class="pill fail">편의 세금</span> 0.54~0.62%p — 사실상 유죄 추정</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn"><p>이 상태에서는 어떤 연구도 "확정"에 도달할 수 없다 — 최근 전 라운드가
+  PROMISING 상한에서 멈춘 구조적 이유다.</p></div>
+
+  <h2>왜 인간은 되고 우리는 안 됐나</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>축</th><th>인간 명예의 전당</th><th>우리 프로그램</th></tr></thead>
+    <tbody>
+      <tr><td>가설 수</td><td>소수 (평생 몇 개의 골격)</td><td>수백만 → 수십</td></tr>
+      <tr class="hl"><td><strong>판정 표본</strong></td><td><strong>매일 새로 생긴다 (실전)</strong></td><td>죽은 표본의 재사용</td></tr>
+      <tr><td>편의 축적</td><td>구조적으로 불가능</td><td class="num">재사용마다 축적 (0.54~0.62%p)</td></tr>
+      <tr><td>실행 가능성</td><td>실전이 매일 강제 검증</td><td>엔진 제약을 이번 주에야 발견</td></tr>
+      <tr><td>반복 주기</td><td>수년</td><td>시간~일 (우리가 압도적)</td></tr>
+      <tr><td>기록·재현성</td><td>거의 없음</td><td>원장 73행 · 재현 6/6 (우리가 우월)</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>이길 조합 = 우리의 속도·규율 × 인간의 살아 있는 심판.</strong>
+  죽은 데이터 안에서 심판까지 흉내 내려 한 것이 구조적 한계였다.</p>
+</section>
+
+<!-- ─────────────── 방향 ─────────────── -->
+<section id="t4" class="tabpane" role="tabpanel">
+  <h2>원칙 — 새 아이디어보다 새 심판을 먼저</h2>
+  <p class="lede">심판 없는 연구는 PROMISING에서 멈춘다. 그 정체가 지난 실패 전부를 관통한다.</p>
+
+  <h3>Track A — 판정 자원 확보 <span class="pill pass">최우선 · 사람 결정</span></h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>행동</th><th>효과</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td class="num">A1</td><td><strong>tick 데이터 수집/적재 재개</strong></td><td>20거래일마다 무편의 심판 1회 — 편의가 쌓일 수 없는 유일한 구조</td></tr>
+      <tr><td class="num">A2</td><td>챔피언 감독형 소액 실전 <span class="small">(필요자금 100만원 · MDD 8.2)</span></td><td>목표(수익) 그 자체 + <strong>살아 있는 표본의 생성원</strong> — 운용이 연구에 심판을 공급한다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Track B — 연구: 엔진 제약 규명</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>내용</th><th>성공 기준</th></tr></thead>
+    <tbody>
+      <tr><td class="num">E2</td><td>챔피언 17절 <strong>이분 탐색</strong> — 어느 절이 빠지면 엔진이 느려지나 (출발점 215초 완주 보장)</td><td>시뮬레이션 가능 경계의 절 수준 특정</td></tr>
+      <tr><td class="num">E1</td><td>정지 지점 프로파일링 (E2가 좁힌 뒤)</td><td>코드 수준 원인</td></tr>
+      <tr><td class="num">G재개</td><td>제약을 설계 조건으로 내장한 생성 재개 — 사람 보고 후</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Track C — 상시 (A1 재개 후 자동)</h3>
+  <p>신규 20거래일마다 챔피언·PROMISING 후보 전량 재판정. 각 구간은 1회용.</p>
+
+  <h2>정직한 확률</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>경로</th><th>성공 확률 (주관 추정)</th><th>실패해도 남는 것</th></tr></thead>
+    <tbody>
+      <tr><td>A1 수집 재개</td><td class="num">확실 (운영 행위)</td><td>—</td></tr>
+      <tr><td>B E2→E1 원인 특정</td><td class="num">~70%</td><td>시뮬레이션 경계 지도</td></tr>
+      <tr class="hl"><td>백테스트 단독으로 새 실전 후보</td><td class="num"><strong>&lt; 5~10%</strong></td><td>—</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>사람 결정 항목</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>결정</th><th>권고</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td class="num">1</td><td>tick 수집/적재 재개 (A1)</td><td><strong>최우선 승인</strong> — 모든 트랙의 전제</td></tr>
+      <tr><td class="num">2</td><td>챔피언 감독형 소액 실전 (A2)</td><td>검토 요청 — 3구간 양수</td></tr>
+      <tr><td class="num">3</td><td>E2 착수 (B)</td><td>승인 시 사전 등록부터</td></tr>
+      <tr><td class="num">4</td><td>min OOS 60일</td><td>잠금 유지</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>
+  정본: <code>docs/research/quant_scoring_pipeline/2026-08-13_종합분석_실패원인과_방향.md</code> ·
+  상설: PROGRAM_LEDGER · ROUND_TEMPLATE · limitation_ledger ·
+  확률 수치는 전부 주관 추정이며 근거는 정본 문서에 병기.
+</footer>
+</div>
+
+<script>
+  const tabs=document.querySelectorAll('nav.tabs button');
+  tabs.forEach(b=>b.addEventListener('click',()=>{
+    tabs.forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false'));
+    document.querySelectorAll('section.tabpane').forEach(s=>s.classList.toggle('active',s.id===b.dataset.tab));
+  }));
+</script>
+
+</html>
