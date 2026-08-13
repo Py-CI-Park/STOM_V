@@ -57,7 +57,7 @@ function LoopSlSummary({ payload }) {
   );
 }
 
-export function LoopStrategyLedgerPanel({ baseUrl }) {
+export function LoopStrategyLedgerPanel({ baseUrl, onSelectContext, reviewContext }) {
   const [payload, setPayload] = useState_sl(null);
   const [error, setError] = useState_sl("");
   const [history, setHistory] = useState_sl(false);
@@ -116,7 +116,19 @@ export function LoopStrategyLedgerPanel({ baseUrl }) {
                 </tr></thead>
                 <tbody>
                   {rows.map((row, index) => (
-                    <tr key={row.row_id || index} className={row.is_baseline ? "row-accent" : ""}>
+                    <tr key={row.row_id || index}
+                        className={row.is_baseline ? "row-accent" : ""}
+                        aria-selected={reviewContext && reviewContext.candidate_id === row.candidate_id}
+                        onClick={() => onSelectContext && onSelectContext({
+                          candidate_id: row.candidate_id || row.sell_name || null,
+                          baseline_id: row.baseline_id || null,
+                          artifact_id: row.artifact_id || row.source || null,
+                          study_id: row.study_id || null,
+                          lane: row.lane || null,
+                          split: row.split || null,
+                          source_hash: row.source_hash || null,
+                        })}
+                        style={{ cursor: onSelectContext ? "pointer" : undefined }}>
                       <td className="mono">{row.sell_name || row.candidate_id}
                         {row.is_baseline && <span className="badge" style={{ marginLeft: 4 }}>합격선</span>}
                         <br/><small className="v4s-en">{row.source} · {row.period_start}~{row.period_end}</small></td>

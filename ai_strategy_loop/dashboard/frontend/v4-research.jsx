@@ -340,6 +340,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
   const [approvalOpen, setApprovalOpen] = useState_v4r(false);
   const [approvalBinding, setApprovalBinding] = useState_v4r(null);
   const [approvalBlockReason, setApprovalBlockReason] = useState_v4r("동결 승인 근거를 확인하는 중입니다.");
+  const [reviewContext, setReviewContext] = useState_v4r(null);
   const [selectedDetailGen, setSelectedDetailGen] = useState_v4r(null);
   // 스테이지 pin — 벨트/탭 클릭 시 고정, 해제 시 라이브 자동전환.
   const [stagePin, setStagePin] = useState_v4r(null);
@@ -625,27 +626,28 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             {/* 페이지 30 — 조건식 성과 원장: 지금까지 만든 후보 전부의 엔진 실측 누적 */}
             <section className="v6-stage-lab v54-span-all" aria-label="조건식 성과 원장(페이지 30)">
               <h3 className="stom-section-label">조건식 성과 원장 · 챔피언 대비 누적</h3>
-              <LoopStrategyLedgerPanel baseUrl={baseUrl} />
+              <LoopStrategyLedgerPanel baseUrl={baseUrl} reviewContext={reviewContext}
+                                       onSelectContext={setReviewContext} />
             </section>
             {/* 페이지 31 — 표본·검정력: 판정을 믿을 만한가, 못 믿겠으면 며칠 더 재야 하나 */}
             <section className="v6-stage-lab v54-span-all" aria-label="표본·검정력 계기판(페이지 31)">
               <h3 className="stom-section-label">표본·검정력 · 지금 확정할 수 있는 것</h3>
-              <LoopPowerGaugePanel baseUrl={baseUrl} />
+              <LoopPowerGaugePanel baseUrl={baseUrl} reviewContext={reviewContext} />
             </section>
             {/* 페이지 32 — 파라미터 응답면: 그 값을 채택해도 표본 밖에서 살아남는가 */}
             <section className="v6-stage-lab v54-span-all" aria-label="파라미터 응답면(페이지 32)">
               <h3 className="stom-section-label">파라미터 응답면 · 고원인가 절벽인가</h3>
-              <LoopResponseSurfacePanel baseUrl={baseUrl} />
+              <LoopResponseSurfacePanel baseUrl={baseUrl} reviewContext={reviewContext} />
             </section>
             {/* 페이지 33 — 조건식 비교: 두 조건식이 정확히 무엇이 다른가 */}
             <section className="v6-stage-lab v54-span-all" aria-label="조건식 비교 뷰어(페이지 33)">
               <h3 className="stom-section-label">조건식 비교 · 절 단위 diff</h3>
-              <LoopConditionDiffPanel baseUrl={baseUrl} />
+              <LoopConditionDiffPanel baseUrl={baseUrl} reviewContext={reviewContext} />
             </section>
             {/* 페이지 34 — 거래 짝: 짝지은 검정의 숫자 뒤에 있는 개별 거래 */}
             <section className="v6-stage-lab v54-span-all" aria-label="거래 짝 뷰어(페이지 34)">
               <h3 className="stom-section-label">거래 짝 · 왜 그런지 직접 본다</h3>
-              <LoopTradePairsPanel baseUrl={baseUrl} />
+              <LoopTradePairsPanel baseUrl={baseUrl} reviewContext={reviewContext} />
             </section>
           </div>
         )}

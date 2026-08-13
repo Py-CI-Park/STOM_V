@@ -72,7 +72,7 @@ function LoopPgSummary({ payload }) {
   );
 }
 
-export function LoopPowerGaugePanel({ baseUrl }) {
+export function LoopPowerGaugePanel({ baseUrl, reviewContext }) {
   const [payload, setPayload] = useState_pg(null);
   const [error, setError] = useState_pg("");
 
@@ -90,6 +90,9 @@ export function LoopPowerGaugePanel({ baseUrl }) {
   const gauges = (payload && payload.gauges) || [];
   return (
     <div className="loop-power-gauge" aria-label="표본·검정력 계기판 (페이지 31)">
+      {reviewContext && reviewContext.candidate_id && <p className="v4s-note">
+        검토 후보: <span className="mono">{reviewContext.candidate_id}</span>
+      </p>}
       <div className="panel">
         <div className="panel-hd">
           <div className="panel-hd-title">표본·검정력 계기판 <small className="v4s-en">페이지 31 · 지금 표본으로 무엇을 확정할 수 있나</small></div>

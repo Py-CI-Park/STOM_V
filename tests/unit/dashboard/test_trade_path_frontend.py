@@ -27,16 +27,34 @@ def test_pages_25_to_34_receive_the_selected_base_url() -> None:
     assert "<BtAnalysisCardTab baseUrl={baseUrl} jobId={jobId}/>" in trade_path
     assert "<BtExitAxisPanel baseUrl={baseUrl}/>" in trade_path
     assert "<AiProviderStatusPanel baseUrl={baseUrl} />" in settings
+    for panel in ("LoopAutonomyPanel", "LoopStandingPanel"):
+        assert f"<{panel} baseUrl={{baseUrl}} />" in research
+    assert "<LoopStrategyLedgerPanel baseUrl={baseUrl} reviewContext={reviewContext}" in research
     for panel in (
-        "LoopAutonomyPanel",
-        "LoopStandingPanel",
-        "LoopStrategyLedgerPanel",
         "LoopPowerGaugePanel",
         "LoopResponseSurfacePanel",
         "LoopConditionDiffPanel",
         "LoopTradePairsPanel",
     ):
-        assert f"<{panel} baseUrl={{baseUrl}} />" in research
+        assert f"<{panel} baseUrl={{baseUrl}} reviewContext={{reviewContext}}" in research
+
+
+def test_ledger_selection_publishes_shared_review_context() -> None:
+    research = _read("v4-research.jsx")
+    ledger = _read("loop-strategy-ledger.jsx")
+
+    assert "const [reviewContext, setReviewContext]" in research
+    assert "onSelectContext={setReviewContext}" in research
+    for field in (
+        "candidate_id",
+        "baseline_id",
+        "artifact_id",
+        "study_id",
+        "lane",
+        "split",
+        "source_hash",
+    ):
+        assert field in ledger
 
 
 def test_replay_reads_trade_path_deep_link_context() -> None:

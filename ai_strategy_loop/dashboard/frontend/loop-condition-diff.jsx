@@ -41,7 +41,7 @@ function LoopCdRow({ row }) {
   );
 }
 
-export function LoopConditionDiffPanel({ baseUrl }) {
+export function LoopConditionDiffPanel({ baseUrl, reviewContext }) {
   const [kind, setKind] = useState_cd("buy");
   const [names, setNames] = useState_cd([]);
   const [left, setLeft] = useState_cd("");
@@ -54,12 +54,14 @@ export function LoopConditionDiffPanel({ baseUrl }) {
       .then((d) => {
         const list = (d && d.names) || [];
         setNames(list);
-        setLeft(list[0] || "");
-        setRight(list[1] || list[0] || "");
+        const baseline = reviewContext && reviewContext.baseline_id;
+        const candidate = reviewContext && reviewContext.candidate_id;
+        setLeft(baseline && list.includes(baseline) ? baseline : (list[0] || ""));
+        setRight(candidate && list.includes(candidate) ? candidate : (list[1] || list[0] || ""));
         setPayload(null);
       })
       .catch(() => setError("조건식 목록 요청 실패"));
-  }, [baseUrl, kind]);
+  }, [baseUrl, kind, reviewContext]);
 
   const run = useCallback_cd(() => {
     if (!left || !right) return;

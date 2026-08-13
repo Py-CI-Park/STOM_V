@@ -58,7 +58,7 @@ function LoopTpTradeTable({ rows, title, hint }) {
   );
 }
 
-export function LoopTradePairsPanel({ baseUrl }) {
+export function LoopTradePairsPanel({ baseUrl, reviewContext }) {
   const [payload, setPayload] = useState_tp(null);
   const [candidate, setCandidate] = useState_tp("");
   const [error, setError] = useState_tp("");
@@ -82,6 +82,9 @@ export function LoopTradePairsPanel({ baseUrl }) {
 
   return (
     <div className="loop-trade-pairs" aria-label="거래 짝 뷰어 (페이지 34)">
+      {reviewContext && reviewContext.candidate_id && <p className="v4s-note">
+        검토 후보: <span className="mono">{reviewContext.candidate_id}</span>
+      </p>}
       <div className="panel">
         <div className="panel-hd">
           <div className="panel-hd-title">거래 짝 뷰어 <small className="v4s-en">페이지 34 · 왜 그런지 직접 본다</small></div>

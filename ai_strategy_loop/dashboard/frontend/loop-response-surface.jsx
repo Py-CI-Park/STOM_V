@@ -72,7 +72,7 @@ function LoopRsProvenance({ payload }) {
   ))}</p>;
 }
 
-export function LoopResponseSurfacePanel({ baseUrl }) {
+export function LoopResponseSurfacePanel({ baseUrl, reviewContext }) {
   const [payload, setPayload] = useState_rs(null);
   const [error, setError] = useState_rs("");
 
@@ -94,7 +94,10 @@ export function LoopResponseSurfacePanel({ baseUrl }) {
   ((payload && payload.cells) || []).forEach((c) => { byAxis[`${c.arm}|${c.give}`] = c; });
 
   return (
-    <div className="loop-response-surface" aria-label="파라미터 응답면 (페이지 32)">
+    <div className="loop-response-surface" aria-label="국소 파라미터 민감도 (페이지 32)">
+      {reviewContext && reviewContext.candidate_id && <p className="v4s-note">
+        검토 후보: <span className="mono">{reviewContext.candidate_id}</span>
+      </p>}
       <div className="panel">
         <div className="panel-hd">
           <div className="panel-hd-title">파라미터 응답면 <small className="v4s-en">페이지 32 · 국소 민감도</small></div>
