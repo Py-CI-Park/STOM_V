@@ -1,11 +1,7 @@
-"""파라미터 응답면 API (페이지 32) — "이 값이 고원 위인가, 절벽 끝인가".
+"""파라미터 응답면 API (페이지 32) — 국소 파라미터 민감도.
 
-페이지 30 이 "이 후보가 나은가", 페이지 31 이 "그 판정을 믿을 만한가"를 답한다면,
-여기는 **"그 값을 채택해도 표본 밖에서 살아남는가"**를 답한다.
-
-세 화면이 채택 결정의 세 축이다:
-
-    30 성과   →  31 신뢰도  →  32 견고성
+페이지 32는 같은 연구 표본에서 이웃한 파라미터 격자점의 성적 변화를 읽는다.
+따라서 이 화면은 표본 밖 생존이나 채택 여부를 판정하지 않는다.
 
 권한 계약: **읽기 전용.** 러너가 남긴 JSON 만 읽는다.
 """
@@ -34,6 +30,11 @@ VERDICT_LABEL: Final = {
     "빈칸": "미측정",
 }
 
+_PROVENANCE_FIELDS: Final = (
+    "study", "study_id", "artifact", "artifact_id", "source", "source_id",
+    "split", "window", "hash", "created_at",
+)
+
 
 def _find(out_name: str, tag: str) -> str | None:
     """태그를 주면 그것을, 안 주면 **가장 최근 산출**을 쓴다.
@@ -50,36 +51,100 @@ def _find(out_name: str, tag: str) -> str | None:
     return max(found, key=os.path.getmtime) if found else None
 
 
+def _provenance(report: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
+    """Return only supplied provenance facts; malformed metadata is not guessed."""
+    raw = report.get("provenance")
+    if raw is not None and not isinstance(raw, dict):
+        return {}, "산출 provenance 형식이 올바르지 않습니다."
+    sources = (raw or {}, report)
+    values: dict[str, Any] = {}
+    for key in _PROVENANCE_FIELDS:
+        for source in sources:
+            if key in source and source[key] not in (None, ""):
+                values[key] = source[key]
+                break
+    if not values:
+        return {}, "산출 provenance가 없습니다."
+    return values, None
+
+
+def _unavailable(
+    out_name: str,
+    tag: str,
+    reason: str,
+    *,
+    artifact: str | None = None,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "available": False,
+        "out_name": out_name,
+        "tag": tag,
+        "reason": reason,
+        "verdict_labels": VERDICT_LABEL,
+        "cells": [],
+        "reading_rules": [],
+        "provenance_available": False,
+    }
+    if artifact is not None:
+        payload["source"] = artifact
+    return payload
+
+
 @response_surface_router.get("/loop/response-surface")
 def response_surface(out_name: str = "design_v5", tag: str = "") -> dict[str, Any]:
     path = _find(out_name, tag)
     if path is None:
-        return {"available": False, "out_name": out_name, "tag": tag,
-                "reason": ("응답면 산출이 없습니다 — run_reproduction_gate --grid wide "
-                           "후 run_exit_response_surface 를 돌리면 생깁니다."),
-                "verdict_labels": VERDICT_LABEL, "cells": [], "reading_rules": []}
+        return _unavailable(
+            out_name, tag,
+            "응답면 산출이 없습니다 — 국소 파라미터 민감도를 계산한 산출이 필요합니다.",
+        )
 
-    with open(path, "r", encoding="utf-8") as handle:
-        report = json.load(handle)
+    artifact = os.path.basename(path)
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            report = json.load(handle)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return _unavailable(
+            out_name, tag, "응답면 산출을 읽을 수 없습니다.", artifact=artifact,
+        )
+    if not isinstance(report, dict):
+        return _unavailable(
+            out_name, tag, "응답면 산출 형식이 올바르지 않습니다.", artifact=artifact,
+        )
 
     cells = report.get("cells") or []
     for cell in cells:
-        cell["verdict_label"] = VERDICT_LABEL.get(cell.get("verdict"), cell.get("verdict"))
+        if isinstance(cell, dict):
+            cell["verdict_label"] = VERDICT_LABEL.get(cell.get("verdict"), cell.get("verdict"))
 
-    return {
+    provenance, provenance_error = _provenance(report)
+    oos_verdict = report.get("oos_verdict")
+    has_oos_verdict = isinstance(oos_verdict, str) and bool(oos_verdict.strip())
+    report_fields = {
+        key: value for key, value in report.items()
+        if key not in ("cells", "ascii", "provenance", "recommendation", "oos_verdict")
+    }
+
+    payload = {
         "available": bool(cells),
         "out_name": out_name, "tag": tag,
-        "source": os.path.basename(path),
+        "source": artifact,
         "verdict_labels": VERDICT_LABEL,
-        **{k: v for k, v in report.items() if k not in ("cells", "ascii")},
+        "provenance_available": provenance_error is None,
+        **({"provenance": provenance} if provenance_error is None else
+           {"provenance_error": provenance_error}),
+        **report_fields,
         "cells": cells,
         "reading_rules": [
-            "**고원**은 이웃 격자점도 성적을 유지한다는 뜻입니다 — 임계를 조금 빗나가도 "
-            "무너지지 않습니다.",
+            "**고원**은 이웃 격자점도 같은 연구 표본에서 성적을 유지한다는 뜻입니다.",
             "**절벽**은 이웃 중 하나가 0 이하라는 뜻입니다. 지금 표본에서 아무리 높아도 "
-            "표본 밖에서 사라질 자리입니다.",
+            "국소 파라미터 변화에 민감합니다.",
             "격자 **가장자리**는 고원으로 승격하지 않습니다 — 한쪽을 못 봤을 뿐입니다.",
-            "권고는 '가장 높은 셀'이 아니라 **'가장 높은 고원 셀'** 입니다. 둘의 격차가 "
-            "곧 최고값을 채택했을 때 잃을 각오입니다.",
+            "'가장 높은 셀'과 **'가장 높은 고원 셀'**의 격차는 국소 민감도의 참고값입니다.",
         ],
     }
+    if has_oos_verdict:
+        payload["oos_verdict"] = oos_verdict
+        if "recommendation" in report:
+            payload["recommendation"] = report["recommendation"]
+    return payload

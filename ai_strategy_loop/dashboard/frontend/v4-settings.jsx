@@ -229,7 +229,7 @@ function V4SettingsTab({ baseUrl, dashVersion }) {
     {/* v5.13.2 — AI 공급자 인증을 설정 최상단에(수시 확인 요구). */}
     <_V4sGptAuthCard baseUrl={baseUrl} />
     {/* 페이지 27 — 실행 경로 전체(failover 순서·모델 카탈로그). 인증 카드 바로 아래에 둔다. */}
-    <AiProviderStatusPanel />
+    <AiProviderStatusPanel baseUrl={baseUrl} />
     <div className="panel"><div className="panel-hd"><div className="panel-hd-title"><span className="dot" />화면 모양 · 배치 <small className="v4s-en">Appearance / Layout</small></div></div><div className="panel-bd">
       <_V4sRow label="공통 레이아웃" hint="뷰는 반응형 패널과 의미 있는 차트 프레임(상태·출처·원본값)을 사용합니다. 높이와 열 수는 콘텐츠·화면 폭별 계약입니다."><span className="mono">responsive panels · semantic chart frames</span></_V4sRow>
       {/* v5.13.2 — 테마를 설정에서도 직접 고른다(상단 버튼과 같은 저장소를 씁니다). */}

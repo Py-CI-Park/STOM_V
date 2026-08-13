@@ -9,8 +9,8 @@
 
 const { useState: useState_tp, useEffect: useEffect_tp, useCallback: useCallback_tp } = React;
 
-function loopTpGet(path) {
-  return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+function loopTpGet(baseUrl, path) {
+  return fetch((baseUrl || "") + path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
 }
 
 function loopTpNum(v, d) {
@@ -58,13 +58,13 @@ function LoopTpTradeTable({ rows, title, hint }) {
   );
 }
 
-export function LoopTradePairsPanel() {
+export function LoopTradePairsPanel({ baseUrl }) {
   const [payload, setPayload] = useState_tp(null);
   const [candidate, setCandidate] = useState_tp("");
   const [error, setError] = useState_tp("");
 
   const load = useCallback_tp((pick) => {
-    loopTpGet("/loop/trade-pairs?candidate=" + encodeURIComponent(pick || ""))
+    loopTpGet(baseUrl, "/loop/trade-pairs?candidate=" + encodeURIComponent(pick || ""))
       .then((d) => {
         setPayload(d);
         setError(d && d.available ? "" : (d && d.reason) || "");
@@ -73,7 +73,7 @@ export function LoopTradePairsPanel() {
         }
       })
       .catch(() => setError("거래 짝 요청 실패"));
-  }, []);
+  }, [baseUrl]);
 
   useEffect_tp(() => { load(""); }, [load]);
 

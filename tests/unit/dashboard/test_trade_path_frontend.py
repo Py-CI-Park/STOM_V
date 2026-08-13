@@ -19,6 +19,26 @@ def test_backtest_mounts_trade_path_workbench() -> None:
     assert "<BtTradePathTab" in source
 
 
+def test_pages_25_to_34_receive_the_selected_base_url() -> None:
+    trade_path = _read("bt-trade-path-tab.jsx")
+    research = _read("v4-research.jsx")
+    settings = _read("v4-settings.jsx")
+
+    assert "<BtAnalysisCardTab baseUrl={baseUrl} jobId={jobId}/>" in trade_path
+    assert "<BtExitAxisPanel baseUrl={baseUrl}/>" in trade_path
+    assert "<AiProviderStatusPanel baseUrl={baseUrl} />" in settings
+    for panel in (
+        "LoopAutonomyPanel",
+        "LoopStandingPanel",
+        "LoopStrategyLedgerPanel",
+        "LoopPowerGaugePanel",
+        "LoopResponseSurfacePanel",
+        "LoopConditionDiffPanel",
+        "LoopTradePairsPanel",
+    ):
+        assert f"<{panel} baseUrl={{baseUrl}} />" in research
+
+
 def test_replay_reads_trade_path_deep_link_context() -> None:
     source = _read("v4-replay.jsx")
     assert 'from "./bt-replay-trade-context.jsx"' in source

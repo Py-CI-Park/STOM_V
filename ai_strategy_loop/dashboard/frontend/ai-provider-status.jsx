@@ -10,8 +10,8 @@
 
 const { useState: useState_ap, useEffect: useEffect_ap, useCallback: useCallback_ap } = React;
 
-function aiProvGet(path) {
-  return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+function aiProvGet(baseUrl, path) {
+  return fetch((baseUrl || "") + path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
 }
 
 const AIPROV_STATE = {
@@ -42,13 +42,14 @@ function AiProvRow({ row }) {
   );
 }
 
-function AiProvModels() {
+function AiProvModels({ baseUrl }) {
   const [rows, setRows] = useState_ap([]);
   const [open, setOpen] = useState_ap(false);
+  useEffect_ap(() => { setRows([]); }, [baseUrl]);
   useEffect_ap(() => {
     if (!open || rows.length) return;
-    aiProvGet("/ai/providers/models").then((d) => setRows(d.models || [])).catch(() => {});
-  }, [open, rows.length]);
+    aiProvGet(baseUrl, "/ai/providers/models").then((d) => setRows(d.models || [])).catch(() => {});
+  }, [baseUrl, open, rows.length]);
   return (
     <section className="panel" style={{ marginTop: 12 }}>
       <div className="panel-hd"><div className="panel-hd-title">모델 카탈로그</div>
@@ -76,15 +77,15 @@ function AiProvModels() {
   );
 }
 
-export function AiProviderStatusPanel() {
+export function AiProviderStatusPanel({ baseUrl }) {
   const [payload, setPayload] = useState_ap(null);
   const [error, setError] = useState_ap("");
 
   const load = useCallback_ap(() => {
-    aiProvGet("/ai/providers")
+    aiProvGet(baseUrl, "/ai/providers")
       .then((d) => { if (d && d.available) { setPayload(d); setError(""); } else setError("공급자 상태를 불러오지 못했습니다."); })
       .catch(() => setError("공급자 상태 요청 실패"));
-  }, []);
+  }, [baseUrl]);
 
   useEffect_ap(() => { load(); const id = setInterval(load, 60000); return () => clearInterval(id); }, [load]);
 
@@ -130,7 +131,7 @@ export function AiProviderStatusPanel() {
         </div>
       </section>
 
-      <AiProvModels/>
+      <AiProvModels baseUrl={baseUrl}/>
     </div>
   );
 }

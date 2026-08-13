@@ -9,8 +9,8 @@
 
 const { useState: useState_la, useEffect: useEffect_la, useCallback: useCallback_la } = React;
 
-function loopGet(path) {
-  return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+function loopGet(baseUrl, path) {
+  return fetch((baseUrl || "") + path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
 }
 
 function loopNum(value, digits) {
@@ -128,7 +128,7 @@ function LoopGenerationTable({ generations }) {
   );
 }
 
-export function LoopAutonomyPanel() {
+export function LoopAutonomyPanel({ baseUrl }) {
   const [runs, setRuns] = useState_la([]);
   const [runId, setRunId] = useState_la("");
   const [generations, setGenerations] = useState_la([]);
@@ -138,23 +138,23 @@ export function LoopAutonomyPanel() {
   const [error, setError] = useState_la("");
 
   useEffect_la(() => {
-    loopGet("/loop/autonomy/runs?limit=20")
+    loopGet(baseUrl, "/loop/autonomy/runs?limit=20")
       .then((d) => {
         if (d && d.available) { setRuns(d.runs || []); if (!runId && d.runs.length) setRunId(d.runs[0].run_id); }
         else setError("자율 루프 기록이 아직 없습니다.");
       })
       .catch(() => setError("run 목록 요청 실패"));
-  }, []);
+  }, [baseUrl]);
 
   const load = useCallback_la(() => {
     if (!runId) return;
-    loopGet(`/loop/autonomy/generations?run_id=${encodeURIComponent(runId)}&limit=60`)
+    loopGet(baseUrl, `/loop/autonomy/generations?run_id=${encodeURIComponent(runId)}&limit=60`)
       .then((d) => { setGenerations(d.generations || []); setVerdicts(d.hypothesis_verdicts || null); setHitRate(d.hypothesis_hit_rate); })
       .catch(() => setError("세대 조회 실패"));
-    loopGet(`/loop/autonomy/budget?run_id=${encodeURIComponent(runId)}`)
+    loopGet(baseUrl, `/loop/autonomy/budget?run_id=${encodeURIComponent(runId)}`)
       .then(setBudget)
       .catch(() => setError("예산 조회 실패"));
-  }, [runId]);
+  }, [baseUrl, runId]);
 
   useEffect_la(() => { load(); }, [runId, load]);
 

@@ -19,6 +19,21 @@ def test_unknown_lane_is_refused():
     assert payload["reason"] == "unknown_lane"
 
 
+def test_default_out_name_is_controller_canonical_default(monkeypatch):
+    from ai_strategy_loop.controller import standing as st
+
+    observed = {}
+
+    def fake_status(out_name, lane, **kwargs):
+        observed["out_name"] = out_name
+        return {"available": True}
+
+    monkeypatch.setattr(st, "standing_status", fake_status)
+    payload = api.standing()
+    assert payload["available"] is True
+    assert observed["out_name"] == st.DEFAULT_OUT_NAME
+
+
 def test_without_today_no_revalidation_plan(monkeypatch):
     monkeypatch.setattr(api, "_standing_candidates", lambda: [{"name": "run-A"}])
     payload = api.standing(today=0)

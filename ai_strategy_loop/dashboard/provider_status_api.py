@@ -62,6 +62,20 @@ async def _auth_overview() -> dict[str, Any]:
     return await get_auth_overview(query_codex_account=False)
 
 
+def _active_runtime_provider() -> str | None:
+    """현재 실행 중인 루프가 보고한 provider만 실연결 증거로 취급한다."""
+    try:
+        from ai_strategy_loop.controller.state import read_current_state
+
+        state = read_current_state()
+    except Exception:  # noqa: BLE001 - 상태 관측 실패를 연결로 오인하지 않는다
+        return None
+    if not isinstance(state, dict) or str(state.get("status") or "").lower() != "running":
+        return None
+    provider = str(state.get("provider") or "").strip()
+    return provider or None
+
+
 @provider_status_router.get("/ai/providers")
 async def providers() -> dict[str, Any]:
     """실행 경로별 설정·연결 상태. 설정 완료와 실연결을 분리해 판정한다."""
@@ -74,12 +88,16 @@ async def providers() -> dict[str, Any]:
     proxy_alive, proxy_detail = _loopback_probe(_health_url())
     codex_alive, codex_detail = _loopback_probe("http://127.0.0.1:8080/health")
     has_openrouter_key = bool(os.getenv("OPENROUTER_API_KEY"))
+    active_runtime_provider = _active_runtime_provider()
 
     rows: list[dict[str, Any]] = []
     for entry in PROVIDER_CATALOG:
         pid = entry["id"]
         if pid == "claude_direct":
-            configured, connected, detail = True, True, "에이전트 세션에서 직접 수행"
+            configured = True
+            connected = active_runtime_provider == pid
+            detail = ("실행 중인 루프가 Claude 직접 경로를 사용 중"
+                      if connected else "Claude 직접 런타임 연결 증거 없음")
         elif pid == "gpt_auth":
             configured = bool(overview.get("authenticated"))
             connected = bool(configured and proxy_alive)

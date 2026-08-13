@@ -10,8 +10,8 @@
 
 const { useState: useState_pg, useEffect: useEffect_pg, useCallback: useCallback_pg } = React;
 
-function loopPgGet(path) {
-  return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+function loopPgGet(baseUrl, path) {
+  return fetch((baseUrl || "") + path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
 }
 
 function loopPgNum(value, digits) {
@@ -72,18 +72,18 @@ function LoopPgSummary({ payload }) {
   );
 }
 
-export function LoopPowerGaugePanel() {
+export function LoopPowerGaugePanel({ baseUrl }) {
   const [payload, setPayload] = useState_pg(null);
   const [error, setError] = useState_pg("");
 
   const load = useCallback_pg(() => {
-    loopPgGet("/loop/power-gauge")
+    loopPgGet(baseUrl, "/loop/power-gauge")
       .then((d) => {
         setPayload(d);
         setError(d && d.available ? "" : "잴 수 있는 후보가 없습니다 — 짝지은 비교가 있는 기록이 필요합니다.");
       })
       .catch(() => setError("계기판 요청 실패"));
-  }, []);
+  }, [baseUrl]);
 
   useEffect_pg(() => { load(); }, [load]);
 

@@ -33,6 +33,7 @@ def stub_env(monkeypatch):
         return stub_env.overview
 
     monkeypatch.setattr(api, "_auth_overview", fake_overview)
+    monkeypatch.setattr(api, "_active_runtime_provider", lambda: None)
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     stub_env.results = {}
     stub_env.overview = {}
@@ -92,10 +93,22 @@ def test_no_secrets_in_payload(stub_env):
     assert "acct-secret" not in serialized
 
 
-def test_claude_direct_is_always_available(stub_env):
-    """뇌가 전부 죽어도 Claude 직접 경로는 살아 있다(자율 루프 기본 뇌)."""
+def test_claude_direct_without_runtime_evidence_is_not_effective(stub_env):
+    """세션 경로가 설정돼도 실행 중이라는 증거 없이는 연결을 주장하지 않는다."""
     payload = asyncio.run(api.providers())
     rows = _by_id(payload)
+    assert rows["claude_direct"]["configured"] is True
+    assert rows["claude_direct"]["connected"] is False
+    assert rows["claude_direct"]["state"] == "ready"
+    assert payload["effective_provider"] is None
+
+
+def test_claude_direct_is_connected_only_with_active_runtime_evidence(stub_env, monkeypatch):
+    monkeypatch.setattr(api, "_active_runtime_provider", lambda: "claude_direct")
+
+    payload = asyncio.run(api.providers())
+    rows = _by_id(payload)
+    assert rows["claude_direct"]["connected"] is True
     assert rows["claude_direct"]["state"] == "ok"
     assert payload["effective_provider"] == "claude_direct"
 

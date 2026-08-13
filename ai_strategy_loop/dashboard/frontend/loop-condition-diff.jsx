@@ -10,8 +10,8 @@
 
 const { useState: useState_cd, useEffect: useEffect_cd, useCallback: useCallback_cd } = React;
 
-function loopCdGet(path) {
-  return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+function loopCdGet(baseUrl, path) {
+  return fetch((baseUrl || "") + path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
 }
 
 const LOOP_CD_STATE = {
@@ -41,7 +41,7 @@ function LoopCdRow({ row }) {
   );
 }
 
-export function LoopConditionDiffPanel() {
+export function LoopConditionDiffPanel({ baseUrl }) {
   const [kind, setKind] = useState_cd("buy");
   const [names, setNames] = useState_cd([]);
   const [left, setLeft] = useState_cd("");
@@ -50,7 +50,7 @@ export function LoopConditionDiffPanel() {
   const [error, setError] = useState_cd("");
 
   useEffect_cd(() => {
-    loopCdGet("/loop/condition-names?kind=" + kind)
+    loopCdGet(baseUrl, "/loop/condition-names?kind=" + kind)
       .then((d) => {
         const list = (d && d.names) || [];
         setNames(list);
@@ -59,18 +59,18 @@ export function LoopConditionDiffPanel() {
         setPayload(null);
       })
       .catch(() => setError("조건식 목록 요청 실패"));
-  }, [kind]);
+  }, [baseUrl, kind]);
 
   const run = useCallback_cd(() => {
     if (!left || !right) return;
-    loopCdGet(`/loop/condition-diff?kind=${kind}&left=${encodeURIComponent(left)}`
+    loopCdGet(baseUrl, `/loop/condition-diff?kind=${kind}&left=${encodeURIComponent(left)}`
               + `&right=${encodeURIComponent(right)}`)
       .then((d) => {
         setPayload(d);
         setError(d && d.available ? "" : (d && d.reason) || "비교할 수 없습니다.");
       })
       .catch(() => setError("비교 요청 실패"));
-  }, [kind, left, right]);
+  }, [baseUrl, kind, left, right]);
 
   const delta = (payload && payload.clause_delta) || [];
   const diff = (payload && payload.diff) || [];

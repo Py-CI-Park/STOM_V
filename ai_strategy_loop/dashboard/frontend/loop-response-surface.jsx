@@ -1,18 +1,14 @@
-/* 페이지 32 — 파라미터 응답면.
+/* 페이지 32 — 국소 파라미터 민감도.
 
-   채택 결정의 세 축 중 마지막이다:
-     30 성과(이 후보가 나은가) → 31 신뢰도(그 판정을 믿을 만한가)
-       → 32 견고성(그 값을 채택해도 표본 밖에서 살아남는가)
-
-   판독 규율: 절벽 위의 최고점은 표본 밖에서 사라진다. 고원 위의 두 번째 값이
-   살아남는다. 그래서 권고는 "가장 높은 셀"이 아니라 "가장 높은 고원 셀"이다.
+   같은 연구 표본에서 이웃 격자점의 성적이 얼마나 변하는지 읽는다.
+   이 표면만으로 표본 밖 성과나 채택 여부를 말하지 않는다.
 
    관측 전용이다. 전역 충돌 방지로 LoopRs* 접두를 쓴다. */
 
 const { useState: useState_rs, useEffect: useEffect_rs, useCallback: useCallback_rs } = React;
 
-function loopRsGet(path) {
-  return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+function loopRsGet(baseUrl, path) {
+  return fetch((baseUrl || "") + path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
 }
 
 function loopRsNum(value, digits) {
@@ -51,27 +47,43 @@ function LoopRsSummary({ payload }) {
         <span className={"mono " + (flat ? "pos" : "neg")}>{flat ? flat.rule : "없음"}</span>
         <small className="v4s-en">{flat
           ? `이웃최소 ${loopRsNum(flat.neighbour_min, 4)}% (유지 ${loopRsNum(flat.retention * 100, 0)}%)`
-          : "채택할 값이 없다"}</small></div>
-      <div className="v4s-probe-card"><b>과최적 격차</b>
+          : "국소 비교값이 없다"}</small></div>
+      <div className="v4s-probe-card"><b>국소 격차</b>
         <span className={"mono " + ((payload && payload.overfit_gap) ? "neg" : "pos")}>
           {payload && payload.overfit_gap ? loopRsNum(payload.overfit_gap, 4) + "%p" : "없음"}</span>
-        <small className="v4s-en">최고값 채택 시 잃을 각오</small></div>
+        <small className="v4s-en">최고 셀과 고원 셀의 차이</small></div>
     </div>
   );
 }
 
-export function LoopResponseSurfacePanel() {
+function LoopRsProvenance({ payload }) {
+  if (!payload) return null;
+  if (!payload.provenance_available) {
+    return <p className="v4s-note">출처 정보: {payload.provenance_error || "없음"}</p>;
+  }
+  const provenance = payload.provenance || {};
+  const fields = ["study", "study_id", "artifact", "artifact_id", "source", "source_id",
+    "split", "window", "hash", "created_at"].filter((key) => provenance[key] !== undefined && provenance[key] !== null);
+  if (!fields.length) return null;
+  return <p className="v4s-note">출처 정보: {fields.map((key) => (
+    <span key={key} className="mono" style={{ marginRight: 8 }}>{key} {
+      typeof provenance[key] === "object" ? JSON.stringify(provenance[key]) : String(provenance[key])
+    }</span>
+  ))}</p>;
+}
+
+export function LoopResponseSurfacePanel({ baseUrl }) {
   const [payload, setPayload] = useState_rs(null);
   const [error, setError] = useState_rs("");
 
   const load = useCallback_rs(() => {
-    loopRsGet("/loop/response-surface")
+    loopRsGet(baseUrl, "/loop/response-surface")
       .then((d) => {
         setPayload(d);
         setError(d && d.available ? "" : (d && d.reason) || "응답면이 없습니다.");
       })
       .catch(() => setError("응답면 요청 실패"));
-  }, []);
+  }, [baseUrl]);
 
   useEffect_rs(() => { load(); }, [load]);
 
@@ -85,21 +97,21 @@ export function LoopResponseSurfacePanel() {
     <div className="loop-response-surface" aria-label="파라미터 응답면 (페이지 32)">
       <div className="panel">
         <div className="panel-hd">
-          <div className="panel-hd-title">파라미터 응답면 <small className="v4s-en">페이지 32 · 고원인가 절벽인가</small></div>
-          <span className="badge" title="지도 축 계산입니다. 채택은 엔진 확인 후입니다.">map</span>
+          <div className="panel-hd-title">파라미터 응답면 <small className="v4s-en">페이지 32 · 국소 민감도</small></div>
+          <span className="badge" title="같은 연구 표본에서 계산한 국소 격자 지도입니다.">map</span>
         </div>
         <div className="panel-bd">
-          <p className="v4s-note">산등성이에서 야영지를 고르는 것과 같습니다. 가장 높은 곳은
-            <b> 칼날 능선</b>일 수 있습니다 — 한 걸음만 어긋나도 굴러떨어집니다.
-            조금 낮아도 <b>평평한 곳</b>에 텐트를 칩니다.</p>
+          <p className="v4s-note">이웃한 파라미터를 조금 바꿨을 때 성적이 얼마나 변하는지 봅니다.
+            <b> 칼날 능선</b>은 국소 변화에 민감하고, <b>평평한 곳</b>은 같은 표본에서 변화가 작습니다.</p>
           <LoopRsSummary payload={payload}/>
           <div className="v4s-log-controls">
             <button className="btn ghost sm" type="button" onClick={load}>새로고침</button>
             {payload && payload.source && <small className="v4s-en">{payload.out_name} · {payload.source}</small>}
           </div>
+          <LoopRsProvenance payload={payload}/>
           {error && <p className="v4s-note">{error}</p>}
-          {payload && payload.recommendation &&
-            <p className="v4s-note"><b>권고</b> — {payload.recommendation}</p>}
+          {payload && payload.oos_verdict && payload.recommendation &&
+            <p className="v4s-note"><b>OOS 판정</b> — {payload.oos_verdict} · {payload.recommendation}</p>}
           {payload && (payload.reading_rules || []).map((rule, i) => (
             <p key={i} className="v4s-note" style={{ fontSize: 11.5 }}>· {rule}</p>
           ))}

@@ -10,8 +10,8 @@
 
 const { useState: useState_sl, useEffect: useEffect_sl, useCallback: useCallback_sl } = React;
 
-function loopSlGet(path) {
-  return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+function loopSlGet(baseUrl, path) {
+  return fetch((baseUrl || "") + path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
 }
 
 function loopSlNum(value, digits) {
@@ -57,19 +57,19 @@ function LoopSlSummary({ payload }) {
   );
 }
 
-export function LoopStrategyLedgerPanel() {
+export function LoopStrategyLedgerPanel({ baseUrl }) {
   const [payload, setPayload] = useState_sl(null);
   const [error, setError] = useState_sl("");
   const [history, setHistory] = useState_sl(false);
 
   const load = useCallback_sl(() => {
-    loopSlGet("/loop/strategy-ledger?history=" + (history ? "true" : "false"))
+    loopSlGet(baseUrl, "/loop/strategy-ledger?history=" + (history ? "true" : "false"))
       .then((d) => {
         setPayload(d);
         setError(d && d.available ? "" : "원장이 비어 있습니다 — 엔진 실측 후 run_ledger_sync 를 돌리면 채워집니다.");
       })
       .catch(() => setError("원장 요청 실패"));
-  }, [history]);
+  }, [baseUrl, history]);
 
   useEffect_sl(() => { load(); }, [load]);
 

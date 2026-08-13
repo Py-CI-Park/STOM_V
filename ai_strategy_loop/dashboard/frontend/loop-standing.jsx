@@ -10,8 +10,8 @@
 
 const { useState: useState_st, useEffect: useEffect_st, useCallback: useCallback_st } = React;
 
-function loopStGet(path) {
-  return fetch(path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
+function loopStGet(baseUrl, path) {
+  return fetch((baseUrl || "") + path, { credentials: "same-origin", cache: "no-store" }).then((r) => r.json());
 }
 
 function loopStNum(value) {
@@ -112,20 +112,20 @@ function LoopStRevalidation({ revalidation }) {
   );
 }
 
-export function LoopStandingPanel({ outName, lane }) {
+export function LoopStandingPanel({ baseUrl = "", outName, lane }) {
   const [payload, setPayload] = useState_st(null);
   const [error, setError] = useState_st("");
   const [maxAge, setMaxAge] = useState_st(30);
-  const name = outName || "design_v4";
+  const name = outName || "";
   const laneName = lane || "tick";
 
   const load = useCallback_st(() => {
-    const query = `?out_name=${encodeURIComponent(name)}&lane=${encodeURIComponent(laneName)}`
-      + `&today=${loopStToday()}&max_age_days=${maxAge}`;
-    loopStGet("/loop/standing" + query)
+    const query = (name ? `?out_name=${encodeURIComponent(name)}&` : "?")
+      + `lane=${encodeURIComponent(laneName)}&today=${loopStToday()}&max_age_days=${maxAge}`;
+    loopStGet(baseUrl, "/loop/standing" + query)
       .then((d) => { setPayload(d); setError(d && d.available ? "" : "상설화 현황을 읽지 못했습니다."); })
       .catch(() => setError("상설화 요청 실패"));
-  }, [name, laneName, maxAge]);
+  }, [baseUrl, name, laneName, maxAge]);
 
   useEffect_st(() => { load(); }, [load]);
 
