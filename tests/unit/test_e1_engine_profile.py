@@ -57,3 +57,15 @@ def test_classify_fails_closed_without_worker_evidence():
     rows += [_row("generated", "timeout") for _ in range(3)]
     rows[-1]["diagnostics"] = {}
     assert classify(rows) == "BLOCKED_ENVIRONMENT"
+
+
+def test_classify_localizes_stable_strategy_exception():
+    rows = [
+        _row("baseline", "success", "engine_backtest_completed", 5000)
+        for _ in range(3)
+    ]
+    rows += [
+        _row("generated", "error", "engine_strategy_exception", 0)
+        for _ in range(3)
+    ]
+    assert classify(rows) == "STRATEGY_EXCEPTION_LOCALIZED"

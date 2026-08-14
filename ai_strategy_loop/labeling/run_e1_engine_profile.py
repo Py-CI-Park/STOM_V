@@ -78,13 +78,18 @@ def classify(rows: list[dict[str, Any]]) -> str:
         return "BLOCKED_ENVIRONMENT"
     if not all(row.get("status") == "success" for row in baseline):
         return "UNSTABLE"
-    if not all(row.get("status") == "timeout" for row in generated):
-        return "UNSTABLE"
     generated_checkpoints = {
         worker.get("checkpoint")
         for row in generated
         for worker in _worker_snapshot(row).values()
     }
+    if (
+        all(row.get("status") == "error" for row in generated)
+        and generated_checkpoints == {"engine_strategy_exception"}
+    ):
+        return "STRATEGY_EXCEPTION_LOCALIZED"
+    if not all(row.get("status") == "timeout" for row in generated):
+        return "UNSTABLE"
     return (
         "WORKER_BOTTLENECK_LOCALIZED"
         if generated_checkpoints == {"engine_strategy_progress"}
