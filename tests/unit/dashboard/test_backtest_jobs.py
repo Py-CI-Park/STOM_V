@@ -118,6 +118,18 @@ def test_protocol_jsonl_preserves_checkpoint_and_final_json():
     }
 
 
+def test_protocol_jsonl_allows_pretty_printed_final_json():
+    output = "\n".join([
+        '[CLI_DIAG] {"source":"BackTest","checkpoint":"completed"}',
+        "{",
+        '  "status": "success",',
+        '  "csv_path": "x.csv",',
+        '  "metrics": {}',
+        "}",
+    ])
+    assert backtest_jobs_module._parse_cli_json(output)["status"] == "success"
+
+
 def test_normal_queued_jobs_complete_and_release_slot(tmp_path: Path):
     first_builder_entered = threading.Event()
     release_first_builder = threading.Event()

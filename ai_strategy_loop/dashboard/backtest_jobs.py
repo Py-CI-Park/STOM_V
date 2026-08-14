@@ -882,6 +882,17 @@ def _parse_cli_json(stdout: str) -> Dict[str, Any]:
         return json.loads(text)
     except json.JSONDecodeError:
         pass
+    without_protocol = "\n".join(
+        line for line in text.splitlines()
+        if not line.strip().startswith("[CLI_DIAG] ")
+    ).strip()
+    if without_protocol:
+        try:
+            parsed = json.loads(without_protocol)
+        except json.JSONDecodeError:
+            parsed = None
+        if isinstance(parsed, dict):
+            return parsed
     # protocol JSONL이 결과 앞에 스트리밍될 수 있으므로 마지막 완전한 JSON 행을 우선한다.
     for line in reversed(text.splitlines()):
         candidate = line.strip()
