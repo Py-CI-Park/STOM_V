@@ -17,6 +17,7 @@ import { LoopPowerGaugePanel } from "./loop-power-gauge.jsx";
 import { LoopResponseSurfacePanel } from "./loop-response-surface.jsx";
 import { LoopConditionDiffPanel } from "./loop-condition-diff.jsx";
 import { LoopTradePairsPanel } from "./loop-trade-pairs.jsx";
+import { LoopResearchToolsPanel } from "./loop-research-tools.jsx";
 import { GenerationsTable } from "./table.jsx";
 import { EvolutionAnalysisPanel } from "./evolution-analysis.jsx";
 import { ResearchImprovementCard } from "./research-improvement.jsx";
@@ -648,6 +649,11 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
             <section className="v6-stage-lab v54-span-all" aria-label="거래 짝 뷰어(페이지 34)">
               <h3 className="stom-section-label">거래 짝 · 왜 그런지 직접 본다</h3>
               <LoopTradePairsPanel baseUrl={baseUrl} reviewContext={reviewContext} />
+            </section>
+            {/* 오프라인 안전 확률 연구: 수동 진단/제안 전용. OOS·채택·내보내기 권한 없음. */}
+            <section className="v6-stage-lab v54-span-all" aria-label="확률 연구 도구">
+              <h3 className="stom-section-label">확률 연구 도구 · 수동 진단/제안</h3>
+              <LoopResearchToolsPanel baseUrl={baseUrl} />
             </section>
           </div>
         )}

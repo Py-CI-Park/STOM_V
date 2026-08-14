@@ -37640,6 +37640,228 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     ));
   }
 
+  // ai_strategy_loop/dashboard/frontend/loop-research-tools.jsx
+  var { useState: useState_lrt, useEffect: useEffect_lrt, useCallback: useCallback_lrt } = React;
+  var LOOP_RT_TOOL_SPECS = [
+    { id: "bayesian", label: "Bayesian sequential", ko: "\uBCA0\uC774\uC9C0\uC548 \uC21C\uCC28 \uACBD\uACC4", endpoint: "/loop/research-tools/bayesian" },
+    { id: "ast", label: "AST audit", ko: "AST \uC18C\uC2A4 \uAC10\uC0AC", endpoint: "/loop/research-tools/ast" },
+    { id: "qmc", label: "QMC/Pareto", ko: "QMC/Pareto \uBBF8\uB9AC\uBCF4\uAE30", endpoint: "/loop/research-tools/qmc" },
+    { id: "denoise", label: "D0 denoising", ko: "D0 \uB514\uB178\uC774\uC9D5 \uC13C\uD2F0\uB110", endpoint: "/loop/research-tools/denoise" }
+  ];
+  function loopRtBase(baseUrl) {
+    return String(baseUrl || "").replace(/\/$/, "");
+  }
+  function loopRtSignal(ms) {
+    return typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(ms) : void 0;
+  }
+  function loopRtJson(baseUrl, path, options) {
+    const opts = Object.assign({ credentials: "same-origin", cache: "no-store" }, options || {});
+    if (opts.body) opts.headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+    const signal = loopRtSignal(opts.method === "POST" ? 15e3 : 8e3);
+    if (signal) opts.signal = signal;
+    return fetch(loopRtBase(baseUrl) + path, opts).then(async (response) => {
+      const text = await response.text();
+      let payload = {};
+      try {
+        payload = text ? JSON.parse(text) : {};
+      } catch (e) {
+        payload = { raw: text };
+      }
+      if (!response.ok) {
+        throw new Error(String(payload && (payload.detail || payload.error || payload.reason) || `HTTP ${response.status}`));
+      }
+      return payload;
+    });
+  }
+  function loopRtGet(baseUrl, path) {
+    return loopRtJson(baseUrl, path, { method: "GET" });
+  }
+  function loopRtPost(baseUrl, path, body) {
+    return loopRtJson(baseUrl, path, { method: "POST", body: JSON.stringify(body || {}) });
+  }
+  function loopRtClamp(value, fallback, min, max, integer) {
+    const n = Number(value);
+    const bounded = Math.max(min, Math.min(max, Number.isFinite(n) ? n : fallback));
+    return integer ? Math.round(bounded) : bounded;
+  }
+  function loopRtFormat(value, digits) {
+    if (value === null || value === void 0 || Number.isNaN(Number(value))) return "\u2014";
+    return Number(value).toLocaleString(void 0, {
+      minimumFractionDigits: digits === void 0 ? 0 : digits,
+      maximumFractionDigits: digits === void 0 ? 0 : digits
+    });
+  }
+  function loopRtShort(value) {
+    if (value === null || value === void 0 || value === "") return "\u2014";
+    if (typeof value === "number") return Number.isInteger(value) ? String(value) : loopRtFormat(value, 4);
+    if (typeof value === "boolean") return value ? "true" : "false";
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+  }
+  function loopRtParseDimensions(text) {
+    return String(text || "").split(/\n+/).map((line) => line.trim()).filter(Boolean).slice(0, 8).map((line, index2) => {
+      const parts = line.split(/[:,]/).map((part) => part.trim()).filter(Boolean);
+      if (parts.length < 3) return null;
+      const low = Number(parts[1]);
+      const high = Number(parts[2]);
+      if (!Number.isFinite(low) || !Number.isFinite(high) || low >= high) return null;
+      return { name: parts[0] || `x${index2 + 1}`, low, high };
+    }).filter(Boolean);
+  }
+  function loopRtToolFromStatus(status, spec) {
+    const tools = Array.isArray(status && status.tools) ? status.tools : [];
+    return tools.find((tool) => {
+      const id2 = String(tool && tool.id || "").toLowerCase();
+      const endpoint = String(tool && tool.endpoint || "").toLowerCase();
+      const label = String(tool && tool.label || "").toLowerCase();
+      return id2 === spec.id || endpoint === spec.endpoint || endpoint.endsWith(spec.endpoint) || label.indexOf(spec.id) >= 0;
+    }) || null;
+  }
+  function loopRtAuthorityText(payload) {
+    const authority = payload && payload.authority ? String(payload.authority) : "\uBBF8\uBC1C\uD589";
+    return authority === "no_adoption" ? "no_adoption \xB7 \uCC44\uD0DD \uAD8C\uD55C \uC5C6\uC74C" : authority;
+  }
+  function LoopRtReceipts({ payload }) {
+    if (!payload) return null;
+    const authority = loopRtAuthorityText(payload);
+    const items = [];
+    if (payload.config_receipt) items.push(["config", payload.config_receipt]);
+    if (payload.seed_receipt) items.push(["seed", payload.seed_receipt]);
+    const receipts = payload.receipts;
+    if (Array.isArray(receipts)) {
+      receipts.slice(0, 8).forEach((value, index2) => items.push([`receipt${index2 + 1}`, value]));
+    } else if (receipts && typeof receipts === "object") {
+      Object.keys(receipts).slice(0, 8).forEach((key) => items.push([key, receipts[key]]));
+    }
+    if (!items.length) return /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "authority ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, authority), " \xB7 receipts \uBBF8\uBC1C\uD589 \xB7 \uC774 \uCD9C\uB825\uC740 \uCC44\uD0DD \uADFC\uAC70\uAC00 \uC544\uB2D9\uB2C8\uB2E4.");
+    return /* @__PURE__ */ React.createElement("div", { className: "v4s-note", "aria-label": "\uC5F0\uAD6C \uB3C4\uAD6C \uC601\uC218\uC99D" }, /* @__PURE__ */ React.createElement("b", null, "authority"), " ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, authority), " ", /* @__PURE__ */ React.createElement("b", null, "receipts"), " ", items.map(([key, value]) => /* @__PURE__ */ React.createElement("span", { key, className: "mono", style: { marginRight: 8 } }, key, "=", loopRtShort(value))));
+  }
+  function LoopRtStatusGrid({ status }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-grid", "aria-label": "\uD655\uB960 \uC5F0\uAD6C \uB3C4\uAD6C \uC0C1\uD0DC" }, LOOP_RT_TOOL_SPECS.map((spec) => {
+      const tool = status ? loopRtToolFromStatus(status, spec) : null;
+      const available = !status ? false : status.available !== false && !!tool;
+      return /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card", key: spec.id }, /* @__PURE__ */ React.createElement("b", null, spec.ko), /* @__PURE__ */ React.createElement("span", { className: "mono " + (available ? "pos" : "neg") }, available ? "\uC0AC\uC6A9 \uAC00\uB2A5" : "\uB300\uAE30/\uBBF8\uBC1C\uD589"), /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, tool ? `${tool.method || "POST"} ${tool.endpoint || spec.endpoint}` : spec.endpoint), /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "authority ", status ? loopRtAuthorityText(status) : "\uC0C1\uD0DC \uD655\uC778 \uC911"), /* @__PURE__ */ React.createElement("small", null, spec.label));
+    }));
+  }
+  function LoopRtObjectPreview({ payload, title }) {
+    if (!payload) return /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uC544\uC9C1 \uC2E4\uD589\uD55C \uC218\uB3D9 \uC9C4\uB2E8\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.");
+    const entries = Object.entries(payload).filter(([key]) => key !== "receipts" && key !== "config_receipt" && key !== "seed_receipt").slice(0, 14);
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "table-wrap", "aria-label": title || "\uACB0\uACFC \uC694\uC57D" }, /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("tbody", null, entries.map(([key, value]) => /* @__PURE__ */ React.createElement("tr", { key }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "mono" }, key), /* @__PURE__ */ React.createElement("td", { className: "mono" }, loopRtShort(value))))))), /* @__PURE__ */ React.createElement(LoopRtReceipts, { payload }));
+  }
+  function LoopRtBayesianResult({ payload }) {
+    var _a, _b;
+    if (!payload) return /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uC544\uC9C1 \uC2E4\uD589\uD55C \uC218\uB3D9 \uC9C4\uB2E8\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uBC84\uD2BC\uC744 \uB20C\uB7EC\uC57C POST \uC694\uCCAD\uC774 \uC804\uC1A1\uB429\uB2C8\uB2E4.");
+    const decision = String(payload.decision || payload.verdict || "pending");
+    const decisionLabel = String(payload.decision_label || "statistical boundary only");
+    const safeLabel = `${decision} ${decisionLabel}`.toUpperCase().indexOf("APPROVE") >= 0 ? "APPROVE \xB7 statistical boundary only \xB7 \uC804\uB7B5 \uC2B9\uC778 \uC544\uB2D8" : `${decision} \xB7 ${decisionLabel}`;
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-grid" }, /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "Posterior decision"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, safeLabel), /* @__PURE__ */ React.createElement("small", null, "\uD1B5\uACC4 \uACBD\uACC4 \uD45C\uC2DC\uC774\uBA70 \uC804\uB7B5 \uC2B9\uC778/\uCC44\uD0DD\uC774 \uC544\uB2D9\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "posterior mean"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, loopRtFormat((_a = payload.posterior_mean) != null ? _a : payload.mean, 4))), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "alpha/beta"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, loopRtShort(payload.posterior_alpha), " / ", loopRtShort(payload.posterior_beta))), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "ROPE \uCD08\uACFC\uD655\uB960"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, loopRtFormat((_b = payload.prob_gt_rope) != null ? _b : payload.probability_gt_rope, 4)))), /* @__PURE__ */ React.createElement(LoopRtReceipts, { payload }));
+  }
+  function LoopRtAstResult({ payload }) {
+    if (!payload) return /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uC544\uC9C1 \uC2E4\uD589\uD55C \uC218\uB3D9 \uAC10\uC0AC\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. \uC18C\uC2A4\uB97C \uB123\uACE0 \uAC10\uC0AC \uBC84\uD2BC\uC744 \uB20C\uB7EC\uC57C \uD569\uB2C8\uB2E4.");
+    const violations = Array.isArray(payload.violations) ? payload.violations : [];
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-grid" }, /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "\uAC10\uC0AC \uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("span", { className: "mono " + (payload.ok ? "pos" : "neg") }, payload.ok ? "\uC704\uBC18 \uC5C6\uC74C" : "\uAC80\uD1A0 \uD544\uC694")), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "violations"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, violations.length)), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "estimated work"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, loopRtShort(payload.estimated_work))), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "parsed"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, loopRtShort(payload.parsed)))), violations.length > 0 ? /* @__PURE__ */ React.createElement("ul", { className: "v4s-note" }, violations.slice(0, 12).map((violation, index2) => /* @__PURE__ */ React.createElement("li", { key: index2, className: "mono" }, loopRtShort(violation)))) : /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uC704\uBC18 \uBAA9\uB85D\uC774 \uBE44\uC5B4 \uC788\uC2B5\uB2C8\uB2E4. \uADF8\uB798\uB3C4 \uCC44\uD0DD/OOS \uADFC\uAC70\uAC00 \uC544\uB2C8\uB77C AST \uC9C4\uB2E8 \uCD9C\uB825\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(LoopRtReceipts, { payload }));
+  }
+  function LoopRtQmcResult({ payload }) {
+    if (!payload) return /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uC544\uC9C1 QMC \uBBF8\uB9AC\uBCF4\uAE30\uB97C \uB9CC\uB4E4\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4. seed/count \uC785\uB825 \uD6C4 \uBC84\uD2BC\uC744 \uB204\uB974\uC138\uC694.");
+    const candidates = Array.isArray(payload.candidates) ? payload.candidates : [];
+    const pareto = Array.isArray(payload.pareto_archive) ? payload.pareto_archive : [];
+    const columns = candidates.length ? Object.keys(candidates[0]).slice(0, 8) : [];
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-grid" }, /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "candidate preview"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, candidates.length), /* @__PURE__ */ React.createElement("small", null, "\uC5D4\uC9C4 \uC2E4\uD589 \uC544\uB2D8")), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "Pareto archive"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, pareto.length), /* @__PURE__ */ React.createElement("small", null, "\uC81C\uC548 \uBB36\uC74C\uC77C \uBFD0 \uCC44\uD0DD \uC544\uB2D8")), /* @__PURE__ */ React.createElement("div", { className: "v4s-probe-card" }, /* @__PURE__ */ React.createElement("b", null, "authority"), /* @__PURE__ */ React.createElement("span", { className: "mono" }, loopRtAuthorityText(payload)))), candidates.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, columns.map((key) => /* @__PURE__ */ React.createElement("th", { key }, key)))), /* @__PURE__ */ React.createElement("tbody", null, candidates.slice(0, 10).map((row, index2) => /* @__PURE__ */ React.createElement("tr", { key: index2 }, columns.map((key) => /* @__PURE__ */ React.createElement("td", { key, className: "mono" }, loopRtShort(row[key])))))))) : /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uD6C4\uBCF4 \uBAA9\uB85D\uC774 \uBE44\uC5B4 \uC788\uC2B5\uB2C8\uB2E4. \uC774\uAC83\uB3C4 \uBBF8\uB9AC\uBCF4\uAE30 \uACB0\uACFC\uC774\uBA70 \uC790\uB3D9 \uC2E4\uD589\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(LoopRtReceipts, { payload }));
+  }
+  function LoopResearchToolsPanel({ baseUrl }) {
+    const [status, setStatus] = useState_lrt(null);
+    const [statusError, setStatusError] = useState_lrt("");
+    const [busy, setBusy] = useState_lrt("");
+    const [errors, setErrors] = useState_lrt({});
+    const [results, setResults] = useState_lrt({ bayesian: null, ast: null, qmc: null, denoise: null });
+    const [bayesian, setBayesian] = useState_lrt({ successes: "12", failures: "8", ropeLower: "0.50", approveThreshold: "0.95", rejectThreshold: "0.05", maxSample: "2000" });
+    const [ast, setAst] = useState_lrt({ source: "", allowedFunctions: "", maxClauses: "24", maxLookback: "240", maxUnknownLines: "0" });
+    const [qmc, setQmc] = useState_lrt({ seed: "qmc-manual-001", count: "16", dimensions: "arm:0.1:1.2\ngive:0.0:0.8" });
+    const [denoise, setDenoise] = useState_lrt({ source: "", seed: "D0_SENTINEL_001", corruptionRate: "0.08" });
+    const loadStatus = useCallback_lrt(() => {
+      setStatusError("");
+      loopRtGet(baseUrl, "/loop/research-tools").then((payload) => {
+        setStatus(payload);
+        setStatusError(payload && payload.available === false ? String(payload.reason || "\uC5F0\uAD6C \uB3C4\uAD6C \uC0C1\uD0DC\uAC00 unavailable \uC785\uB2C8\uB2E4.") : "");
+      }).catch((error) => {
+        setStatus(null);
+        setStatusError(`\uC0C1\uD0DC \uC694\uCCAD \uC2E4\uD328 \xB7 ${String(error && error.message || error)}`);
+      });
+    }, [baseUrl]);
+    useEffect_lrt(() => {
+      loadStatus();
+    }, [loadStatus]);
+    const updateError = (key, message) => setErrors((prev) => Object.assign({}, prev, { [key]: message || "" }));
+    const updateResult = (key, payload) => setResults((prev) => Object.assign({}, prev, { [key]: payload }));
+    const runManual = (key, path, body) => {
+      setBusy(key);
+      updateError(key, "");
+      loopRtPost(baseUrl, path, body).then((payload) => updateResult(key, payload)).catch((error) => updateError(key, `\uC694\uCCAD \uC2E4\uD328 \xB7 ${String(error && error.message || error)}`)).finally(() => setBusy(""));
+    };
+    const onBayesianSubmit = (event) => {
+      event.preventDefault();
+      const successes = loopRtClamp(bayesian.successes, 0, 0, 1e5, true);
+      const failures = loopRtClamp(bayesian.failures, 0, 0, 1e5, true);
+      const ropeLower = loopRtClamp(bayesian.ropeLower, 0.5, 0, 1, false);
+      runManual("bayesian", "/loop/research-tools/bayesian", {
+        successes,
+        failures,
+        config: {
+          prior_alpha: 1,
+          prior_beta: 1,
+          rope_lower: ropeLower,
+          approve_prob_threshold: loopRtClamp(bayesian.approveThreshold, 0.95, 0, 1, false),
+          reject_prob_threshold: loopRtClamp(bayesian.rejectThreshold, 0.05, 0, 1, false),
+          max_sample: loopRtClamp(bayesian.maxSample, 2e3, successes + failures, 2e5, true),
+          credible_mass: 0.95
+        }
+      });
+    };
+    const onAstSubmit = (event) => {
+      event.preventDefault();
+      if (!String(ast.source || "").trim()) {
+        updateError("ast", "\uAC10\uC0AC\uD560 \uC18C\uC2A4\uB97C \uC785\uB825\uD558\uC138\uC694.");
+        return;
+      }
+      runManual("ast", "/loop/research-tools/ast", {
+        source: String(ast.source || "").slice(0, 12e3),
+        allowed_functions: String(ast.allowedFunctions || "").split(",").map((item) => item.trim()).filter(Boolean).slice(0, 64),
+        max_clauses: loopRtClamp(ast.maxClauses, 24, 1, 200, true),
+        max_lookback: loopRtClamp(ast.maxLookback, 240, 1, 5e3, true),
+        max_unknown_lines: loopRtClamp(ast.maxUnknownLines, 0, 0, 1e3, true)
+      });
+    };
+    const onQmcSubmit = (event) => {
+      event.preventDefault();
+      const dimensions = loopRtParseDimensions(qmc.dimensions);
+      if (!dimensions.length) {
+        updateError("qmc", "dimension\uC740 name:low:high \uD615\uC2DD\uC73C\uB85C 1\uAC1C \uC774\uC0C1 \uC785\uB825\uD558\uC138\uC694.");
+        return;
+      }
+      runManual("qmc", "/loop/research-tools/qmc", {
+        dimensions,
+        count: loopRtClamp(qmc.count, 16, 1, 128, true),
+        seed: String(qmc.seed || "qmc-manual").slice(0, 80),
+        include_pareto_archive: true,
+        objectives: ["expectancy", "risk"]
+      });
+    };
+    const onDenoiseSubmit = (event) => {
+      event.preventDefault();
+      if (!String(denoise.source || "").trim()) {
+        updateError("denoise", "D0 \uC18C\uC2A4/\uD15C\uD50C\uB9BF\uC744 \uC785\uB825\uD558\uC138\uC694.");
+        return;
+      }
+      runManual("denoise", "/loop/research-tools/denoise", {
+        source: String(denoise.source || "").slice(0, 12e3),
+        seed: String(denoise.seed || "D0_SENTINEL").slice(0, 80),
+        corruption_rate: loopRtClamp(denoise.corruptionRate, 0.08, 0, 0.5, false)
+      });
+    };
+    const statusAuthority = status ? loopRtAuthorityText(status) : "\uC0C1\uD0DC \uD655\uC778 \uC911";
+    return /* @__PURE__ */ React.createElement("div", { className: "loop-research-tools", "aria-label": "\uD655\uB960 \uC5F0\uAD6C \uB3C4\uAD6C" }, /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, "\uD655\uB960 \uC5F0\uAD6C \uB3C4\uAD6C ", /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "offline-safe manual diagnostics")), /* @__PURE__ */ React.createElement("span", { className: "badge warn", title: "\uC9C4\uB2E8/\uC81C\uC548 \uC804\uC6A9\uC774\uBA70 \uCC44\uD0DD \uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }, "no_adoption")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, /* @__PURE__ */ React.createElement("b", null, "\uC9C4\uB2E8/\uC81C\uC548 \uC804\uC6A9"), " \u2014 Bayesian, AST, QMC/Pareto, D0 \uCD9C\uB825\uC740 OOS \uD310\uC815\xB7\uC804\uB7B5 \uCC44\uD0DD\xB7\uB0B4\uBCF4\uB0B4\uAE30 \uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. Bayesian \uC751\uB2F5\uC5D0 ", /* @__PURE__ */ React.createElement("span", { className: "mono" }, "APPROVE"), "\uAC00 \uBCF4\uC5EC\uB3C4 ", /* @__PURE__ */ React.createElement("b", null, "statistical boundary only"), "\uC774\uBA70 \uC804\uB7B5 \uC2B9\uC778 \uC544\uB2D8\uC785\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4s-log-controls" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", type: "button", onClick: loadStatus }, "\uC0C1\uD0DC \uC0C8\uB85C\uACE0\uCE68"), /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "GET /loop/research-tools \xB7 authority ", statusAuthority)), statusError && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, statusError), !status && !statusError && /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "\uC0C1\uD0DC \uD655\uC778 \uC911\uC785\uB2C8\uB2E4. \uC218\uB3D9 \uD3FC\uC740 \uC0C1\uD0DC \uC751\uB2F5\uC774 \uBE44\uC5B4 \uC788\uC5B4\uB3C4 \uBC84\uD2BC\uC744 \uB204\uB97C \uB54C\uB9CC \uC694\uCCAD\uB429\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(LoopRtStatusGrid, { status }), status && Array.isArray(status.warnings) && status.warnings.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "v4s-note" }, status.warnings.map((warning, index2) => /* @__PURE__ */ React.createElement("li", { key: index2 }, String(warning)))), /* @__PURE__ */ React.createElement(LoopRtReceipts, { payload: status }))), /* @__PURE__ */ React.createElement("div", { className: "v6-stage-grid v59-matrix", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "loop-rt-bayesian-heading" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { id: "loop-rt-bayesian-heading", className: "panel-hd-title" }, "Bayesian sequential ", /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "success/failure/ROPE")), /* @__PURE__ */ React.createElement("span", { className: "badge" }, "manual")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("form", { onSubmit: onBayesianSubmit }, /* @__PURE__ */ React.createElement("div", { className: "v4s-log-controls", style: { flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("label", null, "successes ", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: "100000", value: bayesian.successes, onChange: (e) => setBayesian(Object.assign({}, bayesian, { successes: e.target.value })) })), /* @__PURE__ */ React.createElement("label", null, "failures ", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: "100000", value: bayesian.failures, onChange: (e) => setBayesian(Object.assign({}, bayesian, { failures: e.target.value })) })), /* @__PURE__ */ React.createElement("label", null, "ROPE lower ", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: "1", step: "0.01", value: bayesian.ropeLower, onChange: (e) => setBayesian(Object.assign({}, bayesian, { ropeLower: e.target.value })) })), /* @__PURE__ */ React.createElement("label", null, "approve prob ", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: "1", step: "0.01", value: bayesian.approveThreshold, onChange: (e) => setBayesian(Object.assign({}, bayesian, { approveThreshold: e.target.value })) })), /* @__PURE__ */ React.createElement("label", null, "reject prob ", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: "1", step: "0.01", value: bayesian.rejectThreshold, onChange: (e) => setBayesian(Object.assign({}, bayesian, { rejectThreshold: e.target.value })) })), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", type: "submit", disabled: busy === "bayesian" }, "posterior decision \uACC4\uC0B0"))), /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "POST /loop/research-tools/bayesian \xB7 posterior decision\uC740 \uD1B5\uACC4 \uACBD\uACC4\uB9CC \uD45C\uC2DC\uD569\uB2C8\uB2E4."), errors.bayesian && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, errors.bayesian), /* @__PURE__ */ React.createElement(LoopRtBayesianResult, { payload: results.bayesian }))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "loop-rt-ast-heading" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { id: "loop-rt-ast-heading", className: "panel-hd-title" }, "AST source audit ", /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "bounded source inspection")), /* @__PURE__ */ React.createElement("span", { className: "badge" }, "manual")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("form", { onSubmit: onAstSubmit }, /* @__PURE__ */ React.createElement("label", null, "source", /* @__PURE__ */ React.createElement("textarea", { value: ast.source, placeholder: "\uAC10\uC0AC\uD560 \uC870\uAC74\uC2DD/\uD30C\uC774\uC36C \uC870\uAC01", onChange: (e) => setAst(Object.assign({}, ast, { source: e.target.value })), style: { width: "100%", minHeight: 120 } })), /* @__PURE__ */ React.createElement("div", { className: "v4s-log-controls", style: { flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("label", null, "allowed functions ", /* @__PURE__ */ React.createElement("input", { value: ast.allowedFunctions, placeholder: "MA, CROSSUP", onChange: (e) => setAst(Object.assign({}, ast, { allowedFunctions: e.target.value })) })), /* @__PURE__ */ React.createElement("label", null, "max clauses ", /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "200", value: ast.maxClauses, onChange: (e) => setAst(Object.assign({}, ast, { maxClauses: e.target.value })) })), /* @__PURE__ */ React.createElement("label", null, "max lookback ", /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "5000", value: ast.maxLookback, onChange: (e) => setAst(Object.assign({}, ast, { maxLookback: e.target.value })) })), /* @__PURE__ */ React.createElement("label", null, "unknown lines ", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: "1000", value: ast.maxUnknownLines, onChange: (e) => setAst(Object.assign({}, ast, { maxUnknownLines: e.target.value })) })), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", type: "submit", disabled: busy === "ast" }, "AST \uAC10\uC0AC"))), /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "POST /loop/research-tools/ast \xB7 \uC18C\uC2A4 \uAD6C\uC870 \uC9C4\uB2E8\uC774\uBA70 \uC5D4\uC9C4 \uAC80\uC99D/OOS\uAC00 \uC544\uB2D9\uB2C8\uB2E4."), errors.ast && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, errors.ast), /* @__PURE__ */ React.createElement(LoopRtAstResult, { payload: results.ast }))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "loop-rt-qmc-heading" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { id: "loop-rt-qmc-heading", className: "panel-hd-title" }, "QMC/Pareto preview ", /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "seed/count bounded")), /* @__PURE__ */ React.createElement("span", { className: "badge" }, "manual")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("form", { onSubmit: onQmcSubmit }, /* @__PURE__ */ React.createElement("label", null, "dimensions ", /* @__PURE__ */ React.createElement("textarea", { value: qmc.dimensions, placeholder: "name:low:high", onChange: (e) => setQmc(Object.assign({}, qmc, { dimensions: e.target.value })), style: { width: "100%", minHeight: 76 } })), /* @__PURE__ */ React.createElement("div", { className: "v4s-log-controls", style: { flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("label", null, "seed ", /* @__PURE__ */ React.createElement("input", { value: qmc.seed, onChange: (e) => setQmc(Object.assign({}, qmc, { seed: e.target.value })) })), /* @__PURE__ */ React.createElement("label", null, "count ", /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "128", value: qmc.count, onChange: (e) => setQmc(Object.assign({}, qmc, { count: e.target.value })) })), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", type: "submit", disabled: busy === "qmc" }, "QMC \uD6C4\uBCF4 \uBBF8\uB9AC\uBCF4\uAE30"))), /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "POST /loop/research-tools/qmc \xB7 Pareto archive\uB294 \uC81C\uC548 \uBAA9\uB85D\uC774\uBA70 \uC2E4\uD589\xB7\uCC44\uD0DD\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), errors.qmc && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, errors.qmc), /* @__PURE__ */ React.createElement(LoopRtQmcResult, { payload: results.qmc }))), /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-labelledby": "loop-rt-denoise-heading" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { id: "loop-rt-denoise-heading", className: "panel-hd-title" }, "D0 denoising ", /* @__PURE__ */ React.createElement("small", { className: "v4s-en" }, "source/template seed sentinel")), /* @__PURE__ */ React.createElement("span", { className: "badge" }, "manual")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("form", { onSubmit: onDenoiseSubmit }, /* @__PURE__ */ React.createElement("label", null, "D0 source/template", /* @__PURE__ */ React.createElement("textarea", { value: denoise.source, placeholder: "\uB514\uB178\uC774\uC9D5 \uC13C\uD2F0\uB110\uC744 \uD655\uC778\uD560 \uC18C\uC2A4/\uD15C\uD50C\uB9BF", onChange: (e) => setDenoise(Object.assign({}, denoise, { source: e.target.value })), style: { width: "100%", minHeight: 110 } })), /* @__PURE__ */ React.createElement("div", { className: "v4s-log-controls", style: { flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("label", null, "seed sentinel ", /* @__PURE__ */ React.createElement("input", { value: denoise.seed, onChange: (e) => setDenoise(Object.assign({}, denoise, { seed: e.target.value })) })), /* @__PURE__ */ React.createElement("label", null, "corruption rate ", /* @__PURE__ */ React.createElement("input", { type: "number", min: "0", max: "0.5", step: "0.01", value: denoise.corruptionRate, onChange: (e) => setDenoise(Object.assign({}, denoise, { corruptionRate: e.target.value })) })), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", type: "submit", disabled: busy === "denoise" }, "D0 \uC13C\uD2F0\uB110 \uC9C4\uB2E8"))), /* @__PURE__ */ React.createElement("p", { className: "v4s-note" }, "POST /loop/research-tools/denoise \xB7 deterministic corruption/repair \uC9C4\uB2E8\uB9CC \uD45C\uC2DC\uD569\uB2C8\uB2E4."), errors.denoise && /* @__PURE__ */ React.createElement("p", { className: "v4-research-error", role: "alert" }, errors.denoise), /* @__PURE__ */ React.createElement(LoopRtObjectPreview, { payload: results.denoise, title: "D0 denoising result" })))));
+  }
+
   // ai_strategy_loop/dashboard/frontend/research-improvement.jsx
   var { useMemo: useMemo_ri, useEffect: useEffect_ri, useState: useState_ri } = React;
   function _riNum(value) {
@@ -38420,7 +38642,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           reviewContext,
           onSelectContext: setReviewContext
         }
-      )), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uD45C\uBCF8\xB7\uAC80\uC815\uB825 \uACC4\uAE30\uD310(\uD398\uC774\uC9C0 31)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD45C\uBCF8\xB7\uAC80\uC815\uB825 \xB7 \uC9C0\uAE08 \uD655\uC815\uD560 \uC218 \uC788\uB294 \uAC83"), /* @__PURE__ */ React.createElement(LoopPowerGaugePanel, { baseUrl, reviewContext })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uD30C\uB77C\uBBF8\uD130 \uC751\uB2F5\uBA74(\uD398\uC774\uC9C0 32)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD30C\uB77C\uBBF8\uD130 \uC751\uB2F5\uBA74 \xB7 \uACE0\uC6D0\uC778\uAC00 \uC808\uBCBD\uC778\uAC00"), /* @__PURE__ */ React.createElement(LoopResponseSurfacePanel, { baseUrl, reviewContext })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC870\uAC74\uC2DD \uBE44\uAD50 \uBDF0\uC5B4(\uD398\uC774\uC9C0 33)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC870\uAC74\uC2DD \uBE44\uAD50 \xB7 \uC808 \uB2E8\uC704 diff"), /* @__PURE__ */ React.createElement(LoopConditionDiffPanel, { baseUrl, reviewContext })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uAC70\uB798 \uC9DD \uBDF0\uC5B4(\uD398\uC774\uC9C0 34)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uAC70\uB798 \uC9DD \xB7 \uC65C \uADF8\uB7F0\uC9C0 \uC9C1\uC811 \uBCF8\uB2E4"), /* @__PURE__ */ React.createElement(LoopTradePairsPanel, { baseUrl, reviewContext })))
+      )), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uD45C\uBCF8\xB7\uAC80\uC815\uB825 \uACC4\uAE30\uD310(\uD398\uC774\uC9C0 31)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD45C\uBCF8\xB7\uAC80\uC815\uB825 \xB7 \uC9C0\uAE08 \uD655\uC815\uD560 \uC218 \uC788\uB294 \uAC83"), /* @__PURE__ */ React.createElement(LoopPowerGaugePanel, { baseUrl, reviewContext })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uD30C\uB77C\uBBF8\uD130 \uC751\uB2F5\uBA74(\uD398\uC774\uC9C0 32)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD30C\uB77C\uBBF8\uD130 \uC751\uB2F5\uBA74 \xB7 \uACE0\uC6D0\uC778\uAC00 \uC808\uBCBD\uC778\uAC00"), /* @__PURE__ */ React.createElement(LoopResponseSurfacePanel, { baseUrl, reviewContext })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uC870\uAC74\uC2DD \uBE44\uAD50 \uBDF0\uC5B4(\uD398\uC774\uC9C0 33)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uC870\uAC74\uC2DD \uBE44\uAD50 \xB7 \uC808 \uB2E8\uC704 diff"), /* @__PURE__ */ React.createElement(LoopConditionDiffPanel, { baseUrl, reviewContext })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uAC70\uB798 \uC9DD \uBDF0\uC5B4(\uD398\uC774\uC9C0 34)" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uAC70\uB798 \uC9DD \xB7 \uC65C \uADF8\uB7F0\uC9C0 \uC9C1\uC811 \uBCF8\uB2E4"), /* @__PURE__ */ React.createElement(LoopTradePairsPanel, { baseUrl, reviewContext })), /* @__PURE__ */ React.createElement("section", { className: "v6-stage-lab v54-span-all", "aria-label": "\uD655\uB960 \uC5F0\uAD6C \uB3C4\uAD6C" }, /* @__PURE__ */ React.createElement("h3", { className: "stom-section-label" }, "\uD655\uB960 \uC5F0\uAD6C \uB3C4\uAD6C \xB7 \uC218\uB3D9 \uC9C4\uB2E8/\uC81C\uC548"), /* @__PURE__ */ React.createElement(LoopResearchToolsPanel, { baseUrl })))
     ), /* @__PURE__ */ React.createElement(
       ApprovalDialog,
       {
