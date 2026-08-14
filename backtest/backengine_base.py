@@ -793,11 +793,16 @@ class BackEngineBase(BaseStrategy):
                                 )
                                 diagnostic_first_strategy = False
                         except:
+                            error_text = format_exc()
                             _emit_engine_protocol_checkpoint(
                                 self.wq, self.gubun, 'engine_strategy_exception',
-                                {'code': code, 'index': int(self.index)},
+                                {
+                                    'code': code,
+                                    'index': int(self.index),
+                                    'error': error_text.strip().splitlines()[-1],
+                                },
                             )
-                            if self.gubun == 0: self.wq.put((ui_num['시스템로그'], format_exc()))
+                            if self.gubun == 0: self.wq.put((ui_num['시스템로그'], error_text))
                             self.BackStop(3)
                             return
 

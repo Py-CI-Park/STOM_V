@@ -21,6 +21,7 @@ def _row(arm, status, checkpoint="engine_strategy_progress", ticks=1000):
                     "elapsed_seconds": 10.0,
                     "code": "A",
                     "index": 20231114090000,
+                    "error": None,
                 }
             },
         },
@@ -37,6 +38,7 @@ def test_worker_snapshot_keeps_only_bounded_engine_fields():
             "elapsed_seconds": 10.0,
             "code": "A",
             "index": 20231114090000,
+            "error": None,
         }
     }
 

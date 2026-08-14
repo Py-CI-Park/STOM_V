@@ -28,3 +28,14 @@ def test_engine_protocol_checkpoint_is_bounded_and_identifies_worker(monkeypatch
     assert payload["detail"]["tick_count"] == 12000
     assert len(payload["detail"]["code"]) == 128
     assert len(payload["detail"]["unsafe"]) <= 128
+
+
+def test_engine_protocol_checkpoint_bounds_exception_text(monkeypatch):
+    monkeypatch.setenv("STOM_CLI_BACKTEST_PROTOCOL_DIAG", "1")
+    queue = Queue()
+    _emit_engine_protocol_checkpoint(
+        queue, 0, "engine_strategy_exception", {"error": "E" * 500}
+    )
+    _, message = queue.get_nowait()
+    payload = json.loads(message[len("[CLI_DIAG] "):])
+    assert payload["detail"]["error"] == "E" * 128

@@ -35,6 +35,7 @@ def _worker_snapshot(row: dict[str, Any]) -> dict[str, Any]:
             "elapsed_seconds": detail.get("elapsed_seconds"),
             "code": detail.get("code"),
             "index": detail.get("index"),
+            "error": detail.get("error"),
         }
     return workers
 
