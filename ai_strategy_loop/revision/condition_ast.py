@@ -55,8 +55,8 @@ def _canonicalizer_receipt() -> dict[str, Any]:
         "condition_ast_config_receipt_v1",
         {
             "canonicalizer_version": CANONICALIZER_VERSION,
-            "line_model": "comments_blanks_assignments_if_elif_unknown_v1",
-            "normalization": "ast_unparse_for_known_python_fragments",
+            "line_model": "comments_blanks_assignments_if_elif_else_unknown_v1",
+            "normalization": "ast_unparse_for_known_python_fragments_with_constant_lookbacks",
         },
     )
 
@@ -86,7 +86,7 @@ def _static_config_receipt(
 
 @dataclass(frozen=True, slots=True)
 class NumericLookback:
-    """Literal numeric argument found inside a function call."""
+    """Literal or resolved numeric argument found inside a function call."""
 
     line_no: int
     function: str
@@ -101,6 +101,26 @@ class NumericLookback:
             "argument_index": self.argument_index,
             "value": self.value,
             "source": self.source,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class UnresolvedLookback:
+    """Nonliteral function argument that cannot be bounded offline."""
+
+    line_no: int
+    function: str
+    argument_index: int
+    source: str
+    reason: str = "nonliteral_lookback_argument"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "line_no": self.line_no,
+            "function": self.function,
+            "argument_index": self.argument_index,
+            "source": self.source,
+            "reason": self.reason,
         }
 
 
@@ -123,6 +143,7 @@ class ConditionLine:
     parse_error: str = ""
     called_functions: tuple[str, ...] = ()
     numeric_lookbacks: tuple[NumericLookback, ...] = ()
+    unresolved_lookbacks: tuple[UnresolvedLookback, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -141,6 +162,9 @@ class ConditionLine:
             "parse_error": self.parse_error,
             "called_functions": list(self.called_functions),
             "numeric_lookbacks": [item.to_dict() for item in self.numeric_lookbacks],
+            "unresolved_lookbacks": [
+                item.to_dict() for item in self.unresolved_lookbacks
+            ],
         }
 
 
@@ -158,6 +182,7 @@ class ConditionComplexity:
     unique_function_count: int
     numeric_lookback_count: int
     max_numeric_lookback: float
+    unresolved_lookback_count: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -171,6 +196,7 @@ class ConditionComplexity:
             "unique_function_count": self.unique_function_count,
             "numeric_lookback_count": self.numeric_lookback_count,
             "max_numeric_lookback": self.max_numeric_lookback,
+            "unresolved_lookback_count": self.unresolved_lookback_count,
         }
 
 
@@ -185,6 +211,7 @@ class ConditionAst:
     canonical_sha256: str
     called_functions: tuple[str, ...]
     numeric_lookbacks: tuple[NumericLookback, ...]
+    unresolved_lookbacks: tuple[UnresolvedLookback, ...]
     complexity: ConditionComplexity
     schema: str = SCHEMA_VERSION
     authority: str = AUTHORITY
@@ -216,6 +243,9 @@ class ConditionAst:
             "canonical_hash": self.canonical_sha256,
             "called_functions": list(self.called_functions),
             "numeric_lookbacks": [item.to_dict() for item in self.numeric_lookbacks],
+            "unresolved_lookbacks": [
+                item.to_dict() for item in self.unresolved_lookbacks
+            ],
             "complexity": self.complexity.to_dict(),
             "lines": [line.to_dict() for line in self.lines],
             "authority": self.authority,
@@ -278,10 +308,13 @@ class StaticCheckResult:
 def parse_condition_source(source: str) -> ConditionAst:
     """Build the offline canonical model for STOM condition source."""
     original_source = "" if source is None else str(source)
-    lines = tuple(
-        _parse_line(line_no, raw)
-        for line_no, raw in enumerate(original_source.splitlines(), start=1)
-    )
+    numeric_constants: dict[str, int | float] = {}
+    parsed_lines: list[ConditionLine] = []
+    for line_no, raw in enumerate(original_source.splitlines(), start=1):
+        line = _parse_line(line_no, raw, numeric_constants)
+        parsed_lines.append(line)
+        _update_numeric_constants(line, numeric_constants)
+    lines = tuple(parsed_lines)
     canonical_text = "\n".join(_canonical_line(line) for line in lines)
     called_functions = _unique(
         function for line in lines for function in line.called_functions
@@ -289,7 +322,15 @@ def parse_condition_source(source: str) -> ConditionAst:
     numeric_lookbacks = tuple(
         lookback for line in lines for lookback in line.numeric_lookbacks
     )
-    complexity = _complexity(lines, called_functions, numeric_lookbacks)
+    unresolved_lookbacks = tuple(
+        lookback for line in lines for lookback in line.unresolved_lookbacks
+    )
+    complexity = _complexity(
+        lines,
+        called_functions,
+        numeric_lookbacks,
+        unresolved_lookbacks,
+    )
     return ConditionAst(
         original_source=original_source,
         original_sha256=_sha256_text(original_source),
@@ -298,6 +339,7 @@ def parse_condition_source(source: str) -> ConditionAst:
         canonical_sha256=_sha256_text(canonical_text),
         called_functions=called_functions,
         numeric_lookbacks=numeric_lookbacks,
+        unresolved_lookbacks=unresolved_lookbacks,
         complexity=complexity,
     )
 
@@ -392,6 +434,17 @@ def static_check_condition_source(
                     line_no=lookback.line_no,
                 )
             )
+    for lookback in parsed.unresolved_lookbacks:
+        violations.append(
+            StaticViolation(
+                "unresolved_lookback",
+                (
+                    f"{lookback.function} arg{lookback.argument_index}="
+                    f"{lookback.source!r} is not a numeric literal or resolved constant"
+                ),
+                line_no=lookback.line_no,
+            )
+        )
 
     config_receipt = _static_config_receipt(
         allowed_functions=allowed,
@@ -427,7 +480,11 @@ def estimate_diagnostic_work(source: str | ConditionAst) -> float:
 # Internal parsing helpers
 
 
-def _parse_line(line_no: int, raw: str) -> ConditionLine:
+def _parse_line(
+    line_no: int,
+    raw: str,
+    numeric_constants: Mapping[str, int | float],
+) -> ConditionLine:
     indent = _indent_width(raw)
     stripped = raw.lstrip(" \t")
     if stripped == "":
@@ -450,11 +507,24 @@ def _parse_line(line_no: int, raw: str) -> ConditionLine:
     clause = _split_if_clause(code)
     if clause is not None:
         keyword, expression, inline_body = clause
-        normalized, parse_error = _normalize_expression(expression)
-        calls, lookbacks = _metadata_from_expression(expression, line_no)
-        inline_normalized, inline_kind, inline_error, inline_calls, inline_lookbacks = (
-            _parse_inline_body(inline_body, line_no)
-        )
+        if keyword == "else":
+            normalized, parse_error = "", ""
+            calls, lookbacks, unresolved = (), (), ()
+        else:
+            normalized, parse_error = _normalize_expression(expression)
+            calls, lookbacks, unresolved = _metadata_from_expression(
+                expression,
+                line_no,
+                numeric_constants,
+            )
+        (
+            inline_normalized,
+            inline_kind,
+            inline_error,
+            inline_calls,
+            inline_lookbacks,
+            inline_unresolved,
+        ) = _parse_inline_body(inline_body, line_no, numeric_constants)
         return ConditionLine(
             line_no=line_no,
             kind="clause",
@@ -470,11 +540,12 @@ def _parse_line(line_no: int, raw: str) -> ConditionLine:
             parse_error=_join_errors(parse_error, inline_error),
             called_functions=_unique((*calls, *inline_calls)),
             numeric_lookbacks=(*lookbacks, *inline_lookbacks),
+            unresolved_lookbacks=(*unresolved, *inline_unresolved),
         )
 
-    assignment = _parse_assignment(code, line_no)
+    assignment = _parse_assignment(code, line_no, numeric_constants)
     if assignment is not None:
-        target, normalized, calls, lookbacks, parse_error = assignment
+        target, normalized, calls, lookbacks, unresolved, parse_error = assignment
         return ConditionLine(
             line_no=line_no,
             kind="assignment",
@@ -487,9 +558,14 @@ def _parse_line(line_no: int, raw: str) -> ConditionLine:
             parse_error=parse_error,
             called_functions=calls,
             numeric_lookbacks=lookbacks,
+            unresolved_lookbacks=unresolved,
         )
 
-    calls, lookbacks = _metadata_from_statement(code, line_no)
+    calls, lookbacks, unresolved = _metadata_from_statement(
+        code,
+        line_no,
+        numeric_constants,
+    )
     return ConditionLine(
         line_no=line_no,
         kind="unknown",
@@ -500,6 +576,7 @@ def _parse_line(line_no: int, raw: str) -> ConditionLine:
         comment=normalized_comment,
         called_functions=calls,
         numeric_lookbacks=lookbacks,
+        unresolved_lookbacks=unresolved,
     )
 
 
@@ -519,6 +596,13 @@ def _split_comment(text: str) -> tuple[str, str]:
 
 
 def _split_if_clause(code: str) -> Optional[tuple[str, str, str]]:
+    stripped = code.strip()
+    if stripped.startswith("else"):
+        rest = stripped[4:].lstrip()
+        if not rest.startswith(":"):
+            return None
+        return "else", "", rest[1:].strip()
+
     parts = code.split(maxsplit=1)
     if len(parts) != 2 or parts[0] not in {"if", "elif"}:
         return None
@@ -553,23 +637,44 @@ def _top_level_colon_index(text: str) -> Optional[int]:
 def _parse_inline_body(
     inline_body: str,
     line_no: int,
-) -> tuple[str, str, str, tuple[str, ...], tuple[NumericLookback, ...]]:
+    numeric_constants: Mapping[str, int | float],
+) -> tuple[
+    str,
+    str,
+    str,
+    tuple[str, ...],
+    tuple[NumericLookback, ...],
+    tuple[UnresolvedLookback, ...],
+]:
     if not inline_body:
-        return "", "", "", (), ()
-    assignment = _parse_assignment(inline_body, line_no)
+        return "", "", "", (), (), ()
+    assignment = _parse_assignment(inline_body, line_no, numeric_constants)
     if assignment is not None:
-        _target, normalized, calls, lookbacks, parse_error = assignment
-        return normalized, "assignment", parse_error, calls, lookbacks
+        _target, normalized, calls, lookbacks, unresolved, parse_error = assignment
+        return normalized, "assignment", parse_error, calls, lookbacks, unresolved
     normalized, parse_error = _normalize_statement(inline_body)
-    calls, lookbacks = _metadata_from_statement(inline_body, line_no)
-    return normalized, "unknown", parse_error, calls, lookbacks
+    calls, lookbacks, unresolved = _metadata_from_statement(
+        inline_body,
+        line_no,
+        numeric_constants,
+    )
+    inline_kind = "unknown" if parse_error else "statement"
+    return normalized, inline_kind, parse_error, calls, lookbacks, unresolved
 
 
 def _parse_assignment(
     code: str,
     line_no: int,
+    numeric_constants: Mapping[str, int | float],
 ) -> Optional[
-    tuple[str, str, tuple[str, ...], tuple[NumericLookback, ...], str]
+    tuple[
+        str,
+        str,
+        tuple[str, ...],
+        tuple[NumericLookback, ...],
+        tuple[UnresolvedLookback, ...],
+        str,
+    ]
 ]:
     try:
         tree = ast.parse(code)
@@ -592,9 +697,13 @@ def _parse_assignment(
     else:
         return None
     target = ",".join(_safe_unparse(item) for item in targets)
-    calls, lookbacks = _metadata_from_node(value, line_no) if value is not None else ((), ())
+    calls, lookbacks, unresolved = (
+        _metadata_from_node(value, line_no, numeric_constants)
+        if value is not None
+        else ((), (), ())
+    )
     normalized, parse_error = _normalize_statement(code)
-    return target, normalized, calls, lookbacks, parse_error
+    return target, normalized, calls, lookbacks, unresolved, parse_error
 
 
 def _normalize_expression(expression: str) -> tuple[str, str]:
@@ -616,48 +725,61 @@ def _normalize_statement(statement: str) -> tuple[str, str]:
 def _metadata_from_expression(
     expression: str,
     line_no: int,
-) -> tuple[tuple[str, ...], tuple[NumericLookback, ...]]:
+    numeric_constants: Mapping[str, int | float],
+) -> tuple[tuple[str, ...], tuple[NumericLookback, ...], tuple[UnresolvedLookback, ...]]:
     try:
         node = ast.parse(expression, mode="eval").body
     except SyntaxError:
-        return (), ()
-    return _metadata_from_node(node, line_no)
+        return (), (), ()
+    return _metadata_from_node(node, line_no, numeric_constants)
 
 
 def _metadata_from_statement(
     statement: str,
     line_no: int,
-) -> tuple[tuple[str, ...], tuple[NumericLookback, ...]]:
+    numeric_constants: Mapping[str, int | float],
+) -> tuple[tuple[str, ...], tuple[NumericLookback, ...], tuple[UnresolvedLookback, ...]]:
     try:
         tree = ast.parse(statement)
     except SyntaxError:
-        return (), ()
-    return _metadata_from_node(tree, line_no)
+        return (), (), ()
+    return _metadata_from_node(tree, line_no, numeric_constants)
 
 
 def _metadata_from_node(
     node: ast.AST | None,
     line_no: int,
-) -> tuple[tuple[str, ...], tuple[NumericLookback, ...]]:
+    numeric_constants: Mapping[str, int | float],
+) -> tuple[tuple[str, ...], tuple[NumericLookback, ...], tuple[UnresolvedLookback, ...]]:
     if node is None:
-        return (), ()
-    visitor = _CallMetadataVisitor(line_no)
+        return (), (), ()
+    visitor = _CallMetadataVisitor(line_no, numeric_constants)
     visitor.visit(node)
-    return _unique(visitor.called_functions), tuple(visitor.numeric_lookbacks)
+    return (
+        _unique(visitor.called_functions),
+        tuple(visitor.numeric_lookbacks),
+        tuple(visitor.unresolved_lookbacks),
+    )
 
 
 class _CallMetadataVisitor(ast.NodeVisitor):
-    def __init__(self, line_no: int) -> None:
+    def __init__(
+        self,
+        line_no: int,
+        numeric_constants: Mapping[str, int | float],
+    ) -> None:
         self._line_no = line_no
+        self._numeric_constants = numeric_constants
         self.called_functions: list[str] = []
         self.numeric_lookbacks: list[NumericLookback] = []
+        self.unresolved_lookbacks: list[UnresolvedLookback] = []
 
     def visit_Call(self, node: ast.Call) -> Any:  # noqa: N802
         function = _call_name(node.func)
         if function:
             self.called_functions.append(function)
             for index, arg in enumerate(node.args):
-                value = _literal_number(arg)
+                value = _constant_number(arg, self._numeric_constants)
                 if value is not None:
                     self.numeric_lookbacks.append(
                         NumericLookback(
@@ -665,6 +787,15 @@ class _CallMetadataVisitor(ast.NodeVisitor):
                             function=function,
                             argument_index=index,
                             value=value,
+                            source=_safe_unparse(arg),
+                        )
+                    )
+                elif _requires_numeric_resolution(arg):
+                    self.unresolved_lookbacks.append(
+                        UnresolvedLookback(
+                            line_no=self._line_no,
+                            function=function,
+                            argument_index=index,
                             source=_safe_unparse(arg),
                         )
                     )
@@ -694,6 +825,91 @@ def _literal_number(node: ast.AST) -> int | float | None:
             return None
         return value if isinstance(node.op, ast.UAdd) else -value
     return None
+
+
+def _constant_number(
+    node: ast.AST,
+    numeric_constants: Mapping[str, int | float],
+) -> int | float | None:
+    value = _literal_number(node)
+    if value is not None:
+        return value
+    if isinstance(node, ast.Name):
+        return numeric_constants.get(node.id)
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
+        operand = _constant_number(node.operand, numeric_constants)
+        if operand is None:
+            return None
+        return operand if isinstance(node.op, ast.UAdd) else -operand
+    return None
+
+
+def _requires_numeric_resolution(node: ast.AST) -> bool:
+    if isinstance(node, ast.Constant):
+        return False
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
+        return not isinstance(node.operand, ast.Constant)
+    return True
+
+
+def _update_numeric_constants(
+    line: ConditionLine,
+    numeric_constants: dict[str, int | float],
+) -> None:
+    if line.kind != "assignment" or not line.expression:
+        return
+    try:
+        tree = ast.parse(line.expression)
+    except SyntaxError:
+        return
+    if len(tree.body) != 1:
+        return
+    stmt = tree.body[0]
+    names = _assignment_target_names(stmt)
+    if not names:
+        return
+    if line.indent != 0:
+        for name in names:
+            numeric_constants.pop(name, None)
+        return
+    value_node: ast.AST | None
+    if isinstance(stmt, ast.Assign):
+        value_node = stmt.value
+    elif isinstance(stmt, ast.AnnAssign):
+        value_node = stmt.value
+    else:
+        value_node = None
+    value = _literal_number(value_node) if value_node is not None else None
+    for name in names:
+        if value is None:
+            numeric_constants.pop(name, None)
+        else:
+            numeric_constants[name] = value
+
+
+def _assignment_target_names(stmt: ast.stmt) -> tuple[str, ...]:
+    targets: list[ast.AST]
+    if isinstance(stmt, ast.Assign):
+        targets = list(stmt.targets)
+    elif isinstance(stmt, ast.AnnAssign):
+        targets = [stmt.target]
+    elif isinstance(stmt, ast.AugAssign):
+        targets = [stmt.target]
+    else:
+        return ()
+
+    names: list[str] = []
+
+    def collect(target: ast.AST) -> None:
+        if isinstance(target, ast.Name):
+            names.append(target.id)
+        elif isinstance(target, (ast.Tuple, ast.List)):
+            for item in target.elts:
+                collect(item)
+
+    for target in targets:
+        collect(target)
+    return _unique(names)
 
 
 def _safe_unparse(node: ast.AST) -> str:
@@ -744,6 +960,7 @@ def _complexity(
     lines: Sequence[ConditionLine],
     called_functions: Sequence[str],
     numeric_lookbacks: Sequence[NumericLookback],
+    unresolved_lookbacks: Sequence[UnresolvedLookback],
 ) -> ConditionComplexity:
     assignment_count = sum(1 for line in lines if line.kind == "assignment")
     assignment_count += sum(1 for line in lines if line.inline_kind == "assignment")
@@ -761,6 +978,7 @@ def _complexity(
         unique_function_count=len(called_functions),
         numeric_lookback_count=len(numeric_lookbacks),
         max_numeric_lookback=max_lookback,
+        unresolved_lookback_count=len(unresolved_lookbacks),
     )
 
 

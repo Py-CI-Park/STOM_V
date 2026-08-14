@@ -145,6 +145,8 @@ class _GuardBlock:
     clause_index: int
     header: _NodeView
     body: _NodeView
+    body_nodes: tuple[_NodeView, ...]
+    end_line_index: int
 
     @property
     def header_line_index(self) -> int:
@@ -152,7 +154,7 @@ class _GuardBlock:
 
     @property
     def body_line_index(self) -> int:
-        return self.body.line_number - 1
+        return self.end_line_index
 
     @property
     def header_keyword(self) -> str:
@@ -161,7 +163,8 @@ class _GuardBlock:
 
     @property
     def key(self) -> str:
-        return f"{self.header.canonical_text}\n{self.body.canonical_text}"
+        body_key = "\n".join(node.canonical_text for node in self.body_nodes)
+        return f"{self.header.canonical_text}\n{body_key}"
 
 
 def mask_one_clause(
@@ -477,7 +480,7 @@ def shuffled_template_negative_control(
     try:
         view = _source_view(clean_template)
         blocks = _guard_blocks(view)
-        movable = [block for block in blocks if block.header_keyword == "elif"]
+        movable = _movable_shuffle_blocks(blocks)
         if len(movable) < 2:
             raise ValueError("need_at_least_two_elif_guards_to_shuffle_template")
         order = _deranged_order(tuple(block.clause_index for block in movable), seed)
@@ -487,13 +490,27 @@ def shuffled_template_negative_control(
             block.clause_index: lines[block.header_line_index : block.body_line_index + 1]
             for block in movable
         }
-        for destination, source_index in zip((block.clause_index for block in movable), order):
+        replacements = {
+            destination: chunks[source_index]
+            for destination, source_index in zip(
+                (block.clause_index for block in movable),
+                order,
+            )
+        }
+        for block in sorted(movable, key=lambda item: item.header_line_index, reverse=True):
+            destination = block.clause_index
             block = by_index[destination]
-            lines[block.header_line_index : block.body_line_index + 1] = chunks[source_index]
+            lines[block.header_line_index : block.body_line_index + 1] = replacements[destination]
         source = _join_lines(lines, view.final_newline)
+        if source == view.source:
+            raise ValueError("shuffled_template_source_unchanged")
         parsed = _parse(source)
         if parsed is None:
             raise ValueError("shuffled_template_not_parseable")
+        if _canonical_text(parsed) == _canonical_text(clean_template):
+            raise ValueError("shuffled_template_canonical_text_unchanged")
+        if _canonical_hash(parsed) == _canonical_hash(clean_template):
+            raise ValueError("shuffled_template_canonical_hash_unchanged")
         return ShuffledTemplateResult(True, source, parsed, order, "ok", receipt)
     except ValueError as exc:
         source = _source_or_empty(clean_template)
@@ -802,19 +819,66 @@ def _declared_number_count(node: _NodeView) -> int:
     return max(1, len(tuple(_NUMERIC_RE.finditer(node.text))))
 
 
+def _line_indent_width(line: str) -> int:
+    prefix = line[: len(line) - len(line.lstrip(" \t"))]
+    return len(prefix.expandtabs(4))
+
+
+def _ignorable_line(line: str) -> bool:
+    stripped = line.strip()
+    return not stripped or stripped.startswith("#")
+
+
+def _guard_block_end_line_index(
+    lines: Sequence[str],
+    header_line_index: int,
+) -> int | None:
+    header_indent = _line_indent_width(lines[header_line_index])
+    saw_body = False
+    end_line_index: int | None = None
+    for line_index in range(header_line_index + 1, len(lines)):
+        line = lines[line_index]
+        if _ignorable_line(line):
+            if saw_body:
+                end_line_index = line_index
+            continue
+        if _line_indent_width(line) <= header_indent:
+            break
+        saw_body = True
+        end_line_index = line_index
+    return end_line_index if saw_body else None
+
+
+def _nodes_in_line_range(
+    nodes: Sequence[_NodeView],
+    start_line_index: int,
+    end_line_index: int,
+) -> tuple[_NodeView, ...]:
+    return tuple(
+        node
+        for node in nodes
+        if start_line_index <= node.line_number - 1 <= end_line_index
+        and node.kind not in {"blank", "comment"}
+    )
+
+
 def _guard_blocks(view: _SourceView) -> tuple[_GuardBlock, ...]:
     blocks: list[_GuardBlock] = []
-    for position, node in enumerate(view.nodes[:-1]):
+    for node in view.nodes:
         if node.kind not in _GUARD_KINDS:
             continue
         if _GUARD_RE.match(node.text) is None:
             continue
-        body = view.nodes[position + 1]
-        if body.line_number != node.line_number + 1:
+        end_line_index = _guard_block_end_line_index(view.lines, node.line_number - 1)
+        if end_line_index is None:
             continue
+        body_nodes = _nodes_in_line_range(view.nodes, node.line_number, end_line_index)
+        if not body_nodes:
+            continue
+        body = body_nodes[0]
         if body.kind not in _ASSIGNMENT_KINDS:
             continue
-        blocks.append(_GuardBlock(len(blocks), node, body))
+        blocks.append(_GuardBlock(len(blocks), node, body, body_nodes, end_line_index))
     if not blocks:
         raise ValueError("condition_has_no_guard_clause_blocks")
     return tuple(blocks)
@@ -889,19 +953,32 @@ def _can_reorder(left: _GuardBlock, right: _GuardBlock) -> bool:
         return False
     if left.body_line_index + 1 != right.header_line_index:
         return False
-    if left.body.line_number != left.header.line_number + 1:
+    if not _pure_assignment_body(left) or not _pure_assignment_body(right):
         return False
-    if right.body.line_number != right.header.line_number + 1:
+    if _body_canonical_key(left) != _body_canonical_key(right):
         return False
-    if left.body.canonical_text != right.body.canonical_text:
-        return False
-    if _indent(left.body.text) != _indent(right.body.text):
+    if _body_indent_key(left) != _body_indent_key(right):
         return False
     if left.header.called_functions or right.header.called_functions:
         return False
     if MASK_TOKEN in left.header.text or MASK_TOKEN in right.header.text:
         return False
     return True
+
+
+def _pure_assignment_body(block: _GuardBlock) -> bool:
+    return bool(block.body_nodes) and all(
+        node.kind in _ASSIGNMENT_KINDS and not node.called_functions
+        for node in block.body_nodes
+    )
+
+
+def _body_canonical_key(block: _GuardBlock) -> tuple[str, ...]:
+    return tuple(node.canonical_text for node in block.body_nodes)
+
+
+def _body_indent_key(block: _GuardBlock) -> tuple[str, ...]:
+    return tuple(_indent(node.text) for node in block.body_nodes)
 
 
 def _indent(line: str) -> str:
@@ -914,13 +991,17 @@ def _duplicate_ranges(corrupt_view: _SourceView, template_view: _SourceView) -> 
     template_counts = Counter(_block_raw_key(template_view, block) for block in template_blocks)
     seen: Counter[str] = Counter()
     ranges: list[_GuardBlock] = []
-    previous_key: str | None = None
-    for block in corrupt_blocks:
+    previous_by_next_line: dict[int, list[_GuardBlock]] = {}
+    for block in sorted(corrupt_blocks, key=lambda item: item.header_line_index):
         key = _block_raw_key(corrupt_view, block)
         seen[key] += 1
-        if key == previous_key and seen[key] > template_counts.get(key, 0):
+        previous_blocks = previous_by_next_line.get(block.header_line_index, ())
+        if (
+            any(key == _block_raw_key(corrupt_view, previous) for previous in previous_blocks)
+            and seen[key] > template_counts.get(key, 0)
+        ):
             ranges.append(block)
-        previous_key = key
+        previous_by_next_line.setdefault(block.body_line_index + 1, []).append(block)
     return tuple(ranges)
 
 
@@ -932,6 +1013,28 @@ def _preferred_mask_clause(condition: ConditionAst) -> int | None:
     except ValueError:
         return None
     return None
+
+
+def _movable_shuffle_blocks(blocks: Sequence[_GuardBlock]) -> tuple[_GuardBlock, ...]:
+    by_indent: dict[int, list[_GuardBlock]] = {}
+    for block in blocks:
+        if block.header_keyword != "elif":
+            continue
+        by_indent.setdefault(_line_indent_width(block.header.text), []).append(block)
+
+    best: tuple[_GuardBlock, ...] = ()
+    for group in by_indent.values():
+        non_overlapping: list[_GuardBlock] = []
+        last_end = -1
+        for block in sorted(group, key=lambda item: item.header_line_index):
+            if block.header_line_index <= last_end:
+                continue
+            non_overlapping.append(block)
+            last_end = block.body_line_index
+        candidate = tuple(non_overlapping)
+        if len(candidate) > len(best):
+            best = candidate
+    return best
 
 
 def _block_raw_key(view: _SourceView, block: _GuardBlock) -> str:

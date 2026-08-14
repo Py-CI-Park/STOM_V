@@ -142,6 +142,81 @@ elif 현재가N(2) > 0:
     assert result.parsed.called_functions == ("위험함수", "현재가N")
 
 
+def test_else_and_final_buy_action_are_explicit_valid_shapes() -> None:
+    source = """\
+매수 = True
+if not 매수조건:
+    매수 = False
+else:
+    매수 = 매수
+if 매수: self.Buy()
+"""
+
+    parsed = C.parse_condition_source(source)
+    result = C.static_check_condition_source(
+        parsed,
+        allowed_functions={"self.Buy"},
+        max_clauses=3,
+        max_lookback=0,
+        max_unknown_lines=0,
+    )
+
+    assert [line.keyword for line in parsed.lines if line.kind == "clause"] == [
+        "if",
+        "else",
+        "if",
+    ]
+    assert parsed.lines[3].kind == "clause"
+    assert parsed.lines[3].keyword == "else"
+    assert parsed.lines[3].normalized == ""
+    assert parsed.lines[5].inline_kind == "statement"
+    assert parsed.lines[5].inline_normalized == "self.Buy()"
+    assert parsed.complexity.unknown_line_count == 0
+    assert result.ok is True
+
+
+def test_variable_lookback_constants_are_bounded_and_nonliteral_args_fail_closed() -> None:
+    resolved_source = """\
+기간 = 120
+매수 = True
+if 현재가N(기간) > 0:
+    매수 = False
+"""
+    unresolved_source = """\
+기간 = 20
+매수 = True
+if 현재가N(기간 + 1) > 0:
+    매수 = False
+"""
+
+    resolved = C.static_check_condition_source(
+        resolved_source,
+        allowed_functions={"현재가N"},
+        max_clauses=1,
+        max_lookback=60,
+        max_unknown_lines=0,
+    )
+    unresolved = C.static_check_condition_source(
+        unresolved_source,
+        allowed_functions={"현재가N"},
+        max_clauses=1,
+        max_lookback=60,
+        max_unknown_lines=0,
+    )
+
+    assert [
+        (item.function, item.argument_index, item.value, item.source)
+        for item in resolved.parsed.numeric_lookbacks
+    ] == [("현재가N", 0, 120, "기간")]
+    assert resolved.parsed.unresolved_lookbacks == ()
+    assert "lookback_exceeded" in {item.code for item in resolved.violations}
+    assert [
+        (item.function, item.argument_index, item.source)
+        for item in unresolved.parsed.unresolved_lookbacks
+    ] == [("현재가N", 0, "기간 + 1")]
+    assert "unresolved_lookback" in {item.code for item in unresolved.violations}
+
+
 def test_parser_does_not_use_dynamic_execution(monkeypatch) -> None:
     def bomb(*_args, **_kwargs):
         raise AssertionError("dynamic evaluation must not be used")
