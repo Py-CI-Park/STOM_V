@@ -1,0 +1,130 @@
+{
+  "schema": "stom.condition_process_platform_audit.v1",
+  "authority": "read_only_diagnostic",
+  "checks": [
+    {
+      "track": "P1",
+      "check_id": "d2_runtime_contract_16_of_16",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P1",
+      "check_id": "tick_catalog_excludes_minute_symbols",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P1",
+      "check_id": "job_strategy_result_csv_snapshots",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P1",
+      "check_id": "cli_metrics_match_exact_sources",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P1",
+      "check_id": "backtest_csv_directory_is_overridable",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P2",
+      "check_id": "tick_min_date_range_width_safe",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P2",
+      "check_id": "artifact_reads_use_safe_resolver",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P3",
+      "check_id": "source_hash_verified_before_spawn",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P4",
+      "check_id": "telemetry_and_selection_pareto_split",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P4",
+      "check_id": "family_top_k_supported",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P5",
+      "check_id": "bucket_tests_use_bh_fdr",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P5",
+      "check_id": "bayesian_combined_limit_enforced",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P6",
+      "check_id": "analysis_snapshot_get_does_not_persist",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P6",
+      "check_id": "ledger_reads_are_sqlite_readonly",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P6",
+      "check_id": "trade_path_reads_are_sqlite_readonly",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P6",
+      "check_id": "portfolio_missing_artifact_fails",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P7",
+      "check_id": "candidate_identity_is_mandatory",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P7",
+      "check_id": "legacy_final_approval_removed",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P7",
+      "check_id": "promotion_gate_is_post_and_pure_by_default",
+      "passed": true,
+      "error": null
+    },
+    {
+      "track": "P7",
+      "check_id": "product_release_is_v5_15",
+      "passed": true,
+      "error": null
+    }
+  ],
+  "passed": 20,
+  "total": 20,
+  "failed": [],
+  "verdict": "PASS"
+}
