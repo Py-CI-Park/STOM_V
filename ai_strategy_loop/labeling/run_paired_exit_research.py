@@ -103,7 +103,7 @@ def _run_pair(
 
 
 def run_matrix(
-    base_url: str,
+    base_urls: tuple[str, ...],
     jobs: list[tuple[str, str, str, int, int]],
     *,
     sources: dict[str, str],
@@ -112,15 +112,17 @@ def run_matrix(
     job_timeout: int,
     poll_timeout: int,
 ) -> list[dict[str, Any]]:
+    if not base_urls:
+        raise ValueError("at least one base URL is required")
     rows = []
     with ThreadPoolExecutor(max_workers=max(1, min(int(concurrency), 4))) as pool:
         future_map = {
             pool.submit(
-                _run_pair, base_url, entry, exit_name,
+                _run_pair, base_urls[index % len(base_urls)], entry, exit_name,
                 start=start, end=end, fold_id=fold_id, sources=sources,
                 engines=engines, job_timeout=job_timeout, poll_timeout=poll_timeout,
             ): (entry, exit_name, fold_id)
-            for entry, exit_name, fold_id, start, end in jobs
+            for index, (entry, exit_name, fold_id, start, end) in enumerate(jobs)
         }
         for future in as_completed(future_map):
             rows.append(future.result())
@@ -185,6 +187,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=("screen", "folds"), required=True)
     parser.add_argument("--base-url", default="http://127.0.0.1:8781")
+    parser.add_argument(
+        "--base-urls", default="",
+        help="Comma-separated independent dashboard servers; jobs are distributed round-robin.",
+    )
     parser.add_argument("--strategy-db", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--concurrency", type=int, default=4)
@@ -200,8 +206,11 @@ def main() -> None:
         jobs = [(entry, exit_name, fold_id, start, end)
                 for entry in ENTRIES for exit_name in EXITS
                 for fold_id, start, end in FOLDS]
+    base_urls = tuple(
+        item.strip() for item in (args.base_urls or args.base_url).split(",") if item.strip()
+    )
     rows = run_matrix(
-        args.base_url, jobs, sources=sources, concurrency=args.concurrency,
+        base_urls, jobs, sources=sources, concurrency=args.concurrency,
         engines=args.engines, job_timeout=args.job_timeout, poll_timeout=args.poll_timeout,
     )
     report = build_report(args.mode, rows)

@@ -1215,6 +1215,11 @@ def _default_job_backtest_db() -> Optional[Path]:
     return Path(override) if override else None
 
 
+def _default_jobs_dir() -> Path:
+    override = os.environ.get("STOM_WEBBT_JOBS_DIR")
+    return Path(override) if override else _JOBS_DIR
+
+
 def get_job_manager() -> BacktestJobManager:
     """프로세스 전역 잡 매니저 싱글톤을 반환한다(지연 초기화)."""
     global _manager
@@ -1222,6 +1227,7 @@ def get_job_manager() -> BacktestJobManager:
         with _manager_lock:
             if _manager is None:
                 _manager = BacktestJobManager(
+                    jobs_dir=_default_jobs_dir(),
                     strategy_db=_default_job_strategy_db(),
                     backtest_db=_default_job_backtest_db(),
                 )
