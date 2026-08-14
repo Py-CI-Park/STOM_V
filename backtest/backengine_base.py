@@ -605,6 +605,7 @@ class BackEngineBase(BaseStrategy):
         if gubun in (1, 2):
             self.bq.put('백테중지완료')
         if gubun == 3:
+            self.tq.put('백테중지')
             if self.gubun == 0: self.wq.put((ui_num[self.ui_num_txt], '백테스트 엔진 전략연산 오류, 자동 중지 중 ...'))
 
     def InitTradeInfo(self):
