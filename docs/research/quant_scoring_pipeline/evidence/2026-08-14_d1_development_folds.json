@@ -1,0 +1,1366 @@
+{
+  "schema": "stom.d1_development_temporal_folds.v1",
+  "authority": "development_only_not_oos_no_adoption",
+  "representatives": [
+    "D1_BOOK_IMBALANCE_01_a0e44d3c",
+    "D1_FLOW_SURGE_04_b506a923",
+    "D1_MOMENTUM_QUALITY_07_da23c5ff"
+  ],
+  "folds": [
+    {
+      "fold_id": "DEV_202303",
+      "start": 20230301,
+      "end": 20230331
+    },
+    {
+      "fold_id": "DEV_202306",
+      "start": 20230601,
+      "end": 20230630
+    },
+    {
+      "fold_id": "DEV_202309",
+      "start": 20230901,
+      "end": 20230930
+    }
+  ],
+  "rows": [
+    {
+      "arm": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "buy": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_180908_D1BOOKIMBALANCE01a0e44d3_48397",
+      "status": "success",
+      "elapsed_seconds": 85.527,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 1075,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed",
+          "BackEngine:5": "engine_backtest_completed",
+          "BackEngine:6": "engine_backtest_completed",
+          "BackEngine:7": "engine_backtest_completed",
+          "BackEngine:8": "engine_backtest_completed",
+          "BackEngine:9": "engine_backtest_completed",
+          "BackEngine:10": "engine_backtest_completed",
+          "BackEngine:11": "engine_backtest_completed",
+          "BackEngine:12": "engine_backtest_completed",
+          "BackEngine:13": "engine_backtest_completed",
+          "BackEngine:14": "engine_backtest_completed",
+          "BackEngine:15": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 194022,
+            "code_count": 30,
+            "elapsed_seconds": 3.467
+          },
+          "BackEngine:1": {
+            "tick_count": 195583,
+            "code_count": 29,
+            "elapsed_seconds": 3.47
+          },
+          "BackEngine:2": {
+            "tick_count": 192842,
+            "code_count": 31,
+            "elapsed_seconds": 3.466
+          },
+          "BackEngine:3": {
+            "tick_count": 202051,
+            "code_count": 33,
+            "elapsed_seconds": 3.465
+          },
+          "BackEngine:4": {
+            "tick_count": 171395,
+            "code_count": 23,
+            "elapsed_seconds": 3.504
+          },
+          "BackEngine:5": {
+            "tick_count": 184245,
+            "code_count": 29,
+            "elapsed_seconds": 3.469
+          },
+          "BackEngine:6": {
+            "tick_count": 191648,
+            "code_count": 29,
+            "elapsed_seconds": 3.47
+          },
+          "BackEngine:7": {
+            "tick_count": 189012,
+            "code_count": 29,
+            "elapsed_seconds": 3.468
+          },
+          "BackEngine:8": {
+            "tick_count": 194495,
+            "code_count": 31,
+            "elapsed_seconds": 3.464
+          },
+          "BackEngine:9": {
+            "tick_count": 197332,
+            "code_count": 30,
+            "elapsed_seconds": 3.465
+          },
+          "BackEngine:10": {
+            "tick_count": 189505,
+            "code_count": 26,
+            "elapsed_seconds": 3.463
+          },
+          "BackEngine:11": {
+            "tick_count": 195636,
+            "code_count": 31,
+            "elapsed_seconds": 3.463
+          },
+          "BackEngine:12": {
+            "tick_count": 184378,
+            "code_count": 26,
+            "elapsed_seconds": 3.463
+          },
+          "BackEngine:13": {
+            "tick_count": 191048,
+            "code_count": 31,
+            "elapsed_seconds": 3.459
+          },
+          "BackEngine:14": {
+            "tick_count": 185835,
+            "code_count": 31,
+            "elapsed_seconds": 3.46
+          },
+          "BackEngine:15": {
+            "tick_count": 187670,
+            "code_count": 28,
+            "elapsed_seconds": 3.46
+          }
+        }
+      },
+      "family": "BOOK_IMBALANCE",
+      "candidate_id": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "fold_id": "DEV_202303",
+      "start": 20230301,
+      "end": 20230331,
+      "metrics": {
+        "trade_count": 80,
+        "daily_avg_trades": 3.6,
+        "win_rate": 36.25,
+        "avg_profit_pct": -0.3,
+        "total_profit_pct": -5.92,
+        "total_profit_krw": -236883,
+        "cagr": -67.24,
+        "mdd_pct": 12.09,
+        "mdd_amount": 0.0,
+        "tpi": 0.88,
+        "seed_capital": 4003430.0,
+        "max_hold_count": 4,
+        "avg_hold_time": 456.68,
+        "day_count": 22
+      },
+      "fold_success": false
+    },
+    {
+      "arm": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "buy": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_181033_D1BOOKIMBALANCE01a0e44d3_33975",
+      "status": "success",
+      "elapsed_seconds": 84.578,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 1241,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed",
+          "BackEngine:5": "engine_backtest_completed",
+          "BackEngine:6": "engine_backtest_completed",
+          "BackEngine:7": "engine_backtest_completed",
+          "BackEngine:8": "engine_backtest_completed",
+          "BackEngine:9": "engine_backtest_completed",
+          "BackEngine:10": "engine_backtest_completed",
+          "BackEngine:11": "engine_backtest_completed",
+          "BackEngine:12": "engine_backtest_completed",
+          "BackEngine:13": "engine_backtest_completed",
+          "BackEngine:14": "engine_backtest_completed",
+          "BackEngine:15": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 190576,
+            "code_count": 35,
+            "elapsed_seconds": 3.334
+          },
+          "BackEngine:1": {
+            "tick_count": 187855,
+            "code_count": 35,
+            "elapsed_seconds": 3.333
+          },
+          "BackEngine:2": {
+            "tick_count": 183714,
+            "code_count": 34,
+            "elapsed_seconds": 3.334
+          },
+          "BackEngine:3": {
+            "tick_count": 188498,
+            "code_count": 37,
+            "elapsed_seconds": 3.331
+          },
+          "BackEngine:4": {
+            "tick_count": 193328,
+            "code_count": 38,
+            "elapsed_seconds": 3.335
+          },
+          "BackEngine:5": {
+            "tick_count": 187841,
+            "code_count": 34,
+            "elapsed_seconds": 3.332
+          },
+          "BackEngine:6": {
+            "tick_count": 178920,
+            "code_count": 33,
+            "elapsed_seconds": 3.334
+          },
+          "BackEngine:7": {
+            "tick_count": 173970,
+            "code_count": 28,
+            "elapsed_seconds": 3.329
+          },
+          "BackEngine:8": {
+            "tick_count": 188094,
+            "code_count": 36,
+            "elapsed_seconds": 3.328
+          },
+          "BackEngine:9": {
+            "tick_count": 186330,
+            "code_count": 34,
+            "elapsed_seconds": 3.335
+          },
+          "BackEngine:10": {
+            "tick_count": 192532,
+            "code_count": 34,
+            "elapsed_seconds": 3.327
+          },
+          "BackEngine:11": {
+            "tick_count": 194285,
+            "code_count": 35,
+            "elapsed_seconds": 3.327
+          },
+          "BackEngine:12": {
+            "tick_count": 173497,
+            "code_count": 32,
+            "elapsed_seconds": 3.327
+          },
+          "BackEngine:13": {
+            "tick_count": 190506,
+            "code_count": 35,
+            "elapsed_seconds": 3.326
+          },
+          "BackEngine:14": {
+            "tick_count": 190004,
+            "code_count": 34,
+            "elapsed_seconds": 3.324
+          },
+          "BackEngine:15": {
+            "tick_count": 185843,
+            "code_count": 36,
+            "elapsed_seconds": 3.324
+          }
+        }
+      },
+      "family": "BOOK_IMBALANCE",
+      "candidate_id": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "fold_id": "DEV_202306",
+      "start": 20230601,
+      "end": 20230630,
+      "metrics": {
+        "trade_count": 104,
+        "daily_avg_trades": 5.0,
+        "win_rate": 43.27,
+        "avg_profit_pct": 0.22,
+        "total_profit_pct": 4.72,
+        "total_profit_krw": 234530,
+        "cagr": 56.17,
+        "mdd_pct": 4.08,
+        "mdd_amount": 0.0,
+        "tpi": 1.11,
+        "seed_capital": 4970583.0,
+        "max_hold_count": 5,
+        "avg_hold_time": 322.92,
+        "day_count": 21
+      },
+      "fold_success": true
+    },
+    {
+      "arm": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "buy": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_181158_D1BOOKIMBALANCE01a0e44d3_18647",
+      "status": "success",
+      "elapsed_seconds": 90.453,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 1133,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed",
+          "BackEngine:5": "engine_backtest_completed",
+          "BackEngine:6": "engine_backtest_completed",
+          "BackEngine:7": "engine_backtest_completed",
+          "BackEngine:8": "engine_backtest_completed",
+          "BackEngine:9": "engine_backtest_completed",
+          "BackEngine:11": "engine_backtest_completed",
+          "BackEngine:12": "engine_backtest_completed",
+          "BackEngine:10": "engine_backtest_completed",
+          "BackEngine:13": "engine_backtest_completed",
+          "BackEngine:14": "engine_backtest_completed",
+          "BackEngine:15": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 166231,
+            "code_count": 32,
+            "elapsed_seconds": 2.878
+          },
+          "BackEngine:1": {
+            "tick_count": 160232,
+            "code_count": 31,
+            "elapsed_seconds": 2.943
+          },
+          "BackEngine:2": {
+            "tick_count": 175218,
+            "code_count": 33,
+            "elapsed_seconds": 2.879
+          },
+          "BackEngine:3": {
+            "tick_count": 159392,
+            "code_count": 31,
+            "elapsed_seconds": 2.875
+          },
+          "BackEngine:4": {
+            "tick_count": 150001,
+            "code_count": 26,
+            "elapsed_seconds": 2.874
+          },
+          "BackEngine:5": {
+            "tick_count": 170949,
+            "code_count": 32,
+            "elapsed_seconds": 2.876
+          },
+          "BackEngine:6": {
+            "tick_count": 174173,
+            "code_count": 35,
+            "elapsed_seconds": 2.876
+          },
+          "BackEngine:7": {
+            "tick_count": 161246,
+            "code_count": 30,
+            "elapsed_seconds": 2.871
+          },
+          "BackEngine:8": {
+            "tick_count": 166678,
+            "code_count": 33,
+            "elapsed_seconds": 2.875
+          },
+          "BackEngine:9": {
+            "tick_count": 148549,
+            "code_count": 28,
+            "elapsed_seconds": 2.872
+          },
+          "BackEngine:11": {
+            "tick_count": 151672,
+            "code_count": 31,
+            "elapsed_seconds": 2.872
+          },
+          "BackEngine:12": {
+            "tick_count": 165420,
+            "code_count": 32,
+            "elapsed_seconds": 2.873
+          },
+          "BackEngine:10": {
+            "tick_count": 162067,
+            "code_count": 30,
+            "elapsed_seconds": 2.872
+          },
+          "BackEngine:13": {
+            "tick_count": 164758,
+            "code_count": 30,
+            "elapsed_seconds": 2.872
+          },
+          "BackEngine:14": {
+            "tick_count": 161042,
+            "code_count": 31,
+            "elapsed_seconds": 2.873
+          },
+          "BackEngine:15": {
+            "tick_count": 166361,
+            "code_count": 31,
+            "elapsed_seconds": 2.869
+          }
+        }
+      },
+      "family": "BOOK_IMBALANCE",
+      "candidate_id": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "fold_id": "DEV_202309",
+      "start": 20230901,
+      "end": 20230930,
+      "metrics": {
+        "trade_count": 140,
+        "daily_avg_trades": 7.4,
+        "win_rate": 34.29,
+        "avg_profit_pct": -0.18,
+        "total_profit_pct": -4.29,
+        "total_profit_krw": -256523,
+        "cagr": -56.42,
+        "mdd_pct": 7.48,
+        "mdd_amount": 0.0,
+        "tpi": 0.91,
+        "seed_capital": 5982140.0,
+        "max_hold_count": 6,
+        "avg_hold_time": 329.29,
+        "day_count": 19
+      },
+      "fold_success": false
+    },
+    {
+      "arm": "D1_FLOW_SURGE_04_b506a923",
+      "buy": "D1_FLOW_SURGE_04_b506a923",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_181329_D1FLOWSURGE04b506a923_9233",
+      "status": "success",
+      "elapsed_seconds": 85.259,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 1075,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed",
+          "BackEngine:5": "engine_backtest_completed",
+          "BackEngine:6": "engine_backtest_completed",
+          "BackEngine:7": "engine_backtest_completed",
+          "BackEngine:8": "engine_backtest_completed",
+          "BackEngine:9": "engine_backtest_completed",
+          "BackEngine:10": "engine_backtest_completed",
+          "BackEngine:11": "engine_backtest_completed",
+          "BackEngine:12": "engine_backtest_completed",
+          "BackEngine:13": "engine_backtest_completed",
+          "BackEngine:14": "engine_backtest_completed",
+          "BackEngine:15": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 204675,
+            "code_count": 32,
+            "elapsed_seconds": 3.477
+          },
+          "BackEngine:1": {
+            "tick_count": 204811,
+            "code_count": 31,
+            "elapsed_seconds": 3.473
+          },
+          "BackEngine:2": {
+            "tick_count": 182430,
+            "code_count": 24,
+            "elapsed_seconds": 3.475
+          },
+          "BackEngine:3": {
+            "tick_count": 189728,
+            "code_count": 29,
+            "elapsed_seconds": 3.475
+          },
+          "BackEngine:4": {
+            "tick_count": 177633,
+            "code_count": 29,
+            "elapsed_seconds": 3.471
+          },
+          "BackEngine:5": {
+            "tick_count": 195830,
+            "code_count": 29,
+            "elapsed_seconds": 3.47
+          },
+          "BackEngine:6": {
+            "tick_count": 184441,
+            "code_count": 29,
+            "elapsed_seconds": 3.476
+          },
+          "BackEngine:7": {
+            "tick_count": 188622,
+            "code_count": 30,
+            "elapsed_seconds": 3.471
+          },
+          "BackEngine:8": {
+            "tick_count": 181871,
+            "code_count": 28,
+            "elapsed_seconds": 3.481
+          },
+          "BackEngine:9": {
+            "tick_count": 189931,
+            "code_count": 31,
+            "elapsed_seconds": 3.469
+          },
+          "BackEngine:10": {
+            "tick_count": 197613,
+            "code_count": 31,
+            "elapsed_seconds": 3.468
+          },
+          "BackEngine:11": {
+            "tick_count": 184973,
+            "code_count": 26,
+            "elapsed_seconds": 3.469
+          },
+          "BackEngine:12": {
+            "tick_count": 193237,
+            "code_count": 30,
+            "elapsed_seconds": 3.469
+          },
+          "BackEngine:13": {
+            "tick_count": 185627,
+            "code_count": 28,
+            "elapsed_seconds": 3.468
+          },
+          "BackEngine:14": {
+            "tick_count": 185813,
+            "code_count": 29,
+            "elapsed_seconds": 3.466
+          },
+          "BackEngine:15": {
+            "tick_count": 199462,
+            "code_count": 31,
+            "elapsed_seconds": 3.474
+          }
+        }
+      },
+      "family": "FLOW_SURGE",
+      "candidate_id": "D1_FLOW_SURGE_04_b506a923",
+      "fold_id": "DEV_202303",
+      "start": 20230301,
+      "end": 20230331,
+      "metrics": {
+        "trade_count": 80,
+        "daily_avg_trades": 3.6,
+        "win_rate": 23.75,
+        "avg_profit_pct": -0.61,
+        "total_profit_pct": -12.2,
+        "total_profit_krw": -487950,
+        "cagr": -138.62,
+        "mdd_pct": 12.69,
+        "mdd_amount": 0.0,
+        "tpi": 0.66,
+        "seed_capital": 4000016.0,
+        "max_hold_count": 4,
+        "avg_hold_time": 518.08,
+        "day_count": 22
+      },
+      "fold_success": false
+    },
+    {
+      "arm": "D1_FLOW_SURGE_04_b506a923",
+      "buy": "D1_FLOW_SURGE_04_b506a923",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_181454_D1FLOWSURGE04b506a923_94539",
+      "status": "success",
+      "elapsed_seconds": 84.923,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 1241,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed",
+          "BackEngine:5": "engine_backtest_completed",
+          "BackEngine:6": "engine_backtest_completed",
+          "BackEngine:7": "engine_backtest_completed",
+          "BackEngine:8": "engine_backtest_completed",
+          "BackEngine:9": "engine_backtest_completed",
+          "BackEngine:10": "engine_backtest_completed",
+          "BackEngine:11": "engine_backtest_completed",
+          "BackEngine:12": "engine_backtest_completed",
+          "BackEngine:13": "engine_backtest_completed",
+          "BackEngine:14": "engine_backtest_completed",
+          "BackEngine:15": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 190937,
+            "code_count": 33,
+            "elapsed_seconds": 3.236
+          },
+          "BackEngine:1": {
+            "tick_count": 209066,
+            "code_count": 38,
+            "elapsed_seconds": 3.237
+          },
+          "BackEngine:2": {
+            "tick_count": 193039,
+            "code_count": 33,
+            "elapsed_seconds": 3.235
+          },
+          "BackEngine:3": {
+            "tick_count": 192709,
+            "code_count": 36,
+            "elapsed_seconds": 3.234
+          },
+          "BackEngine:4": {
+            "tick_count": 190591,
+            "code_count": 34,
+            "elapsed_seconds": 3.233
+          },
+          "BackEngine:5": {
+            "tick_count": 180167,
+            "code_count": 32,
+            "elapsed_seconds": 3.237
+          },
+          "BackEngine:6": {
+            "tick_count": 184065,
+            "code_count": 35,
+            "elapsed_seconds": 3.232
+          },
+          "BackEngine:7": {
+            "tick_count": 184408,
+            "code_count": 34,
+            "elapsed_seconds": 3.233
+          },
+          "BackEngine:8": {
+            "tick_count": 173965,
+            "code_count": 33,
+            "elapsed_seconds": 3.231
+          },
+          "BackEngine:9": {
+            "tick_count": 187999,
+            "code_count": 37,
+            "elapsed_seconds": 3.23
+          },
+          "BackEngine:10": {
+            "tick_count": 194454,
+            "code_count": 35,
+            "elapsed_seconds": 3.231
+          },
+          "BackEngine:11": {
+            "tick_count": 193759,
+            "code_count": 36,
+            "elapsed_seconds": 3.228
+          },
+          "BackEngine:12": {
+            "tick_count": 183506,
+            "code_count": 34,
+            "elapsed_seconds": 3.235
+          },
+          "BackEngine:13": {
+            "tick_count": 167267,
+            "code_count": 31,
+            "elapsed_seconds": 3.228
+          },
+          "BackEngine:14": {
+            "tick_count": 178052,
+            "code_count": 33,
+            "elapsed_seconds": 3.228
+          },
+          "BackEngine:15": {
+            "tick_count": 181809,
+            "code_count": 36,
+            "elapsed_seconds": 3.233
+          }
+        }
+      },
+      "family": "FLOW_SURGE",
+      "candidate_id": "D1_FLOW_SURGE_04_b506a923",
+      "fold_id": "DEV_202306",
+      "start": 20230601,
+      "end": 20230630,
+      "metrics": {
+        "trade_count": 88,
+        "daily_avg_trades": 4.2,
+        "win_rate": 45.45,
+        "avg_profit_pct": 0.56,
+        "total_profit_pct": 9.81,
+        "total_profit_krw": 490143,
+        "cagr": 116.79,
+        "mdd_pct": 7.25,
+        "mdd_amount": 0.0,
+        "tpi": 1.31,
+        "seed_capital": 4996060.0,
+        "max_hold_count": 5,
+        "avg_hold_time": 680.08,
+        "day_count": 21
+      },
+      "fold_success": true
+    },
+    {
+      "arm": "D1_FLOW_SURGE_04_b506a923",
+      "buy": "D1_FLOW_SURGE_04_b506a923",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_181619_D1FLOWSURGE04b506a923_79526",
+      "status": "success",
+      "elapsed_seconds": 79.838,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 1133,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed",
+          "BackEngine:5": "engine_backtest_completed",
+          "BackEngine:6": "engine_backtest_completed",
+          "BackEngine:7": "engine_backtest_completed",
+          "BackEngine:8": "engine_backtest_completed",
+          "BackEngine:9": "engine_backtest_completed",
+          "BackEngine:10": "engine_backtest_completed",
+          "BackEngine:11": "engine_backtest_completed",
+          "BackEngine:12": "engine_backtest_completed",
+          "BackEngine:13": "engine_backtest_completed",
+          "BackEngine:14": "engine_backtest_completed",
+          "BackEngine:15": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 169003,
+            "code_count": 31,
+            "elapsed_seconds": 3.04
+          },
+          "BackEngine:1": {
+            "tick_count": 175754,
+            "code_count": 33,
+            "elapsed_seconds": 3.033
+          },
+          "BackEngine:2": {
+            "tick_count": 142874,
+            "code_count": 25,
+            "elapsed_seconds": 3.033
+          },
+          "BackEngine:3": {
+            "tick_count": 163850,
+            "code_count": 30,
+            "elapsed_seconds": 3.039
+          },
+          "BackEngine:4": {
+            "tick_count": 167508,
+            "code_count": 30,
+            "elapsed_seconds": 3.032
+          },
+          "BackEngine:5": {
+            "tick_count": 157756,
+            "code_count": 32,
+            "elapsed_seconds": 3.033
+          },
+          "BackEngine:6": {
+            "tick_count": 171858,
+            "code_count": 32,
+            "elapsed_seconds": 3.026
+          },
+          "BackEngine:7": {
+            "tick_count": 173087,
+            "code_count": 33,
+            "elapsed_seconds": 3.097
+          },
+          "BackEngine:8": {
+            "tick_count": 144438,
+            "code_count": 30,
+            "elapsed_seconds": 3.028
+          },
+          "BackEngine:9": {
+            "tick_count": 170440,
+            "code_count": 33,
+            "elapsed_seconds": 3.03
+          },
+          "BackEngine:10": {
+            "tick_count": 166265,
+            "code_count": 33,
+            "elapsed_seconds": 3.03
+          },
+          "BackEngine:11": {
+            "tick_count": 163043,
+            "code_count": 32,
+            "elapsed_seconds": 3.031
+          },
+          "BackEngine:12": {
+            "tick_count": 164539,
+            "code_count": 32,
+            "elapsed_seconds": 3.027
+          },
+          "BackEngine:13": {
+            "tick_count": 155088,
+            "code_count": 32,
+            "elapsed_seconds": 3.027
+          },
+          "BackEngine:14": {
+            "tick_count": 154642,
+            "code_count": 27,
+            "elapsed_seconds": 3.024
+          },
+          "BackEngine:15": {
+            "tick_count": 163844,
+            "code_count": 31,
+            "elapsed_seconds": 3.027
+          }
+        }
+      },
+      "family": "FLOW_SURGE",
+      "candidate_id": "D1_FLOW_SURGE_04_b506a923",
+      "fold_id": "DEV_202309",
+      "start": 20230901,
+      "end": 20230930,
+      "metrics": {
+        "trade_count": 91,
+        "daily_avg_trades": 4.8,
+        "win_rate": 32.97,
+        "avg_profit_pct": -0.53,
+        "total_profit_pct": -9.73,
+        "total_profit_krw": -486026,
+        "cagr": -128.07,
+        "mdd_pct": 12.67,
+        "mdd_amount": 0.0,
+        "tpi": 0.78,
+        "seed_capital": 4993485.0,
+        "max_hold_count": 5,
+        "avg_hold_time": 478.45,
+        "day_count": 19
+      },
+      "fold_success": false
+    },
+    {
+      "arm": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "buy": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_181739_D1MOMENTUMQUALITY07da23c_59412",
+      "status": "success",
+      "elapsed_seconds": 85.108,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 1075,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed",
+          "BackEngine:5": "engine_backtest_completed",
+          "BackEngine:6": "engine_backtest_completed",
+          "BackEngine:7": "engine_backtest_completed",
+          "BackEngine:8": "engine_backtest_completed",
+          "BackEngine:9": "engine_backtest_completed",
+          "BackEngine:10": "engine_backtest_completed",
+          "BackEngine:11": "engine_backtest_completed",
+          "BackEngine:12": "engine_backtest_completed",
+          "BackEngine:13": "engine_backtest_completed",
+          "BackEngine:14": "engine_backtest_completed",
+          "BackEngine:15": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 196484,
+            "code_count": 31,
+            "elapsed_seconds": 3.51
+          },
+          "BackEngine:1": {
+            "tick_count": 200962,
+            "code_count": 33,
+            "elapsed_seconds": 3.511
+          },
+          "BackEngine:2": {
+            "tick_count": 195044,
+            "code_count": 30,
+            "elapsed_seconds": 3.51
+          },
+          "BackEngine:3": {
+            "tick_count": 179881,
+            "code_count": 25,
+            "elapsed_seconds": 3.509
+          },
+          "BackEngine:4": {
+            "tick_count": 196769,
+            "code_count": 31,
+            "elapsed_seconds": 3.512
+          },
+          "BackEngine:5": {
+            "tick_count": 184625,
+            "code_count": 27,
+            "elapsed_seconds": 3.511
+          },
+          "BackEngine:6": {
+            "tick_count": 191837,
+            "code_count": 30,
+            "elapsed_seconds": 3.508
+          },
+          "BackEngine:7": {
+            "tick_count": 195731,
+            "code_count": 29,
+            "elapsed_seconds": 3.505
+          },
+          "BackEngine:8": {
+            "tick_count": 191502,
+            "code_count": 30,
+            "elapsed_seconds": 3.507
+          },
+          "BackEngine:9": {
+            "tick_count": 182411,
+            "code_count": 27,
+            "elapsed_seconds": 3.505
+          },
+          "BackEngine:10": {
+            "tick_count": 185872,
+            "code_count": 27,
+            "elapsed_seconds": 3.506
+          },
+          "BackEngine:11": {
+            "tick_count": 174091,
+            "code_count": 26,
+            "elapsed_seconds": 3.506
+          },
+          "BackEngine:12": {
+            "tick_count": 197598,
+            "code_count": 32,
+            "elapsed_seconds": 3.504
+          },
+          "BackEngine:13": {
+            "tick_count": 189501,
+            "code_count": 29,
+            "elapsed_seconds": 3.501
+          },
+          "BackEngine:14": {
+            "tick_count": 194539,
+            "code_count": 30,
+            "elapsed_seconds": 3.502
+          },
+          "BackEngine:15": {
+            "tick_count": 189850,
+            "code_count": 30,
+            "elapsed_seconds": 3.5
+          }
+        }
+      },
+      "family": "MOMENTUM_QUALITY",
+      "candidate_id": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "fold_id": "DEV_202303",
+      "start": 20230301,
+      "end": 20230331,
+      "metrics": {
+        "trade_count": 22,
+        "daily_avg_trades": 1.0,
+        "win_rate": 36.36,
+        "avg_profit_pct": -1.06,
+        "total_profit_pct": -11.67,
+        "total_profit_krw": -233680,
+        "cagr": -132.58,
+        "mdd_pct": 14.64,
+        "mdd_amount": 0.0,
+        "tpi": 0.66,
+        "seed_capital": 2002946.0,
+        "max_hold_count": 2,
+        "avg_hold_time": 629.68,
+        "day_count": 22
+      },
+      "fold_success": false
+    },
+    {
+      "arm": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "buy": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_181904_D1MOMENTUMQUALITY07da23c_44573",
+      "status": "success",
+      "elapsed_seconds": 85.746,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 1241,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed",
+          "BackEngine:5": "engine_backtest_completed",
+          "BackEngine:6": "engine_backtest_completed",
+          "BackEngine:7": "engine_backtest_completed",
+          "BackEngine:8": "engine_backtest_completed",
+          "BackEngine:9": "engine_backtest_completed",
+          "BackEngine:10": "engine_backtest_completed",
+          "BackEngine:11": "engine_backtest_completed",
+          "BackEngine:12": "engine_backtest_completed",
+          "BackEngine:13": "engine_backtest_completed",
+          "BackEngine:14": "engine_backtest_completed",
+          "BackEngine:15": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 187376,
+            "code_count": 35,
+            "elapsed_seconds": 3.199
+          },
+          "BackEngine:1": {
+            "tick_count": 190635,
+            "code_count": 35,
+            "elapsed_seconds": 3.193
+          },
+          "BackEngine:2": {
+            "tick_count": 186210,
+            "code_count": 33,
+            "elapsed_seconds": 3.192
+          },
+          "BackEngine:3": {
+            "tick_count": 184299,
+            "code_count": 35,
+            "elapsed_seconds": 3.193
+          },
+          "BackEngine:4": {
+            "tick_count": 194222,
+            "code_count": 35,
+            "elapsed_seconds": 3.192
+          },
+          "BackEngine:5": {
+            "tick_count": 187475,
+            "code_count": 35,
+            "elapsed_seconds": 3.19
+          },
+          "BackEngine:6": {
+            "tick_count": 177805,
+            "code_count": 35,
+            "elapsed_seconds": 3.188
+          },
+          "BackEngine:7": {
+            "tick_count": 186381,
+            "code_count": 35,
+            "elapsed_seconds": 3.188
+          },
+          "BackEngine:8": {
+            "tick_count": 188760,
+            "code_count": 36,
+            "elapsed_seconds": 3.189
+          },
+          "BackEngine:9": {
+            "tick_count": 186623,
+            "code_count": 31,
+            "elapsed_seconds": 3.19
+          },
+          "BackEngine:10": {
+            "tick_count": 187721,
+            "code_count": 35,
+            "elapsed_seconds": 3.186
+          },
+          "BackEngine:11": {
+            "tick_count": 184028,
+            "code_count": 34,
+            "elapsed_seconds": 3.186
+          },
+          "BackEngine:12": {
+            "tick_count": 191846,
+            "code_count": 33,
+            "elapsed_seconds": 3.184
+          },
+          "BackEngine:13": {
+            "tick_count": 183258,
+            "code_count": 35,
+            "elapsed_seconds": 3.184
+          },
+          "BackEngine:14": {
+            "tick_count": 182312,
+            "code_count": 33,
+            "elapsed_seconds": 3.185
+          },
+          "BackEngine:15": {
+            "tick_count": 186842,
+            "code_count": 35,
+            "elapsed_seconds": 3.182
+          }
+        }
+      },
+      "family": "MOMENTUM_QUALITY",
+      "candidate_id": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "fold_id": "DEV_202306",
+      "start": 20230601,
+      "end": 20230630,
+      "metrics": {
+        "trade_count": 45,
+        "daily_avg_trades": 2.1,
+        "win_rate": 46.67,
+        "avg_profit_pct": -0.3,
+        "total_profit_pct": -4.5,
+        "total_profit_krw": -135273,
+        "cagr": -53.56,
+        "mdd_pct": 13.96,
+        "mdd_amount": 0.0,
+        "tpi": 0.91,
+        "seed_capital": 3006560.0,
+        "max_hold_count": 3,
+        "avg_hold_time": 358.36,
+        "day_count": 21
+      },
+      "fold_success": false
+    },
+    {
+      "arm": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "buy": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_182030_D1MOMENTUMQUALITY07da23c_30375",
+      "status": "success",
+      "elapsed_seconds": 79.97,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 1133,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed",
+          "BackEngine:5": "engine_backtest_completed",
+          "BackEngine:6": "engine_backtest_completed",
+          "BackEngine:7": "engine_backtest_completed",
+          "BackEngine:8": "engine_backtest_completed",
+          "BackEngine:9": "engine_backtest_completed",
+          "BackEngine:10": "engine_backtest_completed",
+          "BackEngine:11": "engine_backtest_completed",
+          "BackEngine:12": "engine_backtest_completed",
+          "BackEngine:13": "engine_backtest_completed",
+          "BackEngine:14": "engine_backtest_completed",
+          "BackEngine:15": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 162034,
+            "code_count": 31,
+            "elapsed_seconds": 2.653
+          },
+          "BackEngine:1": {
+            "tick_count": 172369,
+            "code_count": 33,
+            "elapsed_seconds": 2.659
+          },
+          "BackEngine:2": {
+            "tick_count": 159175,
+            "code_count": 30,
+            "elapsed_seconds": 2.654
+          },
+          "BackEngine:3": {
+            "tick_count": 165415,
+            "code_count": 32,
+            "elapsed_seconds": 2.654
+          },
+          "BackEngine:4": {
+            "tick_count": 163898,
+            "code_count": 31,
+            "elapsed_seconds": 2.652
+          },
+          "BackEngine:5": {
+            "tick_count": 156446,
+            "code_count": 30,
+            "elapsed_seconds": 2.654
+          },
+          "BackEngine:6": {
+            "tick_count": 157810,
+            "code_count": 29,
+            "elapsed_seconds": 2.646
+          },
+          "BackEngine:7": {
+            "tick_count": 170930,
+            "code_count": 34,
+            "elapsed_seconds": 2.65
+          },
+          "BackEngine:8": {
+            "tick_count": 162003,
+            "code_count": 32,
+            "elapsed_seconds": 2.646
+          },
+          "BackEngine:9": {
+            "tick_count": 169185,
+            "code_count": 32,
+            "elapsed_seconds": 2.649
+          },
+          "BackEngine:10": {
+            "tick_count": 166141,
+            "code_count": 32,
+            "elapsed_seconds": 2.648
+          },
+          "BackEngine:11": {
+            "tick_count": 159889,
+            "code_count": 30,
+            "elapsed_seconds": 2.645
+          },
+          "BackEngine:12": {
+            "tick_count": 158882,
+            "code_count": 30,
+            "elapsed_seconds": 2.65
+          },
+          "BackEngine:13": {
+            "tick_count": 161236,
+            "code_count": 30,
+            "elapsed_seconds": 2.646
+          },
+          "BackEngine:14": {
+            "tick_count": 151351,
+            "code_count": 27,
+            "elapsed_seconds": 2.644
+          },
+          "BackEngine:15": {
+            "tick_count": 167225,
+            "code_count": 33,
+            "elapsed_seconds": 2.643
+          }
+        }
+      },
+      "family": "MOMENTUM_QUALITY",
+      "candidate_id": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "fold_id": "DEV_202309",
+      "start": 20230901,
+      "end": 20230930,
+      "metrics": {
+        "trade_count": 29,
+        "daily_avg_trades": 1.5,
+        "win_rate": 37.93,
+        "avg_profit_pct": -0.73,
+        "total_profit_pct": -7.05,
+        "total_profit_krw": -210096,
+        "cagr": -92.82,
+        "mdd_pct": 9.76,
+        "mdd_amount": 0.0,
+        "tpi": 0.77,
+        "seed_capital": 2978100.0,
+        "max_hold_count": 3,
+        "avg_hold_time": 367.1,
+        "day_count": 19
+      },
+      "fold_success": false
+    }
+  ],
+  "candidates": {
+    "D1_BOOK_IMBALANCE_01_a0e44d3c": {
+      "family": "BOOK_IMBALANCE",
+      "successful_folds": 1,
+      "failed_folds": 2,
+      "verdict": "DEVELOPMENT_MIXED",
+      "bayesian": {
+        "successes": 1,
+        "failures": 2,
+        "decision": "CONTINUE",
+        "posterior_mean": 0.4,
+        "credible_interval": [
+          0.067585986488543,
+          0.8058795503167564
+        ],
+        "probability_above_rope": 0.3124999999999998,
+        "authority": "none_offline_statistical_receipt_only",
+        "can_adopt": false
+      }
+    },
+    "D1_FLOW_SURGE_04_b506a923": {
+      "family": "FLOW_SURGE",
+      "successful_folds": 1,
+      "failed_folds": 2,
+      "verdict": "DEVELOPMENT_MIXED",
+      "bayesian": {
+        "successes": 1,
+        "failures": 2,
+        "decision": "CONTINUE",
+        "posterior_mean": 0.4,
+        "credible_interval": [
+          0.067585986488543,
+          0.8058795503167564
+        ],
+        "probability_above_rope": 0.3124999999999998,
+        "authority": "none_offline_statistical_receipt_only",
+        "can_adopt": false
+      }
+    },
+    "D1_MOMENTUM_QUALITY_07_da23c5ff": {
+      "family": "MOMENTUM_QUALITY",
+      "successful_folds": 0,
+      "failed_folds": 3,
+      "verdict": "DEVELOPMENT_REJECT",
+      "bayesian": {
+        "successes": 0,
+        "failures": 3,
+        "decision": "CONTINUE",
+        "posterior_mean": 0.2,
+        "credible_interval": [
+          0.0063094632097098775,
+          0.6023646356164742
+        ],
+        "probability_above_rope": 0.06249999999999989,
+        "authority": "none_offline_statistical_receipt_only",
+        "can_adopt": false
+      }
+    }
+  },
+  "verdict": "NO_DEVELOPMENT_ROBUST_CANDIDATE"
+}
