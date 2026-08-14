@@ -52,6 +52,52 @@ def load_pair_sources(strategy_db: Path) -> dict[str, str]:
     return sources
 
 
+def load_reused_baseline_rows(
+    evidence_path: Path,
+    *,
+    records_dir: Path,
+    sources: dict[str, str],
+) -> list[dict[str, Any]]:
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    rows = []
+    for original in evidence.get("rows") or []:
+        entry = str(original.get("candidate_id") or original.get("buy") or "")
+        if entry not in ENTRIES:
+            continue
+        job_id = str(original.get("job_id") or "")
+        record_path = records_dir / f"{job_id}.json"
+        if not record_path.is_file():
+            raise ValueError(f"reused job record missing: {job_id}")
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        spec = record.get("spec") or {}
+        buy_code = str(spec.get("buy_code") or "")
+        sell_code = str(spec.get("sell_code") or "")
+        source_match = (
+            buy_code == sources[entry]
+            and sell_code == sources["Tick_S_902_905"]
+        )
+        metrics = original.get("metrics") if isinstance(original.get("metrics"), dict) else None
+        status = str(original.get("status") or "")
+        rows.append({
+            **original,
+            "pair_id": f"{entry}::Tick_S_902_905",
+            "entry": entry,
+            "exit": "Tick_S_902_905",
+            "expected_buy_sha256": _sha(sources[entry]),
+            "expected_sell_sha256": _sha(sources["Tick_S_902_905"]),
+            "executed_buy_sha256": _sha(buy_code) if buy_code else None,
+            "executed_sell_sha256": _sha(sell_code) if sell_code else None,
+            "source_snapshot_match": source_match,
+            "fold_success": source_match and fold_success(status, metrics),
+            "evidence_reused": True,
+            "reused_from": str(evidence_path),
+        })
+    expected = len(ENTRIES) * len(FOLDS)
+    if len(rows) != expected:
+        raise ValueError(f"reused baseline rows {len(rows)} != expected {expected}")
+    return rows
+
+
 def _run_pair(
     base_url: str,
     entry: str,
@@ -197,6 +243,11 @@ def main() -> None:
     parser.add_argument("--engines", type=int, default=16)
     parser.add_argument("--job-timeout", type=int, default=300)
     parser.add_argument("--poll-timeout", type=int, default=360)
+    parser.add_argument("--reuse-baseline-evidence", type=Path)
+    parser.add_argument(
+        "--job-records-dir", type=Path,
+        default=Path("ai_strategy_loop/state/webbt_jobs"),
+    )
     args = parser.parse_args()
     sources = load_pair_sources(args.strategy_db)
     if args.mode == "screen":
@@ -206,6 +257,14 @@ def main() -> None:
         jobs = [(entry, exit_name, fold_id, start, end)
                 for entry in ENTRIES for exit_name in EXITS
                 for fold_id, start, end in FOLDS]
+    reused_rows: list[dict[str, Any]] = []
+    if args.mode == "folds" and args.reuse_baseline_evidence:
+        reused_rows = load_reused_baseline_rows(
+            args.reuse_baseline_evidence,
+            records_dir=args.job_records_dir,
+            sources=sources,
+        )
+        jobs = [job for job in jobs if job[1] != "Tick_S_902_905"]
     base_urls = tuple(
         item.strip() for item in (args.base_urls or args.base_url).split(",") if item.strip()
     )
@@ -213,7 +272,8 @@ def main() -> None:
         base_urls, jobs, sources=sources, concurrency=args.concurrency,
         engines=args.engines, job_timeout=args.job_timeout, poll_timeout=args.poll_timeout,
     )
-    report = build_report(args.mode, rows)
+    report = build_report(args.mode, [*reused_rows, *rows])
+    report["reused_baseline_rows"] = len(reused_rows)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps({"output": str(args.output), "verdict": report["verdict"]}, ensure_ascii=False))
 

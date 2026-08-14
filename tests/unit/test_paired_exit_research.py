@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from pathlib import Path
 
@@ -6,6 +7,7 @@ from ai_strategy_loop.labeling.run_paired_exit_research import (
     EXITS,
     build_report,
     load_pair_sources,
+    load_reused_baseline_rows,
     pair_verdict,
 )
 
@@ -60,3 +62,37 @@ def test_build_screen_requires_terminal_and_source_match():
     assert build_report("screen", rows)["verdict"] == "PAIR_SCREEN_COMPLETED"
     rows[0]["source_snapshot_match"] = False
     assert build_report("screen", rows)["verdict"] == "PAIR_SCREEN_EXECUTION_FAILURE"
+
+
+def test_reused_baseline_requires_exact_job_source_snapshots(tmp_path: Path):
+    sources = {name: f"source:{name}" for name in (*ENTRIES, *EXITS)}
+    evidence_rows = []
+    records = tmp_path / "records"
+    records.mkdir()
+    for entry in ENTRIES:
+        for index in range(6):
+            job_id = f"{entry}-{index}"
+            evidence_rows.append({
+                "candidate_id": entry,
+                "job_id": job_id,
+                "status": "success",
+                "fold_id": f"F{index}",
+                "metrics": {
+                    "trade_count": 20,
+                    "total_profit_pct": 1,
+                    "avg_profit_pct": 0.1,
+                    "mdd_pct": 2,
+                },
+            })
+            (records / f"{job_id}.json").write_text(json.dumps({
+                "spec": {
+                    "buy_code": sources[entry],
+                    "sell_code": sources["Tick_S_902_905"],
+                },
+            }), encoding="utf-8")
+    evidence = tmp_path / "evidence.json"
+    evidence.write_text(json.dumps({"rows": evidence_rows}), encoding="utf-8")
+    rows = load_reused_baseline_rows(evidence, records_dir=records, sources=sources)
+    assert len(rows) == 12
+    assert all(row["source_snapshot_match"] for row in rows)
+    assert all(row["evidence_reused"] for row in rows)
