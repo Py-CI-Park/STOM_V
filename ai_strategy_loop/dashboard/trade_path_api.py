@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+import sqlite3
 from collections import Counter
 from dataclasses import asdict
 from pathlib import Path
@@ -15,8 +18,21 @@ from ai_strategy_loop.revision.buy_filter_proposer import propose_buy_filters
 from ai_strategy_loop.autopsy.market_path import MarketPathRepository
 from ai_strategy_loop.autopsy.trade_episode import EpisodeBuilder, read_trade_rows
 from ai_strategy_loop.autopsy.trade_path_analysis import cohort_summaries
+from ai_strategy_loop.autopsy.trade_path_analysis_models import (
+    AnalysisTotals,
+    EpisodeSummary,
+    ExcludedTrade,
+    TradePathAnalysis,
+)
 from ai_strategy_loop.autopsy.trade_path_clock import liquidation_timestamp
-from ai_strategy_loop.autopsy.trade_path_models import Clause, ExitPolicy, ExitRule
+from ai_strategy_loop.autopsy.trade_path_models import (
+    Clause,
+    ExitPolicy,
+    ExitRule,
+    RunSource,
+    Timeframe,
+    TradeResultRow,
+)
 from ai_strategy_loop.dashboard.trade_path_api_models import (
     AnalysisRequest,
     CandidateRunRequest,
@@ -43,6 +59,158 @@ trade_path_router.include_router(sell_dsl_router)
 trade_path_router.include_router(loss_region_router)
 
 
+def _sidecar_source(path: Path, reason: str = "") -> dict[str, object]:
+    payload: dict[str, object] = {"kind": "sqlite", "path": str(path)}
+    if reason:
+        payload["reason"] = reason
+    return payload
+
+
+def _sidecar_limit(limit: int) -> int:
+    return max(1, min(limit, 500))
+
+
+def _sidecar_connect_readonly(path: Path) -> tuple[sqlite3.Connection | None, str]:
+    if not path.is_file():
+        return None, "source_missing"
+    try:
+        return sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True), ""
+    except sqlite3.Error:
+        return None, "source_unavailable"
+
+
+def _load_sidecar_analysis_readonly(path: Path, analysis_id: str) -> TradePathAnalysis | None:
+    if not analysis_id:
+        return None
+    connection, _ = _sidecar_connect_readonly(path)
+    if connection is None:
+        return None
+    try:
+        row = connection.execute(
+            "SELECT source_json, totals_json, episodes_json, exclusions_json,"
+            " rows_json, decision_horizons, continuation_horizons"
+            " FROM analyses WHERE analysis_id = ?",
+            (analysis_id,),
+        ).fetchone()
+    except sqlite3.Error:
+        return None
+    finally:
+        connection.close()
+    if row is None:
+        return None
+    try:
+        source_data = json.loads(row[0])
+        source_data["timeframe"] = Timeframe(source_data["timeframe"])
+        return TradePathAnalysis(
+            analysis_id=analysis_id,
+            source=RunSource(**source_data),
+            rows=tuple(TradeResultRow(**item) for item in json.loads(row[4])),
+            episodes=tuple(EpisodeSummary(**item) for item in json.loads(row[2])),
+            exclusions=tuple(ExcludedTrade(**item) for item in json.loads(row[3])),
+            totals=AnalysisTotals(**json.loads(row[1])),
+            decision_horizons=tuple(json.loads(row[5])),
+            continuation_horizons=tuple(json.loads(row[6])),
+        )
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+
+
+def _readonly_job(analysis_id: str) -> TradePathJob | None:
+    if not analysis_id:
+        return None
+    coordinator = trade_path_coordinator()
+    job = next((item for item in coordinator.list_jobs() if item.analysis_id == analysis_id), None)
+    if job is not None and (job.status != "success" or job.result is not None):
+        return job
+    restored = _load_sidecar_analysis_readonly(coordinator.sidecar().path, analysis_id)
+    if restored is None:
+        return job
+    return TradePathJob(
+        analysis_id, "success",
+        1.0, restored.totals.trade_count, restored.totals.trade_count, "", restored,
+    )
+
+
+def _sidecar_analyses(
+    path: Path, *, limit: int = 50, lane: str = "",
+) -> tuple[list[dict[str, object]], str]:
+    connection, reason = _sidecar_connect_readonly(path)
+    if connection is None:
+        return [], reason
+    query = (
+        "SELECT analysis_id, lane, csv_sha256, row_count, totals_json, created_at"
+        " FROM analyses"
+        + (" WHERE lane = ?" if lane else "")
+        + " ORDER BY created_at DESC LIMIT ?"
+    )
+    parameters = (lane, _sidecar_limit(limit)) if lane else (_sidecar_limit(limit),)
+    try:
+        rows = connection.execute(query, parameters).fetchall()
+    except sqlite3.Error:
+        return [], "source_unavailable"
+    finally:
+        connection.close()
+    payload: list[dict[str, object]] = []
+    for item in rows:
+        try:
+            totals = json.loads(item[4])
+        except (TypeError, json.JSONDecodeError):
+            totals = {}
+        payload.append({
+            "analysis_id": item[0], "lane": item[1], "csv_sha256": item[2],
+            "row_count": item[3], "totals": totals, "created_at": item[5],
+        })
+    return payload, ""
+
+
+def _sidecar_artifacts(path: Path, *, limit: int = 50) -> tuple[list[dict[str, object]], str]:
+    connection, reason = _sidecar_connect_readonly(path)
+    if connection is None:
+        return [], reason
+    try:
+        rows = connection.execute(
+            "SELECT csv_sha256, row_count, csv_path, lane, first_seen"
+            " FROM artifacts ORDER BY first_seen DESC LIMIT ?",
+            (_sidecar_limit(limit),),
+        ).fetchall()
+    except sqlite3.Error:
+        return [], "source_unavailable"
+    finally:
+        connection.close()
+    return [
+        {"csv_sha256": item[0], "row_count": item[1], "csv_path": item[2],
+         "lane": item[3], "first_seen": item[4]}
+        for item in rows
+    ], ""
+
+
+def _sidecar_counts_and_hash(path: Path) -> tuple[dict[str, int], str | None, str]:
+    empty = {"artifacts": 0, "analyses": 0}
+    connection, reason = _sidecar_connect_readonly(path)
+    if connection is None:
+        return empty, None, reason
+    try:
+        artifacts_count = connection.execute("SELECT COUNT(*) FROM artifacts").fetchone()[0]
+        analyses_count = connection.execute("SELECT COUNT(*) FROM analyses").fetchone()[0]
+        artifacts = connection.execute(
+            "SELECT csv_sha256, row_count, lane FROM artifacts ORDER BY csv_sha256, row_count"
+        ).fetchall()
+        analyses = connection.execute(
+            "SELECT analysis_id, csv_sha256, row_count, totals_json"
+            " FROM analyses ORDER BY analysis_id"
+        ).fetchall()
+    except sqlite3.Error:
+        return empty, None, "source_unavailable"
+    finally:
+        connection.close()
+    canonical = json.dumps({"artifacts": artifacts, "analyses": analyses}, sort_keys=True)
+    return (
+        {"artifacts": int(artifacts_count), "analyses": int(analyses_count)},
+        hashlib.sha256(canonical.encode("utf-8")).hexdigest(),
+        "",
+    )
+
+
 def _job_payload(job: TradePathJob | None) -> dict[str, object]:
     if job is None:
         return {"available": False, "reason": "analysis_not_found"}
@@ -63,7 +231,7 @@ def _job_payload(job: TradePathJob | None) -> dict[str, object]:
 
 
 def _require_result(analysis_id: str):
-    job = trade_path_coordinator().get(analysis_id)
+    job = _readonly_job(analysis_id)
     return job.result if job is not None and job.status == "success" else None
 
 
@@ -195,7 +363,7 @@ def start_analysis(payload: AnalysisRequest) -> dict[str, object]:
 
 @trade_path_router.get("/jobs/{analysis_id}")
 def analysis_job(analysis_id: str) -> dict[str, object]:
-    return _job_payload(trade_path_coordinator().get(analysis_id))
+    return _job_payload(_readonly_job(analysis_id))
 
 
 @trade_path_router.post("/jobs/{analysis_id}/cancel")
@@ -427,31 +595,47 @@ def list_candidate_runs(lane: str = "") -> dict[str, object]:
 @trade_path_router.get("/history")
 def analysis_history() -> dict[str, object]:
     coordinator = trade_path_coordinator()
-    return {"available": True, "analyses": [_job_payload(job) for job in coordinator.list_jobs()],
-            "official_pairs": list(coordinator.official_pairs()),
-            "records": list(coordinator.history_records()),
-            "persisted": coordinator.sidecar().list_analyses(limit=50)}
+    sidecar_path = coordinator.sidecar().path
+    persisted, reason = _sidecar_analyses(sidecar_path, limit=50)
+    payload = {
+        "available": True,
+        "analyses": [_job_payload(job) for job in coordinator.list_jobs()],
+        "official_pairs": list(coordinator.official_pairs()),
+        "records": list(coordinator.history_records()),
+        "persisted": persisted,
+        "persisted_source": _sidecar_source(sidecar_path, reason),
+        "persisted_source_missing": reason == "source_missing",
+    }
+    if reason:
+        payload["persisted_unavailable_reason"] = reason
+    return payload
 
 
 @trade_path_router.get("/ledger")
 def research_ledger(entity: str = "analyses", lane: str = "", limit: int = 50) -> dict[str, object]:
     """sidecar 연구 원장 조회(P4, SELECT-only)."""
     coordinator = trade_path_coordinator()
-    sidecar = coordinator.sidecar()
+    sidecar_path = coordinator.sidecar().path
+    reason = ""
     if entity == "artifacts":
-        rows: list[dict[str, object]] = sidecar.list_artifacts(limit=limit)
+        rows, reason = _sidecar_artifacts(sidecar_path, limit=limit)
     elif entity == "candidate-runs":
         rows = list(coordinator.candidate_runs(lane))[:max(1, min(limit, 500))]
     elif entity == "events":
         rows = list(coordinator.history_records(limit=limit))
     else:
         entity = "analyses"
-        rows = sidecar.list_analyses(limit=limit, lane=lane)
+        rows, reason = _sidecar_analyses(sidecar_path, limit=limit, lane=lane)
+    counts, rebuild_sha256, meta_reason = _sidecar_counts_and_hash(sidecar_path)
+    sidecar_reason = reason or meta_reason
     return jsonable_encoder({
-        "available": True,
+        "available": not reason,
         "authority": "diagnostic",
+        "reason": sidecar_reason,
+        "source_missing": sidecar_reason == "source_missing",
+        "source": _sidecar_source(sidecar_path, sidecar_reason),
         "entity": entity,
         "rows": rows,
-        "counts": sidecar.counts(),
-        "rebuild_sha256": sidecar.rebuild_hash(),
+        "counts": counts,
+        "rebuild_sha256": rebuild_sha256,
     })

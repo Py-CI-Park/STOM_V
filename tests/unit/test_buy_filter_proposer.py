@@ -12,6 +12,7 @@ from ai_strategy_loop.revision.buy_filter_proposer import (
     BuyFilterValidationError,
     derive_buy_code,
     propose_buy_filters,
+    runtime_expression_for_timeframe,
     validate_buy_filter_code,
 )
 
@@ -43,7 +44,7 @@ def _stat(feature: str, d: float, positive: float, negative: float,
 
 
 def _csv(path: Path, rows: int = 400) -> Path:
-    fields = ["B_회전율", "B_등락율각도", "B_미지원변수"]
+    fields = ["B_회전율", "B_등락율각도", "B_분봉시가", "B_미지원변수"]
     with path.open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
@@ -51,6 +52,7 @@ def _csv(path: Path, rows: int = 400) -> Path:
             writer.writerow({
                 "B_회전율": round(index * 0.1, 2),        # 0.0 ~ 39.9
                 "B_등락율각도": round(index * 0.05, 2),    # 0.0 ~ 19.95
+                "B_분봉시가": 10_000 + index,
                 "B_미지원변수": index,
             })
     return path
@@ -91,6 +93,45 @@ def test_filter_keeps_low_side_and_uses_window_argument_for_angle(tmp_path: Path
     assert "등락율각도(30) <=" in row.clause
 
 
+def test_runtime_expression_catalog_is_lane_aware() -> None:
+    tick_catalog = runtime_expression_for_timeframe("tick")
+    min_catalog = runtime_expression_for_timeframe("min")
+    for column, variable in {
+        "B_분봉시가": "분봉시가",
+        "B_분봉고가": "분봉고가",
+        "B_분봉저가": "분봉저가",
+    }.items():
+        assert column not in tick_catalog
+        assert min_catalog[column] == variable
+
+
+def test_minute_only_runtime_columns_remain_valid_for_minute_lane(tmp_path: Path) -> None:
+    csv_path = _csv(tmp_path / "trades.csv")
+    stats = [_stat("B_분봉시가", 0.700, 10_300.0, 10_050.0)]
+
+    proposals, skipped = propose_buy_filters(
+        csv_path=csv_path, stats=stats, base_code=BASE, timeframe="min",
+    )
+
+    assert len(proposals) == 1 and skipped == ()
+    row = proposals[0]
+    assert row.variable == "분봉시가"
+    assert row.clause.startswith("분봉시가 >=")
+
+
+def test_tick_lane_rejects_minute_only_runtime_columns(tmp_path: Path) -> None:
+    csv_path = _csv(tmp_path / "trades.csv")
+    stats = [_stat("B_분봉시가", 0.700, 10_300.0, 10_050.0)]
+
+    proposals, skipped = propose_buy_filters(
+        csv_path=csv_path, stats=stats, base_code=BASE, timeframe="tick",
+    )
+
+    assert proposals == ()
+    assert skipped and skipped[0]["column"] == "B_분봉시가"
+    assert "minute-only" in skipped[0]["reason"]
+
+
 def test_unmapped_columns_are_skipped_not_guessed(tmp_path: Path) -> None:
     csv_path = _csv(tmp_path / "trades.csv")
     stats = [_stat("B_미지원변수", 0.9, 10.0, 1.0)]
@@ -120,25 +161,37 @@ def test_statistically_weak_variables_never_become_candidates(tmp_path: Path) ->
 
 def test_intent_gate_rejects_any_edit_beyond_the_single_filter_clause() -> None:
     good = derive_buy_code(BASE, "회전율 >= 10")
-    validate_buy_filter_code(code=good, base_code=BASE, clause="회전율 >= 10",
-                             expected_consts=(10.0,))
+    validate_buy_filter_code(
+        code=good, base_code=BASE, clause="회전율 >= 10", timeframe="min",
+        expected_consts=(10.0,),
+    )
 
     # 본문을 함께 고치면 골격 불변 위반.
     tampered = good.replace("0 < 현재가 <= 50000", "0 < 현재가 <= 90000")
     with pytest.raises(BuyFilterValidationError):
-        validate_buy_filter_code(code=tampered, base_code=BASE, clause="회전율 >= 10")
+        validate_buy_filter_code(code=tampered, base_code=BASE, clause="회전율 >= 10",
+                                 timeframe="min")
 
     # 화이트리스트 밖 변수는 차단.
     with pytest.raises(BuyFilterValidationError, match="unknown_runtime_variable"):
         validate_buy_filter_code(
             code=derive_buy_code(BASE, "미확인변수 >= 10"), base_code=BASE,
-            clause="미확인변수 >= 10",
+            clause="미확인변수 >= 10", timeframe="min",
         )
 
     # 선언 임계값이 코드에 없으면 차단.
     with pytest.raises(BuyFilterValidationError, match="declared_threshold_missing"):
-        validate_buy_filter_code(code=good, base_code=BASE, clause="회전율 >= 10",
-                                 expected_consts=(99.0,))
+        validate_buy_filter_code(
+            code=good, base_code=BASE, clause="회전율 >= 10", timeframe="min",
+            expected_consts=(99.0,),
+        )
+
+    # tick 명시 검증에서 분봉 런타임 변수는 허용 변수로 취급하지 않는다.
+    with pytest.raises(BuyFilterValidationError, match="minute_only_runtime_variable"):
+        validate_buy_filter_code(
+            code=derive_buy_code(BASE, "분봉시가 >= 10000"), base_code=BASE,
+            clause="분봉시가 >= 10000", timeframe="tick",
+        )
 
 
 def test_anchor_missing_is_reported_instead_of_guessing() -> None:

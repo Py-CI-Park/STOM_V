@@ -51,6 +51,27 @@ def test_v4_research_mounts_probability_research_tools_with_base_url() -> None:
     assert "fetch(loopRtBase(baseUrl) + path" in source
 
 
+def test_legacy_shell_removes_obsolete_final_approval_action() -> None:
+    source = _read("app.jsx")
+
+    for forbidden in (
+        "ApprovalDialog",
+        "final_approval",
+        "approvalOpen",
+        "onApprove",
+        "user_buy",
+        "user_sell",
+        "<WinnerCard",
+        "<MergedBestWinnerCard",
+        "Human Approval Gate",
+        "승인 후 Export",
+        "연구 산출물 승인",
+    ):
+        assert forbidden not in source
+    assert "no_adoption" in source
+    assert "전략 채택·내보내기 액션을 제공하지 않습니다" in source
+
+
 def test_probability_research_tools_are_manual_no_adoption_only() -> None:
     source = _read("loop-research-tools.jsx")
 
@@ -77,6 +98,20 @@ def test_probability_research_tools_are_manual_no_adoption_only() -> None:
         assert forbidden not in source
     for empty_or_error in ("상태 요청 실패", "아직 실행한 수동 진단이 없습니다", "요청 실패", "감사할 소스를 입력하세요"):
         assert empty_or_error in source
+
+
+def test_bayesian_client_uses_status_advertised_100000_limit() -> None:
+    source = _read("loop-research-tools.jsx")
+
+    assert "const LOOP_RT_DEFAULT_OBSERVATION_LIMIT = 100000" in source
+    assert "bounds.max_bayesian_sample || bounds.max_observation_count" in source
+    assert "const observationLimit = loopRtObservationLimit(status)" in source
+    assert "successes + failures > observationLimit" in source
+    assert "maxSampleRaw.value > observationLimit" in source
+    assert "max_sample: maxSample" in source
+    assert "max={observationLimit}" in source
+    assert "100000은 허용" in source
+    assert "100001은 전송" in source
 
 
 def test_probability_research_tools_match_strict_api_payload_shapes() -> None:

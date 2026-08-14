@@ -2,12 +2,14 @@
 
 웹 워크벤치가 띄우는 백테스트 잡 1개(동시 실행 1개, 나머지는 큐잉)를 관리한다.
 controller/loop.py 의 검증된 subprocess 계약(`stom_backtest.py --format json`)을 그대로
-재사용하되, 운영 ``_database/strategy.db`` 를 대상으로 한다(루프 격리 DB가 아님).
+재사용하되, 실행 자식에는 submit 시점에 고정한 per-job strategy/backtest DB snapshot만
+노출한다(운영 DB/루프 격리 DB를 직접 쓰지 않음).
 
 설계 계약:
   - 동시 실행 1개. start 시 이미 running 이면 큐에 적재(FIFO), 워커 스레드가 순차 처리.
   - 잡 메타는 in-memory dict + ``state/webbt_jobs/<job_id>.json`` 영속(서버 재시작 후
     과거 잡 결과 조회 가능). stdout/stderr 는 ``<job_id>.log`` 로 기록(state 는 gitignored).
+  - strategy/backtest DB snapshot은 ``state/webbt_jobs/snapshots/<job_id>/`` 아래 둔다.
   - cancel 은 LoopProcessManager 의 terminate→grace→kill→wait 패턴 재사용(좀비 reap).
   - command_builder 주입점: 테스트는 단명 가짜 커맨드를 주입해 라이프사이클을 검증한다.
   - 무예외에 가깝게: 잡 실패도 status='error'/'timeout' 레코드로 표준화(예외 누수 금지).
@@ -15,8 +17,10 @@ controller/loop.py 의 검증된 subprocess 계약(`stom_backtest.py --format js
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import sqlite3
 import subprocess
 import sys
 import threading
@@ -37,9 +41,16 @@ _PACKAGE_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = _PACKAGE_DIR.parent
 _JOBS_DIR = _PACKAGE_DIR / "state" / "webbt_jobs"
 
-# 운영 strategy.db (bootstrap 이 STOM_CLI_DB_STRATEGY 를 루프 격리 DB로 바꿔두므로,
-#   워크벤치는 env 오버라이드를 무시하고 운영 _database/strategy.db 를 명시 대상으로 한다).
+# strategy/backtest DB 원본. 잡 실행은 운영 파일을 직접 쓰지 않고, submit 시점에
+#   state/webbt_jobs 아래 per-job snapshot/copy(결과 DB는 원본 미지정 시 empty init)를
+#   만든 뒤 자식 env 를 그쪽으로 묶는다.
 _OPERATIONAL_STRATEGY_DB = REPO_ROOT / "_database" / "strategy.db"
+_OPERATIONAL_BACKTEST_DB = REPO_ROOT / "_database" / "backtest.db"
+
+_FORMULA_COLUMNS = (
+    "수식명", "차트표시", "전략연산", "팩터명",
+    "표시형태", "색상", "굵기", "종류", "수식코드",
+)
 
 # 진행 로그 테일 기본 줄 수.
 _LOG_TAIL_LINES = 50
@@ -147,6 +158,11 @@ class BacktestJobRecord:
     tags: List[str] = field(default_factory=list)
     memo: str = ""
     favorite: bool = False
+    # submit 시점에 고정한 per-job artifact 경로/검증 해시. 자식 프로세스는 이 snapshot만 본다.
+    strategy_db_snapshot_path: Optional[str] = None
+    strategy_db_snapshot_hashes: Optional[Dict[str, str]] = None
+    backtest_db_snapshot_path: Optional[str] = None
+    csv_dir_snapshot_path: Optional[str] = None
 
     def to_public(self) -> Dict[str, Any]:
         """API 응답용 dict(로그 테일은 매니저가 별도 부착)."""
@@ -196,6 +212,82 @@ def _safe_name(value: str) -> bool:
     if not value or not value.strip():
         return False
     return not any(ch in value for ch in ("\x00", "\n", "\r"))
+
+
+def _code_hash(code: str) -> str:
+    """Per-job source snapshot integrity hash: exact UTF-8 source text."""
+    return hashlib.sha256(code.encode("utf-8")).hexdigest()
+
+
+def _require_source_code(value: Optional[str], label: str) -> str:
+    """잡 source snapshot 에 넣을 코드 전문은 submit 계약에서 반드시 넘어와야 한다."""
+    if value is None:
+        raise ValueError(f"{label} code snapshot missing")
+    code = str(value)
+    if not code.strip():
+        raise ValueError(f"{label} code snapshot missing")
+    return code
+
+
+def _copy_sqlite_readonly(source: Path, destination: Path) -> bool:
+    """Copy source SQLite DB into destination using a read-only source connection.
+
+    Returns False when the source file does not exist. Existing-but-unreadable sources
+    raise so callers fail closed instead of silently launching from a partial DB.
+    """
+    source_path = Path(source)
+    if not source_path.is_file():
+        return False
+    src = sqlite3.connect(f"file:{source_path.resolve().as_posix()}?mode=ro", uri=True)
+    try:
+        dst = sqlite3.connect(str(destination))
+        try:
+            src.backup(dst)
+            dst.commit()
+        finally:
+            dst.close()
+    finally:
+        src.close()
+    return True
+
+
+def _ensure_strategy_snapshot_schema(con: sqlite3.Connection) -> None:
+    con.execute('CREATE TABLE IF NOT EXISTS stockbuy ("index" TEXT PRIMARY KEY, "전략코드" TEXT)')
+    con.execute('CREATE TABLE IF NOT EXISTS stocksell ("index" TEXT PRIMARY KEY, "전략코드" TEXT)')
+    cols_sql = ", ".join(f'"{col}" TEXT' for col in _FORMULA_COLUMNS)
+    con.execute(f"CREATE TABLE IF NOT EXISTS formula ({cols_sql})")
+
+
+def _bind_strategy_code(
+    con: sqlite3.Connection,
+    *,
+    table: str,
+    name: str,
+    code: str,
+) -> str:
+    con.execute(f'DELETE FROM {table} WHERE "index" = ?', (name,))
+    con.execute(f'INSERT INTO {table} ("index", "전략코드") VALUES (?, ?)', (name, code))
+    row = con.execute(
+        f'SELECT "전략코드" FROM {table} WHERE "index" = ? LIMIT 1',
+        (name,),
+    ).fetchone()
+    actual = "" if row is None or row[0] is None else str(row[0])
+    expected_hash = _code_hash(code)
+    if actual != code or _code_hash(actual) != expected_hash:
+        raise RuntimeError(f"{table} source snapshot hash verification failed")
+    return expected_hash
+
+
+def _read_snapshot_code(snapshot_path: Path, *, table: str, name: str) -> str:
+    con = sqlite3.connect(f"file:{Path(snapshot_path).resolve().as_posix()}?mode=ro", uri=True)
+    try:
+        row = con.execute(
+            f'SELECT "전략코드" FROM {table} WHERE "index" = ? LIMIT 1',
+            (name,),
+        ).fetchone()
+        return "" if row is None or row[0] is None else str(row[0])
+    finally:
+        con.close()
 
 
 def default_command_builder(spec: BacktestJobSpec) -> List[str]:
@@ -319,12 +411,14 @@ class BacktestJobManager:
         jobs_dir: Optional[Path] = None,
         command_builder: Optional[CommandBuilder] = None,
         strategy_db: Optional[Path] = None,
+        backtest_db: Optional[Path] = None,
         deadline_grace: float = 60.0,
     ) -> None:
         self._jobs_dir = Path(jobs_dir) if jobs_dir else _JOBS_DIR
         self._jobs_dir.mkdir(parents=True, exist_ok=True)
         self._command_builder = command_builder or default_command_builder
         self._strategy_db = Path(strategy_db) if strategy_db else _OPERATIONAL_STRATEGY_DB
+        self._backtest_db = Path(backtest_db) if backtest_db else None
         # spec.timeout 에 더해지는 하드 데드라인 유예(초). 테스트가 짧게 줄일 수 있다.
         self._deadline_grace = float(deadline_grace)
         self._lock = threading.RLock()
@@ -336,6 +430,126 @@ class BacktestJobManager:
         self._worker: Optional[threading.Thread] = None
         self._cancel_requested: set[str] = set()
         self._load_persisted()
+
+    # ------------------------------------------------------------ DB snapshots
+    def _snapshot_dir(self, job_id: str) -> Path:
+        return self._jobs_dir / "snapshots" / job_id
+
+    def _create_strategy_snapshot(
+        self,
+        job_id: str,
+        spec: BacktestJobSpec,
+    ) -> tuple[Path, Dict[str, str]]:
+        """Create immutable per-job strategy DB and bind exact submitted source code."""
+        buy_code = _require_source_code(spec.buy_code, "buy")
+        sell_code = _require_source_code(spec.sell_code, "sell")
+        snapshot_dir = self._snapshot_dir(job_id)
+        snapshot_dir.mkdir(parents=True, exist_ok=True)
+        snapshot_path = snapshot_dir / "strategy.db"
+        tmp_path = snapshot_dir / "strategy.db.tmp"
+        try:
+            tmp_path.unlink()
+        except FileNotFoundError:
+            pass
+
+        try:
+            if not _copy_sqlite_readonly(self._strategy_db, tmp_path):
+                sqlite3.connect(str(tmp_path)).close()
+            con = sqlite3.connect(str(tmp_path))
+            try:
+                _ensure_strategy_snapshot_schema(con)
+                hashes = {
+                    "buy": _bind_strategy_code(
+                        con,
+                        table="stockbuy",
+                        name=spec.buy,
+                        code=buy_code,
+                    ),
+                    "sell": _bind_strategy_code(
+                        con,
+                        table="stocksell",
+                        name=spec.sell,
+                        code=sell_code,
+                    ),
+                }
+                con.commit()
+            finally:
+                con.close()
+            os.replace(tmp_path, snapshot_path)
+            return snapshot_path.resolve(), hashes
+        except Exception:
+            try:
+                tmp_path.unlink()
+            except OSError:
+                pass
+            raise
+
+    def _create_backtest_db_snapshot(self, job_id: str) -> Path:
+        """Create an isolated per-job result DB so child writes never hit operating DB."""
+        snapshot_dir = self._snapshot_dir(job_id)
+        snapshot_dir.mkdir(parents=True, exist_ok=True)
+        snapshot_path = snapshot_dir / "backtest.db"
+        tmp_path = snapshot_dir / "backtest.db.tmp"
+        try:
+            tmp_path.unlink()
+        except FileNotFoundError:
+            pass
+        try:
+            if not self._backtest_db or not _copy_sqlite_readonly(self._backtest_db, tmp_path):
+                sqlite3.connect(str(tmp_path)).close()
+            os.replace(tmp_path, snapshot_path)
+            return snapshot_path.resolve()
+        except Exception:
+            try:
+                tmp_path.unlink()
+            except OSError:
+                pass
+            raise
+
+    def _create_csv_dir_snapshot(self, job_id: str) -> Path:
+        """Create an isolated per-job CSV output directory under the job snapshot."""
+        csv_dir = self._snapshot_dir(job_id) / "csv"
+        csv_dir.mkdir(parents=True, exist_ok=True)
+        return csv_dir.resolve()
+
+    def _verify_strategy_snapshot(self, record: BacktestJobRecord, spec: BacktestJobSpec) -> Path:
+        """Fail closed if the per-job source snapshot is missing or no longer matches spec."""
+        if not record.strategy_db_snapshot_path:
+            raise RuntimeError("strategy DB snapshot missing")
+        snapshot_path = Path(record.strategy_db_snapshot_path)
+        if not snapshot_path.is_file():
+            raise RuntimeError("strategy DB snapshot file missing")
+        hashes = record.strategy_db_snapshot_hashes or {}
+        expected = {
+            "buy": _code_hash(_require_source_code(spec.buy_code, "buy")),
+            "sell": _code_hash(_require_source_code(spec.sell_code, "sell")),
+        }
+        if hashes != expected:
+            raise RuntimeError("strategy DB snapshot metadata hash mismatch")
+        actual_buy = _read_snapshot_code(snapshot_path, table="stockbuy", name=spec.buy)
+        actual_sell = _read_snapshot_code(snapshot_path, table="stocksell", name=spec.sell)
+        if _code_hash(actual_buy) != expected["buy"] or actual_buy != str(spec.buy_code):
+            raise RuntimeError("buy strategy DB snapshot hash mismatch")
+        if _code_hash(actual_sell) != expected["sell"] or actual_sell != str(spec.sell_code):
+            raise RuntimeError("sell strategy DB snapshot hash mismatch")
+        return snapshot_path
+
+    def _require_backtest_snapshot(self, record: BacktestJobRecord) -> Path:
+        if not record.backtest_db_snapshot_path:
+            raise RuntimeError("backtest DB snapshot missing")
+        snapshot_path = Path(record.backtest_db_snapshot_path)
+        if not snapshot_path.is_file():
+            raise RuntimeError("backtest DB snapshot file missing")
+        return snapshot_path
+
+    def _require_csv_dir_snapshot(self, record: BacktestJobRecord) -> Path:
+        if not record.csv_dir_snapshot_path:
+            raise RuntimeError("CSV directory snapshot missing")
+        csv_dir = Path(record.csv_dir_snapshot_path)
+        csv_dir.mkdir(parents=True, exist_ok=True)
+        if not csv_dir.is_dir():
+            raise RuntimeError("CSV directory snapshot file missing")
+        return csv_dir.resolve()
 
     # ------------------------------------------------------------------ public
     def submit(self, spec: BacktestJobSpec) -> Dict[str, Any]:
@@ -364,8 +578,21 @@ class BacktestJobManager:
                 return {"status": "error", "message": "sweep rolling 모드는 window_days·step_days(>=1)가 필요합니다."}
 
         job_id = self._new_job_id(spec.buy)
+        try:
+            strategy_snapshot_path, strategy_hashes = self._create_strategy_snapshot(job_id, spec)
+            backtest_snapshot_path = self._create_backtest_db_snapshot(job_id)
+            csv_dir_snapshot_path = self._create_csv_dir_snapshot(job_id)
+        except Exception as exc:  # noqa: BLE001 - submit 계약은 HTTP 200 error payload로 표준화된다.
+            return {"status": "error", "message": f"잡 artifact snapshot 생성 실패: {exc}"}
         with self._lock:
-            record = BacktestJobRecord(job_id=job_id, spec=asdict(spec))
+            record = BacktestJobRecord(
+                job_id=job_id,
+                spec=asdict(spec),
+                strategy_db_snapshot_path=str(strategy_snapshot_path),
+                strategy_db_snapshot_hashes=strategy_hashes,
+                backtest_db_snapshot_path=str(backtest_snapshot_path),
+                csv_dir_snapshot_path=str(csv_dir_snapshot_path),
+            )
             self._records[job_id] = record
             self._queue.append(job_id)
             self._persist(record)
@@ -527,6 +754,9 @@ class BacktestJobManager:
 
     def _run_one(self, record: BacktestJobRecord) -> None:
         spec = BacktestJobSpec(**record.spec)
+        strategy_snapshot_path = self._verify_strategy_snapshot(record, spec)
+        backtest_snapshot_path = self._require_backtest_snapshot(record)
+        csv_dir_snapshot_path = self._require_csv_dir_snapshot(record)
         cmd = self._command_builder(spec)
         log_path = self._jobs_dir / f"{record.job_id}.log"
 
@@ -541,8 +771,10 @@ class BacktestJobManager:
         # quiet CLI도 protocol checkpoint만 bounded JSONL로 내보내 워치독 종료 전에
         # 마지막 엔진 단계를 job record에 보존한다.
         env["STOM_CLI_BACKTEST_PROTOCOL_STREAM"] = "1"
-        # 워크벤치는 운영 strategy.db 를 대상으로 한다(bootstrap 의 루프 격리 오버라이드를 되돌림).
-        env["STOM_CLI_DB_STRATEGY"] = str(self._strategy_db)
+        # 잡별 immutable snapshot만 자식에게 보인다. 운영 DB/매니저 원본은 실행 경로에 없다.
+        env["STOM_CLI_DB_STRATEGY"] = str(strategy_snapshot_path)
+        env["STOM_CLI_DB_BACKTEST"] = str(backtest_snapshot_path)
+        env["STOM_CLI_BACKTEST_CSV_DIR"] = str(csv_dir_snapshot_path)
         # 스모크/서브셋 백테: back_db_override 가 있으면 시세 DB를 교체한다.
         if spec.back_db_override:
             key = "STOM_CLI_DB_STOCK_BACK_MIN" if spec.timeframe == "min" else "STOM_CLI_DB_STOCK_BACK_TICK"
@@ -978,11 +1210,19 @@ def _default_job_strategy_db() -> Path:
     return Path(override) if override else _OPERATIONAL_STRATEGY_DB
 
 
+def _default_job_backtest_db() -> Optional[Path]:
+    override = os.environ.get("STOM_WEBBT_JOB_BACKTEST_DB")
+    return Path(override) if override else None
+
+
 def get_job_manager() -> BacktestJobManager:
     """프로세스 전역 잡 매니저 싱글톤을 반환한다(지연 초기화)."""
     global _manager
     if _manager is None:
         with _manager_lock:
             if _manager is None:
-                _manager = BacktestJobManager(strategy_db=_default_job_strategy_db())
+                _manager = BacktestJobManager(
+                    strategy_db=_default_job_strategy_db(),
+                    backtest_db=_default_job_backtest_db(),
+                )
     return _manager

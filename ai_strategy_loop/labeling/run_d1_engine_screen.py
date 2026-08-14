@@ -14,6 +14,8 @@ from ai_strategy_loop.revision.probabilistic_discovery import propose_discovery_
 from ai_strategy_loop.revision.qmc_pareto import ParetoArchive
 
 SELL = "Tick_S_902_905"
+_MIN_SAMPLE_TRADES = 10
+_MIN_SELECTION_TRADES = 12
 
 
 def screen_decision(
@@ -24,11 +26,16 @@ def screen_decision(
 ) -> dict[str, Any]:
     reasons = []
     values = metrics or {}
+    trade_count = int(values.get("trade_count") or 0)
+    has_evidence = status == "success" and bool(values)
+    underpowered = bool(has_evidence and trade_count < _MIN_SELECTION_TRADES)
     if status != "success" or not values:
         reasons.append("execution_failure")
     else:
-        if int(values.get("trade_count") or 0) < 10:
+        if trade_count < _MIN_SAMPLE_TRADES:
             reasons.append("sample_too_small")
+        elif underpowered:
+            reasons.append("underpowered_evidence")
         if float(values.get("total_profit_pct") or 0.0) <= 0:
             reasons.append("non_positive_total_profit")
         if float(values.get("avg_profit_pct") or 0.0) <= 0:
@@ -39,6 +46,10 @@ def screen_decision(
         "advance": not reasons,
         "decision": "SECOND_STAGE" if not reasons else "REJECT",
         "reasons": reasons,
+        "evidence_trade_count": trade_count,
+        "minimum_sample_trades": _MIN_SAMPLE_TRADES,
+        "minimum_selection_trades": _MIN_SELECTION_TRADES,
+        "underpowered_evidence": underpowered,
     }
 
 
@@ -69,6 +80,31 @@ def _pareto(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "authority": snapshot.adoption_authority,
         "oos_claim": snapshot.oos_claim,
     }
+
+
+def _selection_grade(row: dict[str, Any]) -> bool:
+    metrics = row.get("metrics")
+    if not isinstance(metrics, dict):
+        return False
+    screen = row.get("screen")
+    if isinstance(screen, dict):
+        if not bool(screen.get("advance")):
+            return False
+    elif row.get("status") != "success":
+        return False
+    avg_profit = metrics.get("avg_profit_pct")
+    avg_profit_ok = True if avg_profit is None and isinstance(screen, dict) else (
+        float(avg_profit or 0.0) > 0.0
+    )
+    return bool(
+        int(metrics.get("trade_count") or 0) >= _MIN_SELECTION_TRADES
+        and float(metrics.get("total_profit_pct") or 0.0) > 0.0
+        and avg_profit_ok
+    )
+
+
+def _selection_pareto(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    return _pareto([row for row in rows if _selection_grade(row)])
 
 
 def _map_elites(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -138,6 +174,7 @@ def run_screen(client: Any, **kwargs: Any) -> dict[str, Any]:
         "config": kwargs,
         "rows": rows,
         "pareto": _pareto(rows),
+        "selection_pareto": _selection_pareto(rows),
         "map_elites": _map_elites(rows),
         "advanced": advanced,
         "verdict": "SECOND_STAGE_CANDIDATES" if advanced else "NO_ECONOMIC_CANDIDATE",

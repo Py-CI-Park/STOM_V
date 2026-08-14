@@ -50,8 +50,9 @@ def _pair_mismatches(
     return mismatches
 
 
-@official_trade_path_router.post("/official-pair")
-def official_pair(payload: OfficialPairRequest) -> dict[str, object]:
+def _official_pair_response(
+    payload: OfficialPairRequest, *, record_history: bool,
+) -> dict[str, object]:
     manager = get_job_manager()
     baseline_record = manager.get(payload.baseline_job_id, log_tail=0)
     candidate_record = manager.get(payload.candidate_job_id, log_tail=0)
@@ -82,8 +83,14 @@ def official_pair(payload: OfficialPairRequest) -> dict[str, object]:
         "axis": payload.axis, "authority": "official",
         "period": ({"t_start": window[0], "t_end": window[1]} if window else None),
     })
-    trade_path_coordinator().add_official_pair(response)
+    if record_history:
+        trade_path_coordinator().add_official_pair(response)
     return response
+
+
+@official_trade_path_router.post("/official-pair")
+def official_pair(payload: OfficialPairRequest) -> dict[str, object]:
+    return _official_pair_response(payload, record_history=True)
 
 
 def _period(record: dict[str, object]) -> tuple[int, int] | None:
@@ -147,7 +154,95 @@ def _disjoint(left: tuple[int, int] | None, right: tuple[int, int] | None) -> bo
     return left[1] < right[0] or right[1] < left[0]
 
 
-def _promotion_gate_split(payload: PromotionGateRequest) -> dict[str, object]:
+def _pair_id(payload: dict[str, object], key: str) -> str | None:
+    pair = payload.get("pair")
+    if not isinstance(pair, dict):
+        return None
+    value = pair.get(key)
+    return str(value) if value not in (None, "") else None
+
+
+def _joined_pair_ids(payloads: tuple[dict[str, object], ...], key: str) -> str:
+    ids: list[str] = []
+    for payload in payloads:
+        value = _pair_id(payload, key)
+        if value and value not in ids:
+            ids.append(value)
+    return "+".join(ids)
+
+
+def _sum_pair_metric(payloads: tuple[dict[str, object], ...], key: str) -> float:
+    return sum(_pair_metric(payload, key) or 0.0 for payload in payloads)
+
+
+def _promotion_gate_receipt(response: dict[str, object]) -> dict[str, object]:
+    """One aggregate, non-calibration receipt for an explicitly persisted gate."""
+    second_key = "holdout" if response.get("mode") == "2job_split" else "oos"
+    payloads = tuple(
+        item for item in (response.get("design"), response.get(second_key))
+        if isinstance(item, dict)
+    )
+    baseline_ids = _joined_pair_ids(payloads, "baseline_job_id")
+    candidate_ids = _joined_pair_ids(payloads, "candidate_job_id")
+    baseline_count = int(round(_sum_pair_metric(payloads, "baseline_trade_count")))
+    candidate_count = int(round(_sum_pair_metric(payloads, "candidate_trade_count")))
+    baseline_profit = int(round(_sum_pair_metric(payloads, "baseline_profit_krw")))
+    candidate_profit = int(round(_sum_pair_metric(payloads, "candidate_profit_krw")))
+    baseline_per_trade = (
+        round(baseline_profit / baseline_count, 2) if baseline_count else 0.0
+    )
+    candidate_per_trade = (
+        round(candidate_profit / candidate_count, 2) if candidate_count else 0.0
+    )
+    return jsonable_encoder({
+        "available": True,
+        "authority": "official",
+        "receipt_type": "promotion_gate",
+        "gate": {
+            "mode": response.get("mode"),
+            "axis": response.get("axis"),
+            "verdict": response.get("verdict"),
+            "periods": response.get("periods"),
+            "blockers": response.get("blockers", []),
+            "baseline_job_ids": baseline_ids,
+            "candidate_job_ids": candidate_ids,
+        },
+        # Synthetic ids keep this aggregate out of the per-candidate calibration feed while
+        # preserving the official-pair history card's existing pair-shaped rendering contract.
+        "pair": {
+            "baseline_job_id": f"promotion_gate:{baseline_ids}",
+            "candidate_job_id": f"promotion_gate:{candidate_ids}",
+            "matched_count": int(round(_sum_pair_metric(payloads, "matched_count"))),
+            "baseline_only_count": int(round(
+                _sum_pair_metric(payloads, "baseline_only_count"),
+            )),
+            "candidate_only_count": int(round(
+                _sum_pair_metric(payloads, "candidate_only_count"),
+            )),
+            "baseline_profit_krw": baseline_profit,
+            "candidate_profit_krw": candidate_profit,
+            "delta_profit_krw": candidate_profit - baseline_profit,
+            "transitions": [],
+            "authority": "official",
+            "axis": response.get("axis"),
+            "baseline_trade_count": baseline_count,
+            "candidate_trade_count": candidate_count,
+            "baseline_per_trade_krw": baseline_per_trade,
+            "candidate_per_trade_krw": candidate_per_trade,
+            "delta_per_trade_krw": round(candidate_per_trade - baseline_per_trade, 2),
+            "receipt_type": "promotion_gate",
+        },
+    })
+
+
+def _persist_promotion_gate_receipt(response: dict[str, object]) -> bool:
+    if response.get("verdict") != "adoptable":
+        return False
+    trade_path_coordinator().add_official_pair(_promotion_gate_receipt(response))
+    return True
+
+
+def _promotion_gate_split(payload: PromotionGateRequest, *, persist: bool) -> dict[str, object]:
     """v2 — 연속 1회 런 한 쌍을 기간으로 갈라 판정한다(후보당 백테스트 1회).
 
     자본이 이어지므로 홀드아웃 총손익은 설계 구간 결과에 영향을 받는다. 그래서
@@ -155,21 +250,21 @@ def _promotion_gate_split(payload: PromotionGateRequest) -> dict[str, object]:
     """
     design_window = _window(payload.design_period)
     holdout_window = _window(payload.holdout_period)
-    design = official_pair(OfficialPairRequest(
+    design = _official_pair_response(OfficialPairRequest(
         baseline_job_id=payload.baseline_job_id,
         candidate_job_id=payload.candidate_job_id,
         axis=payload.axis, period=payload.design_period,
-    ))
-    holdout = official_pair(OfficialPairRequest(
+    ), record_history=False)
+    holdout = _official_pair_response(OfficialPairRequest(
         baseline_job_id=payload.baseline_job_id,
         candidate_job_id=payload.candidate_job_id,
         axis=payload.axis, period=payload.holdout_period,
-    ))
-    whole = official_pair(OfficialPairRequest(
+    ), record_history=False)
+    whole = _official_pair_response(OfficialPairRequest(
         baseline_job_id=payload.baseline_job_id,
         candidate_job_id=payload.candidate_job_id,
         axis=payload.axis,
-    ))
+    ), record_history=False)
     blockers = _edge_blockers(
         axis=payload.axis, design=design, holdout=holdout, label="holdout",
     )
@@ -186,7 +281,7 @@ def _promotion_gate_split(payload: PromotionGateRequest) -> dict[str, object]:
     if not reconciled:
         blockers.append("split_does_not_reconcile")
 
-    return jsonable_encoder({
+    response = jsonable_encoder({
         "available": not blockers,
         "authority": "official",
         "mode": "2job_split",
@@ -214,27 +309,32 @@ def _promotion_gate_split(payload: PromotionGateRequest) -> dict[str, object]:
             "총손익보다 건당 손익으로 판단하세요."
         ),
     })
+    if persist:
+        _persist_promotion_gate_receipt(response)
+    return response
 
 
 @official_trade_path_router.post("/promotion-gate")
-def promotion_gate(payload: PromotionGateRequest) -> dict[str, object]:
+def promotion_gate(
+    payload: PromotionGateRequest, persist: bool = False,
+) -> dict[str, object]:
     """Adopt only when both evaluation windows improve.
 
     2-job 분할 모드(v2)와 기존 4-job 독립 런 모드를 모두 지원한다.
     """
     if payload.mode == "2job_split":
-        return _promotion_gate_split(payload)
+        return _promotion_gate_split(payload, persist=persist)
     manager = get_job_manager()
-    design = official_pair(OfficialPairRequest(
+    design = _official_pair_response(OfficialPairRequest(
         baseline_job_id=payload.design_baseline_job_id,
         candidate_job_id=payload.design_candidate_job_id,
         axis=payload.axis,
-    ))
-    oos = official_pair(OfficialPairRequest(
+    ), record_history=False)
+    oos = _official_pair_response(OfficialPairRequest(
         baseline_job_id=payload.oos_baseline_job_id,
         candidate_job_id=payload.oos_candidate_job_id,
         axis=payload.axis,
-    ))
+    ), record_history=False)
     blockers = _edge_blockers(axis=payload.axis, design=design, holdout=oos, label="oos")
     design_period = _period(manager.get(payload.design_baseline_job_id, log_tail=0))
     oos_period = _period(manager.get(payload.oos_baseline_job_id, log_tail=0))
@@ -243,7 +343,7 @@ def promotion_gate(payload: PromotionGateRequest) -> dict[str, object]:
     elif not _disjoint(design_period, oos_period):
         blockers.append("design_oos_period_overlap")
 
-    return jsonable_encoder({
+    response = jsonable_encoder({
         "available": not blockers,
         "authority": "official",
         "mode": "4job_independent",
@@ -264,6 +364,9 @@ def promotion_gate(payload: PromotionGateRequest) -> dict[str, object]:
                if payload.axis == "buy" else "")
         ),
     })
+    if persist:
+        _persist_promotion_gate_receipt(response)
+    return response
 
 
 @official_trade_path_router.post("/matrix")

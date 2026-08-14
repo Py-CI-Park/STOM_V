@@ -40,6 +40,18 @@ function _v4ApprovalBindingProblem(binding, state) {
   const missing = ["run_id", "current_gen", "winner_gen", ..._V4_APPROVAL_HASH_KEYS]
     .filter(key => binding[key] === undefined || binding[key] === null || binding[key] === "");
   if (missing.length) return `승인 근거 필드가 누락되었습니다 (${missing.join(", ")}).`;
+  const identity = binding.candidate_identity;
+  if (!identity || typeof identity !== "object" || Array.isArray(identity)) {
+    return "승인 후보 신원(candidate_identity)이 누락되었습니다.";
+  }
+  if (String(identity.run_id || "") !== String(binding.run_id)
+      || Number(identity.gen_no) !== Number(binding.winner_gen)) {
+    return "승인 후보 신원이 현재 승인 근거의 run·우승 세대와 일치하지 않습니다.";
+  }
+  if (binding.candidate_identity_hash !== undefined
+      && !/^[0-9a-f]{64}$/.test(String(binding.candidate_identity_hash))) {
+    return "승인 후보 신원 해시 형식이 올바르지 않습니다 (candidate_identity_hash).";
+  }
   if (binding.run_id !== state.run_id || Number(binding.current_gen) !== Number(state.current_gen)
       || Number(binding.winner_gen) !== Number(winner.gen)
       || binding.winner_buy !== winner.buy_name || binding.winner_sell !== winner.sell_name) {
@@ -423,6 +435,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
       evidence_hash: approvalBinding.evidence_hash,
       buy_code_hash: approvalBinding.buy_code_hash,
       sell_code_hash: approvalBinding.sell_code_hash,
+      candidate_identity: approvalBinding.candidate_identity,
     });
     setApprovalBlockReason("");
     setApprovalOpen(false);

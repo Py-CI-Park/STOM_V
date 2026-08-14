@@ -101,7 +101,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 #   서빙한다(REST/WS API와 동일 출처 → CORS 우회 + 단일 진입점).
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 _REMODEL_FRONTEND_DIR = os.path.join(_FRONTEND_DIR, "remodel")
-_DASHBOARD_RELEASE = "v5.14.0"
+_DASHBOARD_RELEASE = "v5.15.0"
 _DASHBOARD_SHELL = "v4-ops"
 _DASHBOARD_BUILD_RE = re.compile(r"^[0-9A-Za-z._-]{1,64}$")
 _DASHBOARD_PROCESS_STARTED_AT = int(time.time())
@@ -424,12 +424,6 @@ class _FingerprintedStaticFiles(StaticFiles):
 
 # 폴링 주기(초) — current_state.json 변경 감지 → WS push.
 _POLL_INTERVAL = 1.0
-_STRICT_CANDIDATE_IDENTITY_ENV = "STOM_DASHBOARD_ALLOW_STRICT_CANDIDATE_IDENTITY"
-
-
-def _strict_candidate_identity_enabled() -> bool:
-    """Keep the new binding default-OFF until its explicit dashboard capability is enabled."""
-    return os.environ.get(_STRICT_CANDIDATE_IDENTITY_ENV) == "1"
 
 # W1-A 이후: CORS allowlist 미들웨어는 제거됨. DashboardSecurity.authorize_http 의
 #   strict same-origin(Origin == 서빙 host) 검사가 cross-origin 요청을 4403/403 으로
@@ -2824,25 +2818,24 @@ def _freeze_verdict_payload() -> Dict[str, Any]:
     else:
         _check("V4 walk-forward", "pending", "")
     out["promote_checklist"] = checklist
-    if _strict_candidate_identity_enabled():
-        review_state = _current_state_payload()
-        winner = (review_state.get("winner") or {})
-        selected = out.get("selected")
-        selected_matches_winner = (
-            isinstance(selected, dict)
-            and isinstance(winner, dict)
-            and int(selected.get("gen_no", -1)) == int(winner.get("gen", -2))
-            and str(out.get("selected_run_id") or "") == str(review_state.get("run_id") or "")
-            and str(selected.get("buy_name") or "") == str(winner.get("buy_name") or "")
-            and (
-                not selected.get("sell_name")
-                or str(selected.get("sell_name")) == str(winner.get("sell_name") or "")
-            )
+    review_state = _current_state_payload()
+    winner = (review_state.get("winner") or {})
+    selected = out.get("selected")
+    selected_matches_winner = (
+        isinstance(selected, dict)
+        and isinstance(winner, dict)
+        and int(selected.get("gen_no", -1)) == int(winner.get("gen", -2))
+        and str(out.get("selected_run_id") or "") == str(review_state.get("run_id") or "")
+        and str(selected.get("buy_name") or "") == str(winner.get("buy_name") or "")
+        and (
+            not selected.get("sell_name")
+            or str(selected.get("sell_name")) == str(winner.get("sell_name") or "")
         )
-        if selected_matches_winner and isinstance(winner.get("candidate_identity"), dict):
-            out["candidate_identity"] = dict(winner["candidate_identity"])
-        else:
-            out["candidate_identity_error"] = "frozen_review_candidate_mismatch"
+    )
+    if selected_matches_winner and isinstance(winner.get("candidate_identity"), dict):
+        out["candidate_identity"] = dict(winner["candidate_identity"])
+    else:
+        out["candidate_identity_error"] = "frozen_review_candidate_mismatch"
     return out
 
 
@@ -2855,6 +2848,8 @@ def _canonical_hash(payload: Dict[str, Any]) -> str:
         allow_nan=False,
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
 def _candidate_identity_from_payload(
     payload: Any,
     *,
@@ -2871,8 +2866,6 @@ def _candidate_identity_from_payload(
     if identity.run_id != run_id or identity.gen_no != gen_no:
         return None, "candidate_identity_coordinate_mismatch"
     return identity.to_dict(), None
-
-
 
 
 def _approval_binding_payload(
@@ -2905,40 +2898,36 @@ def _approval_binding_payload(
         return {"available": False, "reason": "hard_gates_not_passed"}
     if not winner_buy or not winner_sell:
         return {"available": False, "reason": "server_winner_names_missing"}
-    strict_identity = _strict_candidate_identity_enabled()
-    winner_identity = None
-    generation_identity = None
-    if strict_identity:
-        winner_identity, winner_identity_error = _candidate_identity_from_payload(
-            winner.get("candidate_identity"),
-            run_id=run_id,
-            gen_no=winner_gen,
-        )
-        generation_identity, generation_identity_error = _candidate_identity_from_payload(
-            generation.get("candidate_identity"),
-            run_id=run_id,
-            gen_no=winner_gen,
-        )
-        if (
-            winner_identity_error
-            or generation_identity_error
-            or winner_identity != generation_identity
-        ):
-            return {
-                "available": False,
-                "reason": winner_identity_error or generation_identity_error
-                or "winner_generation_identity_mismatch",
-            }
-        review_identity, review_identity_error = _candidate_identity_from_payload(
-            review.get("candidate_identity"),
-            run_id=run_id,
-            gen_no=winner_gen,
-        )
-        if review_identity_error or review_identity != winner_identity:
-            return {
-                "available": False,
-                "reason": review_identity_error or "review_winner_identity_mismatch",
-            }
+    winner_identity, winner_identity_error = _candidate_identity_from_payload(
+        winner.get("candidate_identity"),
+        run_id=run_id,
+        gen_no=winner_gen,
+    )
+    generation_identity, generation_identity_error = _candidate_identity_from_payload(
+        generation.get("candidate_identity"),
+        run_id=run_id,
+        gen_no=winner_gen,
+    )
+    if (
+        winner_identity_error
+        or generation_identity_error
+        or winner_identity != generation_identity
+    ):
+        return {
+            "available": False,
+            "reason": winner_identity_error or generation_identity_error
+            or "winner_generation_identity_mismatch",
+        }
+    review_identity, review_identity_error = _candidate_identity_from_payload(
+        review.get("candidate_identity"),
+        run_id=run_id,
+        gen_no=winner_gen,
+    )
+    if review_identity_error or review_identity != winner_identity:
+        return {
+            "available": False,
+            "reason": review_identity_error or "review_winner_identity_mismatch",
+        }
     checklist = review.get("promote_checklist")
     if not isinstance(checklist, list) or not checklist:
         return {"available": False, "reason": "frozen_review_missing"}
@@ -2960,7 +2949,7 @@ def _approval_binding_payload(
         sell_code = _read_strategy_code(source_db, winner_sell, "sell")
     except (KeyError, sqlite3.Error) as exc:
         return {"available": False, "reason": "winner_code_unavailable", "message": str(exc)}
-    if strict_identity and (
+    if (
         winner_identity is None
         or winner_identity["buy_body_sha256"] != hashlib.sha256(buy_code.encode("utf-8")).hexdigest()
         or winner_identity["sell_body_sha256"] != hashlib.sha256(sell_code.encode("utf-8")).hexdigest()
@@ -2981,18 +2970,16 @@ def _approval_binding_payload(
         "review_hash": review_hash,
         "buy_code_hash": buy_code_hash,
         "sell_code_hash": sell_code_hash,
+        "candidate_identity": winner_identity,
     }
-    if strict_identity:
-        evidence["candidate_identity"] = winner_identity
     result = {
         "available": True,
         **evidence,
         "evidence_hash": _canonical_hash(evidence),
-    }
-    if strict_identity:
-        result["candidate_identity_hash"] = content_sha256(
+        "candidate_identity_hash": content_sha256(
             C.CandidateIdentityV2.from_dict(winner_identity)
-        )
+        ),
+    }
     return result
 
 
@@ -3245,8 +3232,6 @@ def _decisions_payload() -> Dict[str, Any]:
 def _validated_decision_snapshot(
     candidate_identity: Dict[str, Any] | None,
 ) -> tuple[Dict[str, Any] | None, str | None]:
-    if not _strict_candidate_identity_enabled():
-        return None, None
     state = _current_state_payload()
     winner = state.get("winner")
     if not isinstance(winner, dict):
@@ -3313,26 +3298,13 @@ def _record_decision(
             "message": identity_error,
         }
     try:
-        candidate = None
-        try:
-            sel_path = os.path.join(
-                REPO_ROOT, ".omo/evidence/claude-condition-research-20260610",
-                "p5-selected-candidate.json")
-            with open(sel_path, encoding="utf-8") as fh:
-                sel = json.load(fh)
-            c = sel.get("selected_candidate") or {}
-            candidate = {"buy_name": c.get("buy_name"), "profit": c.get("profit"),
-                         "mdd": c.get("mdd"), "trade_count": c.get("trade_count")}
-        except Exception:  # noqa: BLE001 - 후보 스냅샷은 보조.
-            pass
-        if _strict_candidate_identity_enabled():
-            candidate = validated_candidate
+        candidate = validated_candidate
         record = {
             "ts": time.time(),
             "verdict": verdict,
             "note": (note or "")[:500],
             "candidate": candidate,
-            "candidate_identity": candidate_identity,
+            "candidate_identity": candidate["candidate_identity"] if candidate else None,
         }
         decisions_file = _decisions_file()
         os.makedirs(os.path.dirname(decisions_file), exist_ok=True)
@@ -4313,7 +4285,7 @@ def create_app(
             if payload.candidate_identity is not None
             else None,
         )
-        if _strict_candidate_identity_enabled() and result.get("status") != "ok":
+        if result.get("status") != "ok":
             return JSONResponse(status_code=409, content=result)
         return result
 
@@ -4894,7 +4866,7 @@ def _do_final_approval(
             "code": "approval_binding_unavailable",
             "message": str(binding.get("reason") or "approval binding unavailable"),
         }
-    if _strict_candidate_identity_enabled() and msg.candidate_identity is None:
+    if msg.candidate_identity is None:
         return {
             "status": "error",
             "code": "approval_binding_unavailable",
@@ -4908,9 +4880,8 @@ def _do_final_approval(
         "evidence_hash": msg.evidence_hash,
         "buy_code_hash": msg.buy_code_hash,
         "sell_code_hash": msg.sell_code_hash,
+        "candidate_identity": msg.candidate_identity.identity_dict(),
     }
-    if _strict_candidate_identity_enabled():
-        supplied["candidate_identity"] = msg.candidate_identity.identity_dict()
     if any(binding.get(key) != value for key, value in supplied.items()):
         return {
             "status": "error",

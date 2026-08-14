@@ -12,6 +12,7 @@ const LOOP_RT_TOOL_SPECS = [
   { id: "qmc", label: "QMC/Pareto", ko: "QMC/Pareto 미리보기", endpoint: "/loop/research-tools/qmc" },
   { id: "denoise", label: "D0 denoising", ko: "D0 디노이징 센티널", endpoint: "/loop/research-tools/denoise" },
 ];
+const LOOP_RT_DEFAULT_OBSERVATION_LIMIT = 100000;
 
 function loopRtBase(baseUrl) {
   return String(baseUrl || "").replace(/\/$/, "");
@@ -52,6 +53,28 @@ function loopRtClamp(value, fallback, min, max, integer) {
   const n = Number(value);
   const bounded = Math.max(min, Math.min(max, Number.isFinite(n) ? n : fallback));
   return integer ? Math.round(bounded) : bounded;
+}
+
+function loopRtObservationLimit(status) {
+  const bounds = status && status.bounds && typeof status.bounds === "object" ? status.bounds : {};
+  const advertised = Number(bounds.max_bayesian_sample || bounds.max_observation_count);
+  if (!Number.isFinite(advertised) || advertised <= 0) return LOOP_RT_DEFAULT_OBSERVATION_LIMIT;
+  return Math.max(1, Math.min(LOOP_RT_DEFAULT_OBSERVATION_LIMIT, Math.floor(advertised)));
+}
+
+function loopRtParseInteger(value, label, min, max, fallback) {
+  const raw = String(value === undefined || value === null ? "" : value).trim();
+  const n = raw === "" ? fallback : Number(raw);
+  if (!Number.isFinite(n) || !Number.isInteger(n)) {
+    return { error: `${label}은 정수로 입력하세요.` };
+  }
+  if (n < min) {
+    return { error: `${label}은 ${min} 이상이어야 합니다.` };
+  }
+  if (n > max) {
+    return { error: `${label}은 상태 한도 ${max} 이하이어야 합니다.` };
+  }
+  return { value: n };
 }
 
 function loopRtFormat(value, digits) {
@@ -256,6 +279,7 @@ export function LoopResearchToolsPanel({ baseUrl }) {
 
   const updateError = (key, message) => setErrors((prev) => Object.assign({}, prev, { [key]: message || "" }));
   const updateResult = (key, payload) => setResults((prev) => Object.assign({}, prev, { [key]: payload }));
+  const observationLimit = loopRtObservationLimit(status);
   const runManual = (key, path, body) => {
     setBusy(key);
     updateError(key, "");
@@ -267,9 +291,24 @@ export function LoopResearchToolsPanel({ baseUrl }) {
 
   const onBayesianSubmit = (event) => {
     event.preventDefault();
-    const successes = loopRtClamp(bayesian.successes, 0, 0, 100000, true);
-    const failures = loopRtClamp(bayesian.failures, 0, 0, 100000, true);
+    const successesRaw = loopRtParseInteger(bayesian.successes, "successes", 0, observationLimit, 0);
+    if (successesRaw.error) { updateError("bayesian", successesRaw.error); return; }
+    const failuresRaw = loopRtParseInteger(bayesian.failures, "failures", 0, observationLimit, 0);
+    if (failuresRaw.error) { updateError("bayesian", failuresRaw.error); return; }
+    const maxSampleRaw = loopRtParseInteger(bayesian.maxSample, "max_sample", 1, Number.MAX_SAFE_INTEGER, 2000);
+    if (maxSampleRaw.error) { updateError("bayesian", maxSampleRaw.error); return; }
+    const successes = successesRaw.value;
+    const failures = failuresRaw.value;
+    if (successes + failures > observationLimit) {
+      updateError("bayesian", `successes + failures 합계는 상태 한도 ${observationLimit} 이하이어야 합니다. 100000은 허용되지만 100001은 전송하지 않습니다.`);
+      return;
+    }
+    if (maxSampleRaw.value > observationLimit) {
+      updateError("bayesian", `max_sample은 상태 한도 ${observationLimit} 이하이어야 합니다. 100000은 허용되지만 100001은 전송하지 않습니다.`);
+      return;
+    }
     const ropeLower = loopRtClamp(bayesian.ropeLower, 0.5, 0, 1, false);
+    const maxSample = Math.max(maxSampleRaw.value, Math.max(1, successes + failures));
     runManual("bayesian", "/loop/research-tools/bayesian", {
       config: {
         prior_alpha: 1,
@@ -277,7 +316,7 @@ export function LoopResearchToolsPanel({ baseUrl }) {
         rope_lower: ropeLower,
         approve_prob_threshold: loopRtClamp(bayesian.approveThreshold, 0.95, 0, 1, false),
         reject_prob_threshold: loopRtClamp(bayesian.rejectThreshold, 0.10, 0, 1, false),
-        max_sample: loopRtClamp(bayesian.maxSample, 2000, successes + failures, 200000, true),
+        max_sample: maxSample,
         credible_mass: 0.95,
       },
       counts: { successes, failures },
@@ -361,15 +400,16 @@ export function LoopResearchToolsPanel({ baseUrl }) {
           <div className="panel-bd">
             <form onSubmit={onBayesianSubmit}>
               <div className="v4s-log-controls" style={{ flexWrap: "wrap" }}>
-                <label>successes <input type="number" min="0" max="100000" value={bayesian.successes} onChange={(e) => setBayesian(Object.assign({}, bayesian, { successes: e.target.value }))}/></label>
-                <label>failures <input type="number" min="0" max="100000" value={bayesian.failures} onChange={(e) => setBayesian(Object.assign({}, bayesian, { failures: e.target.value }))}/></label>
+                <label>successes <input type="number" min="0" max={observationLimit} value={bayesian.successes} onChange={(e) => setBayesian(Object.assign({}, bayesian, { successes: e.target.value }))}/></label>
+                <label>failures <input type="number" min="0" max={observationLimit} value={bayesian.failures} onChange={(e) => setBayesian(Object.assign({}, bayesian, { failures: e.target.value }))}/></label>
                 <label>ROPE lower <input type="number" min="0" max="1" step="0.01" value={bayesian.ropeLower} onChange={(e) => setBayesian(Object.assign({}, bayesian, { ropeLower: e.target.value }))}/></label>
                 <label>approve prob <input type="number" min="0" max="1" step="0.01" value={bayesian.approveThreshold} onChange={(e) => setBayesian(Object.assign({}, bayesian, { approveThreshold: e.target.value }))}/></label>
                 <label>reject prob <input type="number" min="0" max="1" step="0.01" value={bayesian.rejectThreshold} onChange={(e) => setBayesian(Object.assign({}, bayesian, { rejectThreshold: e.target.value }))}/></label>
+                <label>max_sample <input type="number" min="1" max={observationLimit} value={bayesian.maxSample} onChange={(e) => setBayesian(Object.assign({}, bayesian, { maxSample: e.target.value }))}/></label>
                 <button className="btn primary sm" type="submit" disabled={busy === "bayesian"}>posterior decision 계산</button>
               </div>
             </form>
-            <p className="v4s-note">POST /loop/research-tools/bayesian · posterior decision은 통계 경계만 표시합니다.</p>
+            <p className="v4s-note">POST /loop/research-tools/bayesian · posterior decision은 통계 경계만 표시합니다. 상태 한도: successes+failures 및 max_sample ≤ {observationLimit}; 100000은 허용, 100001은 전송 전 차단합니다.</p>
             {errors.bayesian && <p className="v4-research-error" role="alert">{errors.bayesian}</p>}
             <LoopRtBayesianResult payload={results.bayesian}/>
           </div>

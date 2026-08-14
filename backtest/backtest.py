@@ -18,6 +18,15 @@ from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num, columns_vj, D
     DB_COIN_TICK_BACK, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_OS_MIN_BACK, DB_FUTURE_OS_TICK_BACK
 
 
+_BACKTEST_CSV_DIR_ENV = 'STOM_CLI_BACKTEST_CSV_DIR'
+_DEFAULT_BACKTEST_CSV_DIR = Path('./backtest/csv')
+
+
+def _backtest_csv_dir():
+    override = os.environ.get(_BACKTEST_CSV_DIR_ENV)
+    return Path(override) if override else _DEFAULT_BACKTEST_CSV_DIR
+
+
 def _emit_backtest_child_diagnostics(
         back_queue, db, error, startday, endday, starttime, endtime, ui_gubun):
     diagnostic = {
@@ -430,7 +439,7 @@ class BackTest:
             'save_file_name': save_file_name,
         })
 
-        csv_dir = Path('./backtest/csv')
+        csv_dir = _backtest_csv_dir()
         csv_dir.mkdir(parents=True, exist_ok=True)
         df_tsg.to_csv(csv_dir / f'{save_file_name}.csv', index=False, encoding='utf-8-sig')
         _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'report_csv_written', {

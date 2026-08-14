@@ -20,6 +20,7 @@ if PROJECT_ROOT not in sys.path:
 
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.controller import state as S  # noqa: E402
+from ai_strategy_loop.dashboard import backtest_api  # noqa: E402
 from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
@@ -35,6 +36,15 @@ def _make_strategy_db(path: Path) -> None:
         'CREATE TABLE formula ("수식명" TEXT, "차트표시" TEXT, "전략연산" TEXT, "팩터명" TEXT, '
         '"표시형태" TEXT, "색상" TEXT, "크기" TEXT, "라인타입" TEXT, "수식코드" TEXT)'
     )
+    con.commit()
+    con.close()
+
+
+def _make_moneytop_db(path: Path, indices: list[int]) -> None:
+    con = sqlite3.connect(str(path))
+    cur = con.cursor()
+    cur.execute('CREATE TABLE moneytop ("index" INTEGER)')
+    cur.executemany('INSERT INTO moneytop ("index") VALUES (?)', [(idx,) for idx in indices])
     con.commit()
     con.close()
 
@@ -176,3 +186,13 @@ def test_data_range_shape(client: TestClient):
     assert "tick" in body and "min" in body
     assert "dates" in body["tick"] and "count" in body["min"]
     assert isinstance(body["tick"]["dates"], list)
+
+
+def test_back_range_normalizes_minute_and_tick_indices(tmp_path: Path):
+    min_db = tmp_path / "stock_min_back.db"
+    tick_db = tmp_path / "stock_tick_back.db"
+    _make_moneytop_db(min_db, [202501010900, 202501021530])
+    _make_moneytop_db(tick_db, [20250101090000, 20250102152959])
+
+    assert backtest_api._back_range(min_db) == {"start": 20250101, "end": 20250102}
+    assert backtest_api._back_range(tick_db) == {"start": 20250101, "end": 20250102}

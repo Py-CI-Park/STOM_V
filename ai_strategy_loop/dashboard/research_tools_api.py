@@ -126,6 +126,7 @@ def _api_receipt() -> dict[str, Any]:
             "bounds": {
                 "max_source_chars": MAX_SOURCE_CHARS,
                 "max_observation_count": MAX_OBSERVATION_COUNT,
+                "max_bayesian_sample": MAX_OBSERVATION_COUNT,
                 "max_qmc_budget": MAX_QMC_BUDGET,
                 "max_qmc_dimensions": MAX_QMC_DIMENSIONS,
             },
@@ -235,7 +236,10 @@ class BayesianPayload(_Payload):
 
     @model_validator(mode="after")
     def _counts_fit_config_sample(self) -> "BayesianPayload":
-        if self.counts.successes + self.counts.failures > self.config.max_sample:
+        sample_size = self.counts.successes + self.counts.failures
+        if sample_size > MAX_OBSERVATION_COUNT:
+            raise ValueError(f"successes + failures cannot exceed {MAX_OBSERVATION_COUNT}")
+        if sample_size > self.config.max_sample:
             raise ValueError("successes + failures cannot exceed config.max_sample")
         return self
 
@@ -395,6 +399,7 @@ def research_tools_status() -> dict[str, Any]:
         "bounds": {
             "max_source_chars": MAX_SOURCE_CHARS,
             "max_observation_count": MAX_OBSERVATION_COUNT,
+            "max_bayesian_sample": MAX_OBSERVATION_COUNT,
             "max_qmc_budget": MAX_QMC_BUDGET,
             "max_qmc_dimensions": MAX_QMC_DIMENSIONS,
             "max_qmc_archive_budget": MAX_QMC_ARCHIVE_BUDGET,

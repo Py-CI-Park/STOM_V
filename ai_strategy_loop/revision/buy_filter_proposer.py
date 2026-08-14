@@ -32,7 +32,7 @@ MIN_EXPECTED_RETENTION: Final = 0.50
 # B_* 캡처 컬럼 → 매수식에서 실제로 쓸 수 있는 런타임 표현.
 #   구간연산 변수는 공식 avg 창(30)을 명시한다(utility/static.py get_ema/avg 계약).
 #   여기 없는 컬럼은 후보로 만들지 않는다 — 문법 추정 금지.
-RUNTIME_EXPRESSION: Final[dict[str, str]] = {
+_COMMON_RUNTIME_EXPRESSION: Final[dict[str, str]] = {
     "B_현재가": "현재가",
     "B_등락율": "등락율",
     "B_당일거래대금": "당일거래대금",
@@ -44,9 +44,6 @@ RUNTIME_EXPRESSION: Final[dict[str, str]] = {
     "B_매수총잔량": "매수총잔량",
     "B_매도총잔량": "매도총잔량",
     "B_시분초": "시분초",
-    "B_분봉시가": "분봉시가",
-    "B_분봉고가": "분봉고가",
-    "B_분봉저가": "분봉저가",
     "B_시가": "시가",
     "B_고가": "고가",
     "B_저가": "저가",
@@ -56,15 +53,43 @@ RUNTIME_EXPRESSION: Final[dict[str, str]] = {
     "B_등락율각도": "등락율각도(30)",
     "B_당일거래대금각도": "당일거래대금각도(30)",
 }
-_INTEGER_COLUMNS: Final = frozenset({
-    "B_시분초", "B_현재가", "B_시가", "B_고가", "B_저가",
-    "B_분봉시가", "B_분봉고가", "B_분봉저가", "B_시가총액",
-})
+_MINUTE_ONLY_RUNTIME_EXPRESSION: Final[dict[str, str]] = {
+    "B_분봉시가": "분봉시가",
+    "B_분봉고가": "분봉고가",
+    "B_분봉저가": "분봉저가",
+}
+RUNTIME_EXPRESSION_BY_TIMEFRAME: Final[dict[str, dict[str, str]]] = {
+    "tick": dict(_COMMON_RUNTIME_EXPRESSION),
+    "min": {**_COMMON_RUNTIME_EXPRESSION, **_MINUTE_ONLY_RUNTIME_EXPRESSION},
+}
+DEFAULT_RUNTIME_TIMEFRAME: Final = "min"
+RUNTIME_EXPRESSION: Final[dict[str, str]] = RUNTIME_EXPRESSION_BY_TIMEFRAME[DEFAULT_RUNTIME_TIMEFRAME]
+_INTEGER_COLUMNS_BY_TIMEFRAME: Final[dict[str, frozenset[str]]] = {
+    "tick": frozenset({
+        "B_시분초", "B_현재가", "B_시가", "B_고가", "B_저가", "B_시가총액",
+    }),
+    "min": frozenset({
+        "B_시분초", "B_현재가", "B_시가", "B_고가", "B_저가",
+        "B_분봉시가", "B_분봉고가", "B_분봉저가", "B_시가총액",
+    }),
+}
 _FORBIDDEN: Final = ("R_", "S_", "F_", "미래", "oracle")
 
 
 class BuyFilterValidationError(ValueError):
     """생성된 매수 필터가 연구 계약을 위반했다."""
+
+
+def _is_minute_only_column(column: str) -> bool:
+    return column.startswith("B_분봉")
+
+
+def runtime_expression_for_timeframe(timeframe: str) -> dict[str, str]:
+    """레인별 B_* 캡처 컬럼 → STOM 런타임 표현 원장."""
+    try:
+        return RUNTIME_EXPRESSION_BY_TIMEFRAME[timeframe]
+    except KeyError as exc:
+        raise BuyFilterValidationError(f"unknown_timeframe:{timeframe}") from exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -111,8 +136,8 @@ def _quantile(values: Sequence[float], q: float) -> float:
     return ordered[lower] * (1 - fraction) + ordered[upper] * fraction
 
 
-def _round_threshold(column: str, value: float) -> float:
-    if column in _INTEGER_COLUMNS:
+def _round_threshold(column: str, value: float, timeframe: str = DEFAULT_RUNTIME_TIMEFRAME) -> float:
+    if column in _INTEGER_COLUMNS_BY_TIMEFRAME[timeframe]:
         return float(int(round(value)))
     if abs(value) >= 1000:
         return float(int(round(value)))
@@ -133,9 +158,11 @@ def derive_buy_code(base_code: str, clause: str) -> str:
 
 
 def validate_buy_filter_code(
-    *, code: str, base_code: str, clause: str, expected_consts: tuple[float, ...] = (),
+    *, code: str, base_code: str, clause: str, timeframe: str,
+    expected_consts: tuple[float, ...] = (),
 ) -> None:
     """intent gate — 요청한 필터 절 1개만 정확히 추가됐는지 기계 판정한다."""
+    runtime_expression = runtime_expression_for_timeframe(timeframe)
     if any(token in clause for token in _FORBIDDEN):
         raise BuyFilterValidationError("future_label_leakage")
     if "매수 = True" not in code or "self.Buy()" not in code:
@@ -165,7 +192,10 @@ def validate_buy_filter_code(
         node.id for node in ast.walk(tree)
         if isinstance(node, ast.Name) and not isinstance(node.ctx, ast.Store)
     }
-    allowed = {expr.split("(")[0] for expr in RUNTIME_EXPRESSION.values()}
+    minute_only = {name for name in names if name.startswith("분봉")}
+    if timeframe == "tick" and minute_only:
+        raise BuyFilterValidationError(f"minute_only_runtime_variable:{sorted(minute_only)}")
+    allowed = {expr.split("(")[0] for expr in runtime_expression.values()}
     unknown = names - allowed
     if unknown:
         raise BuyFilterValidationError(f"unknown_runtime_variable:{sorted(unknown)}")
@@ -204,11 +234,15 @@ def propose_buy_filters(
         if getattr(stat, "passes_fdr", False) and getattr(stat, "fold_consistent", False)
     ]
     eligible.sort(key=lambda stat: abs(getattr(stat, "d", 0.0)), reverse=True)
+    runtime_expression = runtime_expression_for_timeframe(timeframe)
     skipped: list[dict[str, str]] = []
     usable = []
     for stat in eligible:
         column = getattr(stat, "feature", "")
-        if column not in RUNTIME_EXPRESSION:
+        if _is_minute_only_column(column) and column not in runtime_expression:
+            skipped.append({"column": column, "reason": "tick lane minute-only expression — rejected"})
+            continue
+        if column not in runtime_expression:
             skipped.append({"column": column, "reason": "런타임 표현 미확인 — 추정하지 않음"})
             continue
         usable.append(stat)
@@ -227,7 +261,7 @@ def propose_buy_filters(
             continue
         keep_high = getattr(stat, "positive_mean", 0.0) > getattr(stat, "negative_mean", 0.0)
         cut_q = quantile if keep_high else 1.0 - quantile
-        threshold = _round_threshold(column, _quantile(series, cut_q))
+        threshold = _round_threshold(column, _quantile(series, cut_q), timeframe)
         kept = (sum(1 for value in series if value >= threshold) if keep_high
                 else sum(1 for value in series if value <= threshold))
         retention = round(kept / len(series), 4)
@@ -237,12 +271,13 @@ def propose_buy_filters(
                 "reason": f"기대 진입 유지율 {retention:.0%} < {MIN_EXPECTED_RETENTION:.0%}",
             })
             continue
-        variable = RUNTIME_EXPRESSION[column]
+        variable = runtime_expression[column]
         operator = ">=" if keep_high else "<="
         clause = f"{variable} {operator} {threshold:g}"
         code = derive_buy_code(base_code, clause)
         validate_buy_filter_code(
-            code=code, base_code=base_code, clause=clause, expected_consts=(threshold,),
+            code=code, base_code=base_code, clause=clause, timeframe=timeframe,
+            expected_consts=(threshold,),
         )
         direction_ko = "높은 쪽만 남김" if keep_high else "낮은 쪽만 남김"
         proposals.append(BuyFilterProposal(

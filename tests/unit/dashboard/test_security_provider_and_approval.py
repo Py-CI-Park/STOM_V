@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import json
 import hashlib
 import sqlite3
@@ -158,6 +159,8 @@ def test_final_approval_binds_live_evidence_and_exports_once(
     loop_db = tmp_path / "loop.db"
     destination_db = tmp_path / "destination.db"
     _make_loop_db(loop_db, buy_name, sell_name)
+    original_identity = _strict_identity(run_id="secure-run", gen_no=2)
+    fresh_identity = _strict_identity(run_id="secure-run", gen_no=2, buy_code="buy = 2")
     state = contract_module.LoopState(
         run_id="secure-run",
         status="complete",
@@ -167,14 +170,21 @@ def test_final_approval_binds_live_evidence_and_exports_once(
             score=42.0,
             buy_name=buy_name,
             sell_name=sell_name,
+            candidate_identity=original_identity,
         ),
         generations=[
-            contract_module.GenerationInfo(gen_no=2, status="ok", gate_passed=True)
+            contract_module.GenerationInfo(
+                gen_no=2,
+                status="ok",
+                gate_passed=True,
+                candidate_identity=original_identity,
+            )
         ],
     )
     review = {
         "review_id": "frozen-review",
         "promote_checklist": [{"name": "hard-gates", "status": "pass"}],
+        "candidate_identity": original_identity,
     }
     client = _authorized_client(
         monkeypatch,
@@ -192,6 +202,29 @@ def test_final_approval_binds_live_evidence_and_exports_once(
         connection.commit()
     finally:
         connection.close()
+    review["candidate_identity"] = fresh_identity
+    state_module.publish_loop_state(
+        contract_module.LoopState(
+            run_id="secure-run",
+            status="complete",
+            current_gen=2,
+            winner=contract_module.WinnerInfo(
+                gen=2,
+                score=42.0,
+                buy_name=buy_name,
+                sell_name=sell_name,
+                candidate_identity=fresh_identity,
+            ),
+            generations=[
+                contract_module.GenerationInfo(
+                    gen_no=2,
+                    status="ok",
+                    gate_passed=True,
+                    candidate_identity=fresh_identity,
+                )
+            ],
+        )
+    )
 
     with client.websocket_connect(
         "ws://127.0.0.1:8770/ws",
@@ -201,6 +234,10 @@ def test_final_approval_binds_live_evidence_and_exports_once(
         websocket.send_json(_approval_message(original_binding))
         stale = websocket.receive_json()
         fresh_binding = client.get("/freeze_verdict").json()["approval_binding"]
+        missing_identity = _approval_message(fresh_binding)
+        missing_identity.pop("candidate_identity")
+        websocket.send_json(missing_identity)
+        missing = websocket.receive_json()
         malicious = {**_approval_message(fresh_binding), "buy_name": "client-selected"}
         websocket.send_json(malicious)
         rejected = websocket.receive_json()
@@ -210,9 +247,12 @@ def test_final_approval_binds_live_evidence_and_exports_once(
         repeated = websocket.receive_json()
 
     assert stale["code"] == "stale_approval_binding"
+    assert missing["code"] == "approval_binding_unavailable"
+    assert missing["message"] == "candidate_identity_missing"
     assert rejected["code"] == "invalid_message"
     assert approved["status"] == "ok"
     assert approved["evidence_hash"] == fresh_binding["evidence_hash"]
+    assert fresh_binding["candidate_identity"] == fresh_identity
     assert repeated["code"] == "approval_already_applied"
     connection = sqlite3.connect(destination_db)
     try:
@@ -240,6 +280,7 @@ def test_final_approval_requires_every_frozen_review_gate_to_pass(
     sell_name = "AILOOP_blocked_g2_sell"
     loop_db = tmp_path / "loop.db"
     _make_loop_db(loop_db, buy_name, sell_name)
+    identity = _strict_identity(run_id="blocked-run", gen_no=2)
     state = contract_module.LoopState(
         run_id="blocked-run",
         status="complete",
@@ -249,14 +290,21 @@ def test_final_approval_requires_every_frozen_review_gate_to_pass(
             score=42.0,
             buy_name=buy_name,
             sell_name=sell_name,
+            candidate_identity=identity,
         ),
         generations=[
-            contract_module.GenerationInfo(gen_no=2, status="ok", gate_passed=True)
+            contract_module.GenerationInfo(
+                gen_no=2,
+                status="ok",
+                gate_passed=True,
+                candidate_identity=identity,
+            )
         ],
     )
     review = {
         "review_id": "blocked-review",
         "promote_checklist": [{"name": "hard-gates", "status": "blocked"}],
+        "candidate_identity": identity,
     }
     client = _authorized_client(
         monkeypatch,
@@ -284,6 +332,7 @@ def test_final_approval_rejects_source_code_changed_after_binding_check(
     loop_db = tmp_path / "loop.db"
     destination_db = tmp_path / "destination.db"
     _make_loop_db(loop_db, buy_name, sell_name)
+    identity = _strict_identity(run_id="race-run", gen_no=2)
     state = contract_module.LoopState(
         run_id="race-run",
         status="complete",
@@ -293,14 +342,21 @@ def test_final_approval_rejects_source_code_changed_after_binding_check(
             score=42.0,
             buy_name=buy_name,
             sell_name=sell_name,
+            candidate_identity=identity,
         ),
         generations=[
-            contract_module.GenerationInfo(gen_no=2, status="ok", gate_passed=True)
+            contract_module.GenerationInfo(
+                gen_no=2,
+                status="ok",
+                gate_passed=True,
+                candidate_identity=identity,
+            )
         ],
     )
     review = {
         "review_id": "race-review",
         "promote_checklist": [{"name": "hard-gates", "status": "pass"}],
+        "candidate_identity": identity,
     }
     client = _authorized_client(
         monkeypatch,
@@ -342,6 +398,8 @@ def test_final_approval_rejects_source_code_changed_after_binding_check(
     assert result["status"] == "error"
     assert result["code"] == "source_code_hash_mismatch"
     assert destination_db.exists() is False
+
+
 def _strict_identity(
     *,
     run_id: str,
@@ -437,7 +495,6 @@ def test_strict_candidate_identity_fails_closed_on_every_binding_mismatch(
             ],
         )
     )
-    monkeypatch.setenv("STOM_DASHBOARD_ALLOW_STRICT_CANDIDATE_IDENTITY", "1")
     review: dict[str, Any] = {
         "promote_checklist": [{"name": "gate", "status": "pass"}],
     }
@@ -474,7 +531,6 @@ def test_strict_decision_identity_rejects_missing_or_forged_payload(
     identity = _strict_identity(run_id="decision-run", gen_no=4)
     forged = dict(identity)
     forged["profile_sha256"] = hashlib.sha256(b"forged profile").hexdigest()
-    monkeypatch.setenv("STOM_DASHBOARD_ALLOW_STRICT_CANDIDATE_IDENTITY", "1")
     monkeypatch.setattr(
         app_module,
         "_current_state_payload",
@@ -505,12 +561,24 @@ def test_strict_record_decision_persists_canonical_state_snapshot(
         "generations": [{"gen_no": 5, "candidate_identity": identity}],
     }
     decisions_path = tmp_path / "decisions.jsonl"
-    monkeypatch.setenv("STOM_DASHBOARD_ALLOW_STRICT_CANDIDATE_IDENTITY", "1")
     monkeypatch.setattr(app_module, "_current_state_payload", lambda: state)
     monkeypatch.setattr(app_module, "_decisions_file", lambda: str(decisions_path))
 
-    result = app_module._record_decision("hold", "bounded test", identity)
+    client = _authorized_client(
+        monkeypatch,
+        tmp_path,
+        flags=("STOM_DASHBOARD_ALLOW_DECISION_WRITE",),
+    )
+    missing = client.post("/record_decision", json={"verdict": "hold", "note": "missing"})
+    response = client.post(
+        "/record_decision",
+        json={"verdict": "hold", "note": "bounded test", "candidate_identity": identity},
+    )
+    result = response.json()
 
+    assert missing.status_code == 409
+    assert missing.json()["message"] == "candidate_identity_missing"
+    assert response.status_code == 200
     assert result["status"] == "ok"
     candidate = result["recorded"]["candidate"]
     assert candidate == {
@@ -522,3 +590,15 @@ def test_strict_record_decision_persists_canonical_state_snapshot(
     }
     persisted = json.loads(decisions_path.read_text(encoding="utf-8").strip())
     assert persisted["candidate"] == candidate
+    assert persisted["candidate_identity"] == identity
+    assert "p5-selected-candidate" not in inspect.getsource(app_module._record_decision)
+
+
+def test_v4_final_approval_payload_carries_candidate_identity_and_blocks_missing() -> None:
+    source = Path(app_module.__file__).with_name("frontend").joinpath("v4-research.jsx").read_text(
+        encoding="utf-8"
+    )
+
+    assert "candidate_identity: approvalBinding.candidate_identity" in source
+    assert "승인 후보 신원(candidate_identity)이 누락되었습니다." in source
+    assert "승인 후보 신원이 현재 승인 근거의 run·우승 세대와 일치하지 않습니다." in source

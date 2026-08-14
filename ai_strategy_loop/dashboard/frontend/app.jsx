@@ -10,7 +10,7 @@ import { HypothesisPanel } from "./hypothesis.jsx";
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
 import { GenerationsTable } from "./table.jsx";
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
-import { BestCard, WinnerCard, MergedBestWinnerCard, ApprovalDialog } from "./cards.jsx";
+import { BestCard } from "./cards.jsx";
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
 import { CodeViewer } from "./code-viewer.jsx";
 // Track Z (PR-3) — dual-safe ESM import from the in-bundle definer (stripped by `_stripTopLevelEsm` in the concat path). KEEP on ONE physical line.
@@ -68,7 +68,6 @@ function App() {
   const { state: liveState, health, wsStatus, configSpec, configSpecStatus, send, lastReply, reconnect } = useBackend(baseUrl);
 
   const [settingsOpen, setSettingsOpen] = useState_a(false);
-  const [approvalOpen, setApprovalOpen] = useState_a(false);
   const [codeViewGen, setCodeViewGen] = useState_a(null); // gen object
   // #65 P1 — 세대표 '백테상세' 클릭 시 BacktestDetailChart에 내려줄 선택 세대(드롭다운 대체).
   const [selectedDetailGen, setSelectedDetailGen] = useState_a(null);
@@ -233,18 +232,6 @@ function App() {
   const onStop = useCallback_a(() => {
     send({ action: "stop" });
   }, [send]);
-
-  const onApprove = useCallback_a(({ userBuy, userSell }) => {
-    if (!state.winner) return;
-    send({
-      action: "final_approval",
-      buy_name: state.winner.buy_name,
-      sell_name: state.winner.sell_name,
-      user_buy: userBuy,
-      user_sell: userSell,
-    });
-    setApprovalOpen(false);
-  }, [send, state.winner]);
 
   const onViewCodeByGen = useCallback_a((genNo) => {
     const g = (state.generations || []).find(x => x.gen_no === genNo);
@@ -426,7 +413,7 @@ function App() {
         </ErrorBoundary>
       ) : (
         <main style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {/* 승인 export 결과 배너(final_approval 게이트는 ApprovalDialog가 유지) */}
+          {/* 연구 상태 배너 — legacy 셸은 내보내기 승인 액션을 노출하지 않는다. */}
           <ExportStatusBanner reply={lastReply} />
 
           <_EvoSection storageKey="stom_evo_live" label={<SectionLabel text="조건식 AI Live Monitor" />}>
@@ -516,17 +503,13 @@ function App() {
               {/* ── 판정 카드(분석의 결론) ── */}
               <_EvoSection storageKey="stom_evo_verdict" label={<SectionLabel text="판정 · Best / Winner" />}>
                 {/* #65 P1 — best.gen===winner.gen이면(게이트 통과한 best가 곧 winner) 한 카드로
-                    병합 표기(graded+score 동시). 다르면 기존 2카드(하위호환). */}
+                    병합 표기(graded+score 동시). legacy 셸은 수동 검토 정보만 표시하고 승인/내보내기 액션은 제거한다. */}
                 {(state.best && state.winner && state.best.gen === state.winner.gen) ? (
-                  <MergedBestWinnerCard best={state.best} winner={state.winner}
-                                        onApprove={() => setApprovalOpen(true)}
-                                        onViewCode={onViewCodeByGen} />
+                  legacyBestWinnerReviewCard({ best: state.best, winner: state.winner, onViewCode: onViewCodeByGen })
                 ) : (
                   <>
                     <BestCard best={state.best} onViewCode={onViewCodeByGen} />
-                    <WinnerCard winner={state.winner}
-                                onApprove={() => setApprovalOpen(true)}
-                                onViewCode={onViewCodeByGen} />
+                    {legacyWinnerReviewCard({ winner: state.winner, onViewCode: onViewCodeByGen })}
                   </>
                 )}
                 <FeedbackPanel state={state} />
@@ -546,11 +529,6 @@ function App() {
         onGptAuthTest={onGptAuthTest}
         gptAuthProbe={gptAuthProbe}
         disabled={running || (!isDemoSrc && configSpecStatus && !configSpecStatus.live)}
-      />
-      <ApprovalDialog
-        winner={approvalOpen ? state.winner : null}
-        onClose={() => setApprovalOpen(false)}
-        onConfirm={onApprove}
       />
       <CodeViewer
         generation={codeViewGen}
@@ -573,7 +551,7 @@ function App() {
           ["브로커 로그인 없음", "No Broker Login"],
           ["계좌/자산 연동 없음", "No Account Trading"],
           ["연구 전용", "Research Only"],
-          ["Human Approval Gate", "승인 후 Export"],
+          ["수동 검토 전용", "no_adoption"],
           ["Append-Only Audit", "불변 감사 로그"],
         ].map(([title, detail]) => (
           <div key={title} className="panel" style={{ padding: "10px 12px" }}>
@@ -687,6 +665,130 @@ function ResearchSuiteCards({ state, onNavigate, onOpenWorkbench }) {
             </button>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function legacyNameRow(label, value) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 10,
+      padding: "7px 10px",
+      background: "var(--bg-0)",
+      border: "1px solid var(--line-1)",
+      borderRadius: 5,
+    }}>
+      <span style={{ fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--ink-2)", width: 36 }}>
+        {label}
+      </span>
+      <span className="mono" style={{ fontSize: 12, color: "var(--ink-0)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {value || "—"}
+      </span>
+    </div>
+  );
+}
+
+function legacyWinnerReviewCard({ winner, onViewCode }) {
+  if (!winner) {
+    return (
+      <div className="panel" style={{ borderStyle: "dashed", borderColor: "var(--line-2)" }}>
+        <div className="panel-hd">
+          <div className="panel-hd-title">
+            <span className="dot"></span>Winner — 게이트 통과 대기
+          </div>
+        </div>
+        <div className="panel-bd" style={{ color: "var(--ink-3)", fontSize: 12 }}>
+          하드 게이트를 통과한 전략이 아직 없습니다.
+          <div style={{ marginTop: 6, fontSize: 11, color: "var(--ink-3)" }}>
+            target_score 이상 + MDD 상한 이내 + 일평균 거래 하한 이상
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="panel" style={{
+      borderColor: "rgba(165,148,255,0.35)",
+      background: "linear-gradient(180deg, rgba(165,148,255,0.06), var(--bg-1) 70%)",
+    }}>
+      <div className="panel-hd" style={{ background: "rgba(165,148,255,0.08)", borderBottom: "1px solid rgba(165,148,255,0.18)" }}>
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--violet)" }}></span>
+          Winner — 하드 게이트 통과
+        </div>
+        <span className="badge" style={{ color: "var(--violet)", borderColor: "rgba(165,148,255,0.32)", background: "rgba(165,148,255,0.08)" }}>
+          gen_{String(winner.gen).padStart(2, "0")}
+        </span>
+      </div>
+      <div className="panel-bd">
+        <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginBottom: 14 }}>
+          <span className="stat-value lg mono" style={{ color: "var(--violet)" }}>
+            {fmtScore(winner.score)}
+          </span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>
+            graded_score
+          </span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+          {legacyNameRow("매수", winner.buy_name)}
+          {legacyNameRow("매도", winner.sell_name)}
+        </div>
+        {onViewCode && (
+          <button className="btn ghost sm" onClick={() => onViewCode(winner.gen)}
+                  style={{ width: "100%", justifyContent: "center", marginBottom: 10 }}>
+            &lt;/&gt; 전체 코드 검토
+          </button>
+        )}
+        <p style={{ fontSize: 11, color: "var(--ink-2)", marginTop: 10, lineHeight: 1.55, textAlign: "center" }}>
+          legacy 셸은 연구 검토 전용입니다. no_adoption 상태를 유지하며 전략 채택·내보내기 액션을 제공하지 않습니다.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function legacyBestWinnerReviewCard({ best, winner, onViewCode }) {
+  const gen = winner.gen;
+  return (
+    <div className="panel" style={{
+      borderColor: "rgba(165,148,255,0.35)",
+      background: "linear-gradient(180deg, rgba(165,148,255,0.06), var(--bg-1) 70%)",
+    }}>
+      <div className="panel-hd" style={{ background: "rgba(165,148,255,0.08)", borderBottom: "1px solid rgba(165,148,255,0.18)" }}>
+        <div className="panel-hd-title">
+          <span className="dot" style={{ background: "var(--violet)" }}></span>
+          Best = Winner — 게이트 통과 최고 세대
+        </div>
+        <span className="badge" style={{ color: "var(--violet)", borderColor: "rgba(165,148,255,0.32)", background: "rgba(165,148,255,0.08)" }}>
+          gen_{String(gen).padStart(2, "0")}
+        </span>
+      </div>
+      <div className="panel-bd">
+        <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginBottom: 4, flexWrap: "wrap" }}>
+          <span className="stat-value lg mono" style={{ color: "var(--teal)" }}>
+            {fmtScore(best.graded_score)}
+          </span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>graded</span>
+          <span className="stat-value mono" style={{ color: "var(--violet)", marginLeft: 6 }}>
+            {fmtScore(winner.score)}
+          </span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--ink-2)" }}>winner_score</span>
+          <span className="pill gate-pass" style={{ marginLeft: "auto" }}>✓ 게이트</span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "12px 0 14px" }}>
+          {legacyNameRow("매수", winner.buy_name)}
+          {legacyNameRow("매도", winner.sell_name)}
+        </div>
+        {onViewCode && (
+          <button className="btn ghost sm" onClick={() => onViewCode(gen)}
+                  style={{ width: "100%", justifyContent: "center", marginBottom: 10 }}>
+            &lt;/&gt; 전체 코드 검토 — gen_{String(gen).padStart(2, "0")}
+          </button>
+        )}
+        <p style={{ fontSize: 11, color: "var(--ink-2)", marginTop: 10, lineHeight: 1.55, textAlign: "center" }}>
+          legacy 셸은 연구 검토 전용입니다. no_adoption 상태를 유지하며 전략 채택·내보내기 액션을 제공하지 않습니다.
+        </p>
       </div>
     </div>
   );
@@ -899,7 +1001,7 @@ function IdleState({ onStart, configSpec, state, onNavigate }) {
             <span style={{ color: "var(--ink-2)" }}>
               목표 점수와 MDD 상한을 동시에 만족하면 우승 후보로 표시되고,
               <br />
-              운영 export/final approval은 연구 확인 화면과 분리된 별도 승인 절차입니다.
+              운영 채택·내보내기는 이 legacy 연구 화면에서 수행하지 않습니다.
             </span>
           </p>
           <button className="btn primary lg" onClick={onStart}>

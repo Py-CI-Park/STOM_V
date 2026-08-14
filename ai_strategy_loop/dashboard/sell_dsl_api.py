@@ -13,7 +13,10 @@ from ai_strategy_loop.autopsy.sell_dsl_replay import replay_sell_strategy
 from ai_strategy_loop.autopsy.trade_episode import SymbolResolver
 from ai_strategy_loop.autopsy.trade_path_clock import liquidation_timestamp
 from ai_strategy_loop.autopsy.trade_path_models import ActualExit, Timeframe
-from ai_strategy_loop.dashboard.trade_path_jobs import trade_path_coordinator
+from ai_strategy_loop.dashboard.trade_path_report import (
+    _readonly_trade_path_job,
+    _sidecar_source,
+)
 from ai_strategy_loop.dashboard.trade_path_source import resolve_job_source
 
 
@@ -70,6 +73,8 @@ class SellDslEnvelope(FrozenResponse):
     available: bool
     authority: Literal["diagnostic", "advisory"]
     reason: str = ""
+    source_missing: bool = False
+    source: dict[str, object] | None = None
     timeframe: Literal["tick", "min"] | None = None
     strategy_sell: str = ""
     clauses: tuple[ClauseResponse, ...] = ()
@@ -86,7 +91,7 @@ def _day_start(date: int, timeframe: Timeframe) -> int:
 @sell_dsl_router.get("/sell-dsl-trace", response_model=SellDslEnvelope)
 def sell_dsl_trace(analysis_id: str = "", trade_key: str = "") -> SellDslEnvelope:
     """Replay the original ordered sell DSL; never read past forced liquidation."""
-    job = trade_path_coordinator().get(analysis_id)
+    job, reason, sidecar_path = _readonly_trade_path_job(analysis_id)
     result = job.result if job is not None and job.status == "success" else None
     summary = None if result is None else next(
         (item for item in result.episodes if item.trade_key == trade_key), None,
@@ -95,6 +100,14 @@ def sell_dsl_trace(analysis_id: str = "", trade_key: str = "") -> SellDslEnvelop
         (item for item in result.rows if item.row_id == summary.row_id), None,
     )
     if result is None or row is None:
+        if result is None and reason in ("source_missing", "source_unavailable"):
+            return SellDslEnvelope(
+                available=False,
+                reason=reason,
+                authority="diagnostic",
+                source_missing=reason == "source_missing",
+                source=_sidecar_source(sidecar_path, reason),
+            )
         return SellDslEnvelope(available=False, reason="trade_not_found", authority="diagnostic")
     code = result.source.strategy_sell.strip()
     if not code:

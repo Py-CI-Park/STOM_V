@@ -16,6 +16,7 @@ from typing import Final
 
 
 _FORBIDDEN_SOURCES: Final = ("R_", "S_", "매도후", "미래", "최종")
+_MINUTE_ONLY_TEMPLATE_TOKENS: Final = ("분봉시가", "분봉고가", "분봉저가")
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,16 +46,16 @@ CATALOG: Final[tuple[CatalogVariable, ...]] = (
         "원", True, note="기준선 Min_B_Study_251227 인라인 승계",
     ),
     CatalogVariable(
-        "시가갭수익률", "A", ("tick", "min"),
+        "시가갭수익률", "A", ("min",),
         "(분봉시가 - 전일종가추정) / 전일종가추정 * 100",
         _guard("시가갭수익률 = ((분봉시가 - 전일종가추정) / 전일종가추정) * 100", "전일종가추정"),
-        "%", True, note="전일종가추정 선행 정의 필요(연쇄)",
+        "%", True, note="전일종가추정 선행 정의 필요(연쇄) · min 전용",
     ),
     CatalogVariable(
-        "시가대비등락율", "A", ("tick", "min"),
+        "시가대비등락율", "A", ("min",),
         "(현재가 - 분봉시가) / 분봉시가 * 100",
         _guard("시가대비등락율 = ((현재가 - 분봉시가) / 분봉시가) * 100", "분봉시가"),
-        "%", True, note="기준선 인라인 승계",
+        "%", True, note="기준선 인라인 승계 · min 전용",
     ),
     CatalogVariable(
         "분당순매수금액", "A", ("min",),
@@ -184,6 +185,11 @@ def validate_catalog() -> tuple[str, ...]:
             problems.append(f"{item.name}: leakage_safe=False 는 등록 불가")
         if not set(item.lanes) <= {"tick", "min"}:
             problems.append(f"{item.name}: 잘못된 lane {item.lanes}")
+        if "tick" in item.lanes:
+            expression = f"{item.formula}\n{item.stom_template}"
+            minute_tokens = [token for token in _MINUTE_ONLY_TEMPLATE_TOKENS if token in expression]
+            if minute_tokens:
+                problems.append(f"{item.name}: tick lane minute-only token {minute_tokens[0]}")
         if item.stom_template and not item.stom_template.startswith(item.name):
             problems.append(f"{item.name}: 템플릿이 자기 이름으로 시작하지 않음")
     return tuple(problems)

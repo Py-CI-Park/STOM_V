@@ -27,6 +27,7 @@ from tests.unit.security_test_client import authorized_dashboard_client  # pyrig
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
+from ai_strategy_loop.dashboard import backtest_api  # noqa: E402
 from ai_strategy_loop.dashboard import backtest_jobs as J  # noqa: E402
 
 
@@ -82,6 +83,7 @@ def client(monkeypatch, tmp_path: Path) -> TestClient:
     monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "current_state.json")
     monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
     monkeypatch.setattr(S, "LOOP_RUNS_DB", tmp_path / "loop_runs.db")
+    monkeypatch.setattr(backtest_api, "REPO_ROOT", tmp_path)
     monkeypatch.setattr(J, "_manager", None)
     monkeypatch.setattr(J, "_JOBS_DIR", tmp_path / "webbt_jobs")
     from ai_strategy_loop.dashboard.app import create_app
@@ -106,7 +108,7 @@ def _seed_gen(tmp_path: Path, run_id: str, gen_no: int, *, csv_path=None,
         st.close()
 
 
-def _seed_job(tmp_path: Path, csv_path: str, job_id: str, status: str = "success") -> str:
+def _seed_job(tmp_path: Path, csv_path: str | None, job_id: str, status: str = "success") -> str:
     import json
     jobs_dir = tmp_path / "webbt_jobs"
     jobs_dir.mkdir(parents=True, exist_ok=True)
@@ -173,6 +175,27 @@ def test_result_by_run_gen_with_csv(client: TestClient, tmp_path: Path):
     assert "summary" in body["analysis"]
     assert "equity" in body["analysis"]
     assert body["analysis"]["equity"]["cumulative"]  # 곡선 비어있지 않음.
+
+
+def test_job_result_reads_relative_artifact_from_repo_root_not_cwd(
+    client: TestClient, monkeypatch, tmp_path: Path
+):
+    repo_root = tmp_path / "repo"
+    rel_csv = "backtest/csv/relative_result.csv"
+    _make_trades_csv(repo_root / rel_csv, n=12)
+    _seed_job(tmp_path, rel_csv, "20260101_000000_REL_00001")
+    other_cwd = tmp_path / "not_repo_cwd"
+    other_cwd.mkdir()
+    monkeypatch.setattr(backtest_api, "REPO_ROOT", repo_root)
+    monkeypatch.chdir(other_cwd)
+
+    r = client.get("/bt/result", params={"job_id": "20260101_000000_REL_00001"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["available"] is True
+    assert body["analysis"]["summary"]["trade_count"] == 12
+    report_payload = backtest_api._report_payload_for_job("20260101_000000_REL_00001", None, None)
+    assert report_payload["analysis"]["summary"]["trade_count"] == 12
 
 
 def test_result_by_run_gen_csv_missing_abbreviated(client: TestClient, tmp_path: Path):
@@ -270,7 +293,7 @@ def test_portfolio_unresolved_items_reported(client: TestClient, tmp_path: Path)
     csv_b = _make_trades_csv(tmp_path / "b.csv", n=20, sign=-1)
     _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001")
     _seed_job(tmp_path, csv_b, "20260101_000000_JOBB_00002")
-    # 3개 요청 중 1개는 존재하지 않는 잡 → failed 에 인덱스, 나머지 2개로 합성.
+    # 3개 요청 중 1개는 존재하지 않는 잡 → 부분 합성하지 않고 실패 인덱스/사유를 반환.
     r = client.post("/bt/portfolio", json={"items": [
         {"job_id": "20260101_000000_JOBA_00001"},
         {"job_id": "MISSING_JOB"},
@@ -278,8 +301,65 @@ def test_portfolio_unresolved_items_reported(client: TestClient, tmp_path: Path)
     ]})
     assert r.status_code == 200
     body = r.json()
-    assert body["status"] == "ok"
+    assert body["status"] == "error"
     assert body["failed"] == [1]
+    assert body["failed_reasons"] == [{"index": 1, "reason": "job_not_found"}]
+    assert body["resolved_count"] == 2
+
+
+def test_portfolio_missing_csv_artifact_fails_with_reason(client: TestClient, tmp_path: Path):
+    csv_a = _make_trades_csv(tmp_path / "a.csv", n=20, sign=1)
+    _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001")
+    _seed_job(tmp_path, str(tmp_path / "missing.csv"), "20260101_000000_JOBM_00002")
+
+    r = client.post("/bt/portfolio", json={"items": [
+        {"job_id": "20260101_000000_JOBA_00001"},
+        {"job_id": "20260101_000000_JOBM_00002"},
+    ]})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "error"
+    assert body["failed"] == [1]
+    assert body["failed_reasons"] == [{"index": 1, "reason": "job_csv_missing"}]
+    assert body["resolved_count"] == 1
+
+
+def test_portfolio_missing_generation_csv_fails_with_reason(client: TestClient, tmp_path: Path):
+    csv_a = _make_trades_csv(tmp_path / "g0.csv", n=20, sign=1)
+    _seed_gen(tmp_path, "runMissingCsv", 0, csv_path=csv_a)
+    db = tmp_path / "loop_runs.db"
+    st = LoopState(db_path=str(db), snapshot_dir=str(tmp_path / "snaps"))
+    try:
+        st.record_generation("runMissingCsv", 1, buy_name="b", sell_name="s", status="ok",
+                             score=1.0, gate_passed=True,
+                             csv_path=str(tmp_path / "missing_gen.csv"), trade_count=20)
+    finally:
+        st.close()
+
+    r = client.post("/bt/portfolio", json={"items": [
+        {"run_id": "runMissingCsv", "gen_no": 0},
+        {"run_id": "runMissingCsv", "gen_no": 1},
+    ]})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "error"
+    assert body["failed"] == [1]
+    assert body["failed_reasons"] == [{"index": 1, "reason": "generation_csv_missing"}]
+
+
+def test_portfolio_no_trades_job_is_explicit_empty_input(client: TestClient, tmp_path: Path):
+    csv_a = _make_trades_csv(tmp_path / "a.csv", n=20, sign=1)
+    _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001")
+    _seed_job(tmp_path, None, "20260101_000000_JOBN_00002", status="no_trades")
+
+    r = client.post("/bt/portfolio", json={"items": [
+        {"job_id": "20260101_000000_JOBA_00001"},
+        {"job_id": "20260101_000000_JOBN_00002"},
+    ]})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "ok"
+    assert body["failed"] == []
     assert body["portfolio"]["count"] == 2
 
 
