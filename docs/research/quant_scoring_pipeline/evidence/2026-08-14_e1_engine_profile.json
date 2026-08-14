@@ -1,0 +1,666 @@
+{
+  "schema": "stom.e1_engine_profile.v1",
+  "authority": "diagnostic_only_no_profit_claim",
+  "config": {
+    "start": 20231114,
+    "end": 20231121,
+    "engines": 16,
+    "job_timeout": 240,
+    "poll_timeout": 300
+  },
+  "rows": [
+    {
+      "arm": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_172132_TickB902905_92036",
+      "status": "success",
+      "elapsed_seconds": 73.906,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 118685,
+            "code_count": 38,
+            "elapsed_seconds": 2.11
+          },
+          "BackEngine:1": {
+            "tick_count": 130851,
+            "code_count": 44,
+            "elapsed_seconds": 2.113
+          },
+          "BackEngine:2": {
+            "tick_count": 137768,
+            "code_count": 46,
+            "elapsed_seconds": 2.114
+          },
+          "BackEngine:3": {
+            "tick_count": 131959,
+            "code_count": 46,
+            "elapsed_seconds": 2.111
+          },
+          "BackEngine:4": {
+            "tick_count": 134876,
+            "code_count": 44,
+            "elapsed_seconds": 2.111
+          }
+        }
+      },
+      "workers": {
+        "BackEngine:0": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 118685,
+          "code_count": 38,
+          "elapsed_seconds": 2.11,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:1": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 130851,
+          "code_count": 44,
+          "elapsed_seconds": 2.113,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:2": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 137768,
+          "code_count": 46,
+          "elapsed_seconds": 2.114,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:3": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 131959,
+          "code_count": 46,
+          "elapsed_seconds": 2.111,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:4": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 134876,
+          "code_count": 44,
+          "elapsed_seconds": 2.111,
+          "code": null,
+          "index": null,
+          "error": null
+        }
+      }
+    },
+    {
+      "arm": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905",
+      "repetition": 2,
+      "job_id": "20260814_172245_TickB902905_65979",
+      "status": "success",
+      "elapsed_seconds": 68.143,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 133391,
+            "code_count": 46,
+            "elapsed_seconds": 2.082
+          },
+          "BackEngine:1": {
+            "tick_count": 135982,
+            "code_count": 44,
+            "elapsed_seconds": 2.08
+          },
+          "BackEngine:2": {
+            "tick_count": 129091,
+            "code_count": 44,
+            "elapsed_seconds": 2.079
+          },
+          "BackEngine:3": {
+            "tick_count": 127635,
+            "code_count": 41,
+            "elapsed_seconds": 2.08
+          },
+          "BackEngine:4": {
+            "tick_count": 128040,
+            "code_count": 43,
+            "elapsed_seconds": 2.08
+          }
+        }
+      },
+      "workers": {
+        "BackEngine:0": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 133391,
+          "code_count": 46,
+          "elapsed_seconds": 2.082,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:1": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 135982,
+          "code_count": 44,
+          "elapsed_seconds": 2.08,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:2": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 129091,
+          "code_count": 44,
+          "elapsed_seconds": 2.079,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:3": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 127635,
+          "code_count": 41,
+          "elapsed_seconds": 2.08,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:4": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 128040,
+          "code_count": 43,
+          "elapsed_seconds": 2.08,
+          "code": null,
+          "index": null,
+          "error": null
+        }
+      }
+    },
+    {
+      "arm": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905",
+      "repetition": 3,
+      "job_id": "20260814_172354_TickB902905_34147",
+      "status": "success",
+      "elapsed_seconds": 68.384,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 120630,
+            "code_count": 38,
+            "elapsed_seconds": 1.959
+          },
+          "BackEngine:1": {
+            "tick_count": 136407,
+            "code_count": 47,
+            "elapsed_seconds": 1.958
+          },
+          "BackEngine:2": {
+            "tick_count": 133595,
+            "code_count": 44,
+            "elapsed_seconds": 1.957
+          },
+          "BackEngine:4": {
+            "tick_count": 129600,
+            "code_count": 44,
+            "elapsed_seconds": 1.956
+          },
+          "BackEngine:3": {
+            "tick_count": 133907,
+            "code_count": 45,
+            "elapsed_seconds": 1.955
+          }
+        }
+      },
+      "workers": {
+        "BackEngine:0": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 120630,
+          "code_count": 38,
+          "elapsed_seconds": 1.959,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:1": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 136407,
+          "code_count": 47,
+          "elapsed_seconds": 1.958,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:2": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 133595,
+          "code_count": 44,
+          "elapsed_seconds": 1.957,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:4": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 129600,
+          "code_count": 44,
+          "elapsed_seconds": 1.956,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:3": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 133907,
+          "code_count": 45,
+          "elapsed_seconds": 1.955,
+          "code": null,
+          "index": null,
+          "error": null
+        }
+      }
+    },
+    {
+      "arm": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_172502_G2BSEGONLY_2578",
+      "status": "success",
+      "elapsed_seconds": 68.551,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 135330,
+            "code_count": 45,
+            "elapsed_seconds": 2.248
+          },
+          "BackEngine:1": {
+            "tick_count": 134510,
+            "code_count": 44,
+            "elapsed_seconds": 2.248
+          },
+          "BackEngine:2": {
+            "tick_count": 119874,
+            "code_count": 40,
+            "elapsed_seconds": 2.246
+          },
+          "BackEngine:3": {
+            "tick_count": 132490,
+            "code_count": 42,
+            "elapsed_seconds": 2.267
+          },
+          "BackEngine:4": {
+            "tick_count": 131935,
+            "code_count": 47,
+            "elapsed_seconds": 2.245
+          }
+        }
+      },
+      "workers": {
+        "BackEngine:0": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 135330,
+          "code_count": 45,
+          "elapsed_seconds": 2.248,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:1": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 134510,
+          "code_count": 44,
+          "elapsed_seconds": 2.248,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:2": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 119874,
+          "code_count": 40,
+          "elapsed_seconds": 2.246,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:3": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 132490,
+          "code_count": 42,
+          "elapsed_seconds": 2.267,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:4": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 131935,
+          "code_count": 47,
+          "elapsed_seconds": 2.245,
+          "code": null,
+          "index": null,
+          "error": null
+        }
+      }
+    },
+    {
+      "arm": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905",
+      "repetition": 2,
+      "job_id": "20260814_172611_G2BSEGONLY_71172",
+      "status": "success",
+      "elapsed_seconds": 68.572,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 127541,
+            "code_count": 41,
+            "elapsed_seconds": 2.219
+          },
+          "BackEngine:1": {
+            "tick_count": 131549,
+            "code_count": 43,
+            "elapsed_seconds": 2.218
+          },
+          "BackEngine:2": {
+            "tick_count": 125714,
+            "code_count": 45,
+            "elapsed_seconds": 2.221
+          },
+          "BackEngine:3": {
+            "tick_count": 140514,
+            "code_count": 44,
+            "elapsed_seconds": 2.236
+          },
+          "BackEngine:4": {
+            "tick_count": 128821,
+            "code_count": 45,
+            "elapsed_seconds": 2.217
+          }
+        }
+      },
+      "workers": {
+        "BackEngine:0": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 127541,
+          "code_count": 41,
+          "elapsed_seconds": 2.219,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:1": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 131549,
+          "code_count": 43,
+          "elapsed_seconds": 2.218,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:2": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 125714,
+          "code_count": 45,
+          "elapsed_seconds": 2.221,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:3": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 140514,
+          "code_count": 44,
+          "elapsed_seconds": 2.236,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:4": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 128821,
+          "code_count": 45,
+          "elapsed_seconds": 2.217,
+          "code": null,
+          "index": null,
+          "error": null
+        }
+      }
+    },
+    {
+      "arm": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905",
+      "repetition": 3,
+      "job_id": "20260814_172719_G2BSEGONLY_39769",
+      "status": "success",
+      "elapsed_seconds": 68.644,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 135072,
+            "code_count": 45,
+            "elapsed_seconds": 2.24
+          },
+          "BackEngine:1": {
+            "tick_count": 126302,
+            "code_count": 42,
+            "elapsed_seconds": 2.242
+          },
+          "BackEngine:2": {
+            "tick_count": 127892,
+            "code_count": 45,
+            "elapsed_seconds": 2.239
+          },
+          "BackEngine:3": {
+            "tick_count": 120445,
+            "code_count": 38,
+            "elapsed_seconds": 2.263
+          },
+          "BackEngine:4": {
+            "tick_count": 144428,
+            "code_count": 48,
+            "elapsed_seconds": 2.243
+          }
+        }
+      },
+      "workers": {
+        "BackEngine:0": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 135072,
+          "code_count": 45,
+          "elapsed_seconds": 2.24,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:1": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 126302,
+          "code_count": 42,
+          "elapsed_seconds": 2.242,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:2": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 127892,
+          "code_count": 45,
+          "elapsed_seconds": 2.239,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:3": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 120445,
+          "code_count": 38,
+          "elapsed_seconds": 2.263,
+          "code": null,
+          "index": null,
+          "error": null
+        },
+        "BackEngine:4": {
+          "checkpoint": "engine_backtest_completed",
+          "tick_count": 144428,
+          "code_count": 48,
+          "elapsed_seconds": 2.243,
+          "code": null,
+          "index": null,
+          "error": null
+        }
+      }
+    }
+  ],
+  "arm_summaries": {
+    "baseline": {
+      "repetitions": 3,
+      "statuses": [
+        "success",
+        "success",
+        "success"
+      ],
+      "worker_counts": [
+        5,
+        5,
+        5
+      ],
+      "checkpoint_counts": {
+        "engine_backtest_completed": 15
+      },
+      "tick_count": {
+        "min": 118685,
+        "median": 131959,
+        "max": 137768
+      }
+    },
+    "generated": {
+      "repetitions": 3,
+      "statuses": [
+        "success",
+        "success",
+        "success"
+      ],
+      "worker_counts": [
+        5,
+        5,
+        5
+      ],
+      "checkpoint_counts": {
+        "engine_backtest_completed": 15
+      },
+      "tick_count": {
+        "min": 119874,
+        "median": 131549,
+        "max": 144428
+      }
+    }
+  },
+  "verdict": "EXECUTION_CONSTRAINT_REMOVED",
+  "actual_worker_count": 5,
+  "requested_engines": 16
+}

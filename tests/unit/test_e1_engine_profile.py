@@ -69,3 +69,15 @@ def test_classify_localizes_stable_strategy_exception():
         for _ in range(3)
     ]
     assert classify(rows) == "STRATEGY_EXCEPTION_LOCALIZED"
+
+
+def test_classify_confirms_execution_constraint_removed():
+    rows = [
+        _row("baseline", "success", "engine_backtest_completed", 5000)
+        for _ in range(3)
+    ]
+    rows += [
+        _row("generated", "success", "engine_backtest_completed", 5100)
+        for _ in range(3)
+    ]
+    assert classify(rows) == "EXECUTION_CONSTRAINT_REMOVED"

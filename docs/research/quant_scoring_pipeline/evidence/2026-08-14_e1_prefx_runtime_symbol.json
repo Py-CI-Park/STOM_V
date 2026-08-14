@@ -1,0 +1,197 @@
+{
+  "schema": "stom.e1_prefx_runtime_symbol.v1",
+  "authority": "diagnostic_only",
+  "rows": [
+    {
+      "arm": "baseline",
+      "job_id": "20260814_170728_TickB902905_48545",
+      "status": "success",
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 133497,
+            "code_count": 44,
+            "elapsed_seconds": 2.06
+          },
+          "BackEngine:1": {
+            "tick_count": 121636,
+            "code_count": 40,
+            "elapsed_seconds": 2.061
+          },
+          "BackEngine:2": {
+            "tick_count": 133944,
+            "code_count": 44,
+            "elapsed_seconds": 2.057
+          },
+          "BackEngine:3": {
+            "tick_count": 130724,
+            "code_count": 44,
+            "elapsed_seconds": 2.059
+          },
+          "BackEngine:4": {
+            "tick_count": 134338,
+            "code_count": 46,
+            "elapsed_seconds": 2.058
+          }
+        }
+      }
+    },
+    {
+      "arm": "baseline",
+      "job_id": "20260814_170847_TickB902905_27824",
+      "status": "success",
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 134857,
+            "code_count": 44,
+            "elapsed_seconds": 1.977
+          },
+          "BackEngine:1": {
+            "tick_count": 127261,
+            "code_count": 42,
+            "elapsed_seconds": 1.976
+          },
+          "BackEngine:2": {
+            "tick_count": 136008,
+            "code_count": 46,
+            "elapsed_seconds": 1.972
+          },
+          "BackEngine:3": {
+            "tick_count": 124611,
+            "code_count": 43,
+            "elapsed_seconds": 1.975
+          },
+          "BackEngine:4": {
+            "tick_count": 131402,
+            "code_count": 43,
+            "elapsed_seconds": 1.974
+          }
+        }
+      }
+    },
+    {
+      "arm": "baseline",
+      "job_id": "20260814_171007_TickB902905_7044",
+      "status": "success",
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 132141,
+            "code_count": 44,
+            "elapsed_seconds": 1.95
+          },
+          "BackEngine:1": {
+            "tick_count": 129731,
+            "code_count": 43,
+            "elapsed_seconds": 1.952
+          },
+          "BackEngine:2": {
+            "tick_count": 125266,
+            "code_count": 40,
+            "elapsed_seconds": 1.951
+          },
+          "BackEngine:3": {
+            "tick_count": 133097,
+            "code_count": 46,
+            "elapsed_seconds": 1.952
+          },
+          "BackEngine:4": {
+            "tick_count": 133904,
+            "code_count": 45,
+            "elapsed_seconds": 1.952
+          }
+        }
+      }
+    },
+    {
+      "arm": "generated",
+      "job_id": "20260814_171120_G2BSEGONLY_80995",
+      "status": "timeout",
+      "diagnostics": {
+        "event_count": 90,
+        "last_checkpoint": "backtest_child_waiting_mq_heartbeat",
+        "last_by_source": {
+          "BackTest": "backtest_child_waiting_mq_heartbeat",
+          "BackEngine:0": "engine_strategy_exception",
+          "BackEngine:1": "engine_strategy_exception",
+          "BackEngine:2": "engine_strategy_exception",
+          "BackEngine:3": "engine_strategy_exception",
+          "BackEngine:4": "engine_strategy_exception"
+        },
+        "last_detail_by_source": {
+          "BackTest": {
+            "engine_count": 5,
+            "subtotal_count": 20,
+            "row_count": 8973,
+            "day_count": 5,
+            "avgtime": 60,
+            "buystg_name": "G2_B_SEG_ONLY",
+            "sellstg_name": "Tick_S_902_905",
+            "elapsed_seconds": 230
+          },
+          "BackEngine:0": {
+            "code": "042700",
+            "index": 20231114090111,
+            "error": "NameError: name 'VI아래5호가' is not defined"
+          },
+          "BackEngine:1": {
+            "code": "007660",
+            "index": 20231114090127,
+            "error": "NameError: name 'VI아래5호가' is not defined"
+          },
+          "BackEngine:2": {
+            "code": "022100",
+            "index": 20231114090125,
+            "error": "NameError: name 'VI아래5호가' is not defined"
+          },
+          "BackEngine:3": {
+            "code": "067310",
+            "index": 20231114090105,
+            "error": "NameError: name 'VI아래5호가' is not defined"
+          },
+          "BackEngine:4": {
+            "code": "403870",
+            "index": 20231114090120,
+            "error": "NameError: name 'VI아래5호가' is not defined"
+          }
+        }
+      }
+    }
+  ],
+  "finding": "G2 undefined VI아래5호가 in all 5 workers",
+  "verdict": "STRATEGY_EXCEPTION_LOCALIZED"
+}

@@ -88,6 +88,11 @@ def classify(rows: list[dict[str, Any]]) -> str:
         and generated_checkpoints == {"engine_strategy_exception"}
     ):
         return "STRATEGY_EXCEPTION_LOCALIZED"
+    if (
+        all(row.get("status") == "success" for row in generated)
+        and generated_checkpoints == {"engine_backtest_completed"}
+    ):
+        return "EXECUTION_CONSTRAINT_REMOVED"
     if not all(row.get("status") == "timeout" for row in generated):
         return "UNSTABLE"
     return (
