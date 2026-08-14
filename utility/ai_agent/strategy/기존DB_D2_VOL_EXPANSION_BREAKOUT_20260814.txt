@@ -1,0 +1,104 @@
+# D2 VOL_EXPANSION_BREAKOUT 기존DB 후보군 · seed=20260815 · no_adoption
+
+===== D2_VOL_EXPANSION_BREAKOUT_01_9ec63e6a =====
+{"cap_max": 868, "strength": 144.16401132790833, "time_end": 91000, "vol_multiple": 2.15206112618828, "vol_window": 51}
+# D2 기존DB 신규 구조 · VOL_EXPANSION_BREAKOUT
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 868):
+    매수 = False
+elif not (90000 <= 시분초 < 91000):
+    매수 = False
+elif not (변동성급증및구간최고가갱신(51, 2.1521) and 체결강도 >= 144.16):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D2_VOL_EXPANSION_BREAKOUT_02_f4b02216 =====
+{"cap_max": 2268, "strength": 111.43673860063559, "time_end": 91000, "vol_multiple": 1.8234896976168518, "vol_window": 36}
+# D2 기존DB 신규 구조 · VOL_EXPANSION_BREAKOUT
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 2268):
+    매수 = False
+elif not (90000 <= 시분초 < 91000):
+    매수 = False
+elif not (변동성급증및구간최고가갱신(36, 1.8235) and 체결강도 >= 111.44):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D2_VOL_EXPANSION_BREAKOUT_03_23a3829b =====
+{"cap_max": 4135, "strength": 160.5276476915447, "time_end": 91500, "vol_multiple": 2.4806325547597092, "vol_window": 82}
+# D2 기존DB 신규 구조 · VOL_EXPANSION_BREAKOUT
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 4135):
+    매수 = False
+elif not (90000 <= 시분초 < 91500):
+    매수 = False
+elif not (변동성급증및구간최고가갱신(82, 2.4806) and 체결강도 >= 160.53):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D2_VOL_EXPANSION_BREAKOUT_04_269804ee =====
+{"cap_max": 1335, "strength": 135.98219314609014, "time_end": 90500, "vol_multiple": 1.4949182690454235, "vol_window": 21}
+# D2 기존DB 신규 구조 · VOL_EXPANSION_BREAKOUT
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 1335):
+    매수 = False
+elif not (90000 <= 시분초 < 90500):
+    매수 = False
+elif not (변동성급증및구간최고가갱신(21, 1.4949) and 체결강도 >= 135.98):
+    매수 = False
+
+if 매수:
+    self.Buy()

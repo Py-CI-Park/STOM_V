@@ -1,0 +1,297 @@
+{
+  "schema": "stom.d2_candidate_manifest.v1",
+  "authority": "existing_db_development_proposal_only_no_adoption",
+  "seed": 20260815,
+  "per_family_budget": 4,
+  "budget": 16,
+  "candidates": [
+    {
+      "candidate_id": "D2_VOL_EXPANSION_BREAKOUT_01_9ec63e6a",
+      "family": "VOL_EXPANSION_BREAKOUT",
+      "parameters": {
+        "time_end": 91000,
+        "cap_max": 868,
+        "vol_window": 51,
+        "vol_multiple": 2.15206112618828,
+        "strength": 144.16401132790833
+      },
+      "source_sha256": "9ec63e6aa1ef05221a38c0612030c69d246c648d765dee25c38a521df73edb3e",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.531521,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_VOL_EXPANSION_BREAKOUT_02_f4b02216",
+      "family": "VOL_EXPANSION_BREAKOUT",
+      "parameters": {
+        "time_end": 91000,
+        "cap_max": 2268,
+        "vol_window": 36,
+        "vol_multiple": 1.8234896976168518,
+        "strength": 111.43673860063559
+      },
+      "source_sha256": "f4b02216cd86b2216d2aa60dedf4ebea4cb11a38b035ae4cf946060599e64c87",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.378235,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_VOL_EXPANSION_BREAKOUT_03_23a3829b",
+      "family": "VOL_EXPANSION_BREAKOUT",
+      "parameters": {
+        "time_end": 91500,
+        "cap_max": 4135,
+        "vol_window": 82,
+        "vol_multiple": 2.4806325547597092,
+        "strength": 160.5276476915447
+      },
+      "source_sha256": "23a3829ba2087dc19fec4d03086f3e030abdd9bd2f53321a4c78df944ff6e47b",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.844806,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_VOL_EXPANSION_BREAKOUT_04_269804ee",
+      "family": "VOL_EXPANSION_BREAKOUT",
+      "parameters": {
+        "time_end": 90500,
+        "cap_max": 1335,
+        "vol_window": 21,
+        "vol_multiple": 1.4949182690454235,
+        "strength": 135.98219314609014
+      },
+      "source_sha256": "269804eee46c636ae01e976989e2839e03811e6c4551922243759aeb468d3d00",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.224949,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_BOOK_PERSISTENCE_01_5c00d631",
+      "family": "BOOK_PERSISTENCE",
+      "parameters": {
+        "time_end": 90500,
+        "cap_max": 1753,
+        "book_window": 68,
+        "book_ratio": 0.6287056718630215,
+        "buy_surge": 3.685624984116055
+      },
+      "source_sha256": "5c00d6310e7ee2bcf593488115e74e33e62ee9d3ac09df16416a495a1b6d4a74",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.723143,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_BOOK_PERSISTENCE_02_53bb00f3",
+      "family": "BOOK_PERSISTENCE",
+      "parameters": {
+        "time_end": 90500,
+        "cap_max": 4554,
+        "book_window": 52,
+        "book_ratio": 0.7572771004344501,
+        "buy_surge": 1.394715893206964
+      },
+      "source_sha256": "53bb00f36430166b465b6afc84481dfa4118e2db1d9431ff86576aad8f5abdfa",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.54152,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_BOOK_PERSISTENCE_03_6971e054",
+      "family": "BOOK_PERSISTENCE",
+      "parameters": {
+        "time_end": 91000,
+        "cap_max": 4087,
+        "book_window": 36,
+        "book_ratio": 0.5858485290058787,
+        "buy_surge": 3.4310795295706003
+      },
+      "source_sha256": "6971e054c704ca11d5308c84cd5a6b34d5481a0950a8ca34577a473e4e7c45a2",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.400169,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_BOOK_PERSISTENCE_04_27c7465a",
+      "family": "BOOK_PERSISTENCE",
+      "parameters": {
+        "time_end": 91500,
+        "cap_max": 2687,
+        "book_window": 84,
+        "book_ratio": 0.8429913861487358,
+        "buy_surge": 3.94017043866151
+      },
+      "source_sha256": "27c7465acaa9ef7ab7e287661e60b2e9396a739e9d683438d2c282a2134357a8",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.887832,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_DELAYED_FLOW_RESPONSE_01_88766389",
+      "family": "DELAYED_FLOW_RESPONSE",
+      "parameters": {
+        "time_end": 90500,
+        "cap_max": 2762,
+        "flow_window": 42,
+        "flow_multiple": 3.6968048692320057,
+        "price_window": 30,
+        "rise_rate": 0.8336779645966368,
+        "strength": 134.35671582717006
+      },
+      "source_sha256": "88766389b3764089939d62bad682e4c04bccaff0d0b4a7021ce6834ac829043c",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.765305,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_DELAYED_FLOW_RESPONSE_02_3bacf31d",
+      "family": "DELAYED_FLOW_RESPONSE",
+      "parameters": {
+        "time_end": 91500,
+        "cap_max": 1361,
+        "flow_window": 88,
+        "flow_multiple": 2.0968048692320056,
+        "price_window": 8,
+        "rise_rate": 0.41829334921202177,
+        "strength": 129.06259818011125
+      },
+      "source_sha256": "3bacf31d2d0a265f5f8777e2346244faf4bdcd632a24225c9c30f84be8bd87d6",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.985151,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_DELAYED_FLOW_RESPONSE_03_d9357904",
+      "family": "DELAYED_FLOW_RESPONSE",
+      "parameters": {
+        "time_end": 90500,
+        "cap_max": 895,
+        "flow_window": 57,
+        "flow_multiple": 3.2968048692320053,
+        "price_window": 18,
+        "rise_rate": 1.1106010415197138,
+        "strength": 118.47436288599359
+      },
+      "source_sha256": "d9357904446a8730ca7549176a2b781eceb5b2b86574b827e1cb1d79b4560584",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.794074,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_DELAYED_FLOW_RESPONSE_04_088d6302",
+      "family": "DELAYED_FLOW_RESPONSE",
+      "parameters": {
+        "time_end": 91000,
+        "cap_max": 3695,
+        "flow_window": 27,
+        "flow_multiple": 1.6968048692320052,
+        "price_window": 13,
+        "rise_rate": 1.664447195365868,
+        "strength": 107.88612759187593
+      },
+      "source_sha256": "088d6302cc16e9b6f98536221beedae52e1ea1f0ac68cc2630d5884ed9de60e3",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.433612,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_SPARSE_CONFIRMED_BREAKOUT_01_fc007ca8",
+      "family": "SPARSE_CONFIRMED_BREAKOUT",
+      "parameters": {
+        "time_end": 91500,
+        "cap_max": 4900,
+        "flow_window": 52,
+        "flow_multiple": 3.133043081219637,
+        "strength": 143.87801077179574,
+        "rate_low": 7.500268331339252,
+        "rate_width": 7.948990784598241
+      },
+      "source_sha256": "fc007ca8af0dabf0d20b61a5faa688d9f353080c6fe15f4fd7f1b24678920aa0",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.55133,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_SPARSE_CONFIRMED_BREAKOUT_02_babb2a5d",
+      "family": "SPARSE_CONFIRMED_BREAKOUT",
+      "parameters": {
+        "time_end": 91000,
+        "cap_max": 2100,
+        "flow_window": 80,
+        "flow_multiple": 4.8473287955053515,
+        "strength": 134.78710168088665,
+        "rate_low": 3.1925760236469443,
+        "rate_width": 5.890167255186476
+      },
+      "source_sha256": "babb2a5d30c31e739a911f82d8a4adffb42243fc8459d9a05d5c7f09b77a88fe",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.848473,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_SPARSE_CONFIRMED_BREAKOUT_03_f6b9d554",
+      "family": "SPARSE_CONFIRMED_BREAKOUT",
+      "parameters": {
+        "time_end": 90500,
+        "cap_max": 3967,
+        "flow_window": 23,
+        "flow_multiple": 2.561614509791065,
+        "strength": 198.4234653172503,
+        "rate_low": 4.80796063903156,
+        "rate_width": 6.301931961068828
+      },
+      "source_sha256": "f6b9d554b065d15b7c03538e19f1eaf50a08a28be3b3558ecb936093fa8143be",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.255616,
+      "can_adopt": false,
+      "oos_claim": "none"
+    },
+    {
+      "candidate_id": "D2_SPARSE_CONFIRMED_BREAKOUT_04_b0c90453",
+      "family": "SPARSE_CONFIRMED_BREAKOUT",
+      "parameters": {
+        "time_end": 91000,
+        "cap_max": 1166,
+        "flow_window": 37,
+        "flow_multiple": 3.704471652648208,
+        "strength": 152.9689198627048,
+        "rate_low": 1.5771914082623284,
+        "rate_width": 5.06663784342177
+      },
+      "source_sha256": "b0c904535488f4c90b54d175b1cf29e67a5c1ac6d427d13cb94f9bc672f439aa",
+      "execution_ok": true,
+      "execution_reasons": [],
+      "estimated_work": 8.407045,
+      "can_adopt": false,
+      "oos_claim": "none"
+    }
+  ]
+}

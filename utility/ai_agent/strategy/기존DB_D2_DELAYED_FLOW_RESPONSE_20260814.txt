@@ -1,0 +1,104 @@
+# D2 DELAYED_FLOW_RESPONSE 기존DB 후보군 · seed=20260815 · no_adoption
+
+===== D2_DELAYED_FLOW_RESPONSE_01_88766389 =====
+{"cap_max": 2762, "flow_multiple": 3.6968048692320057, "flow_window": 42, "price_window": 30, "rise_rate": 0.8336779645966368, "strength": 134.35671582717006, "time_end": 90500}
+# D2 기존DB 신규 구조 · DELAYED_FLOW_RESPONSE
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 2762):
+    매수 = False
+elif not (90000 <= 시분초 < 90500):
+    매수 = False
+elif not (거래대금급증및가격급등(42, 3.6968, 30, 0.8337) and 체결강도 >= 134.36):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D2_DELAYED_FLOW_RESPONSE_02_3bacf31d =====
+{"cap_max": 1361, "flow_multiple": 2.0968048692320056, "flow_window": 88, "price_window": 8, "rise_rate": 0.41829334921202177, "strength": 129.06259818011125, "time_end": 91500}
+# D2 기존DB 신규 구조 · DELAYED_FLOW_RESPONSE
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 1361):
+    매수 = False
+elif not (90000 <= 시분초 < 91500):
+    매수 = False
+elif not (거래대금급증및가격급등(88, 2.0968, 8, 0.4183) and 체결강도 >= 129.06):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D2_DELAYED_FLOW_RESPONSE_03_d9357904 =====
+{"cap_max": 895, "flow_multiple": 3.2968048692320053, "flow_window": 57, "price_window": 18, "rise_rate": 1.1106010415197138, "strength": 118.47436288599359, "time_end": 90500}
+# D2 기존DB 신규 구조 · DELAYED_FLOW_RESPONSE
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 895):
+    매수 = False
+elif not (90000 <= 시분초 < 90500):
+    매수 = False
+elif not (거래대금급증및가격급등(57, 3.2968, 18, 1.1106) and 체결강도 >= 118.47):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D2_DELAYED_FLOW_RESPONSE_04_088d6302 =====
+{"cap_max": 3695, "flow_multiple": 1.6968048692320052, "flow_window": 27, "price_window": 13, "rise_rate": 1.664447195365868, "strength": 107.88612759187593, "time_end": 91000}
+# D2 기존DB 신규 구조 · DELAYED_FLOW_RESPONSE
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 3695):
+    매수 = False
+elif not (90000 <= 시분초 < 91000):
+    매수 = False
+elif not (거래대금급증및가격급등(27, 1.6968, 13, 1.6644) and 체결강도 >= 107.89):
+    매수 = False
+
+if 매수:
+    self.Buy()
