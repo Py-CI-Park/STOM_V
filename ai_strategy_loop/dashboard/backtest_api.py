@@ -235,7 +235,7 @@ def _augment_job_result(payload: Dict[str, Any], record: Dict[str, Any]) -> Dict
     enriched = _augment_job_payload(record)
     for key in (
         "evidence_id", "source_type", "condition_identity", "status_kind", "artifact_state",
-        "openable", "recoverable", "open_actions", "rerun_spec",
+        "openable", "recoverable", "open_actions", "rerun_spec", "process_diagnostics",
     ):
         out[key] = enriched.get(key)
     return out

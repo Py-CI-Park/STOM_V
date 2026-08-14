@@ -49,7 +49,10 @@ def _success_command(csv_path: str):
     code = (
         "import json;"
         f"print(json.dumps({{'status':'success','csv_path':{csv_path!r},"
-        "'metrics':{'total_profit_pct':12.5}}))"
+        "'metrics':{'total_profit_pct':12.5},"
+        "'backtest_process_diagnostics':{'event_count':2,"
+        "'last_checkpoint':'backtest_child_mq_first_received',"
+        "'last_by_source':{'BackTest':'backtest_child_mq_first_received'}}}))"
     )
 
     def builder(spec):
@@ -95,6 +98,8 @@ def test_submit_and_success(tmp_path: Path):
     assert rec["status"] == "success"
     assert rec["csv_path"] == "backtest/csv/fake.csv"
     assert rec["metrics"]["total_profit_pct"] == 12.5
+    assert rec["process_diagnostics"]["event_count"] == 2
+    assert rec["process_diagnostics"]["last_checkpoint"] == "backtest_child_mq_first_received"
     assert rec["progress"] == 1.0
     assert manager.result_csv_path(job_id) == "backtest/csv/fake.csv"
 

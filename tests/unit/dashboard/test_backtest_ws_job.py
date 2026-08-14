@@ -209,6 +209,21 @@ class TestAnalysisRangeAndMaeMfe:
         # 구간 분석 시 metrics 는 구간 summary 로 대체.
         assert body["metrics"]["trade_count"] == 1
 
+    def test_result_exposes_bounded_process_diagnostics(self, monkeypatch, client, tmp_path):
+        csv_path = _sample_csv(tmp_path / "bt.csv")
+        record = {
+            "available": True, "status": "success", "csv_path": csv_path,
+            "metrics": {"trade_count": 3},
+            "process_diagnostics": {
+                "event_count": 2,
+                "last_checkpoint": "backtest_child_mq_first_received",
+                "last_by_source": {"BackTest": "backtest_child_mq_first_received"},
+            },
+        }
+        monkeypatch.setattr(BA, "get_job_manager", lambda: _FakeJobManager(record, csv_path))
+        body = client.get("/bt/result", params={"job_id": "J1"}).json()
+        assert body["process_diagnostics"] == record["process_diagnostics"]
+
 
 # --------------------------------------------- 2단계 B/C — montecarlo·orderflow
 class TestMonteCarloAndOrderflow:

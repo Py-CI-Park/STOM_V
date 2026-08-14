@@ -135,6 +135,8 @@ class BacktestJobRecord:
     returncode: Optional[int] = None
     csv_path: Optional[str] = None
     metrics: Optional[Dict[str, Any]] = None
+    # CLI child protocol의 bounded checkpoint 요약. 원시 event payload나 거래 데이터는 보존하지 않는다.
+    process_diagnostics: Optional[Dict[str, Any]] = None
     # wfo/sweep 등 csv_path 없는 모드의 구조화 결과(윈도우별/조합별 표). 단일 백테/최적화는 None.
     mode_result: Optional[Dict[str, Any]] = None
     message: str = ""
@@ -665,6 +667,7 @@ class BacktestJobManager:
         status = payload.get("status")
         csv_path = payload.get("csv_path")
         metrics = payload.get("metrics")
+        diagnostics = payload.get("backtest_process_diagnostics")
         mode = str((record.spec or {}).get("mode", "backtest") or "backtest")
 
         with self._lock:
@@ -672,6 +675,7 @@ class BacktestJobManager:
             record.finished_at = finished
             record.csv_path = csv_path
             record.metrics = metrics
+            record.process_diagnostics = diagnostics if isinstance(diagnostics, dict) else None
             record.progress = 1.0
             if cancelled or record.job_id in self._cancel_requested:
                 record.status = "cancelled"
