@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-14T02:53:03.534503+00:00",
-  "source_fingerprint": "50fddc7d81cf0c0cef0953790698585468352cf801e74bfced3f54fee1c82740",
+  "generated_at": "2026-08-14T02:54:42.968434+00:00",
+  "source_fingerprint": "066149aac66e865be5d4be45d544eb30f35b1a55ceb67af11a519aa94f616908",
   "count": 1044,
   "docs": [
     {
@@ -6966,8 +6966,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-14_v4_잔여단계_전체완료_보고.md",
       "title": "v4 잔여 단계 전체 완료 보고 (2026-08-14)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-14T02:52:24.865910+00:00",
-      "size": 3928
+      "updated_at": "2026-08-14T02:54:10.509693+00:00",
+      "size": 4016
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-14_v4_중간검토와_잔여단계_실행게이트.md",
