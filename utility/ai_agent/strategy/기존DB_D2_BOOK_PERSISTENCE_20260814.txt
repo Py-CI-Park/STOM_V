@@ -1,0 +1,104 @@
+# D2 BOOK_PERSISTENCE 기존DB 후보군 · seed=20260815 · no_adoption
+
+===== D2_BOOK_PERSISTENCE_01_5c00d631 =====
+{"book_ratio": 0.6287056718630215, "book_window": 68, "buy_surge": 3.685624984116055, "cap_max": 1753, "time_end": 90500}
+# D2 기존DB 신규 구조 · BOOK_PERSISTENCE
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 1753):
+    매수 = False
+elif not (90000 <= 시분초 < 90500):
+    매수 = False
+elif not (호가상승압력및매수수량급증(68, 0.6287, 3.6856)):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D2_BOOK_PERSISTENCE_02_53bb00f3 =====
+{"book_ratio": 0.7572771004344501, "book_window": 52, "buy_surge": 1.394715893206964, "cap_max": 4554, "time_end": 90500}
+# D2 기존DB 신규 구조 · BOOK_PERSISTENCE
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 4554):
+    매수 = False
+elif not (90000 <= 시분초 < 90500):
+    매수 = False
+elif not (호가상승압력및매수수량급증(52, 0.7573, 1.3947)):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D2_BOOK_PERSISTENCE_03_6971e054 =====
+{"book_ratio": 0.5858485290058787, "book_window": 36, "buy_surge": 3.4310795295706003, "cap_max": 4087, "time_end": 91000}
+# D2 기존DB 신규 구조 · BOOK_PERSISTENCE
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 4087):
+    매수 = False
+elif not (90000 <= 시분초 < 91000):
+    매수 = False
+elif not (호가상승압력및매수수량급증(36, 0.5858, 3.4311)):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D2_BOOK_PERSISTENCE_04_27c7465a =====
+{"book_ratio": 0.8429913861487358, "book_window": 84, "buy_surge": 3.94017043866151, "cap_max": 2687, "time_end": 91500}
+# D2 기존DB 신규 구조 · BOOK_PERSISTENCE
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 2687):
+    매수 = False
+elif not (90000 <= 시분초 < 91500):
+    매수 = False
+elif not (호가상승압력및매수수량급증(84, 0.8430, 3.9402)):
+    매수 = False
+
+if 매수:
+    self.Buy()

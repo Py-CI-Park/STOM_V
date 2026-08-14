@@ -1,0 +1,104 @@
+# D2 SPARSE_CONFIRMED_BREAKOUT 기존DB 후보군 · seed=20260815 · no_adoption
+
+===== D2_SPARSE_CONFIRMED_BREAKOUT_01_fc007ca8 =====
+{"cap_max": 4900, "flow_multiple": 3.133043081219637, "flow_window": 52, "rate_low": 7.500268331339252, "rate_width": 7.948990784598241, "strength": 143.87801077179574, "time_end": 91500}
+# D2 기존DB 신규 구조 · SPARSE_CONFIRMED_BREAKOUT
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 4900):
+    매수 = False
+elif not (90000 <= 시분초 < 91500):
+    매수 = False
+elif not (거래대금급증및구간최고가갱신(52, 3.1330) and 체결강도 >= 143.88 and 7.5003 <= 등락율 <= 15.4493):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D2_SPARSE_CONFIRMED_BREAKOUT_02_babb2a5d =====
+{"cap_max": 2100, "flow_multiple": 4.8473287955053515, "flow_window": 80, "rate_low": 3.1925760236469443, "rate_width": 5.890167255186476, "strength": 134.78710168088665, "time_end": 91000}
+# D2 기존DB 신규 구조 · SPARSE_CONFIRMED_BREAKOUT
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 2100):
+    매수 = False
+elif not (90000 <= 시분초 < 91000):
+    매수 = False
+elif not (거래대금급증및구간최고가갱신(80, 4.8473) and 체결강도 >= 134.79 and 3.1926 <= 등락율 <= 9.0827):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D2_SPARSE_CONFIRMED_BREAKOUT_03_f6b9d554 =====
+{"cap_max": 3967, "flow_multiple": 2.561614509791065, "flow_window": 23, "rate_low": 4.80796063903156, "rate_width": 6.301931961068828, "strength": 198.4234653172503, "time_end": 90500}
+# D2 기존DB 신규 구조 · SPARSE_CONFIRMED_BREAKOUT
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 3967):
+    매수 = False
+elif not (90000 <= 시분초 < 90500):
+    매수 = False
+elif not (거래대금급증및구간최고가갱신(23, 2.5616) and 체결강도 >= 198.42 and 4.8080 <= 등락율 <= 11.1099):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D2_SPARSE_CONFIRMED_BREAKOUT_04_b0c90453 =====
+{"cap_max": 1166, "flow_multiple": 3.704471652648208, "flow_window": 37, "rate_low": 1.5771914082623284, "rate_width": 5.06663784342177, "strength": 152.9689198627048, "time_end": 91000}
+# D2 기존DB 신규 구조 · SPARSE_CONFIRMED_BREAKOUT
+# 개발 제안 전용 · OOS/자동채택 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 1166):
+    매수 = False
+elif not (90000 <= 시분초 < 91000):
+    매수 = False
+elif not (거래대금급증및구간최고가갱신(37, 3.7045) and 체결강도 >= 152.97 and 1.5772 <= 등락율 <= 6.6438):
+    매수 = False
+
+if 매수:
+    self.Buy()
