@@ -188,13 +188,16 @@ function LoopRtBayesianResult({ payload }) {
 function LoopRtAstResult({ payload }) {
   if (!payload) return <p className="v4s-note">아직 실행한 수동 감사가 없습니다. 소스를 넣고 감사 버튼을 눌러야 합니다.</p>;
   const violations = Array.isArray(payload.violations) ? payload.violations : [];
+  const execution = payload.execution_contract || null;
+  const undefinedSymbols = execution && execution.runtime_symbols && Array.isArray(execution.runtime_symbols.undefined)
+    ? execution.runtime_symbols.undefined : [];
   return (
     <div>
       <div className="v4s-probe-grid">
         <div className="v4s-probe-card"><b>감사 상태</b><span className={"mono " + (payload.ok ? "pos" : "neg")}>{payload.ok ? "위반 없음" : "검토 필요"}</span></div>
         <div className="v4s-probe-card"><b>violations</b><span className="mono">{violations.length}</span></div>
         <div className="v4s-probe-card"><b>estimated work</b><span className="mono">{loopRtShort(payload.estimated_work)}</span></div>
-        <div className="v4s-probe-card"><b>parsed</b><span className="mono">{loopRtShort(payload.parsed)}</span></div>
+        <div className="v4s-probe-card"><b>stock tick 실행계약</b><span className={"mono " + (execution && execution.ok ? "pos" : "neg")}>{execution ? (execution.ok ? "통과" : "거부") : "미검사"}</span><small>{undefinedSymbols.length ? `미정의: ${undefinedSymbols.join(", ")}` : "runtime symbol·함수·work 상한"}</small></div>
       </div>
       {violations.length > 0 ? (
         <ul className="v4s-note">
@@ -295,6 +298,7 @@ export function LoopResearchToolsPanel({ baseUrl }) {
         max_lookback: loopRtClamp(ast.maxLookback, 240, 1, 5000, false),
         max_unknown_lines: loopRtClamp(ast.maxUnknownLines, 0, 0, 1000, true),
       },
+      runtime_profile: "stock_tick",
     });
   };
 

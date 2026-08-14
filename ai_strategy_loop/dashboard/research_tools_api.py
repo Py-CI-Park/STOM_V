@@ -32,6 +32,7 @@ from pydantic import (
 from ai_strategy_loop.revision import bayesian_sequential as bayes
 from ai_strategy_loop.revision import condition_ast
 from ai_strategy_loop.revision import condition_denoising as denoise
+from ai_strategy_loop.revision import execution_contract
 from ai_strategy_loop.revision import qmc_pareto as qmc
 
 AUTHORITY: Final = "no_adoption"
@@ -259,6 +260,7 @@ class AstStaticConfigPayload(_Payload):
 
 class AstPayload(AstStaticConfigPayload):
     source: SourceText
+    runtime_profile: Literal["none", "stock_tick"] = "none"
 
 
 class QmcDimensionPayload(_Payload):
@@ -463,6 +465,17 @@ def ast_static_check(payload: AstPayload) -> dict[str, Any]:
         _bad_request("invalid_ast_input", str(exc))
 
     result_payload = result.to_dict(include_original_source=False)
+    runtime_result = (
+        execution_contract.evaluate_execution_contract(
+            payload.source,
+            allowed_functions=payload.allowed_functions,
+            max_clauses=payload.limits.max_clauses,
+            max_lookback=payload.limits.max_lookback,
+            max_unknown_lines=payload.limits.max_unknown_lines,
+        )
+        if payload.runtime_profile == "stock_tick"
+        else None
+    )
     receipts = {
         "api": _api_receipt(),
         "config": result_payload["config_receipt"],
@@ -470,13 +483,15 @@ def ast_static_check(payload: AstPayload) -> dict[str, Any]:
     }
     return {
         **_base_response(receipts=receipts),
-        "ok": bool(result.ok),
+        "ok": bool(result.ok and (runtime_result is None or runtime_result.ok)),
         "tool": "ast",
         "violations": result_payload["violations"],
         "estimated_work": result_payload["estimated_work"],
         "estimated_work_basis": result_payload["estimated_work_basis"],
         "parsed": result_payload["parsed"],
         "static_check": result_payload,
+        "runtime_profile": payload.runtime_profile,
+        "execution_contract": _jsonable(runtime_result) if runtime_result is not None else None,
     }
 
 
