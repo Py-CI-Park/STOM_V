@@ -1,8 +1,10 @@
 from ai_strategy_loop.labeling.run_d1_engine_screen import (
     _map_elites,
     _pareto,
+    _selection_pareto,
     screen_decision,
 )
+from ai_strategy_loop.labeling.run_d2_engine_screen import select_family_representatives
 
 
 def _metrics(**updates):
@@ -21,6 +23,10 @@ def test_screen_accepts_only_all_preregistered_boundaries():
         "advance": True,
         "decision": "SECOND_STAGE",
         "reasons": [],
+        "evidence_trade_count": 20,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "underpowered_evidence": False,
     }
 
 
@@ -37,16 +43,58 @@ def test_screen_rejects_execution_and_each_economic_failure():
     ]
 
 
-def test_pareto_preserves_non_dominated_tradeoffs_without_adoption():
+def test_screen_marks_local_positive_ten_to_eleven_trades_underpowered():
+    for trades in (10, 11):
+        decision = screen_decision("success", _metrics(trade_count=trades))
+        assert decision["advance"] is False
+        assert decision["underpowered_evidence"] is True
+        assert decision["evidence_trade_count"] == trades
+        assert decision["reasons"] == ["underpowered_evidence"]
+
+
+def test_telemetry_pareto_preserves_non_dominated_tradeoffs_without_adoption():
     rows = [
         {"candidate_id": "A", "family": "F", "status": "success", "metrics": _metrics(total_profit_pct=2, mdd_pct=8, trade_count=20)},
         {"candidate_id": "B", "family": "B", "status": "success", "metrics": _metrics(total_profit_pct=1, mdd_pct=3, trade_count=30)},
-        {"candidate_id": "C", "family": "M", "status": "success", "metrics": _metrics(total_profit_pct=-1, mdd_pct=9, trade_count=5)},
+        {"candidate_id": "C", "family": "M", "status": "success", "metrics": _metrics(total_profit_pct=-1, mdd_pct=1, trade_count=100)},
     ]
     result = _pareto(rows)
-    assert {item["candidate_id"] for item in result["entries"]} == {"A", "B"}
+    assert {item["candidate_id"] for item in result["entries"]} == {"A", "B", "C"}
     assert result["authority"] == "none"
     assert result["oos_claim"] == "none"
+
+
+def test_selection_pareto_excludes_negative_profit_and_underpowered_candidates():
+    rows = [
+        {"candidate_id": "A", "family": "F", "status": "success", "metrics": _metrics(total_profit_pct=2, mdd_pct=8, trade_count=20)},
+        {"candidate_id": "B", "family": "B", "status": "success", "metrics": _metrics(total_profit_pct=-1, mdd_pct=1, trade_count=100)},
+        {"candidate_id": "C", "family": "M", "status": "success", "metrics": _metrics(total_profit_pct=3, mdd_pct=1, trade_count=11)},
+    ]
+    result = _selection_pareto(rows)
+    assert [item["candidate_id"] for item in result["entries"]] == ["A"]
+    assert result["authority"] == "none"
+    assert result["oos_claim"] == "none"
+
+
+def test_d2_family_selection_supports_bounded_top_k_for_folds():
+    rows = [
+        {"candidate_id": "A1", "family": "A", "metrics": _metrics(total_profit_pct=3), "screen": {"advance": True}},
+        {"candidate_id": "A2", "family": "A", "metrics": _metrics(total_profit_pct=2), "screen": {"advance": True}},
+        {"candidate_id": "A3", "family": "A", "metrics": _metrics(total_profit_pct=1), "screen": {"advance": True}},
+        {"candidate_id": "B1", "family": "B", "metrics": _metrics(total_profit_pct=4), "screen": {"advance": True}},
+    ]
+    selected = select_family_representatives(rows, family_top_k=2)
+    assert [row["candidate_id"] for row in selected] == ["A1", "A2", "B1"]
+
+
+def test_d2_family_selection_honors_screen_top_k_metadata_by_default():
+    rows = [
+        {"candidate_id": "A1", "family": "A", "metrics": _metrics(total_profit_pct=3), "screen": {"advance": True}, "family_selection": {"rank": 1, "selected": True}},
+        {"candidate_id": "A2", "family": "A", "metrics": _metrics(total_profit_pct=2), "screen": {"advance": True}, "family_selection": {"rank": 2, "selected": True}},
+        {"candidate_id": "A3", "family": "A", "metrics": _metrics(total_profit_pct=1), "screen": {"advance": True}, "family_selection": {"rank": 3, "selected": False}},
+    ]
+    selected = select_family_representatives(rows)
+    assert [row["candidate_id"] for row in selected] == ["A1", "A2"]
 
 
 def test_map_elites_keeps_best_candidate_per_family_and_time_niche():

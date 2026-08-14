@@ -1,4 +1,4 @@
-"""Persist local research-analysis snapshots from existing backtest CSVs."""
+"""Build local research-analysis snapshots from existing backtest CSVs."""
 
 from __future__ import annotations
 
@@ -208,7 +208,10 @@ def _generation_context(target_runs: list[str]) -> tuple[list[str], list[JsonObj
     seen: set[str] = set()
     paths: list[str] = []
     metrics: list[JsonObject] = []
-    state = LoopState()
+    try:
+        state = LoopState(readonly=True)
+    except sqlite3.Error:
+        return paths, metrics
     try:
         for run in target_runs:
             for row in state.get_generations(run):
@@ -227,6 +230,8 @@ def _generation_context(target_runs: list[str]) -> tuple[list[str], list[JsonObj
                 if csv_path and csv_path not in seen:
                     seen.add(csv_path)
                     paths.append(_resolve_path(csv_path))
+    except sqlite3.Error:
+        return [], []
     finally:
         state.close()
     return paths, metrics
@@ -260,10 +265,10 @@ def _analysis_reports(csv_paths: list[str], method: str, axis: str, fine_time: b
 
 
 @analysis_router.get("/analysis_snapshot", response_model=None)
-def analysis_snapshot(run_id: str = "", run_ids: str = "", persist: bool = False,
+def analysis_snapshot(run_id: str = "", run_ids: str = "",
                       method: str = "spearman", axis: str = "time",
                       fine_time: bool = True) -> JsonObject:
-    """Build and optionally persist a local research-only analysis snapshot."""
+    """Build a read-only local research-analysis snapshot."""
     target_runs = _target_runs(run_id, run_ids)
     if not target_runs:
         return {"ok": False, "status": "missing_run", "runs": [], "csv_count": 0,
@@ -274,20 +279,12 @@ def analysis_snapshot(run_id: str = "", run_ids: str = "", persist: bool = False
                 "persisted": False, "store": None, "analysis": {}}
 
     reports = _analysis_reports(csv_paths, method, axis, fine_time, generation_metrics)
-    store = None
-    if persist:
-        store = persist_analysis_bundle(
-            db_path=RESEARCH_ANALYSIS_DB,
-            run_key=",".join(target_runs),
-            reports=reports,
-            params={"method": method, "axis": axis, "fine_time": str(bool(fine_time))},
-        )
     return {
         "ok": True,
         "status": "ok",
         "runs": target_runs,
         "csv_count": len(csv_paths),
-        "persisted": bool(store),
-        "store": store,
+        "persisted": False,
+        "store": None,
         "analysis": reports,
     }

@@ -72,7 +72,7 @@ def test_health_exposes_bounded_dashboard_process_identity_without_bootstrap(mon
     assert response.status_code == 200
     assert response.headers.get("set-cookie") is None
     assert shell["name"] == "v4-ops"
-    assert shell["release"] == "v5.14.0"  # v5.14.0 — QSP3 다차원 수익률 맵 이후 정본 shell.
+    assert shell["release"] == "v5.15.0"  # v5.15.0 — 조건식 프로세스 플랫폼 무결성 릴리스.
     assert dashboard["release"] == shell["release"] == backend["release"]
     assert dashboard["build"] == shell["build"] == backend["build"]
     assert 1 <= len(shell["build"]) <= 64

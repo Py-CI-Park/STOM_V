@@ -535,12 +535,15 @@ def test_statistical_tests_detects_significant_weekday():
     st = A.statistical_tests(_two_weekday_trades())
     wd = [s for s in st if s["kind"] == "weekday"]
     assert len(wd) == 2
-    # 평균차가 크고 표본 40 → 유의.
+    # 평균차가 크고 표본 40 → BH-FDR 보정 후 유의.
     assert any(s["significant"] for s in wd)
     for s in wd:
         assert s["n"] == 40
         assert not s["underpowered"]  # 40 >= 30.
         assert s["p_value"] is not None
+        assert s["q_value"] is not None
+        assert s["significant"] is s["fdr_pass"]
+        assert s["multiple_testing_correction"] == "benjamini_hochberg"
 
 
 def test_statistical_tests_underpowered_small_sample():
@@ -553,6 +556,7 @@ def test_statistical_tests_underpowered_small_sample():
     wd = [s for s in st if s["kind"] == "weekday"]
     assert all(s["underpowered"] for s in wd)
     assert all(not s["significant"] for s in wd)
+    assert all(not s["fdr_pass"] for s in wd)
 
 
 def test_statistical_tests_scipy_and_fallback_branches(monkeypatch):
@@ -581,6 +585,33 @@ def test_statistical_tests_single_bucket_empty():
     # 모든 거래가 같은 요일+같은 슬롯 → 버킷 1개 → 검정 없음.
     trades = [_trade("a", "202504070930", "202504071000", 10, 1.0, 1000) for _ in range(10)]
     assert A.statistical_tests(trades) == []
+
+
+def test_statistical_tests_raw_null_bucket_p_values_do_not_pass_fdr():
+    trades = []
+    for slot in range(10):
+        hour = 9 + slot // 2
+        minute = "30" if slot % 2 else "00"
+        for i in range(30):
+            pct = 1.5 if i % 2 else -0.5
+            if slot != 0:
+                pct -= 0.5
+            trades.append(
+                _trade(
+                    "a",
+                    f"20250407{hour:02d}{minute}",
+                    f"20250407{hour:02d}{minute}",
+                    10,
+                    pct,
+                    pct * 1000,
+                )
+            )
+    slot_rows = [s for s in A.statistical_tests(trades) if s["kind"] == "slot"]
+    raw_hits = [s for s in slot_rows if s["raw_p_below_alpha"]]
+    assert raw_hits
+    assert all(not s["fdr_pass"] for s in slot_rows)
+    assert all(not s["significant"] for s in slot_rows)
+    assert all(s["significance_basis"] != "bh_fdr_q_value" for s in slot_rows)
 
 
 # ============================================================================

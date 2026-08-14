@@ -107,8 +107,36 @@ def test_analysis_snapshot_persists_local_research_tables(tmp_path: Path) -> Non
     assert {"compound_feature_interaction", "daily_profit_loss", "edge_global"} <= row_kinds
 
 
-def test_analysis_snapshot_route_writes_only_local_research_db(monkeypatch, tmp_path: Path) -> None:
-    """Given a run CSV, When snapshot persistence is requested, Then loop DB is not mutated."""
+def test_analysis_snapshot_get_missing_loop_db_leaves_files_absent(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    """Given no loop DB, When snapshot GET runs, Then read paths create no SQLite files."""
+    from fastapi.testclient import TestClient
+
+    loop_db = tmp_path / "state" / "loop_runs.db"
+    analysis_db = tmp_path / "analysis" / "research_analysis.db"
+    monkeypatch.setattr(S, "LOOP_RUNS_DB", loop_db)
+    monkeypatch.setattr(S, "CURRENT_STATE_FILE", tmp_path / "cs.json")
+    monkeypatch.setattr(S, "STOP_FLAG_FILE", tmp_path / "STOP")
+    monkeypatch.setattr(SNAP, "RESEARCH_ANALYSIS_DB", analysis_db)
+
+    client: TestClient = authorized_dashboard_client(create_app())
+    resp = client.get("/analysis_snapshot?run_id=missingRun")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["ok"] is True
+    assert body["status"] == "no_csv"
+    assert body["persisted"] is False
+    assert body["store"] is None
+    assert not loop_db.exists()
+    assert not analysis_db.exists()
+
+
+def test_analysis_snapshot_route_reads_existing_loop_db_without_persisting(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    """Given a run CSV, When snapshot GET runs, Then loop DB is read-only and not persisted."""
     from fastapi.testclient import TestClient
 
     loop_db = tmp_path / "loop_runs.db"
@@ -141,19 +169,22 @@ def test_analysis_snapshot_route_writes_only_local_research_db(monkeypatch, tmp_
     st.close()
 
     client = authorized_dashboard_client(create_app())
-    resp = client.get("/analysis_snapshot?run_id=analysisRun&persist=true&method=spearman&fine_time=true")
+    resp = client.get(
+        "/analysis_snapshot?run_id=analysisRun&persist=true&method=spearman&fine_time=true"
+    )
 
     assert resp.status_code == 200
     body = resp.json()
     assert body["ok"] is True
-    assert body["persisted"] is True
-    assert body["store"]["db_path"] == str(analysis_db)
-    assert body["store"]["row_counts"]["generation_metric"] == 1
-    assert body["store"]["row_counts"]["daily_profit_loss"] == 2
+    assert body["persisted"] is False
+    assert body["store"] is None
     assert body["analysis"]["variable_correlation"]["pooled_trades"] == 6
     assert body["analysis"]["edge_ratio"]["global"]["edge_ratio"] > 1.0
+    assert len(body["analysis"]["generation_metrics"]) == 1
+    assert len(body["analysis"]["daily_profit_loss"]) == 2
+    assert not analysis_db.exists()
 
-    after = LoopState(db_path=str(loop_db), snapshot_dir=str(snaps))
+    after = LoopState(db_path=str(loop_db), snapshot_dir=str(snaps), readonly=True)
     try:
         assert len(after.get_generations("analysisRun")) == 1
     finally:

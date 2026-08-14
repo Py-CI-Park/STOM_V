@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import sqlite3
+from pathlib import Path
 from typing import Any, Final
 
 from fastapi import APIRouter
@@ -48,6 +50,85 @@ def _decorate(row: dict[str, Any], baseline: dict[str, Any] | None) -> dict[str,
     return out
 
 
+def _source(db_path: Path, reason: str = "") -> dict[str, Any]:
+    payload: dict[str, Any] = {"kind": "sqlite", "path": str(db_path)}
+    if reason:
+        payload["reason"] = reason
+    return payload
+
+
+def _unavailable_state(reason: str = "source_missing") -> dict[str, Any]:
+    db_path = Path(ledger._path(None))  # read-only dashboard surface over the runner-owned DB
+    return {
+        "available": False,
+        "authority": "official",
+        "reason": reason,
+        "source_missing": reason == "source_missing",
+        "source": _source(db_path, reason),
+        "candidates": 0,
+        "records": 0,
+        "verdicts": {verdict: 0 for verdict in ledger.VERDICTS},
+        "baseline": None,
+        "best_by_avg_profit": None,
+        "promoted": 0,
+        "note": "원장 SQLite 파일이 아직 없습니다. 쓰기/수집 경로가 생성한 뒤 읽습니다.",
+    }
+
+
+def _connect_readonly() -> tuple[sqlite3.Connection | None, str]:
+    db_path = Path(ledger._path(None))
+    if not db_path.is_file():
+        return None, "source_missing"
+    try:
+        connection = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True)
+    except sqlite3.Error:
+        return None, "source_unavailable"
+    connection.row_factory = sqlite3.Row
+    return connection, ""
+
+
+def _read_all(connection: sqlite3.Connection, *, limit: int = 500) -> list[dict[str, Any]]:
+    rows = connection.execute(
+        "SELECT * FROM candidates ORDER BY row_id DESC LIMIT ?", (limit,),
+    ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def _latest_per_candidate(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    seen: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        seen.setdefault(str(row["candidate_id"]), row)
+    return list(seen.values())
+
+
+def _summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    latest = _latest_per_candidate(rows)
+    counts: dict[str, int] = {verdict: 0 for verdict in ledger.VERDICTS}
+    for row in latest:
+        counts[str(row["verdict"])] = counts.get(str(row["verdict"]), 0) + 1
+
+    graded = [
+        row for row in latest
+        if row["verdict"] != "BASELINE" and row["avg_profit_pct"] is not None
+    ]
+    baseline = next((row for row in latest if row["verdict"] == "BASELINE"), None)
+    return {
+        "available": bool(latest),
+        "authority": "official",
+        "reason": "",
+        "source_missing": False,
+        "source": _source(Path(ledger._path(None))),
+        "candidates": len(latest),
+        "records": len(rows),
+        "verdicts": counts,
+        "baseline": baseline,
+        "best_by_avg_profit": max(graded, key=lambda row: row["avg_profit_pct"], default=None),
+        "promoted": counts.get("PASS", 0),
+        "note": ("판정은 챔피언 대비다. PROMISING 은 합격이 아니라 "
+                 "'방향은 맞는데 표본이 얇다'는 뜻이다."),
+    }
+
+
 @strategy_ledger_router.get("/loop/strategy-ledger")
 def strategy_ledger(limit: int = 200, history: bool = False) -> dict[str, Any]:
     """후보별 최신 기록(기본) 또는 전체 이력(`history=true`).
@@ -55,9 +136,20 @@ def strategy_ledger(limit: int = 200, history: bool = False) -> dict[str, Any]:
     원장은 append-only 라 같은 후보의 과거 판정도 남아 있다. 기본 보기는 최신만
     보여주되, 이력을 감추지는 않는다.
     """
-    state = ledger.summary()
-    rows = (ledger.read_all(limit=limit) if history
-            else ledger.latest_per_candidate())
+    connection, reason = _connect_readonly()
+    if connection is None:
+        state = _unavailable_state(reason)
+        rows: list[dict[str, Any]] = []
+    else:
+        try:
+            all_rows = _read_all(connection, limit=5000)
+            state = _summary(all_rows)
+            rows = _read_all(connection, limit=limit) if history else _latest_per_candidate(all_rows)
+        except sqlite3.Error:
+            state = _unavailable_state("source_unavailable")
+            rows = []
+        finally:
+            connection.close()
     baseline = state.get("baseline")
     decorated = [_decorate(r, baseline) for r in rows]
     # 합격선을 맨 위에, 그 아래는 건당 수익률 내림차순.
@@ -67,6 +159,9 @@ def strategy_ledger(limit: int = 200, history: bool = False) -> dict[str, Any]:
     return {
         "available": state["available"],
         "authority": state["authority"],
+        "reason": state["reason"],
+        "source_missing": state["source_missing"],
+        "source": state["source"],
         "history": history,
         "candidates": state["candidates"],
         "records": state["records"],

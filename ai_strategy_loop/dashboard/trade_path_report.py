@@ -2,12 +2,23 @@
 
 from __future__ import annotations
 
+import json
+import sqlite3
+from pathlib import Path
+
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
 from ai_strategy_loop.autopsy.trade_path_analysis import cohort_summaries
+from ai_strategy_loop.autopsy.trade_path_analysis_models import (
+    AnalysisTotals,
+    EpisodeSummary,
+    ExcludedTrade,
+    TradePathAnalysis,
+)
+from ai_strategy_loop.autopsy.trade_path_models import RunSource, Timeframe, TradeResultRow
 from ai_strategy_loop.dashboard.report_writer import render_report_html
-from ai_strategy_loop.dashboard.trade_path_jobs import trade_path_coordinator
+from ai_strategy_loop.dashboard.trade_path_jobs import TradePathJob, trade_path_coordinator
 
 
 trade_path_report_router = APIRouter()
@@ -17,13 +28,95 @@ _CSP = (
 )
 
 
+def _sidecar_source(path: Path, reason: str = "") -> dict[str, object]:
+    payload: dict[str, object] = {"kind": "sqlite", "path": str(path)}
+    if reason:
+        payload["reason"] = reason
+    return payload
+
+
+def _sidecar_connect_readonly(path: Path) -> tuple[sqlite3.Connection | None, str]:
+    if not path.is_file():
+        return None, "source_missing"
+    try:
+        return sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True), ""
+    except sqlite3.Error:
+        return None, "source_unavailable"
+
+
+def _load_sidecar_analysis_readonly(
+    path: Path, analysis_id: str,
+) -> tuple[TradePathAnalysis | None, str]:
+    connection, reason = _sidecar_connect_readonly(path)
+    if connection is None:
+        return None, reason
+    try:
+        row = connection.execute(
+            "SELECT source_json, totals_json, episodes_json, exclusions_json,"
+            " rows_json, decision_horizons, continuation_horizons"
+            " FROM analyses WHERE analysis_id = ?",
+            (analysis_id,),
+        ).fetchone()
+    except sqlite3.Error:
+        return None, "source_unavailable"
+    finally:
+        connection.close()
+    if row is None:
+        return None, "analysis_not_found"
+    try:
+        source_data = json.loads(row[0])
+        source_data["timeframe"] = Timeframe(source_data["timeframe"])
+        return TradePathAnalysis(
+            analysis_id=analysis_id,
+            source=RunSource(**source_data),
+            rows=tuple(TradeResultRow(**item) for item in json.loads(row[4])),
+            episodes=tuple(EpisodeSummary(**item) for item in json.loads(row[2])),
+            exclusions=tuple(ExcludedTrade(**item) for item in json.loads(row[3])),
+            totals=AnalysisTotals(**json.loads(row[1])),
+            decision_horizons=tuple(json.loads(row[5])),
+            continuation_horizons=tuple(json.loads(row[6])),
+        ), ""
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+        return None, "source_unavailable"
+
+
+def _readonly_trade_path_job(analysis_id: str) -> tuple[TradePathJob | None, str, Path]:
+    coordinator = trade_path_coordinator()
+    sidecar_path = coordinator.sidecar().path
+    if not analysis_id:
+        return None, "analysis_not_found", sidecar_path
+    job = next((item for item in coordinator.list_jobs() if item.analysis_id == analysis_id), None)
+    if job is not None and (job.status != "success" or job.result is not None):
+        return job, "", sidecar_path
+    restored, reason = _load_sidecar_analysis_readonly(sidecar_path, analysis_id)
+    if restored is None:
+        return job, reason, sidecar_path
+    return TradePathJob(
+        analysis_id, "success",
+        1.0, restored.totals.trade_count, restored.totals.trade_count, "", restored,
+    ), "", sidecar_path
+
+
+def _unavailable_headers(reason: str) -> dict[str, str]:
+    return {
+        "Content-Security-Policy": _CSP,
+        "Cache-Control": "no-store",
+        "X-STOM-Authority": "diagnostic",
+        "X-STOM-Available": "false",
+        "X-STOM-Unavailable-Reason": reason,
+        "X-STOM-Source-Reason": reason,
+        "X-STOM-Source-Missing": str(reason == "source_missing").lower(),
+    }
+
+
 @trade_path_report_router.get("/report", response_class=HTMLResponse)
 def trade_path_report(analysis_id: str = "") -> HTMLResponse:
-    job = trade_path_coordinator().get(analysis_id)
+    job, reason, _ = _readonly_trade_path_job(analysis_id)
     result = job.result if job is not None and job.status == "success" else None
     if result is None:
+        reason = reason or ("analysis_not_ready" if job is not None else "analysis_not_found")
         return HTMLResponse("<h1>거래 경로 분석 결과가 없습니다.</h1>", status_code=404,
-                            headers={"Content-Security-Policy": _CSP})
+                            headers=_unavailable_headers(reason))
     totals = result.totals
     spec = {
         "research_id": analysis_id,

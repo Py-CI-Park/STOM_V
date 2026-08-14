@@ -60,6 +60,10 @@ def _client(monkeypatch, tmp_path: Path) -> TestClient:
         "base": tmp_path / "base.csv",
         "buy_cand": tmp_path / "buy.csv",
         "sell_cand": tmp_path / "sell.csv",
+        "design_base": tmp_path / "design_base.csv",
+        "design_cand": tmp_path / "design_cand.csv",
+        "oos_base": tmp_path / "oos_base.csv",
+        "oos_cand": tmp_path / "oos_cand.csv",
     }
     _write(paths["base"], [("A", "20250102090000", -30_000),
                            ("B", "20250102090100", -20_000),
@@ -69,10 +73,22 @@ def _client(monkeypatch, tmp_path: Path) -> TestClient:
     _write(paths["sell_cand"], [("A", "20250102090000", -10_000),
                                 ("B", "20250102090100", -20_000),
                                 ("C", "20250102090200", +10_000)])
+    _write(paths["design_base"], [("A", "20250102090000", -30_000),
+                                  ("B", "20250102090100", -20_000)])
+    _write(paths["design_cand"], [("B", "20250102090100", -20_000)])
+    _write(paths["oos_base"], [("D", "20250103090000", -40_000),
+                               ("E", "20250103090100", +10_000)])
+    _write(paths["oos_cand"], [("E", "20250103090100", +10_000)])
     specs = {
         "base": {**base_spec, "buy": "매수기준", "sell": "매도기준"},
         "buy_cand": {**base_spec, "buy": "매수필터후보", "sell": "매도기준"},
         "sell_cand": {**base_spec, "buy": "매수기준", "sell": "매도후보"},
+        "design_base": {**base_spec, "buy": "매수기준", "sell": "매도기준"},
+        "design_cand": {**base_spec, "buy": "매수필터후보", "sell": "매도기준"},
+        "oos_base": {**base_spec, "start": 20250103, "end": 20250103,
+                     "buy": "매수기준", "sell": "매도기준"},
+        "oos_cand": {**base_spec, "start": 20250103, "end": 20250103,
+                     "buy": "매수필터후보", "sell": "매도기준"},
     }
     manager = _Manager(specs, paths)
     monkeypatch.setattr(
@@ -84,6 +100,14 @@ def _client(monkeypatch, tmp_path: Path) -> TestClient:
     app = FastAPI()
     app.include_router(trade_path_router)
     return TestClient(app)
+
+
+def _official_pairs(client: TestClient) -> list[dict[str, object]]:
+    return client.get("/bt/trade-path/history").json()["official_pairs"]
+
+
+def _calibration_records(client: TestClient) -> list[dict[str, object]]:
+    return client.get("/bt/trade-path/calibration?lane=min").json()["records"]
 
 
 def test_sell_axis_still_requires_identical_buy_condition(monkeypatch, tmp_path: Path) -> None:
@@ -151,3 +175,68 @@ def test_promotion_gate_blocks_edge_free_and_collapsed_trade_counts(
     assert gate["axis"] == "buy"
     assert "design_per_trade_delta" in gate
     assert "design_trade_ratio" in gate
+
+
+def test_blocked_promotion_gate_does_not_append_official_history(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    client = _client(monkeypatch, tmp_path)
+    client.post("/bt/trade-path/official-pair", json={
+        "baseline_job_id": "base", "candidate_job_id": "sell_cand", "axis": "sell",
+    })
+    before = _official_pairs(client)
+    assert len(before) == 1
+
+    gate = client.post("/bt/trade-path/promotion-gate", json={
+        "design_baseline_job_id": "base", "design_candidate_job_id": "buy_cand",
+        "oos_baseline_job_id": "base", "oos_candidate_job_id": "buy_cand",
+        "axis": "buy",
+    }).json()
+
+    assert gate["verdict"] == "blocked"
+    assert _official_pairs(client) == before
+
+
+def test_promotion_gate_persists_one_explicit_aggregate_receipt(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    client = _client(monkeypatch, tmp_path)
+    for role, job_id in (("design", "design_cand"), ("oos", "oos_cand")):
+        client.post("/bt/trade-path/candidate-runs", json={
+            "candidate_id": f"candidate-{role}",
+            "lane": "min",
+            "role": role,
+            "job_id": job_id,
+            "sell_name": "매도기준",
+            "axis": "buy",
+            "buy_name": "매수필터후보",
+        })
+    body = {
+        "design_baseline_job_id": "design_base",
+        "design_candidate_job_id": "design_cand",
+        "oos_baseline_job_id": "oos_base",
+        "oos_candidate_job_id": "oos_cand",
+        "axis": "buy",
+    }
+
+    read_gate = client.post("/bt/trade-path/promotion-gate", json=body).json()
+    assert read_gate["verdict"] == "adoptable"
+    assert _official_pairs(client) == []
+    assert _calibration_records(client) == []
+
+    persisted_gate = client.post(
+        "/bt/trade-path/promotion-gate?persist=true", json=body,
+    ).json()
+    assert persisted_gate["verdict"] == "adoptable"
+    receipts = _official_pairs(client)
+    assert len(receipts) == 1
+    receipt = receipts[0]
+    assert receipt["receipt_type"] == "promotion_gate"
+    assert receipt["gate"]["mode"] == "4job_independent"
+    assert receipt["gate"]["baseline_job_ids"] == "design_base+oos_base"
+    assert receipt["gate"]["candidate_job_ids"] == "design_cand+oos_cand"
+    assert receipt["pair"]["receipt_type"] == "promotion_gate"
+    assert receipt["pair"]["delta_profit_krw"] == 70_000
+    assert receipt["pair"]["baseline_trade_count"] == 4
+    assert receipt["pair"]["candidate_trade_count"] == 2
+    assert _calibration_records(client) == []

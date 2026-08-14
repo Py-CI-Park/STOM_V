@@ -912,7 +912,7 @@ def generate_insights(
 
     # 규칙 11: 통계 검정(요일/시간대 효과 유의성).
     if stats:
-        sig = [s for s in stats if s.get("significant")]
+        sig = [s for s in stats if s.get("fdr_pass")]
         # 가장 큰 평균(양수) 유의 버킷 하나만 대표로 표기(과잉 노출 방지).
         sig_pos = sorted([s for s in sig if s.get("mean", 0.0) > 0.0], key=lambda s: s["mean"], reverse=True)
         if sig_pos:
@@ -921,7 +921,10 @@ def generate_insights(
             insights.append({
                 "severity": "info",
                 "title": "통계적으로 유의한 시점 효과",
-                "detail": f"{kind_ko} '{s0['label']}' 평균 수익률 {s0['mean']:+.2f}% — 통계적으로 유의(p={s0['p_value']:.3f}, n={s0['n']}).",
+                "detail": (
+                    f"{kind_ko} '{s0['label']}' 평균 수익률 {s0['mean']:+.2f}% — "
+                    f"BH-FDR 통과(q={s0['q_value']:.3f}, raw p={s0['p_value']:.3f}, n={s0['n']})."
+                ),
             })
         sig_neg = sorted([s for s in sig if s.get("mean", 0.0) < 0.0], key=lambda s: s["mean"])
         if sig_neg:
@@ -930,7 +933,10 @@ def generate_insights(
             insights.append({
                 "severity": "warning",
                 "title": "유의한 손실 시점",
-                "detail": f"{kind_ko} '{s1['label']}' 평균 수익률 {s1['mean']:+.2f}% — 통계적으로 유의한 손실(p={s1['p_value']:.3f}, n={s1['n']}).",
+                "detail": (
+                    f"{kind_ko} '{s1['label']}' 평균 수익률 {s1['mean']:+.2f}% — "
+                    f"BH-FDR 통과 손실(q={s1['q_value']:.3f}, raw p={s1['p_value']:.3f}, n={s1['n']})."
+                ),
             })
 
     # 규칙 12: 몬테카를로(운 의존성 진단).
@@ -1388,12 +1394,57 @@ def _bucket_pnl(trades: List[Dict[str, Any]], by: str) -> Dict[int, List[float]]
     return buckets
 
 
+def _apply_bh_fdr(rows: List[Dict[str, Any]]) -> None:
+    """Add Benjamini-Hochberg q-values/pass flags in-place across tested buckets."""
+    tested = [
+        (idx, float(row["_p_value_raw"]))
+        for idx, row in enumerate(rows)
+        if row.get("_p_value_raw") is not None
+    ]
+    q_by_index: Dict[int, float] = {}
+    if tested:
+        ordered = sorted(tested, key=lambda item: item[1])
+        m = len(ordered)
+        running = 1.0
+        for rank, (idx, pval) in reversed(list(enumerate(ordered, start=1))):
+            running = min(running, pval * m / rank)
+            q_by_index[idx] = min(1.0, running)
+    for idx, row in enumerate(rows):
+        raw_p = row.pop("_p_value_raw", None)
+        qval = q_by_index.get(idx)
+        raw_p_below_alpha = bool(raw_p is not None and float(raw_p) < _STAT_ALPHA)
+        fdr_pass = bool(
+            qval is not None
+            and qval <= _STAT_ALPHA
+            and not bool(row.get("underpowered"))
+        )
+        if fdr_pass:
+            basis = "bh_fdr_q_value"
+        elif row.get("underpowered"):
+            basis = "underpowered"
+        elif raw_p_below_alpha:
+            basis = "raw_p_only_fdr_not_passed"
+        elif raw_p is None:
+            basis = "not_tested"
+        else:
+            basis = "raw_p_not_below_alpha"
+        row.update({
+            "q_value": (round(float(qval), 6) if qval is not None else None),
+            "raw_p_below_alpha": raw_p_below_alpha,
+            "fdr_pass": fdr_pass,
+            "significant": fdr_pass,
+            "significance_basis": basis,
+            "multiple_testing_correction": "benjamini_hochberg",
+        })
+
+
 def statistical_tests(trades: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """요일/시간대 버킷의 수익률 평균을 나머지 거래와 z/t 검정한다(무예외).
 
     각 버킷에 대해 (버킷 평균 vs 그 외 전체 평균) 차이의 양측 p값을 구한다.
-    반환: [{kind, bucket, label, n, mean, p_value, significant, underpowered}].
-      - significant: p<0.05 (충분 표본일 때만 True).
+    반환: [{kind, bucket, label, n, mean, p_value, q_value, fdr_pass, significant, underpowered}].
+      - significant/fdr_pass: BH-FDR q<=0.05 (충분 표본일 때만 True).
+      - raw_p_below_alpha: 보정 전 p<0.05 참고값(최종 유의성 아님).
       - underpowered: 표본<30(과신 방지 표기).
     scipy 유/무 모두 동작(분기). 빈 입력/단일 버킷이면 빈 리스트.
     """
@@ -1411,7 +1462,6 @@ def statistical_tests(trades: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             mean_bucket = sum(vals) / n_bucket if n_bucket else 0.0
             pval = _welch_pvalue(vals, rest)
             underpowered = n_bucket < _STAT_MIN_N
-            significant = (pval is not None and pval < _STAT_ALPHA and not underpowered)
             out.append({
                 "kind": kind,
                 "bucket": int(key),
@@ -1419,9 +1469,10 @@ def statistical_tests(trades: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 "n": int(n_bucket),
                 "mean": float(mean_bucket),
                 "p_value": (round(float(pval), 6) if pval is not None else None),
-                "significant": bool(significant),
                 "underpowered": bool(underpowered),
+                "_p_value_raw": (float(pval) if pval is not None else None),
             })
+    _apply_bh_fdr(out)
     return out
 
 

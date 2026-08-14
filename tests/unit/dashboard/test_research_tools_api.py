@@ -7,7 +7,12 @@ import pytest
 
 from ai_strategy_loop.controller import state as S
 from ai_strategy_loop.dashboard.app import create_app
-from ai_strategy_loop.dashboard.research_tools_api import AUTHORITY, MAX_QMC_BUDGET, MAX_SOURCE_CHARS
+from ai_strategy_loop.dashboard.research_tools_api import (
+    AUTHORITY,
+    MAX_OBSERVATION_COUNT,
+    MAX_QMC_BUDGET,
+    MAX_SOURCE_CHARS,
+)
 from ai_strategy_loop.dashboard.security import HTTP_CAPABILITIES
 from ai_strategy_loop.dashboard.security_capabilities import Capability
 from tests.unit.security_test_client import authorized_dashboard_client
@@ -124,6 +129,8 @@ def test_status_lists_four_manual_no_adoption_tools(monkeypatch, tmp_path: Path)
     _assert_no_authority(payload)
     assert [tool["id"] for tool in payload["tools"]] == ["bayesian", "ast", "qmc", "denoise"]
     assert all(tool["authority"] == AUTHORITY and tool["manual_only"] is True for tool in payload["tools"])
+    assert payload["bounds"]["max_observation_count"] == MAX_OBSERVATION_COUNT
+    assert payload["bounds"]["max_bayesian_sample"] == MAX_OBSERVATION_COUNT
     assert "APPROVE is a statistical boundary label only" in " ".join(payload["reading_rules"])
 
 
@@ -152,6 +159,39 @@ def test_bayesian_success_labels_approve_as_statistical_boundary_only(monkeypatc
     assert payload["counts"] == {"successes": 18, "failures": 0, "sample_size": 18}
     assert payload["receipts"]["config"]["digest"]
     assert payload["receipts"]["seed"]["purpose"] == "external_observations_no_rng"
+
+
+def test_bayesian_limit_accepts_100000_and_rejects_100001(monkeypatch, tmp_path: Path) -> None:
+    client = _client(monkeypatch, tmp_path)
+
+    accepted = client.post("/loop/research-tools/bayesian", json=_bayesian_payload(
+        config={"max_sample": MAX_OBSERVATION_COUNT},
+        counts={"successes": MAX_OBSERVATION_COUNT, "failures": 0},
+    ))
+    too_many_counts = client.post("/loop/research-tools/bayesian", json=_bayesian_payload(
+        config={"max_sample": MAX_OBSERVATION_COUNT},
+        counts={"successes": MAX_OBSERVATION_COUNT, "failures": 1},
+    ))
+    too_large_max_sample = client.post("/loop/research-tools/bayesian", json=_bayesian_payload(
+        config={"max_sample": MAX_OBSERVATION_COUNT + 1},
+        counts={"successes": 1, "failures": 0},
+    ))
+
+    assert accepted.status_code == 200, accepted.text
+    assert accepted.json()["counts"]["sample_size"] == MAX_OBSERVATION_COUNT
+    assert too_many_counts.status_code == 422
+    too_many_body = too_many_counts.json()
+    _assert_no_authority(too_many_body)
+    assert too_many_body["ok"] is False
+    assert too_many_body["code"] == "validation_error"
+    assert "successes + failures cannot exceed 100000" in json.dumps(too_many_body, ensure_ascii=False)
+    assert too_large_max_sample.status_code == 422
+    too_large_body = too_large_max_sample.json()
+    _assert_no_authority(too_large_body)
+    assert too_large_body["ok"] is False
+    assert too_large_body["code"] == "validation_error"
+    assert "max_sample" in json.dumps(too_large_body, ensure_ascii=False)
+    assert "100000" in json.dumps(too_large_body, ensure_ascii=False)
 
 
 def test_ast_success_parses_static_checks_and_keeps_source_out_of_parsed_payload(monkeypatch, tmp_path: Path) -> None:

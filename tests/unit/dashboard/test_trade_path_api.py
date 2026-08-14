@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import sqlite3
 import time
 from pathlib import Path
@@ -10,6 +11,8 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from ai_strategy_loop.controller import strategy_ledger as strategy_ledger_store
+from ai_strategy_loop.dashboard import strategy_ledger_api
 from ai_strategy_loop.dashboard import trade_path_jobs, trade_path_official_api, trade_path_source
 from ai_strategy_loop.dashboard.trade_path_api import trade_path_router
 from ai_strategy_loop.dashboard.research_sidecar import ResearchSidecar
@@ -92,6 +95,228 @@ def _csv(path: Path, *, sell_time: str = "20250102090100", sell_price: int = 970
                          "매도가": str(sell_price), "매수금액": "1000000",
                          "매도금액": str(1_000_000 + profit), "수익률": "-3.17",
                          "수익금": str(profit), "매도조건": reason, "추가매수시간": "[]"})
+
+
+def test_strategy_ledger_get_missing_and_existing_db(monkeypatch, tmp_path: Path) -> None:
+    db_path = tmp_path / "strategy_ledger.db"
+    monkeypatch.setattr(strategy_ledger_store, "_DEFAULT_DB", str(db_path))
+
+    missing = strategy_ledger_api.strategy_ledger()
+
+    assert missing["available"] is False
+    assert missing["reason"] == "source_missing"
+    assert missing["source_missing"] is True
+    assert missing["rows"] == []
+    assert not db_path.exists()
+
+    strategy_ledger_store.append(
+        strategy_ledger_store.CandidateRecord(
+            candidate_id="baseline", family="exit", source="ai", lane="tick",
+            verdict="BASELINE", recorded_at="2026-08-14T00:00:00+00:00",
+            avg_profit_pct=0.5,
+        ),
+        db_path=str(db_path),
+    )
+    existing = strategy_ledger_api.strategy_ledger()
+
+    assert existing["available"] is True
+    assert existing["source_missing"] is False
+    assert existing["records"] == 1
+    assert existing["rows"][0]["candidate_id"] == "baseline"
+
+
+def _write_sidecar_fixture(
+    path: Path, *, run_id: str = "job-1", csv_path: str = "result.csv",
+    strategy_sell: str = "",
+) -> None:
+    source = {
+        "run_id": run_id,
+        "csv_path": csv_path,
+        "csv_sha256": "sha-existing",
+        "timeframe": "tick",
+        "forced_liquidation_time": 90300,
+        "strategy_sell": strategy_sell,
+    }
+    totals = {
+        "trade_count": 1,
+        "analyzed_count": 1,
+        "excluded_count": 0,
+        "recovered_count": 0,
+        "censored_outcome_count": 0,
+        "actual_profit_krw": 1000,
+    }
+    rows = [{
+        "row_id": 1,
+        "entry_sequence": 0,
+        "name": "삼성전자",
+        "buy_time": 20250102090000,
+        "sell_time": 20250102090100,
+        "hold_value": 60.0,
+        "buy_price": 1000.0,
+        "sell_price": 1010.0,
+        "buy_amount": 1000000.0,
+        "sell_amount": 1001000.0,
+        "profit_pct": 1.0,
+        "profit_krw": 1000,
+        "exit_reason": "익절",
+        "additional_buy_times": "[]",
+    }]
+    episodes = [{
+        "trade_key": f"{run_id}:1:005930:20250102090000:0",
+        "row_id": 1,
+        "stock_code": "005930",
+        "name": "삼성전자",
+        "buy_time": 20250102090000,
+        "sell_time": 20250102090100,
+        "hold_seconds": 60,
+        "actual_profit_krw": 1000,
+        "actual_profit_pct": 1.0,
+        "exit_reason": "익절",
+        "continuation_available": 0,
+        "continuation_censored": 0,
+        "recovered_by_boundary": False,
+        "best_delta_profit_krw": None,
+        "data_quality": "ok",
+        "counterfactual_eligible": False,
+    }]
+    with sqlite3.connect(path) as connection:
+        connection.execute(
+            "CREATE TABLE artifacts ("
+            " csv_sha256 TEXT NOT NULL, row_count INTEGER NOT NULL,"
+            " csv_path TEXT NOT NULL, lane TEXT NOT NULL, first_seen TEXT NOT NULL,"
+            " PRIMARY KEY (csv_sha256, row_count))"
+        )
+        connection.execute(
+            "CREATE TABLE analyses ("
+            " analysis_id TEXT PRIMARY KEY, lane TEXT NOT NULL,"
+            " csv_sha256 TEXT NOT NULL, row_count INTEGER NOT NULL,"
+            " source_json TEXT NOT NULL, totals_json TEXT NOT NULL,"
+            " episodes_json TEXT NOT NULL, exclusions_json TEXT NOT NULL,"
+            " rows_json TEXT NOT NULL,"
+            " decision_horizons TEXT NOT NULL, continuation_horizons TEXT NOT NULL,"
+            " created_at TEXT NOT NULL)"
+        )
+        connection.execute(
+            "INSERT INTO artifacts VALUES (?, ?, ?, ?, ?)",
+            ("sha-existing", 1, csv_path, "tick", "2026-08-14T00:00:00+00:00"),
+        )
+        connection.execute(
+            "INSERT INTO analyses VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                "tp-existing", "tick", "sha-existing", 1,
+                json.dumps(source, ensure_ascii=False),
+                json.dumps(totals, ensure_ascii=False),
+                json.dumps(episodes, ensure_ascii=False),
+                "[]",
+                json.dumps(rows, ensure_ascii=False),
+                "[30]",
+                "[60]",
+                "2026-08-14T00:00:00+00:00",
+            ),
+        )
+
+
+def test_trade_path_sidecar_gets_leave_missing_sqlite_absent(monkeypatch, tmp_path: Path) -> None:
+    sidecar_path = tmp_path / "missing-sidecar.db"
+    monkeypatch.setattr(
+        trade_path_jobs,
+        "_COORDINATOR",
+        TradePathCoordinator(ledger=TradePathLedger(tmp_path / "ledger.jsonl"),
+                             sidecar=ResearchSidecar(sidecar_path)),
+    )
+    app = FastAPI()
+    app.include_router(trade_path_router)
+    client = TestClient(app)
+
+    history = client.get("/bt/trade-path/history").json()
+    ledger = client.get("/bt/trade-path/ledger").json()
+    job = client.get("/bt/trade-path/jobs/tp-missing").json()
+    summary = client.get(
+        "/bt/trade-path/summary", params={"analysis_id": "tp-missing"},
+    ).json()
+    report = client.get("/bt/trade-path/report", params={"analysis_id": "tp-missing"})
+    sell_trace = client.get("/bt/trade-path/sell-dsl-trace", params={
+        "analysis_id": "tp-missing", "trade_key": "missing",
+    }).json()
+
+    assert history["persisted"] == []
+    assert history["persisted_source_missing"] is True
+    assert ledger["available"] is False
+    assert ledger["reason"] == "source_missing"
+    assert ledger["source_missing"] is True
+    assert ledger["rows"] == []
+    assert ledger["counts"] == {"artifacts": 0, "analyses": 0}
+    assert ledger["rebuild_sha256"] is None
+    assert job["available"] is False
+    assert summary["available"] is False
+    assert report.status_code == 404
+    assert report.headers["x-stom-unavailable-reason"] == "source_missing"
+    assert report.headers["x-stom-source-reason"] == "source_missing"
+    assert report.headers["x-stom-source-missing"] == "true"
+    assert sell_trace["available"] is False
+    assert sell_trace["reason"] == "source_missing"
+    assert sell_trace["source_missing"] is True
+    assert sell_trace["source"]["reason"] == "source_missing"
+    assert not sidecar_path.exists()
+
+
+def test_trade_path_sidecar_gets_read_existing_sqlite_readonly(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    sidecar_path = tmp_path / "sidecar.db"
+    database = tmp_path / "database"
+    _market_fixture(database)
+    baseline = tmp_path / "baseline.csv"
+    _csv(baseline)
+    sell_code = (
+        "매도 = False\n"
+        "if 보유시간 >= 30 and 수익률 <= -2:\n"
+        "    매도 = True\n"
+        "if 매도:\n"
+        "    self.Sell()"
+    )
+    _write_sidecar_fixture(
+        sidecar_path, run_id="baseline", csv_path=str(baseline),
+        strategy_sell=sell_code,
+    )
+    manager = _FakeJobManager(baseline, baseline)
+    monkeypatch.setattr(
+        trade_path_jobs,
+        "_COORDINATOR",
+        TradePathCoordinator(ledger=TradePathLedger(tmp_path / "ledger.jsonl"),
+                             sidecar=ResearchSidecar(sidecar_path)),
+    )
+    monkeypatch.setattr(trade_path_source, "get_job_manager", lambda: manager)
+    monkeypatch.setenv("STOM_TRADE_PATH_DATABASE_DIR", str(database))
+    monkeypatch.setenv("STOM_TRADE_PATH_CODE_INFO_DB", str(database / "code_info.db"))
+    app = FastAPI()
+    app.include_router(trade_path_router)
+    client = TestClient(app)
+
+    ledger = client.get("/bt/trade-path/ledger").json()
+    history = client.get("/bt/trade-path/history").json()
+    restored = client.get("/bt/trade-path/jobs/tp-existing").json()
+    report = client.get("/bt/trade-path/report", params={"analysis_id": "tp-existing"})
+    sell_trace = client.get("/bt/trade-path/sell-dsl-trace", params={
+        "analysis_id": "tp-existing",
+        "trade_key": "baseline:1:005930:20250102090000:0",
+    }).json()
+
+    assert ledger["available"] is True
+    assert ledger["source_missing"] is False
+    assert ledger["counts"] == {"artifacts": 1, "analyses": 1}
+    assert len(ledger["rebuild_sha256"]) == 64
+    assert ledger["rows"][0]["analysis_id"] == "tp-existing"
+    assert history["persisted"][0]["analysis_id"] == "tp-existing"
+    assert restored["available"] is True
+    assert restored["summary"]["trade_count"] == 1
+    assert report.status_code == 200
+    report_html = report.content.decode("utf-8")
+    assert "csv_sha256=sha-existing" in report_html
+    assert sell_trace["available"] is True
+    assert sell_trace["replay"]["status"] == "supported", sell_trace
+    assert sell_trace["replay"]["exit_timestamp"] == 20250102090100
+    assert not Path(str(sidecar_path) + "-wal").exists()
 
 
 def test_trade_path_api_runs_analysis_counterfactual_and_official_pair(
