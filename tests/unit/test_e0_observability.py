@@ -28,7 +28,7 @@ class FakeClient:
 def test_run_once_records_bounded_diagnostics():
     client = FakeClient(["running", "success"], {
         "status": "success", "metrics": {"trade_count": 1},
-        "backtest_process_diagnostics": {
+        "process_diagnostics": {
             "event_count": 3,
             "last_checkpoint": "backtest_child_mq_first_received",
             "last_by_source": {"BackTest": "backtest_child_mq_first_received"},

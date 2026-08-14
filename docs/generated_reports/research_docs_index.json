@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-14T02:46:47.224122+00:00",
-  "source_fingerprint": "83b9c590a043dea89b757ec41333bfac6b1923e3127a5d7f6d0df2999ec5390c",
+  "generated_at": "2026-08-14T02:49:00.469883+00:00",
+  "source_fingerprint": "e4624c4d1323e0e4d1f3621bbfaf43c5feca0e3bdeac1e6ed19ef67cc0cdce4c",
   "count": 1043,
   "docs": [
     {
@@ -6952,15 +6952,15 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-14_E0_엔진관측성_고정fixture_결과.md",
       "title": "E0 엔진 관측성 고정 fixture 대조 결과 (2026-08-14)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-14T02:45:14.932697+00:00",
-      "size": 2110
+      "updated_at": "2026-08-14T02:47:56.757700+00:00",
+      "size": 2123
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-14_E0_엔진관측성_고정fixture_사전등록.md",
       "title": "E0 엔진 관측성 고정 fixture 대조 — 사전등록 (2026-08-14)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-14T01:15:24.015969+00:00",
-      "size": 1357
+      "updated_at": "2026-08-14T02:47:56.172931+00:00",
+      "size": 1496
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-14_v4_중간검토와_잔여단계_실행게이트.md",
