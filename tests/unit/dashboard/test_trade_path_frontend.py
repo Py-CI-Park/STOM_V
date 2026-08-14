@@ -89,6 +89,8 @@ def test_probability_research_tools_match_strict_api_payload_shapes() -> None:
     assert "corruption_rate" not in source
     assert "payload.posterior && payload.posterior.mean" in source
     assert "payload.pareto.entries" in source
+    assert 'runtime_profile: "stock_tick"' in source
+    assert "stock tick 실행계약" in source
 
 
 def test_ledger_selection_publishes_shared_review_context() -> None:

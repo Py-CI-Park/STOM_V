@@ -1,0 +1,932 @@
+{
+  "schema": "stom.d1_stage2_determinism.v1",
+  "authority": "development_fixture_no_oos_no_adoption",
+  "representatives": [
+    "D1_BOOK_IMBALANCE_01_a0e44d3c",
+    "D1_FLOW_SURGE_04_b506a923",
+    "D1_MOMENTUM_QUALITY_07_da23c5ff"
+  ],
+  "config": {
+    "start": 20231114,
+    "end": 20231121,
+    "engines": 16,
+    "job_timeout": 240,
+    "poll_timeout": 300
+  },
+  "rows": [
+    {
+      "arm": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "buy": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_175628_D1BOOKIMBALANCE01a0e44d3_88206",
+      "status": "success",
+      "elapsed_seconds": 74.594,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 130292,
+            "code_count": 42,
+            "elapsed_seconds": 2.049
+          },
+          "BackEngine:1": {
+            "tick_count": 126284,
+            "code_count": 42,
+            "elapsed_seconds": 2.046
+          },
+          "BackEngine:2": {
+            "tick_count": 139529,
+            "code_count": 47,
+            "elapsed_seconds": 2.048
+          },
+          "BackEngine:3": {
+            "tick_count": 124092,
+            "code_count": 41,
+            "elapsed_seconds": 2.047
+          },
+          "BackEngine:4": {
+            "tick_count": 133942,
+            "code_count": 46,
+            "elapsed_seconds": 2.046
+          }
+        }
+      },
+      "candidate_id": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "family": "BOOK_IMBALANCE",
+      "parameters": {
+        "family": "BOOK_IMBALANCE",
+        "time_end": 90500,
+        "cap_max": 1941,
+        "strength": 122.46357739118878,
+        "money_multiple": 2.5946042383023062,
+        "pressure_ratio": 2.0637275553832968,
+        "rate_low": 3.803248080508129,
+        "rate_width": 5.29880662908608,
+        "mid_rate": 2.3922184660133636,
+        "turnover": 3.0125760348627737
+      },
+      "source_sha256": "a0e44d3ca4a6dbd5a98c908535c752cfc16a10ec1a1a39c9b7cede65caa8920e",
+      "metrics": {
+        "trade_count": 29,
+        "daily_avg_trades": 5.8,
+        "win_rate": 41.38,
+        "avg_profit_pct": 0.71,
+        "total_profit_pct": 4.12,
+        "total_profit_krw": 205766,
+        "cagr": 205.84,
+        "mdd_pct": 2.82,
+        "mdd_amount": 0.0,
+        "tpi": 1.51,
+        "seed_capital": 4998102.0,
+        "max_hold_count": 5,
+        "avg_hold_time": 533.07,
+        "day_count": 5
+      },
+      "metric_signature": [
+        29,
+        0.71,
+        4.12,
+        205766,
+        2.82,
+        1.51,
+        5,
+        533.07
+      ]
+    },
+    {
+      "arm": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "buy": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "sell": "Tick_S_902_905",
+      "repetition": 2,
+      "job_id": "20260814_175742_D1BOOKIMBALANCE01a0e44d3_62960",
+      "status": "success",
+      "elapsed_seconds": 68.516,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 131357,
+            "code_count": 43,
+            "elapsed_seconds": 2.005
+          },
+          "BackEngine:1": {
+            "tick_count": 137807,
+            "code_count": 45,
+            "elapsed_seconds": 2.005
+          },
+          "BackEngine:2": {
+            "tick_count": 125791,
+            "code_count": 41,
+            "elapsed_seconds": 2.006
+          },
+          "BackEngine:3": {
+            "tick_count": 127445,
+            "code_count": 43,
+            "elapsed_seconds": 2.001
+          },
+          "BackEngine:4": {
+            "tick_count": 131739,
+            "code_count": 46,
+            "elapsed_seconds": 2.0
+          }
+        }
+      },
+      "candidate_id": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "family": "BOOK_IMBALANCE",
+      "parameters": {
+        "family": "BOOK_IMBALANCE",
+        "time_end": 90500,
+        "cap_max": 1941,
+        "strength": 122.46357739118878,
+        "money_multiple": 2.5946042383023062,
+        "pressure_ratio": 2.0637275553832968,
+        "rate_low": 3.803248080508129,
+        "rate_width": 5.29880662908608,
+        "mid_rate": 2.3922184660133636,
+        "turnover": 3.0125760348627737
+      },
+      "source_sha256": "a0e44d3ca4a6dbd5a98c908535c752cfc16a10ec1a1a39c9b7cede65caa8920e",
+      "metrics": {
+        "trade_count": 29,
+        "daily_avg_trades": 5.8,
+        "win_rate": 41.38,
+        "avg_profit_pct": 0.71,
+        "total_profit_pct": 4.12,
+        "total_profit_krw": 205766,
+        "cagr": 205.84,
+        "mdd_pct": 2.82,
+        "mdd_amount": 0.0,
+        "tpi": 1.51,
+        "seed_capital": 4998102.0,
+        "max_hold_count": 5,
+        "avg_hold_time": 533.07,
+        "day_count": 5
+      },
+      "metric_signature": [
+        29,
+        0.71,
+        4.12,
+        205766,
+        2.82,
+        1.51,
+        5,
+        533.07
+      ]
+    },
+    {
+      "arm": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "buy": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "sell": "Tick_S_902_905",
+      "repetition": 3,
+      "job_id": "20260814_175851_D1BOOKIMBALANCE01a0e44d3_31535",
+      "status": "success",
+      "elapsed_seconds": 68.458,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 131673,
+            "code_count": 44,
+            "elapsed_seconds": 2.143
+          },
+          "BackEngine:1": {
+            "tick_count": 131711,
+            "code_count": 43,
+            "elapsed_seconds": 2.144
+          },
+          "BackEngine:2": {
+            "tick_count": 122030,
+            "code_count": 41,
+            "elapsed_seconds": 2.141
+          },
+          "BackEngine:3": {
+            "tick_count": 138040,
+            "code_count": 46,
+            "elapsed_seconds": 2.142
+          },
+          "BackEngine:4": {
+            "tick_count": 130685,
+            "code_count": 44,
+            "elapsed_seconds": 2.14
+          }
+        }
+      },
+      "candidate_id": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+      "family": "BOOK_IMBALANCE",
+      "parameters": {
+        "family": "BOOK_IMBALANCE",
+        "time_end": 90500,
+        "cap_max": 1941,
+        "strength": 122.46357739118878,
+        "money_multiple": 2.5946042383023062,
+        "pressure_ratio": 2.0637275553832968,
+        "rate_low": 3.803248080508129,
+        "rate_width": 5.29880662908608,
+        "mid_rate": 2.3922184660133636,
+        "turnover": 3.0125760348627737
+      },
+      "source_sha256": "a0e44d3ca4a6dbd5a98c908535c752cfc16a10ec1a1a39c9b7cede65caa8920e",
+      "metrics": {
+        "trade_count": 29,
+        "daily_avg_trades": 5.8,
+        "win_rate": 41.38,
+        "avg_profit_pct": 0.71,
+        "total_profit_pct": 4.12,
+        "total_profit_krw": 205766,
+        "cagr": 205.84,
+        "mdd_pct": 2.82,
+        "mdd_amount": 0.0,
+        "tpi": 1.51,
+        "seed_capital": 4998102.0,
+        "max_hold_count": 5,
+        "avg_hold_time": 533.07,
+        "day_count": 5
+      },
+      "metric_signature": [
+        29,
+        0.71,
+        4.12,
+        205766,
+        2.82,
+        1.51,
+        5,
+        533.07
+      ]
+    },
+    {
+      "arm": "D1_FLOW_SURGE_04_b506a923",
+      "buy": "D1_FLOW_SURGE_04_b506a923",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_180000_D1FLOWSURGE04b506a923_66",
+      "status": "success",
+      "elapsed_seconds": 73.833,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 131321,
+            "code_count": 43,
+            "elapsed_seconds": 1.95
+          },
+          "BackEngine:1": {
+            "tick_count": 139742,
+            "code_count": 46,
+            "elapsed_seconds": 1.954
+          },
+          "BackEngine:2": {
+            "tick_count": 134632,
+            "code_count": 47,
+            "elapsed_seconds": 1.95
+          },
+          "BackEngine:3": {
+            "tick_count": 125954,
+            "code_count": 41,
+            "elapsed_seconds": 1.948
+          },
+          "BackEngine:4": {
+            "tick_count": 122490,
+            "code_count": 41,
+            "elapsed_seconds": 1.949
+          }
+        }
+      },
+      "candidate_id": "D1_FLOW_SURGE_04_b506a923",
+      "family": "FLOW_SURGE",
+      "parameters": {
+        "family": "FLOW_SURGE",
+        "time_end": 90500,
+        "cap_max": 3621,
+        "strength": 179.60643453404592,
+        "money_multiple": 3.685513329211397,
+        "pressure_ratio": 1.3252660169217578,
+        "rate_low": -1.9614578018448117,
+        "rate_width": 9.930385576454501,
+        "mid_rate": 0.8270010747090151,
+        "turnover": 0.1401622417593252
+      },
+      "source_sha256": "b506a923f8265556b3468c68494dab10fc95fb2c39f6f6afa99da1cf46d2c7bd",
+      "metrics": {
+        "trade_count": 20,
+        "daily_avg_trades": 4.0,
+        "win_rate": 45.0,
+        "avg_profit_pct": 0.13,
+        "total_profit_pct": 0.65,
+        "total_profit_krw": 25812,
+        "cagr": 32.29,
+        "mdd_pct": 2.13,
+        "mdd_amount": 0.0,
+        "tpi": 1.07,
+        "seed_capital": 3997010.0,
+        "max_hold_count": 4,
+        "avg_hold_time": 568.55,
+        "day_count": 5
+      },
+      "metric_signature": [
+        20,
+        0.13,
+        0.65,
+        25812,
+        2.13,
+        1.07,
+        4,
+        568.55
+      ]
+    },
+    {
+      "arm": "D1_FLOW_SURGE_04_b506a923",
+      "buy": "D1_FLOW_SURGE_04_b506a923",
+      "sell": "Tick_S_902_905",
+      "repetition": 2,
+      "job_id": "20260814_180113_D1FLOWSURGE04b506a923_73973",
+      "status": "success",
+      "elapsed_seconds": 68.705,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 125027,
+            "code_count": 41,
+            "elapsed_seconds": 1.981
+          },
+          "BackEngine:1": {
+            "tick_count": 127419,
+            "code_count": 39,
+            "elapsed_seconds": 1.979
+          },
+          "BackEngine:2": {
+            "tick_count": 130688,
+            "code_count": 44,
+            "elapsed_seconds": 1.983
+          },
+          "BackEngine:3": {
+            "tick_count": 141135,
+            "code_count": 49,
+            "elapsed_seconds": 1.979
+          },
+          "BackEngine:4": {
+            "tick_count": 129870,
+            "code_count": 45,
+            "elapsed_seconds": 1.979
+          }
+        }
+      },
+      "candidate_id": "D1_FLOW_SURGE_04_b506a923",
+      "family": "FLOW_SURGE",
+      "parameters": {
+        "family": "FLOW_SURGE",
+        "time_end": 90500,
+        "cap_max": 3621,
+        "strength": 179.60643453404592,
+        "money_multiple": 3.685513329211397,
+        "pressure_ratio": 1.3252660169217578,
+        "rate_low": -1.9614578018448117,
+        "rate_width": 9.930385576454501,
+        "mid_rate": 0.8270010747090151,
+        "turnover": 0.1401622417593252
+      },
+      "source_sha256": "b506a923f8265556b3468c68494dab10fc95fb2c39f6f6afa99da1cf46d2c7bd",
+      "metrics": {
+        "trade_count": 20,
+        "daily_avg_trades": 4.0,
+        "win_rate": 45.0,
+        "avg_profit_pct": 0.13,
+        "total_profit_pct": 0.65,
+        "total_profit_krw": 25812,
+        "cagr": 32.29,
+        "mdd_pct": 2.13,
+        "mdd_amount": 0.0,
+        "tpi": 1.07,
+        "seed_capital": 3997010.0,
+        "max_hold_count": 4,
+        "avg_hold_time": 568.55,
+        "day_count": 5
+      },
+      "metric_signature": [
+        20,
+        0.13,
+        0.65,
+        25812,
+        2.13,
+        1.07,
+        4,
+        568.55
+      ]
+    },
+    {
+      "arm": "D1_FLOW_SURGE_04_b506a923",
+      "buy": "D1_FLOW_SURGE_04_b506a923",
+      "sell": "Tick_S_902_905",
+      "repetition": 3,
+      "job_id": "20260814_180222_D1FLOWSURGE04b506a923_42753",
+      "status": "success",
+      "elapsed_seconds": 74.048,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 135240,
+            "code_count": 44,
+            "elapsed_seconds": 2.052
+          },
+          "BackEngine:1": {
+            "tick_count": 130125,
+            "code_count": 42,
+            "elapsed_seconds": 2.053
+          },
+          "BackEngine:2": {
+            "tick_count": 125408,
+            "code_count": 41,
+            "elapsed_seconds": 2.052
+          },
+          "BackEngine:3": {
+            "tick_count": 138565,
+            "code_count": 46,
+            "elapsed_seconds": 2.049
+          },
+          "BackEngine:4": {
+            "tick_count": 124801,
+            "code_count": 45,
+            "elapsed_seconds": 2.05
+          }
+        }
+      },
+      "candidate_id": "D1_FLOW_SURGE_04_b506a923",
+      "family": "FLOW_SURGE",
+      "parameters": {
+        "family": "FLOW_SURGE",
+        "time_end": 90500,
+        "cap_max": 3621,
+        "strength": 179.60643453404592,
+        "money_multiple": 3.685513329211397,
+        "pressure_ratio": 1.3252660169217578,
+        "rate_low": -1.9614578018448117,
+        "rate_width": 9.930385576454501,
+        "mid_rate": 0.8270010747090151,
+        "turnover": 0.1401622417593252
+      },
+      "source_sha256": "b506a923f8265556b3468c68494dab10fc95fb2c39f6f6afa99da1cf46d2c7bd",
+      "metrics": {
+        "trade_count": 20,
+        "daily_avg_trades": 4.0,
+        "win_rate": 45.0,
+        "avg_profit_pct": 0.13,
+        "total_profit_pct": 0.65,
+        "total_profit_krw": 25812,
+        "cagr": 32.29,
+        "mdd_pct": 2.13,
+        "mdd_amount": 0.0,
+        "tpi": 1.07,
+        "seed_capital": 3997010.0,
+        "max_hold_count": 4,
+        "avg_hold_time": 568.55,
+        "day_count": 5
+      },
+      "metric_signature": [
+        20,
+        0.13,
+        0.65,
+        25812,
+        2.13,
+        1.07,
+        4,
+        568.55
+      ]
+    },
+    {
+      "arm": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "buy": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_180336_D1MOMENTUMQUALITY07da23c_16876",
+      "status": "success",
+      "elapsed_seconds": 68.436,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 127875,
+            "code_count": 43,
+            "elapsed_seconds": 1.905
+          },
+          "BackEngine:1": {
+            "tick_count": 132629,
+            "code_count": 43,
+            "elapsed_seconds": 1.905
+          },
+          "BackEngine:2": {
+            "tick_count": 137027,
+            "code_count": 46,
+            "elapsed_seconds": 1.907
+          },
+          "BackEngine:3": {
+            "tick_count": 125439,
+            "code_count": 40,
+            "elapsed_seconds": 1.908
+          },
+          "BackEngine:4": {
+            "tick_count": 131169,
+            "code_count": 46,
+            "elapsed_seconds": 1.904
+          }
+        }
+      },
+      "candidate_id": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "family": "MOMENTUM_QUALITY",
+      "parameters": {
+        "family": "MOMENTUM_QUALITY",
+        "time_end": 90500,
+        "cap_max": 932,
+        "strength": 148.99418963608673,
+        "money_multiple": 2.9582406019386704,
+        "pressure_ratio": 2.1560352476909888,
+        "rate_low": 4.215012786390482,
+        "rate_width": 7.614596102770292,
+        "mid_rate": 0.6530880312307552,
+        "turnover": 1.3229208624489797
+      },
+      "source_sha256": "da23c5ff34ab5fc7e26af059307b939cd84b30c3adb3c886232c7e7e70e6e71d",
+      "metrics": {
+        "trade_count": 11,
+        "daily_avg_trades": 2.2,
+        "win_rate": 36.36,
+        "avg_profit_pct": 0.06,
+        "total_profit_pct": 0.23,
+        "total_profit_krw": 6940,
+        "cagr": 11.57,
+        "mdd_pct": 2.33,
+        "mdd_amount": 0.0,
+        "tpi": 1.03,
+        "seed_capital": 2998204.0,
+        "max_hold_count": 3,
+        "avg_hold_time": 324.73,
+        "day_count": 5
+      },
+      "metric_signature": [
+        11,
+        0.06,
+        0.23,
+        6940,
+        2.33,
+        1.03,
+        3,
+        324.73
+      ]
+    },
+    {
+      "arm": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "buy": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "sell": "Tick_S_902_905",
+      "repetition": 2,
+      "job_id": "20260814_180445_D1MOMENTUMQUALITY07da23c_85384",
+      "status": "success",
+      "elapsed_seconds": 80.146,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 129777,
+            "code_count": 45,
+            "elapsed_seconds": 2.004
+          },
+          "BackEngine:1": {
+            "tick_count": 135161,
+            "code_count": 45,
+            "elapsed_seconds": 2.008
+          },
+          "BackEngine:2": {
+            "tick_count": 131086,
+            "code_count": 44,
+            "elapsed_seconds": 2.005
+          },
+          "BackEngine:3": {
+            "tick_count": 127318,
+            "code_count": 41,
+            "elapsed_seconds": 2.006
+          },
+          "BackEngine:4": {
+            "tick_count": 130797,
+            "code_count": 43,
+            "elapsed_seconds": 2.002
+          }
+        }
+      },
+      "candidate_id": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "family": "MOMENTUM_QUALITY",
+      "parameters": {
+        "family": "MOMENTUM_QUALITY",
+        "time_end": 90500,
+        "cap_max": 932,
+        "strength": 148.99418963608673,
+        "money_multiple": 2.9582406019386704,
+        "pressure_ratio": 2.1560352476909888,
+        "rate_low": 4.215012786390482,
+        "rate_width": 7.614596102770292,
+        "mid_rate": 0.6530880312307552,
+        "turnover": 1.3229208624489797
+      },
+      "source_sha256": "da23c5ff34ab5fc7e26af059307b939cd84b30c3adb3c886232c7e7e70e6e71d",
+      "metrics": {
+        "trade_count": 11,
+        "daily_avg_trades": 2.2,
+        "win_rate": 36.36,
+        "avg_profit_pct": 0.06,
+        "total_profit_pct": 0.23,
+        "total_profit_krw": 6940,
+        "cagr": 11.57,
+        "mdd_pct": 2.33,
+        "mdd_amount": 0.0,
+        "tpi": 1.03,
+        "seed_capital": 2998204.0,
+        "max_hold_count": 3,
+        "avg_hold_time": 324.73,
+        "day_count": 5
+      },
+      "metric_signature": [
+        11,
+        0.06,
+        0.23,
+        6940,
+        2.33,
+        1.03,
+        3,
+        324.73
+      ]
+    },
+    {
+      "arm": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "buy": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "sell": "Tick_S_902_905",
+      "repetition": 3,
+      "job_id": "20260814_180605_D1MOMENTUMQUALITY07da23c_65604",
+      "status": "success",
+      "elapsed_seconds": 74.418,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 500,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed",
+          "BackEngine:0": "engine_backtest_completed",
+          "BackEngine:1": "engine_backtest_completed",
+          "BackEngine:2": "engine_backtest_completed",
+          "BackEngine:3": "engine_backtest_completed",
+          "BackEngine:4": "engine_backtest_completed"
+        },
+        "last_detail_by_source": {
+          "BackTest": {},
+          "BackEngine:0": {
+            "tick_count": 134257,
+            "code_count": 45,
+            "elapsed_seconds": 1.852
+          },
+          "BackEngine:1": {
+            "tick_count": 131069,
+            "code_count": 43,
+            "elapsed_seconds": 1.852
+          },
+          "BackEngine:2": {
+            "tick_count": 132574,
+            "code_count": 45,
+            "elapsed_seconds": 1.855
+          },
+          "BackEngine:3": {
+            "tick_count": 128526,
+            "code_count": 42,
+            "elapsed_seconds": 1.852
+          },
+          "BackEngine:4": {
+            "tick_count": 127713,
+            "code_count": 43,
+            "elapsed_seconds": 1.853
+          }
+        }
+      },
+      "candidate_id": "D1_MOMENTUM_QUALITY_07_da23c5ff",
+      "family": "MOMENTUM_QUALITY",
+      "parameters": {
+        "family": "MOMENTUM_QUALITY",
+        "time_end": 90500,
+        "cap_max": 932,
+        "strength": 148.99418963608673,
+        "money_multiple": 2.9582406019386704,
+        "pressure_ratio": 2.1560352476909888,
+        "rate_low": 4.215012786390482,
+        "rate_width": 7.614596102770292,
+        "mid_rate": 0.6530880312307552,
+        "turnover": 1.3229208624489797
+      },
+      "source_sha256": "da23c5ff34ab5fc7e26af059307b939cd84b30c3adb3c886232c7e7e70e6e71d",
+      "metrics": {
+        "trade_count": 11,
+        "daily_avg_trades": 2.2,
+        "win_rate": 36.36,
+        "avg_profit_pct": 0.06,
+        "total_profit_pct": 0.23,
+        "total_profit_krw": 6940,
+        "cagr": 11.57,
+        "mdd_pct": 2.33,
+        "mdd_amount": 0.0,
+        "tpi": 1.03,
+        "seed_capital": 2998204.0,
+        "max_hold_count": 3,
+        "avg_hold_time": 324.73,
+        "day_count": 5
+      },
+      "metric_signature": [
+        11,
+        0.06,
+        0.23,
+        6940,
+        2.33,
+        1.03,
+        3,
+        324.73
+      ]
+    }
+  ],
+  "stability": {
+    "D1_BOOK_IMBALANCE_01_a0e44d3c": {
+      "statuses": [
+        "success",
+        "success",
+        "success"
+      ],
+      "unique_metric_signatures": 1,
+      "stable": true
+    },
+    "D1_FLOW_SURGE_04_b506a923": {
+      "statuses": [
+        "success",
+        "success",
+        "success"
+      ],
+      "unique_metric_signatures": 1,
+      "stable": true
+    },
+    "D1_MOMENTUM_QUALITY_07_da23c5ff": {
+      "statuses": [
+        "success",
+        "success",
+        "success"
+      ],
+      "unique_metric_signatures": 1,
+      "stable": true
+    }
+  },
+  "pareto": {
+    "trials_used": 3,
+    "entries": [
+      {
+        "candidate_id": "D1_BOOK_IMBALANCE_01_a0e44d3c",
+        "scores": {
+          "total_profit_pct": 4.12,
+          "mdd_pct": 2.82,
+          "trade_count": 29.0
+        },
+        "payload": {
+          "family": "BOOK_IMBALANCE"
+        }
+      },
+      {
+        "candidate_id": "D1_FLOW_SURGE_04_b506a923",
+        "scores": {
+          "total_profit_pct": 0.65,
+          "mdd_pct": 2.13,
+          "trade_count": 20.0
+        },
+        "payload": {
+          "family": "FLOW_SURGE"
+        }
+      }
+    ],
+    "authority": "none",
+    "oos_claim": "none"
+  },
+  "verdict": "DETERMINISTIC_REPRESENTATIVES"
+}

@@ -1,0 +1,78 @@
+# D1 MOMENTUM_QUALITY 확률발견 후보군 · seed=20260814 · no_adoption
+
+===== D1_MOMENTUM_QUALITY_03_941c71f6 =====
+{"cap_max": 1100, "family": "MOMENTUM_QUALITY", "mid_rate": 1.5226532486220599, "money_multiple": 4.049149692847761, "pressure_ratio": 1.2329583246140656, "rate_low": 3.3914833746257766, "rate_width": 6.456701365928186, "strength": 165.3207202483316, "time_end": 91000, "turnover": 3.5194725865869114}
+# D1 확률발견 후보 · MOMENTUM_QUALITY
+# 후보 제안 전용 · 자동 채택/OOS 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 1100):
+    매수 = False
+elif not (90000 <= 시분초 < 91000):
+    매수 = False
+elif not (3.3915 <= 등락율 <= 9.8482 and 고저평균대비등락율 >= 1.5227 and 회전율 >= 3.5195):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D1_MOMENTUM_QUALITY_07_da23c5ff =====
+{"cap_max": 932, "family": "MOMENTUM_QUALITY", "mid_rate": 0.6530880312307552, "money_multiple": 2.9582406019386704, "pressure_ratio": 2.1560352476909888, "rate_low": 4.215012786390482, "rate_width": 7.614596102770292, "strength": 148.99418963608673, "time_end": 90500, "turnover": 1.3229208624489797}
+# D1 확률발견 후보 · MOMENTUM_QUALITY
+# 후보 제안 전용 · 자동 채택/OOS 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 932):
+    매수 = False
+elif not (90000 <= 시분초 < 90500):
+    매수 = False
+elif not (4.2150 <= 등락율 <= 11.8296 and 고저평균대비등락율 >= 0.6531 and 회전율 >= 1.3229):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D1_MOMENTUM_QUALITY_11_3d5065ef =====
+{"cap_max": 2277, "family": "MOMENTUM_QUALITY", "mid_rate": -0.9121293600735925, "money_multiple": 1.6028687011122238, "pressure_ratio": 1.6944967861525273, "rate_low": -1.1379283900801056, "rate_width": 4.719859260665028, "strength": 91.85133249322958, "time_end": 91500, "turnover": 4.533265690035186}
+# D1 확률발견 후보 · MOMENTUM_QUALITY
+# 후보 제안 전용 · 자동 채택/OOS 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 2277):
+    매수 = False
+elif not (90000 <= 시분초 < 91500):
+    매수 = False
+elif not (-1.1379 <= 등락율 <= 3.5819 and 고저평균대비등락율 >= -0.9121 and 회전율 >= 4.5333):
+    매수 = False
+
+if 매수:
+    self.Buy()

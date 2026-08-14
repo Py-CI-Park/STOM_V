@@ -170,6 +170,21 @@ def test_ast_success_parses_static_checks_and_keeps_source_out_of_parsed_payload
     assert payload["receipts"]["seed"]["random_used"] is False
 
 
+def test_ast_stock_tick_runtime_profile_rejects_undefined_derived_symbol(monkeypatch, tmp_path: Path) -> None:
+    client = _client(monkeypatch, tmp_path)
+    source = "매수 = True\nif 현재가 < VI아래5호가:\n    매수 = False\nif 매수:\n    self.Buy()\n"
+    response = client.post("/loop/research-tools/ast", json=_ast_payload(
+        source=source,
+        allowed_functions=["self.Buy"],
+        runtime_profile="stock_tick",
+    ))
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["ok"] is False
+    assert payload["execution_contract"]["runtime_symbols"]["undefined"] == ["VI아래5호가"]
+    assert payload["authority"] == "no_adoption"
+
+
 def test_qmc_success_proposes_bounded_candidates_and_optional_pareto_archive(monkeypatch, tmp_path: Path) -> None:
     client = _client(monkeypatch, tmp_path)
 
