@@ -82,7 +82,7 @@ function loopRtParseDimensions(text) {
       const low = Number(parts[1]);
       const high = Number(parts[2]);
       if (!Number.isFinite(low) || !Number.isFinite(high) || low >= high) return null;
-      return { name: parts[0] || `x${index + 1}`, low, high };
+      return { name: parts[0] || `x${index + 1}`, kind: "continuous", low, high };
     })
     .filter(Boolean);
 }
@@ -176,9 +176,9 @@ function LoopRtBayesianResult({ payload }) {
     <div>
       <div className="v4s-probe-grid">
         <div className="v4s-probe-card"><b>Posterior decision</b><span className="mono">{safeLabel}</span><small>통계 경계 표시이며 전략 승인/채택이 아닙니다.</small></div>
-        <div className="v4s-probe-card"><b>posterior mean</b><span className="mono">{loopRtFormat(payload.posterior_mean ?? payload.mean, 4)}</span></div>
-        <div className="v4s-probe-card"><b>alpha/beta</b><span className="mono">{loopRtShort(payload.posterior_alpha)} / {loopRtShort(payload.posterior_beta)}</span></div>
-        <div className="v4s-probe-card"><b>ROPE 초과확률</b><span className="mono">{loopRtFormat(payload.prob_gt_rope ?? payload.probability_gt_rope, 4)}</span></div>
+        <div className="v4s-probe-card"><b>posterior mean</b><span className="mono">{loopRtFormat(payload.posterior && payload.posterior.mean, 4)}</span></div>
+        <div className="v4s-probe-card"><b>alpha/beta</b><span className="mono">{loopRtShort(payload.posterior && payload.posterior.alpha)} / {loopRtShort(payload.posterior && payload.posterior.beta)}</span></div>
+        <div className="v4s-probe-card"><b>ROPE 초과확률</b><span className="mono">{loopRtFormat(payload.posterior && payload.posterior.probability_above_rope, 4)}</span></div>
       </div>
       <LoopRtReceipts payload={payload}/>
     </div>
@@ -209,7 +209,7 @@ function LoopRtAstResult({ payload }) {
 function LoopRtQmcResult({ payload }) {
   if (!payload) return <p className="v4s-note">아직 QMC 미리보기를 만들지 않았습니다. seed/count 입력 후 버튼을 누르세요.</p>;
   const candidates = Array.isArray(payload.candidates) ? payload.candidates : [];
-  const pareto = Array.isArray(payload.pareto_archive) ? payload.pareto_archive : [];
+  const pareto = payload.pareto && Array.isArray(payload.pareto.entries) ? payload.pareto.entries : [];
   const columns = candidates.length ? Object.keys(candidates[0]).slice(0, 8) : [];
   return (
     <div>
@@ -239,8 +239,8 @@ export function LoopResearchToolsPanel({ baseUrl }) {
   const [results, setResults] = useState_lrt({ bayesian: null, ast: null, qmc: null, denoise: null });
   const [bayesian, setBayesian] = useState_lrt({ successes: "12", failures: "8", ropeLower: "0.50", approveThreshold: "0.95", rejectThreshold: "0.05", maxSample: "2000" });
   const [ast, setAst] = useState_lrt({ source: "", allowedFunctions: "", maxClauses: "24", maxLookback: "240", maxUnknownLines: "0" });
-  const [qmc, setQmc] = useState_lrt({ seed: "qmc-manual-001", count: "16", dimensions: "arm:0.1:1.2\ngive:0.0:0.8" });
-  const [denoise, setDenoise] = useState_lrt({ source: "", seed: "D0_SENTINEL_001", corruptionRate: "0.08" });
+  const [qmc, setQmc] = useState_lrt({ seed: "1", count: "16", dimensions: "arm:0.1:1.2\ngive:0.0:0.8" });
+  const [denoise, setDenoise] = useState_lrt({ source: "", seed: "1" });
 
   const loadStatus = useCallback_lrt(() => {
     setStatusError("");
@@ -268,8 +268,6 @@ export function LoopResearchToolsPanel({ baseUrl }) {
     const failures = loopRtClamp(bayesian.failures, 0, 0, 100000, true);
     const ropeLower = loopRtClamp(bayesian.ropeLower, 0.5, 0, 1, false);
     runManual("bayesian", "/loop/research-tools/bayesian", {
-      successes,
-      failures,
       config: {
         prior_alpha: 1,
         prior_beta: 1,
@@ -279,6 +277,7 @@ export function LoopResearchToolsPanel({ baseUrl }) {
         max_sample: loopRtClamp(bayesian.maxSample, 2000, successes + failures, 200000, true),
         credible_mass: 0.95,
       },
+      counts: { successes, failures },
     });
   };
 
@@ -291,9 +290,11 @@ export function LoopResearchToolsPanel({ baseUrl }) {
     runManual("ast", "/loop/research-tools/ast", {
       source: String(ast.source || "").slice(0, 12000),
       allowed_functions: String(ast.allowedFunctions || "").split(",").map((item) => item.trim()).filter(Boolean).slice(0, 64),
-      max_clauses: loopRtClamp(ast.maxClauses, 24, 1, 200, true),
-      max_lookback: loopRtClamp(ast.maxLookback, 240, 1, 5000, true),
-      max_unknown_lines: loopRtClamp(ast.maxUnknownLines, 0, 0, 1000, true),
+      limits: {
+        max_clauses: loopRtClamp(ast.maxClauses, 24, 1, 200, true),
+        max_lookback: loopRtClamp(ast.maxLookback, 240, 1, 5000, false),
+        max_unknown_lines: loopRtClamp(ast.maxUnknownLines, 0, 0, 1000, true),
+      },
     });
   };
 
@@ -306,10 +307,10 @@ export function LoopResearchToolsPanel({ baseUrl }) {
     }
     runManual("qmc", "/loop/research-tools/qmc", {
       dimensions,
-      count: loopRtClamp(qmc.count, 16, 1, 128, true),
-      seed: String(qmc.seed || "qmc-manual").slice(0, 80),
-      include_pareto_archive: true,
-      objectives: ["expectancy", "risk"],
+      budget: loopRtClamp(qmc.count, 16, 1, 128, true),
+      seed: loopRtClamp(qmc.seed, 1, 0, Number.MAX_SAFE_INTEGER, true),
+      scramble: true,
+      skip: 0,
     });
   };
 
@@ -321,8 +322,8 @@ export function LoopResearchToolsPanel({ baseUrl }) {
     }
     runManual("denoise", "/loop/research-tools/denoise", {
       source: String(denoise.source || "").slice(0, 12000),
-      seed: String(denoise.seed || "D0_SENTINEL").slice(0, 80),
-      corruption_rate: loopRtClamp(denoise.corruptionRate, 0.08, 0, 0.5, false),
+      seed: loopRtClamp(denoise.seed, 1, 0, Number.MAX_SAFE_INTEGER, true),
+      operator: "mask_one_clause",
     });
   };
 
@@ -413,7 +414,7 @@ export function LoopResearchToolsPanel({ baseUrl }) {
               <label>D0 source/template<textarea value={denoise.source} placeholder="디노이징 센티널을 확인할 소스/템플릿" onChange={(e) => setDenoise(Object.assign({}, denoise, { source: e.target.value }))} style={{ width: "100%", minHeight: 110 }}/></label>
               <div className="v4s-log-controls" style={{ flexWrap: "wrap" }}>
                 <label>seed sentinel <input value={denoise.seed} onChange={(e) => setDenoise(Object.assign({}, denoise, { seed: e.target.value }))}/></label>
-                <label>corruption rate <input type="number" min="0" max="0.5" step="0.01" value={denoise.corruptionRate} onChange={(e) => setDenoise(Object.assign({}, denoise, { corruptionRate: e.target.value }))}/></label>
+                <span className="v4s-en">operator mask_one_clause</span>
                 <button className="btn primary sm" type="submit" disabled={busy === "denoise"}>D0 센티널 진단</button>
               </div>
             </form>

@@ -79,6 +79,18 @@ def test_probability_research_tools_are_manual_no_adoption_only() -> None:
         assert empty_or_error in source
 
 
+def test_probability_research_tools_match_strict_api_payload_shapes() -> None:
+    source = _read("loop-research-tools.jsx")
+    assert "counts: { successes, failures }" in source
+    assert "limits: {" in source
+    assert 'kind: "continuous"' in source
+    assert "budget: loopRtClamp(qmc.count" in source
+    assert 'operator: "mask_one_clause"' in source
+    assert "corruption_rate" not in source
+    assert "payload.posterior && payload.posterior.mean" in source
+    assert "payload.pareto.entries" in source
+
+
 def test_ledger_selection_publishes_shared_review_context() -> None:
     research = _read("v4-research.jsx")
     ledger = _read("loop-strategy-ledger.jsx")
