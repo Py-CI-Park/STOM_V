@@ -1,7 +1,10 @@
 
+import json
+import os
 import sqlite3
 import numpy as np
 import pandas as pd
+from time import monotonic
 from traceback import format_exc
 from multiprocessing import shared_memory
 from trade.risk_analyzer import RiskAnalyzer
@@ -18,6 +21,27 @@ from utility.setting_base import DB_STOCK_TICK_BACK, BACK_TEMP, ui_num, DB_STOCK
     list_stock_min, list_coin_tick, list_coin_min
 from utility.static import pickle_read, pickle_write, dt_ymdhms, dt_ymdhm, get_angle_cf, get_ema_list, \
     add_rolling_data, set_builtin_print, get_profile_text
+
+
+def _emit_engine_protocol_checkpoint(queue, engine_id, checkpoint, detail=None):
+    """Emit bounded E1 worker progress without changing engine queue contracts."""
+    if os.environ.get('STOM_CLI_BACKTEST_PROTOCOL_DIAG') != '1' or queue is None:
+        return
+    bounded = {}
+    for key, value in (detail or {}).items():
+        if value is None or isinstance(value, (bool, int, float)):
+            bounded[str(key)[:64]] = value
+        else:
+            bounded[str(key)[:64]] = str(value)[:128]
+    payload = {
+        'source': f'BackEngine:{engine_id}',
+        'checkpoint': str(checkpoint)[:128],
+        'detail': bounded,
+    }
+    queue.put((
+        ui_num.get('시스템로그', 1),
+        '[CLI_DIAG] ' + json.dumps(payload, ensure_ascii=False, default=str),
+    ))
 
 
 class BackEngineBase(BaseStrategy):
@@ -677,6 +701,15 @@ class BackEngineBase(BaseStrategy):
             self.SetGlobalsFunc()
 
     def BackTest(self):
+        diagnostic_started = monotonic()
+        diagnostic_next = diagnostic_started + 5
+        diagnostic_tick_count = 0
+        diagnostic_code_count = 0
+        diagnostic_first_strategy = True
+        _emit_engine_protocol_checkpoint(
+            self.wq, self.gubun, 'engine_backtest_started',
+            {'back_type': self.back_type},
+        )
         if self.gubun == 0 and self.profile:
             import cProfile
             self.pr = cProfile.Profile()
@@ -685,6 +718,10 @@ class BackEngineBase(BaseStrategy):
         if not self.update_formula:
             self.UpdateFormulaData()
             self.update_formula = True
+        _emit_engine_protocol_checkpoint(
+            self.wq, self.gubun, 'engine_formula_ready',
+            {'formula_count': len(self.fm_list or ())},
+        )
 
         self.InitTradeInfo()
         self.v3k_learning_load_plan = {}
@@ -692,9 +729,19 @@ class BackEngineBase(BaseStrategy):
 
         j = 0
         while True:
+            if diagnostic_code_count == 0:
+                _emit_engine_protocol_checkpoint(
+                    self.wq, self.gubun, 'engine_waiting_array_first',
+                )
             code = self.GetArrayData()
             if code is None:
                 break
+            diagnostic_code_count += 1
+            if diagnostic_code_count == 1:
+                _emit_engine_protocol_checkpoint(
+                    self.wq, self.gubun, 'engine_array_first_loaded',
+                    {'code': code, 'row_count': len(self.arry_code)},
+                )
 
             if not self.beq.empty() and self.beq.get() == '백테중지':
                 self.BackStop(1)
@@ -733,15 +780,44 @@ class BackEngineBase(BaseStrategy):
                         self.SetHogaInfo()
 
                         try:
+                            if diagnostic_first_strategy:
+                                _emit_engine_protocol_checkpoint(
+                                    self.wq, self.gubun, 'engine_strategy_first_enter',
+                                    {'code': code, 'index': int(self.index)},
+                                )
                             self.Strategy()
+                            if diagnostic_first_strategy:
+                                _emit_engine_protocol_checkpoint(
+                                    self.wq, self.gubun, 'engine_strategy_first_exit',
+                                    {'code': code, 'index': int(self.index)},
+                                )
+                                diagnostic_first_strategy = False
                         except:
+                            _emit_engine_protocol_checkpoint(
+                                self.wq, self.gubun, 'engine_strategy_exception',
+                                {'code': code, 'index': int(self.index)},
+                            )
                             if self.gubun == 0: self.wq.put((ui_num['시스템로그'], format_exc()))
                             self.BackStop(3)
                             return
 
                         j += 1
+                        diagnostic_tick_count += 1
                         if j == 1000:
                             j = 0
+                            current = monotonic()
+                            if current >= diagnostic_next:
+                                _emit_engine_protocol_checkpoint(
+                                    self.wq, self.gubun, 'engine_strategy_progress',
+                                    {
+                                        'code': code,
+                                        'index': int(self.index),
+                                        'tick_count': diagnostic_tick_count,
+                                        'code_count': diagnostic_code_count,
+                                        'elapsed_seconds': round(current - diagnostic_started, 3),
+                                    },
+                                )
+                                diagnostic_next = current + 5
                             if not self.beq.empty() and self.beq.get() == '백테중지':
                                 self.BackStop(1)
                                 return
@@ -755,6 +831,14 @@ class BackEngineBase(BaseStrategy):
 
             self.tq.put('백테완료')
 
+        _emit_engine_protocol_checkpoint(
+            self.wq, self.gubun, 'engine_backtest_completed',
+            {
+                'tick_count': diagnostic_tick_count,
+                'code_count': diagnostic_code_count,
+                'elapsed_seconds': round(monotonic() - diagnostic_started, 3),
+            },
+        )
         if not self.beq.empty() and self.beq.get() == '백테중지':
             self.BackStop(1)
             return

@@ -303,15 +303,20 @@ def _collect_backtest_child_diagnostics(back_queue):
 def _summarize_protocol_diagnostics(events):
     events = list(events or [])
     last_by_source = {}
+    last_detail_by_source = {}
     for event in events:
         source = event.get('source')
         checkpoint = event.get('checkpoint')
         if source and checkpoint:
             last_by_source[source] = checkpoint
+            detail = event.get('detail')
+            if isinstance(detail, dict):
+                last_detail_by_source[source] = detail
     return {
         'event_count': len(events),
         'last_checkpoint': events[-1].get('checkpoint') if events else None,
         'last_by_source': last_by_source,
+        'last_detail_by_source': last_detail_by_source,
         'events': events,
     }
 

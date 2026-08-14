@@ -567,6 +567,7 @@ def test_runner_summarizes_protocol_diagnostics_by_source():
     assert summary['last_checkpoint'] == 'backtest_child_waiting_mq_first'
     assert summary['last_by_source']['BackTest'] == 'backtest_child_waiting_mq_first'
     assert summary['last_by_source']['Total'] == 'total_info_received'
+    assert summary['last_detail_by_source']['BackTest'] == {}
     assert summary['events'] == events
 
 

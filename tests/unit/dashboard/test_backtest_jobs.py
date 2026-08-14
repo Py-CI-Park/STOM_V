@@ -115,6 +115,7 @@ def test_protocol_jsonl_preserves_checkpoint_and_final_json():
         "event_count": 2,
         "last_checkpoint": "waiting_heartbeat",
         "last_by_source": {"BackTest": "waiting_heartbeat"},
+        "last_detail_by_source": {},
     }
 
 

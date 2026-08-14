@@ -930,15 +930,24 @@ def _protocol_summary(stdout: str) -> Optional[Dict[str, Any]]:
     if not events:
         return None
     last_by_source: Dict[str, str] = {}
+    last_detail_by_source: Dict[str, Dict[str, Any]] = {}
     for event in events:
         source = str(event.get("source") or "")
         checkpoint = str(event.get("checkpoint") or "")
         if source and checkpoint:
             last_by_source[source] = checkpoint
+            detail = event.get("detail")
+            if isinstance(detail, dict):
+                last_detail_by_source[source] = {
+                    str(key)[:64]: value
+                    for key, value in detail.items()
+                    if value is None or isinstance(value, (bool, int, float, str))
+                }
     return {
         "event_count": len(events),
         "last_checkpoint": events[-1].get("checkpoint"),
         "last_by_source": last_by_source,
+        "last_detail_by_source": last_detail_by_source,
     }
 
 
