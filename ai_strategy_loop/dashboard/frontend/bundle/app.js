@@ -37773,7 +37773,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const [busy, setBusy] = useState_lrt("");
     const [errors, setErrors] = useState_lrt({});
     const [results, setResults] = useState_lrt({ bayesian: null, ast: null, qmc: null, denoise: null });
-    const [bayesian, setBayesian] = useState_lrt({ successes: "12", failures: "8", ropeLower: "0.50", approveThreshold: "0.95", rejectThreshold: "0.05", maxSample: "2000" });
+    const [bayesian, setBayesian] = useState_lrt({ successes: "12", failures: "8", ropeLower: "0.50", approveThreshold: "0.95", rejectThreshold: "0.10", maxSample: "2000" });
     const [ast, setAst] = useState_lrt({ source: "", allowedFunctions: "", maxClauses: "24", maxLookback: "240", maxUnknownLines: "0" });
     const [qmc, setQmc] = useState_lrt({ seed: "1", count: "16", dimensions: "arm:0.1:1.2\ngive:0.0:0.8" });
     const [denoise, setDenoise] = useState_lrt({ source: "", seed: "1" });
@@ -37808,7 +37808,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           prior_beta: 1,
           rope_lower: ropeLower,
           approve_prob_threshold: loopRtClamp(bayesian.approveThreshold, 0.95, 0, 1, false),
-          reject_prob_threshold: loopRtClamp(bayesian.rejectThreshold, 0.05, 0, 1, false),
+          reject_prob_threshold: loopRtClamp(bayesian.rejectThreshold, 0.1, 0, 1, false),
           max_sample: loopRtClamp(bayesian.maxSample, 2e3, successes + failures, 2e5, true),
           credible_mass: 0.95
         },
