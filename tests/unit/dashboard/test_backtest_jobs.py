@@ -166,16 +166,21 @@ def test_protocol_jsonl_allows_pretty_printed_final_json():
 def test_job_strategy_db_override_is_explicit_and_default_preserving(monkeypatch, tmp_path):
     monkeypatch.delenv("STOM_WEBBT_JOB_STRATEGY_DB", raising=False)
     monkeypatch.delenv("STOM_WEBBT_JOB_BACKTEST_DB", raising=False)
+    monkeypatch.delenv("STOM_WEBBT_JOBS_DIR", raising=False)
     assert backtest_jobs_module._default_job_strategy_db() == (
         backtest_jobs_module._OPERATIONAL_STRATEGY_DB
     )
     assert backtest_jobs_module._default_job_backtest_db() is None
+    assert backtest_jobs_module._default_jobs_dir() == backtest_jobs_module._JOBS_DIR
     sidecar = tmp_path / "strategy.db"
     backtest_sidecar = tmp_path / "backtest.db"
+    jobs_dir = tmp_path / "jobs"
     monkeypatch.setenv("STOM_WEBBT_JOB_STRATEGY_DB", str(sidecar))
     monkeypatch.setenv("STOM_WEBBT_JOB_BACKTEST_DB", str(backtest_sidecar))
+    monkeypatch.setenv("STOM_WEBBT_JOBS_DIR", str(jobs_dir))
     assert backtest_jobs_module._default_job_strategy_db() == sidecar
     assert backtest_jobs_module._default_job_backtest_db() == backtest_sidecar
+    assert backtest_jobs_module._default_jobs_dir() == jobs_dir
 
 
 def test_submit_creates_immutable_strategy_snapshot_and_child_env(tmp_path: Path):

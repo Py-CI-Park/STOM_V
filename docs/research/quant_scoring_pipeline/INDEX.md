@@ -25,6 +25,8 @@
 | **0.0000000000013** | **`2026-08-14_D2_기존DB_신규가족과_플랫폼전수검사_실행등록부.md`** | **기존 DB 후속 실행등록부** — 신규 구조 4가족·6개 개발 fold·조건부 BO·실패 시 플랫폼 P1~P7 전수검사 |
 | **0.0000000000014** | **`2026-08-14_D2_기존DB_신규가족_최종결과.md`** | **D2 `NO_ROBUST_FAMILY`** — QMC 16점·source hash 일치·VOL/SPARSE 2/6·BO 중지·플랫폼 전수검사 trigger |
 | **0.0000000000015** | **`2026-08-14_조건식프로세스플랫폼_P1_P7_전수검사와_개선결과.md`** | **플랫폼 P1~P7 전수검사** — 실패 원인 R1~R7·20/20 PASS·immutable job artifacts·v5.15.0·paired-exit 개선 gate |
+| **0.0000000000016** | **`2026-08-14_기존DB_entry_exit_paired_개선연구_사전등록.md`** | **R5 개선 연구 봉인** — D2 entry 2개×기존 exit 4개·8 pairs·6fold 48회·source snapshot·BO posterior gate |
+| **0.0000000000017** | **`2026-08-14_기존DB_entry_exit_paired_개선연구_최종결과.md`** | **Paired 최종 `NO_ROBUST_ENTRY_EXIT_PAIR`** — screen 8·fold evidence 48·대체 exit 악화·BO eligible 0·entry edge 부재 판정 |
 | **0.000000000001** | **`2026-08-13_v4_단계별_실행완료_보고.md`** | **v4 실행 결과** — 정본 교정·대시보드 정확성·E0 관측 계약·이동 블록 Monte Carlo·ReviewContext·중지 조건 이행 |
 | 0.00000000001 | `2026-08-12_마스터플랜_v3.md` | (근거 보존 · v4 로 대체) G 레인 설계 원문 — 실행 지시 효력 없음 |
 | 0.0000000005 | `2026-08-10_HOF_차터_로드맵.md` | (근거 보존) HOF 차터 — 계획 효력은 v3 로 이관 |
