@@ -127,6 +127,29 @@ def test_unit_mapping_rejects_nan():
         qp.map_unit_sample((qp.DimensionSpec.continuous("x", 0.0, 1.0),), (math.nan,))
 
 
+def test_continuous_dimension_rejects_ranges_that_overflow_mapping_arithmetic():
+    with pytest.raises(qp.QmcParetoError, match="continuous range"):
+        qp.DimensionSpec.continuous("wide", -1.0e308, 1.0e308)
+
+    spec = qp.DimensionSpec.continuous("safe", -1.0e154, 1.0e154)
+    mapped = qp.map_unit_sample((spec,), (1.0,))
+
+    assert math.isfinite(mapped["safe"])
+    assert mapped["safe"] == 1.0e154
+
+
+def test_integer_dimension_rejects_ranges_unsafe_for_float_unit_mapping():
+    with pytest.raises(qp.QmcParetoError, match="integer range"):
+        qp.DimensionSpec.integer("wide", 0, 1 << 53)
+    with pytest.raises(qp.QmcParetoError, match="finite unit mapping"):
+        qp.DimensionSpec.integer("huge", 10**400, 10**400)
+
+    spec = qp.DimensionSpec.integer("safe", -3, 3)
+    mapped = qp.map_unit_sample((spec,), (1.0,))
+
+    assert mapped["safe"] == 3
+
+
 def test_stable_order_keeps_equal_non_duplicate_ties_in_first_trial_order():
     archive = qp.ParetoArchive(
         {

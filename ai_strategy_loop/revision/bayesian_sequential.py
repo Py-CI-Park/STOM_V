@@ -749,7 +749,7 @@ def calibrate_fixed_seed(
                 )
             counts[result.decision] += 1
             sample_sizes.append(result.sample_size)
-            if true_rate < config.rope_lower and result.decision is Decision.APPROVE:
+            if true_rate <= config.rope_lower and result.decision is Decision.APPROVE:
                 false_approvals += 1
         total_false_approvals += false_approvals
         summaries.append(

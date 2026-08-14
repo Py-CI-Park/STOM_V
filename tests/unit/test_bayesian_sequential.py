@@ -153,3 +153,30 @@ def test_fixed_seed_calibration_is_deterministic_and_advisory_only():
         assert 0 <= summary.false_approval_rate <= 1
         assert 0 < summary.min_sample_size <= summary.mean_sample_size <= summary.max_sample_size
         assert summary.max_sample_size <= config.max_sample
+
+
+def test_calibration_counts_rope_boundary_approval_as_false_approval():
+    config = SequentialConfig(
+        prior_alpha=12.0,
+        prior_beta=1.0,
+        rope_lower=0.5,
+        approve_prob_threshold=0.99,
+        reject_prob_threshold=0.02,
+        max_sample=1,
+    )
+
+    report = calibrate_fixed_seed(
+        config,
+        seed=7,
+        true_success_rates=(config.rope_lower, config.rope_lower + 0.01),
+        simulations_per_rate=3,
+        look_size=1,
+    )
+
+    boundary, above_boundary = report.summaries
+    assert boundary.true_success_rate == config.rope_lower
+    assert dict(boundary.decision_counts)[Decision.APPROVE.value] == 3
+    assert boundary.false_approval_count == 3
+    assert boundary.false_approval_rate == 1.0
+    assert above_boundary.false_approval_count == 0
+    assert report.total_false_approvals == 3

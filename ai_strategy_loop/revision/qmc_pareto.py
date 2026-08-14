@@ -31,6 +31,7 @@ _TIE_RULE: Final = "equal_objective_vectors_do_not_dominate_front_order_is_first
 _QMC_SCHEMA: Final = "qmc_halton_candidate_batch_v1"
 _PARETO_SCHEMA: Final = "pareto_archive_v1"
 _HASH_PERSON: Final = "ai_strategy_loop.revision.qmc_pareto.v1"
+_MAX_SAFE_INTEGER_MAPPING_SPAN: Final = 1 << 53
 
 
 class QmcParetoError(ValueError):
@@ -78,6 +79,7 @@ class DimensionSpec:
             high = _finite_float(self.high, "continuous high")
             if high < low:
                 raise QmcParetoError("continuous high must be >= low")
+            _continuous_span(low, high)
             object.__setattr__(self, "low", low)
             object.__setattr__(self, "high", high)
             object.__setattr__(self, "categories", ())
@@ -88,6 +90,7 @@ class DimensionSpec:
             high = _integral(self.high, "integer high")
             if high < low:
                 raise QmcParetoError("integer high must be >= low")
+            _validate_integer_mapping_range(low, high)
             object.__setattr__(self, "low", low)
             object.__setattr__(self, "high", high)
             object.__setattr__(self, "categories", ())
@@ -110,12 +113,23 @@ class DimensionSpec:
         if self.kind == KIND_CONTINUOUS:
             low = float(self.low)
             high = float(self.high)
-            return low + (high - low) * u
+            span = _continuous_span(low, high)
+            if u == 0.0:
+                mapped = low
+            elif u == 1.0:
+                mapped = high
+            else:
+                mapped = low + span * u
+            return _validate_continuous_mapping_value(mapped, low, high)
         if self.kind == KIND_INTEGER:
             low = int(self.low)
             high = int(self.high)
-            span = high - low + 1
-            return low + min(span - 1, int(math.floor(u * span)))
+            span = _integer_span(low, high)
+            if u == 1.0:
+                mapped = high
+            else:
+                mapped = low + min(span - 1, int(math.floor(u * span)))
+            return _validate_integer_mapping_value(mapped, low, high)
         index = min(len(self.categories) - 1, int(math.floor(u * len(self.categories))))
         return self.categories[index]
 
@@ -616,6 +630,51 @@ def _unit_float(value: object, label: str) -> float:
     if number < 0.0 or number > 1.0:
         raise QmcParetoError(f"{label} must be in [0, 1]")
     return number
+
+
+def _continuous_span(low: float, high: float) -> float:
+    span = high - low
+    if not math.isfinite(span):
+        raise QmcParetoError("continuous range is too wide for finite unit mapping")
+    return span
+
+
+def _validate_continuous_mapping_value(value: float, low: float, high: float) -> float:
+    if not math.isfinite(value) or value < low or value > high:
+        raise QmcParetoError("mapped continuous value must be finite and in bounds")
+    return value
+
+
+def _integer_span(low: int, high: int) -> int:
+    _validate_integer_mapping_range(low, high)
+    return high - low + 1
+
+
+def _validate_integer_mapping_range(low: int, high: int) -> None:
+    _finite_integer_mapping_bound(low, "integer low")
+    _finite_integer_mapping_bound(high, "integer high")
+    span = high - low + 1
+    if span > _MAX_SAFE_INTEGER_MAPPING_SPAN:
+        raise QmcParetoError("integer range is too wide for safe unit mapping")
+
+
+def _finite_integer_mapping_bound(value: int, label: str) -> None:
+    try:
+        number = float(value)
+    except OverflowError as exc:
+        raise QmcParetoError(f"{label} is too large for finite unit mapping") from exc
+    if not math.isfinite(number):
+        raise QmcParetoError(f"{label} is too large for finite unit mapping")
+
+
+def _validate_integer_mapping_value(value: int, low: int, high: int) -> int:
+    try:
+        number = float(value)
+    except OverflowError as exc:
+        raise QmcParetoError("mapped integer value must be finite and in bounds") from exc
+    if not math.isfinite(number) or value < low or value > high:
+        raise QmcParetoError("mapped integer value must be finite and in bounds")
+    return value
 
 
 def _finite_float(value: object, label: str) -> float:
