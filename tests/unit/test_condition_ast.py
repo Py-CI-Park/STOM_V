@@ -237,6 +237,20 @@ def test_parser_does_not_use_dynamic_execution(monkeypatch) -> None:
         max_unknown_lines=0,
     )
 
-    assert parsed.lines[0].kind == "unknown"
+    assert parsed.lines[0].kind == "call"
     assert result.ok is False
-    assert "unknown_lines_exceeded" in {item.code for item in result.violations}
+    assert "disallowed_function" in {item.code for item in result.violations}
+
+
+def test_block_pass_and_indented_buy_call_are_known_statements() -> None:
+    source = "if 조건:\n    pass\nif 매수:\n    self.Buy()\n"
+    parsed = C.parse_condition_source(source)
+    assert [line.kind for line in parsed.lines] == ["clause", "pass", "clause", "call"]
+    result = C.static_check(
+        parsed,
+        allowed_functions={"self.Buy"},
+        max_clauses=5,
+        max_lookback=10,
+        max_unknown_lines=0,
+    )
+    assert result.ok is True

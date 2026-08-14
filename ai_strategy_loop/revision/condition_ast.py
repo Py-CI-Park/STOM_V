@@ -566,18 +566,34 @@ def _parse_line(
         line_no,
         numeric_constants,
     )
+    statement_kind, statement_normalized = _safe_statement_kind(code)
     return ConditionLine(
         line_no=line_no,
-        kind="unknown",
+        kind=statement_kind,
         raw=raw,
         indent=indent,
         expression=code,
-        normalized=_compact(code),
+        normalized=statement_normalized,
         comment=normalized_comment,
         called_functions=calls,
         numeric_lookbacks=lookbacks,
         unresolved_lookbacks=unresolved,
     )
+
+
+def _safe_statement_kind(code: str) -> tuple[str, str]:
+    try:
+        tree = ast.parse(code, mode="exec")
+    except SyntaxError:
+        return "unknown", _compact(code)
+    if len(tree.body) != 1:
+        return "unknown", _compact(code)
+    statement = tree.body[0]
+    if isinstance(statement, ast.Pass):
+        return "pass", "pass"
+    if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Call):
+        return "call", ast.unparse(statement)
+    return "unknown", _compact(code)
 
 
 def _indent_width(raw: str) -> int:
