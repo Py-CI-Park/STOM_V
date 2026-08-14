@@ -1,6 +1,9 @@
 """provider factory — config.provider 값으로 provider 인스턴스 선택.
 
-지원: gpt_auth | openrouter | codex_proxy
+지원: claude_direct | gpt_auth | openrouter | codex_proxy
+
+`claude_direct` 는 외부 API 없이 에이전트 세션 자체를 뇌로 쓰는 스풀 경로다
+(웨이브 W1). 인증이 끊겨도 루프가 zero-LLM 으로 퇴화하지 않게 하는 0순위 경로.
 """
 
 from __future__ import annotations
@@ -8,11 +11,13 @@ from __future__ import annotations
 from typing import Any
 
 from .base import Provider
+from .claude_direct import ClaudeDirectProvider
 from .codex_proxy import CodexProxyProvider
 from .gpt_auth import GptAuthProvider
 from .openrouter import OpenRouterProvider
 
 _PROVIDERS = {
+    "claude_direct": ClaudeDirectProvider,
     "gpt_auth": GptAuthProvider,
     "openrouter": OpenRouterProvider,
     "codex_proxy": CodexProxyProvider,

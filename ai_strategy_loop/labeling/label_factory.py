@@ -19,6 +19,7 @@ import pandas as pd
 from ai_strategy_loop.labeling import derived
 from ai_strategy_loop.labeling import label_spec as spec
 from ai_strategy_loop.labeling.lanes import BARRIERS_DOWN, BARRIERS_UP, TICK, LaneSpec
+from ai_strategy_loop.labeling.trailing import TRAILING_GRID, trailing_columns
 
 _SKIP_TABLES = frozenset({"moneytop", "sqlite_sequence"})
 
@@ -86,7 +87,9 @@ def _barrier_hits(out: dict, *, price: np.ndarray, bid: np.ndarray, buy_ask: np.
 
 
 def _label_one_stock(frame: pd.DataFrame, code: str, day: int,
-                     lane: LaneSpec) -> pd.DataFrame | None:
+                     lane: LaneSpec,
+                     trailing_grid: tuple[tuple[float, float], ...] = TRAILING_GRID,
+                     ) -> pd.DataFrame | None:
     clock_mod = 10 ** (lane.time_digits - 8)
     frame = frame.drop_duplicates(subset="index", keep="last").sort_values("index")
     clock = (frame["index"].to_numpy(dtype=np.int64) % clock_mod).astype(np.int64)
@@ -162,6 +165,15 @@ def _label_one_stock(frame: pd.DataFrame, code: str, day: int,
     _barrier_hits(out, price=price, bid=bid, buy_ask=buy_a, entry_pos=entry_pos,
                   end_pos=end_pos, horizon=horizon)
 
+    # ── v4: 트레일링 **실현값**. 경로를 그대로 시뮬레이션하므로 근사가 아니라
+    #    계산이다(러닝 최고만 사용 — 구간 최종 최고를 쓰면 미래 참조가 된다).
+    #    W3 재현 게이트가 "청산 표현력 부족"으로 멈춘 지점을 여는 열이다.
+    out.update(trailing_columns(
+        bid=bid, ask=ask, entry_pos=entry_pos, horizon=horizon,
+        stale_ok=(age <= lane.stale_tolerance).astype(np.int8),
+        grid=trailing_grid,
+    ))
+
     flow_tv = f"{lane.flow_prefix}거래대금"
     tv = rows[flow_tv].to_numpy(dtype=np.float64)
     rate = rows["등락율"].to_numpy(dtype=np.float64)
@@ -210,7 +222,9 @@ def _label_one_stock(frame: pd.DataFrame, code: str, day: int,
     return result
 
 
-def build_day_labels(db_path: str, *, day: int, lane: LaneSpec = TICK) -> pd.DataFrame:
+def build_day_labels(db_path: str, *, day: int, lane: LaneSpec = TICK,
+                     trailing_grid: tuple[tuple[float, float], ...] = TRAILING_GRID,
+                     ) -> pd.DataFrame:
     """하루치 시세 DB(read-only) → 라벨 DataFrame. 종목 테이블 단위 벡터화."""
     connection = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:
@@ -219,7 +233,7 @@ def build_day_labels(db_path: str, *, day: int, lane: LaneSpec = TICK) -> pd.Dat
             frame = pd.read_sql(f'SELECT * FROM "{code}"', connection)
             if frame.empty:
                 continue
-            labeled = _label_one_stock(frame, code, day, lane)
+            labeled = _label_one_stock(frame, code, day, lane, trailing_grid)
             if labeled is not None and not labeled.empty:
                 parts.append(labeled)
         if not parts:

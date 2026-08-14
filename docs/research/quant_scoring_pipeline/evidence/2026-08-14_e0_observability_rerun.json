@@ -1,0 +1,140 @@
+{
+  "schema": "stom.e0_observability.v1",
+  "authority": "diagnostic_only",
+  "fixtures": [
+    {
+      "name": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905"
+    },
+    {
+      "name": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905"
+    }
+  ],
+  "config": {
+    "start": 20231114,
+    "end": 20231121,
+    "engines": 16,
+    "job_timeout": 240,
+    "poll_timeout": 300
+  },
+  "rows": [
+    {
+      "arm": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_105045_TickB902905_45179",
+      "status": "success",
+      "elapsed_seconds": 118.919,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": null,
+        "last_checkpoint": null,
+        "last_by_source": {}
+      }
+    },
+    {
+      "arm": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905",
+      "repetition": 2,
+      "job_id": "20260814_105244_TickB902905_64135",
+      "status": "success",
+      "elapsed_seconds": 101.962,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": null,
+        "last_checkpoint": null,
+        "last_by_source": {}
+      }
+    },
+    {
+      "arm": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905",
+      "repetition": 3,
+      "job_id": "20260814_105426_TickB902905_66131",
+      "status": "success",
+      "elapsed_seconds": 107.906,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": null,
+        "last_checkpoint": null,
+        "last_by_source": {}
+      }
+    },
+    {
+      "arm": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_105614_G2BSEGONLY_74090",
+      "status": "timeout",
+      "elapsed_seconds": 303.427,
+      "timed_out": true,
+      "message": "timeout (>300s)",
+      "idle_for_sec": null,
+      "result_status": "timeout",
+      "metrics_available": false,
+      "diagnostics": {
+        "event_count": null,
+        "last_checkpoint": null,
+        "last_by_source": {}
+      }
+    },
+    {
+      "arm": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905",
+      "repetition": 2,
+      "job_id": "20260814_110117_G2BSEGONLY_77561",
+      "status": "timeout",
+      "elapsed_seconds": 301.636,
+      "timed_out": true,
+      "message": "timeout (>300s)",
+      "idle_for_sec": null,
+      "result_status": "timeout",
+      "metrics_available": false,
+      "diagnostics": {
+        "event_count": null,
+        "last_checkpoint": null,
+        "last_by_source": {}
+      }
+    },
+    {
+      "arm": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905",
+      "repetition": 3,
+      "job_id": "20260814_110619_G2BSEGONLY_79266",
+      "status": "timeout",
+      "elapsed_seconds": 305.275,
+      "timed_out": true,
+      "message": "timeout (>300s)",
+      "idle_for_sec": null,
+      "result_status": "timeout",
+      "metrics_available": false,
+      "diagnostics": {
+        "event_count": null,
+        "last_checkpoint": null,
+        "last_by_source": {}
+      }
+    }
+  ],
+  "verdict": "BLOCKED_ENVIRONMENT"
+}

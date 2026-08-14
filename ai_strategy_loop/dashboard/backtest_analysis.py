@@ -89,6 +89,8 @@ _MC_METHOD_NOTE = {
                 "팬이 마지막 날 한 점으로 모이는 것이 정상입니다."),
     "bootstrap": ("복원추출 — 같은 성향의 날에서 새 기간을 다시 뽑습니다. '이 전략을 다시 "
                   "돌리면 결과가 얼마나 흔들릴까'를 봅니다. 최종손익도 분포를 가집니다."),
+    "moving_block": ("이동 블록 복원추출 — 연속된 거래일 묶음을 뽑아 자기상관을 보존합니다. "
+                     "블록 길이와 seed를 함께 기록해야 재현할 수 있습니다."),
 }
 # 통계 검정 유의수준·최소 표본(과신 방지).
 _STAT_ALPHA = 0.05
@@ -1091,11 +1093,11 @@ def _rng_seeded(seed: Optional[int]):
     try:
         import numpy as np  # noqa: WPS433 - 선택 의존(가용 시만).
 
-        return np.random.default_rng(int(actual)), "numpy"
+        return np.random.default_rng(int(actual)), "numpy", int(actual)
     except Exception:  # noqa: BLE001 - numpy 없으면 표준 random 으로 폴백.
         import random
 
-        return random.Random(int(actual)), "random"
+        return random.Random(int(actual)), "random", int(actual)
 
 
 def monte_carlo(
@@ -1104,6 +1106,7 @@ def monte_carlo(
     seed: Optional[int] = None,
     ruin_pct: float = _MC_RUIN_PCT,
     method: str = "shuffle",
+    block_length: int = 5,
 ) -> Dict[str, Any]:
     """일별 손익을 무작위 재구성해 MDD/최종손익 분포를 만든다.
 
@@ -1124,7 +1127,12 @@ def monte_carlo(
       - observed: 실측(재배열 없는 원래 순서) MDD/최종손익.
     seed 를 주면 재현 가능(테스트). 빈/단일 거래일 입력도 무예외(빈 구조).
     """
-    method = "bootstrap" if str(method) == "bootstrap" else "shuffle"
+    method = str(method)
+    if method not in _MC_METHOD_NOTE:
+        raise ValueError(f"지원하지 않는 몬테카를로 방식입니다: {method}")
+    block_length = int(block_length)
+    if block_length < 1:
+        raise ValueError("block_length는 1 이상이어야 합니다.")
     days_map = _daily_pnl_map(trades)
     daily = list(days_map.values())
     days = len(daily)
@@ -1135,7 +1143,9 @@ def monte_carlo(
             "mdd_pct": dict(empty_q), "mdd_krw": dict(empty_q), "final": dict(empty_q),
             "ruin_prob": 0.0, "n": 0, "days": days, "fan": [], "observed": None,
             "method": method, "final_degenerate": method == "shuffle",
-            "method_note": _MC_METHOD_NOTE[method],
+            "method_note": _MC_METHOD_NOTE[method], "seed": seed,
+            "block_length": block_length if method == "moving_block" else None,
+            "ruin_pct": float(ruin_pct),
         }
 
     total = sum(daily)
@@ -1146,7 +1156,7 @@ def monte_carlo(
         capital = 1.0
     ruin_threshold = -capital * (float(ruin_pct) / 100.0)
 
-    rng, backend = _rng_seeded(seed)
+    rng, backend, actual_seed = _rng_seeded(seed)
     mdd_krws: List[float] = []
     finals: List[float] = []
     ruin_hits = 0
@@ -1154,13 +1164,25 @@ def monte_carlo(
     per_day_cum: List[List[float]] = [[] for _ in range(days)]
 
     for _ in range(n_runs):
-        if method == "bootstrap":
+        if method in ("bootstrap", "moving_block") and (
+            method == "bootstrap" or block_length == 1
+        ):
             # 복원추출 — 같은 날 분포에서 days 개를 다시 뽑는다(최종손익도 분포를 갖는다).
             if backend == "numpy":
                 idx = rng.integers(0, days, size=days)
                 shuffled = [daily[int(i)] for i in idx]
             else:
                 shuffled = [daily[rng.randrange(days)] for _ in range(days)]
+        elif method == "moving_block":
+            block = min(block_length, days)
+            sampled: List[float] = []
+            while len(sampled) < days:
+                if backend == "numpy":
+                    start = int(rng.integers(0, days))
+                else:
+                    start = rng.randrange(days)
+                sampled.extend(daily[(start + offset) % days] for offset in range(block))
+            shuffled = sampled[:days]
         elif backend == "numpy":
             order = rng.permutation(days)
             shuffled = [daily[i] for i in order]
@@ -1218,6 +1240,8 @@ def monte_carlo(
         "fan": fan,
         "observed": observed,
         "method": method,
+        "seed": actual_seed,
+        "block_length": block_length if method == "moving_block" else None,
         # shuffle 은 날의 집합이 보존되므로 최종손익이 항상 한 점이다(차트가 이 사실을 표기).
         "final_degenerate": method == "shuffle",
         "method_note": _MC_METHOD_NOTE[method],
@@ -1604,7 +1628,7 @@ def mdd_random_curves(
     actual_mdd = _mdd_pct(actual_cum)
 
     n_runs = max(0, int(n_curves))
-    rng, backend = _rng_seeded(seed if seed is not None else _DEMO_SEED_GUI)
+    rng, backend, _ = _rng_seeded(seed if seed is not None else _DEMO_SEED_GUI)
     curves: List[List[Dict[str, Any]]] = []
     rand_mdds: List[float] = []
     for _ in range(n_runs):

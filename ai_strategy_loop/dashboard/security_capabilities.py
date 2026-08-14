@@ -11,6 +11,9 @@ class Capability(StrEnum):
     STRATEGY_WRITE = "strategy-write"
     DECISION_WRITE = "decision-write"
     PROVIDER_TEST = "provider-test"
+    # Manual offline diagnostics/proposals only. Routes under this capability must not
+    # start engines, read runtime DB/data, adopt, export, or write protected state.
+    RESEARCH_DIAGNOSTIC = "research-diagnostic"
     # v5.13.2 — ChatGPT OAuth 브라우저 로그인 시작. PROVIDER_TEST 와 분리한 이유:
     #   test 는 외부 API 를 실제로 호출(토큰 소비)하지만, login 은 로컬 브라우저를 열고
     #   사용자가 직접 인증한 결과 토큰 파일을 저장할 뿐이다(자격증명이 서버를 거치지 않음).
@@ -24,6 +27,7 @@ DEFAULT_ON_CAPABILITIES: Final = frozenset(
         Capability.LOOP_CONTROL,
         Capability.SAFE_BACKTEST,
         Capability.REPLAY_CONTROL,
+        Capability.RESEARCH_DIAGNOSTIC,
         # 기본 ON. 위협모델: 서버는 루프백에만 바인드하고, 이 경로는 Origin 일치 + 유효
         #   세션 쿠키를 이미 요구한다. 동작은 "사용자 브라우저에서 사용자가 직접 로그인"이
         #   전부이며 서버는 비밀번호를 보지도 저장하지도 않는다. 기본 OFF 로 두면 설정 탭
@@ -67,4 +71,8 @@ HTTP_CAPABILITIES: Final = {
     #   실재하는 라우트만 싣는다 — 없는 경로를 적어 두면 분류표가 라우트 목록과
     #   어긋나고, 그 어긋남을 test_security_mutations 가 정확히 잡아낸다.
     ("POST", "/gpt_auth/login_start"): Capability.PROVIDER_LOGIN,
+    ("POST", "/loop/research-tools/bayesian"): Capability.RESEARCH_DIAGNOSTIC,
+    ("POST", "/loop/research-tools/ast"): Capability.RESEARCH_DIAGNOSTIC,
+    ("POST", "/loop/research-tools/qmc"): Capability.RESEARCH_DIAGNOSTIC,
+    ("POST", "/loop/research-tools/denoise"): Capability.RESEARCH_DIAGNOSTIC,
 }

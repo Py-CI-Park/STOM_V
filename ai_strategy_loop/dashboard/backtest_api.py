@@ -235,7 +235,7 @@ def _augment_job_result(payload: Dict[str, Any], record: Dict[str, Any]) -> Dict
     enriched = _augment_job_payload(record)
     for key in (
         "evidence_id", "source_type", "condition_identity", "status_kind", "artifact_state",
-        "openable", "recoverable", "open_actions", "rerun_spec",
+        "openable", "recoverable", "open_actions", "rerun_spec", "process_diagnostics",
     ):
         out[key] = enriched.get(key)
     return out
@@ -1864,12 +1864,14 @@ def analysis_montecarlo(
     run_id: str = "",
     gen_no: Optional[int] = None,
     method: str = "shuffle",
+    block_length: int = 5,
 ) -> Dict[str, Any]:
     """몬테카를로 — 일별 손익 재구성으로 MDD/최종손익 분포·파산확률·팬차트.
 
     입력 경로는 /bt/result 와 같다: job_id(완료 잡) 또는 run_id+gen_no(진화 세대).
     세대도 같은 거래 CSV 를 남기므로 동일한 표본으로 계산한다.
-    method="shuffle"(순서 위험) | "bootstrap"(표본 위험) — 의미는 analysis.monte_carlo 참조.
+    method="shuffle"(순서 위험) | "bootstrap"(표본 위험) |
+    "moving_block"(연속 의존성 보존) — 의미는 analysis.monte_carlo 참조.
     """
     n = max(0, min(int(n), _MC_MAX_N))
     if not job_id and run_id and gen_no is not None:
@@ -1881,7 +1883,7 @@ def analysis_montecarlo(
         "run_id": run_id,
         "gen_no": gen_no,
         "montecarlo": analysis.monte_carlo(trades, n=n, seed=seed, ruin_pct=ruin_pct,
-                                           method=method),
+                                           method=method, block_length=block_length),
     }
 
 

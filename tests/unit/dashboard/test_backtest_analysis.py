@@ -10,6 +10,8 @@ import os
 import sys
 from pathlib import Path
 
+import pytest
+
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
@@ -374,6 +376,46 @@ def test_monte_carlo_reproducible_with_seed():
     assert mc1["final"] == mc2["final"]
     assert mc1["ruin_prob"] == mc2["ruin_prob"]
     assert mc1["fan"] == mc2["fan"]
+
+
+def test_monte_carlo_moving_block_reproducible_and_records_contract():
+    trades = _multiday_trades()
+    mc1 = A.monte_carlo(trades, n=300, seed=17, method="moving_block", block_length=3)
+    mc2 = A.monte_carlo(trades, n=300, seed=17, method="moving_block", block_length=3)
+    assert mc1["mdd_krw"] == mc2["mdd_krw"]
+    assert mc1["final"] == mc2["final"]
+    assert mc1["method"] == "moving_block"
+    assert mc1["seed"] == 17
+    assert mc1["block_length"] == 3
+    assert mc1["ruin_pct"] == 30.0
+
+
+def test_monte_carlo_records_generated_seed_for_replay():
+    mc = A.monte_carlo(_multiday_trades(), n=10, method="moving_block")
+    assert isinstance(mc["seed"], int)
+    replay = A.monte_carlo(
+        _multiday_trades(), n=10, seed=mc["seed"],
+        method="moving_block", block_length=mc["block_length"],
+    )
+    assert replay["fan"] == mc["fan"]
+
+
+def test_monte_carlo_moving_block_one_matches_bootstrap():
+    trades = _multiday_trades()
+    bootstrap = A.monte_carlo(trades, n=200, seed=23, method="bootstrap")
+    blocked = A.monte_carlo(
+        trades, n=200, seed=23, method="moving_block", block_length=1
+    )
+    assert blocked["mdd_krw"] == bootstrap["mdd_krw"]
+    assert blocked["final"] == bootstrap["final"]
+    assert blocked["fan"] == bootstrap["fan"]
+
+
+def test_monte_carlo_rejects_unknown_method_and_invalid_block():
+    with pytest.raises(ValueError, match="지원하지 않는"):
+        A.monte_carlo(_multiday_trades(), method="unknown")
+    with pytest.raises(ValueError, match="block_length"):
+        A.monte_carlo(_multiday_trades(), method="moving_block", block_length=0)
 
 
 def test_monte_carlo_empty_and_zero_n_no_raise():

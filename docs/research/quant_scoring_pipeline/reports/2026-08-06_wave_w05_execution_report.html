@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>웨이브 W0.5 실행 결과 — 관측면 4면 구축</title>
+</head>
+<body>
+<style>
+:root{
+  --bg:#FAFAF7; --ink:#1A2332; --muted:#5A6B7D; --surface:#F0F1EC; --border:#D5D9D2;
+  --accent:#0B7A5C; --pass:#0B7A5C; --fail:#B42318; --warn:#B7791F; --link:#075DC4; --code:#EDEFE8;
+  color-scheme:light dark;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#12181F; --ink:#E4EAEF; --muted:#9FAEBC; --surface:#1A222B; --border:#33404D;
+  --accent:#4CC49A; --pass:#4CC49A; --fail:#E0776A; --warn:#D9A441; --link:#7FB3F5; --code:#1F2933;
+}}
+:root[data-theme="dark"]{
+  --bg:#12181F; --ink:#E4EAEF; --muted:#9FAEBC; --surface:#1A222B; --border:#33404D;
+  --accent:#4CC49A; --pass:#4CC49A; --fail:#E0776A; --warn:#D9A441; --link:#7FB3F5; --code:#1F2933;
+}
+:root[data-theme="light"]{
+  --bg:#FAFAF7; --ink:#1A2332; --muted:#5A6B7D; --surface:#F0F1EC; --border:#D5D9D2;
+  --accent:#0B7A5C; --pass:#0B7A5C; --fail:#B42318; --warn:#B7791F; --link:#075DC4; --code:#EDEFE8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.65 system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:clamp(16px,4vw,48px)}
+.cover{background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--accent);
+  border-radius:10px;padding:clamp(18px,3vw,36px);margin-bottom:26px}
+.eyebrow{color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+h1{font-size:clamp(23px,3.6vw,34px);line-height:1.2;margin:.35em 0 .3em;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:64ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;font-size:13px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:0 0 30px}
+.kpi{border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:12px 14px}
+.kpi b{display:block;font-size:21px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi span{font-size:12px;color:var(--muted)}
+.kpi.ok b{color:var(--pass)} .kpi.amber b{color:var(--warn)}
+h2{font-size:20px;margin:42px 0 6px;scroll-margin-top:16px}
+h2 .no{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:6px}
+h3{font-size:15.5px;margin:24px 0 8px}
+.sub{color:var(--muted);margin:0 0 14px;max-width:72ch}
+.tw{overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin:12px 0}
+table{width:100%;min-width:600px;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 11px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:none}
+th{background:var(--surface);font-weight:600;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:12.5px;
+  font-family:ui-monospace,Consolas,monospace}
+.pass{color:var(--pass);font-weight:600}.fail{color:var(--fail);font-weight:600}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid var(--border)}
+.pill.p{color:var(--pass);border-color:var(--pass)}
+.pill.w{color:var(--warn);border-color:var(--warn)}
+.callout{border:1px solid var(--border);border-left:4px solid var(--accent);background:var(--surface);
+  border-radius:8px;padding:14px 18px;margin:16px 0}
+.callout.amber{border-left-color:var(--warn)}
+.callout p{margin:.3em 0}
+.flow{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:14px 18px;
+  overflow-x:auto;font:13px/1.7 ui-monospace,Consolas,monospace;white-space:pre;margin:12px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:14px 0}
+.card{border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:14px 16px}
+.card h4{margin:0 0 8px;font-size:14px}
+.card ul{margin:0;padding-left:18px} .card li{margin:4px 0}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)}
+a{color:var(--link)}
+</style>
+
+<div class="wrap">
+<div class="cover">
+  <div class="eyebrow">STOM · 마스터 웨이브 W0.5 · 실행 결과</div>
+  <h1>관측면 4면 구축 완료 — 자율 루프가 스스로를 볼 수 있게 됐다</h1>
+  <p class="lede">감사가 지목한 조립 공백 중 화면 쪽 4건을 페이지별 브랜치로 구축·병합했다.
+  사람 승인 단계는 만들지 않았다 — 자율 루프는 사람 검토 없이 돌고, 이 화면들은 <b>관측 전용</b>이다.</p>
+  <div class="meta">
+    <span>브랜치 <b>research/program-reassessment-20260806</b></span>
+    <span>병합 <b>4개 (페이지별)</b></span>
+    <span>HEAD <b>adc17a85</b></span>
+  </div>
+</div>
+
+<div class="kpis">
+  <div class="kpi ok"><b>4 / 4</b><span>계획 페이지 완료</span></div>
+  <div class="kpi ok"><b>119→123</b><span>JSX 등록 (신규 4면)</span></div>
+  <div class="kpi ok"><b>8종</b><span>신설 API</span></div>
+  <div class="kpi ok"><b>24종</b><span>신규 계약 테스트</span></div>
+  <div class="kpi amber"><b>1건</b><span>테스트가 잡은 실제 결함</span></div>
+  <div class="kpi ok"><b>0</b><span>사람 승인 단계 추가</span></div>
+</div>
+
+<h2 id="s1"><span class="no">1</span>구축 목록 — 계획 대비 전량</h2>
+<div class="tw"><table>
+<tr><th>페이지</th><th>해결한 결함</th><th>API</th><th>화면 · 위치</th><th>테스트</th><th>상태</th></tr>
+<tr>
+  <td><b>25</b> 분석 카드 뷰어</td>
+  <td>감사 #5 — 부검 카드 소비자 0 (AI 프롬프트로만 흐름)</td>
+  <td><code>/bt/analysis-card</code><br><code>/bt/analysis-card/losers</code></td>
+  <td><code>bt-analysis-card.jsx</code><br>백테스트 탭</td>
+  <td class="num">5</td>
+  <td><span class="pill p">완료</span></td>
+</tr>
+<tr>
+  <td><b>26</b> 자율 루프 관제</td>
+  <td>감사 #6 — 예산·가정 판정 불가시</td>
+  <td><code>/loop/autonomy/runs</code><br><code>…/generations</code> · <code>…/budget</code></td>
+  <td><code>loop-autonomy.jsx</code><br>라이브 탭</td>
+  <td class="num">5</td>
+  <td><span class="pill p">완료</span></td>
+</tr>
+<tr>
+  <td><b>27</b> AI Provider 상태</td>
+  <td>감사 #4 — 뇌 사망을 모르고 운행(MDD 139% 사건)</td>
+  <td><code>/ai/providers</code><br><code>/ai/providers/models</code></td>
+  <td><code>ai-provider-status.jsx</code><br>설정 탭</td>
+  <td class="num">8</td>
+  <td><span class="pill p">완료</span></td>
+</tr>
+<tr>
+  <td><b>12</b> 전이율 원장 강화</td>
+  <td>QSP10 계획 미구현분 — 지도 과신</td>
+  <td><code>/bt/transfer-ledger</code><br><code>…/estimate</code></td>
+  <td><code>bt-transfer-ledger.jsx</code><br>백테스트 탭</td>
+  <td class="num">6</td>
+  <td><span class="pill p">완료</span></td>
+</tr>
+</table></div>
+
+<h2 id="s2"><span class="no">2</span>각 페이지가 실제로 하는 일</h2>
+<div class="grid2">
+<div class="card"><h4>25 · 분석 카드 뷰어</h4><ul>
+  <li><b>근본원인 · 변이축</b> — 다음 수정 1절이 나오는 곳</li>
+  <li><b>엣지비(MFE/|MAE|)</b> — 1보다 크면 진입은 맞고 청산이 문제</li>
+  <li>승/패 판별 지표(Cohen's d + FDR)</li>
+  <li>손실·이익 집중 구역(시간대 × 시총)</li>
+  <li><b>최악 손실 20건</b> — 숫자를 실제 거래로 확인</li>
+</ul></div>
+<div class="card"><h4>26 · 자율 루프 관제</h4><ul>
+  <li><b>수정 예산 막대</b> — 아이디어당 15회, 초과 시 붉게</li>
+  <li><b>가정 적중률</b> — 0에 가까우면 부검→가정이 헛돎</li>
+  <li>세대 타임라인 — 무엇을 바꿨고(diff) 무엇이 움직였나(Δ)</li>
+  <li><b>편의 차감본 병기</b> — 설계 성적 − 0.6225%p</li>
+</ul></div>
+<div class="card"><h4>27 · AI Provider 상태</h4><ul>
+  <li>failover 순서 — <b>Claude 직접이 0순위</b></li>
+  <li>녹색은 <b>실연결</b>에만 (설정만 되면 주황)</li>
+  <li>인증원 · 토큰 만료까지 · 자동 갱신 여부</li>
+  <li>모델 카탈로그 — fallback 표시(luna→terra 등)</li>
+  <li><b>쿼터 소모 0</b> — 로컬 루프백만 확인</li>
+</ul></div>
+<div class="card"><h4>12 · 전이율 누적 원장</h4><ul>
+  <li><b>계수 환산기</b> — 지도 0.35% 입력 → 엔진 예상치</li>
+  <li>보수 계수 = 부호 일치 건의 <b>중앙값</b></li>
+  <li><b>부호 반전은 계수 아님</b> — 구조 불일치 경고</li>
+  <li>후보별 기록(지도↔엔진 · 거래수 비 · CAGR · MDD)</li>
+</ul></div>
+</div>
+
+<h2 id="s3"><span class="no">3</span>구축 중 테스트가 잡은 실제 결함</h2>
+<div class="callout amber">
+<p><b>전이율 환산기가 표본 1건짜리 계수를 그대로 내주고 있었습니다.</b></p>
+<p>계수가 존재한다는 사실만으로 근거 없는 확신이 생기는 구조 — 원장을 만든 이유와 정반대였습니다.
+표본 3건 미만이면 환산을 거부하도록 교정했고, 그 계약을 테스트로 고정했습니다.</p>
+<p class="sub" style="margin-top:8px">이 세션의 반복 패턴이 또 확인됐습니다: <b>측정 도구 자체가 낙관 편향을 만든다.</b></p>
+</div>
+
+<h2 id="s4"><span class="no">4</span>지킨 규율</h2>
+<div class="tw"><table>
+<tr><th>규율</th><th>구현 방식</th></tr>
+<tr><td><b>사람 승인 단계 0</b></td><td>승인·승격 버튼을 어느 화면에도 두지 않음. 전부 <code>observation_only</code> / <code>research_analysis_card_only</code></td></tr>
+<tr><td><b>보호 데이터 무손상</b></td><td>루프 DB는 <code>LoopState(readonly=True)</code> 로만 조회 (mkdir/PRAGMA/DDL 없음) — 테스트가 강제</td></tr>
+<tr><td><b>쿼터 소모 0</b></td><td>Provider 상태는 로컬 루프백 프로브만. 외부 호출 시 테스트 실패</td></tr>
+<tr><td><b>비밀 미노출</b></td><td>토큰·계정 식별자가 응답에 실리면 테스트 실패</td></tr>
+<tr><td><b>정직 라벨</b></td><td>표본 부족 시 값을 조작하지 않고 <code>insufficient_data</code> / <code>accumulating</code></td></tr>
+<tr><td><b>페이지별 브랜치</b></td><td><code>feature/page25-*</code> · <code>page26-*</code> · <code>page27-*</code> · <code>page12-*</code> 각각 커밋 후 <code>--no-ff</code> 병합</td></tr>
+</table></div>
+
+<h2 id="s5"><span class="no">5</span>다음 — W1 뇌 배선</h2>
+<div class="flow">완료: W0(기반·로그인 수정) → W0.5(관측면 4면) ← 지금 여기
+다음: W1 뇌 배선 — Claude-direct provider 정식화 · p5 프롬프트 ON · 카드→Claude 판독
+      W2 심판 규율 — 루프 내 워크포워드 · 가설 원장 예산 강제
+      W3 자산 편입 — 백파인더 시드 · 숫자 최적화기 · 매도축 재현 게이트
+      W4 가동 — 첫 시료 2종(첫 5분 소수 종목 / 챔피언 매도축)</div>
+<p class="sub">관측면이 먼저 생겼으므로, W1 부터는 루프가 <b>무엇을 하고 있는지 보면서</b> 배선할 수 있습니다.
+이전에는 뇌가 죽은 채로 돌아도 알 수 없었습니다.</p>
+
+<footer>
+근거: 페이지별 커밋 8건(구현 4 + 병합 4) · JSX 그래프 검사 123/573 PASS · 번들 재빌드 4회 ·
+계약 테스트 24종 신규 GREEN · 정본 <code>2026-08-06_master_wave_plan.md</code> §W0.5 ·
+이 보고서는 정적·자가완결이며 외부 요청이 없다.
+</footer>
+</div>
+
+</body>
+</html>

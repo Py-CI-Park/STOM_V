@@ -1,0 +1,505 @@
+{
+  "schema": "stom.research_tools_evidence.v1",
+  "authority": "no_adoption",
+  "source_receipt": {
+    "kind": "G2_SEG_ONLY_render",
+    "sha256": "cd31184816f1a43b3ac6ecf353b6185c281759dd93814ca148edb7e2e760ebe7",
+    "chars": 583
+  },
+  "status": {
+    "tool_count": 4,
+    "tools": [
+      {
+        "id": "bayesian",
+        "label": "Bayesian sequential boundary",
+        "method": "POST",
+        "path": "/loop/research-tools/bayesian",
+        "scope": "manual_counts_statistical_boundary_only",
+        "authority": "no_adoption",
+        "can_adopt": false,
+        "persistence": "none",
+        "manual_only": true
+      },
+      {
+        "id": "ast",
+        "label": "Condition AST static check",
+        "method": "POST",
+        "path": "/loop/research-tools/ast",
+        "scope": "manual_source_parse_static_limits_only",
+        "authority": "no_adoption",
+        "can_adopt": false,
+        "persistence": "none",
+        "manual_only": true
+      },
+      {
+        "id": "qmc",
+        "label": "QMC candidate proposal and Pareto archive",
+        "method": "POST",
+        "path": "/loop/research-tools/qmc",
+        "scope": "manual_bounded_candidate_proposal_only",
+        "authority": "no_adoption",
+        "can_adopt": false,
+        "persistence": "none",
+        "manual_only": true
+      },
+      {
+        "id": "denoise",
+        "label": "Condition denoising corruption/repair evaluation",
+        "method": "POST",
+        "path": "/loop/research-tools/denoise",
+        "scope": "manual_deterministic_repair_diagnostic_only",
+        "authority": "no_adoption",
+        "can_adopt": false,
+        "persistence": "none",
+        "manual_only": true
+      }
+    ],
+    "receipts": {
+      "api": {
+        "schema": "research_tools_api_receipt_v1",
+        "authority": "no_adoption",
+        "tool_ids": [
+          "bayesian",
+          "ast",
+          "qmc",
+          "denoise"
+        ],
+        "bounds": {
+          "max_source_chars": 20000,
+          "max_observation_count": 100000,
+          "max_qmc_budget": 256,
+          "max_qmc_dimensions": 8
+        },
+        "persistence": "none",
+        "sha256": "0b414650d84cc949a023ecaa227f99f7ea099242658e1cc34ca585513aa628c7"
+      }
+    }
+  },
+  "bayesian": {
+    "ok": true,
+    "decision": "REJECT",
+    "decision_label": "statistical_boundary_only_not_strategy_rejection",
+    "counts": {
+      "successes": 12,
+      "failures": 8,
+      "sample_size": 20
+    },
+    "posterior": {
+      "alpha": 13.0,
+      "beta": 9.0,
+      "mean": 0.5909090909090909,
+      "credible_interval": [
+        0.3843543903786458,
+        0.7818031431148698
+      ],
+      "probability_above_rope": 0.8083448410034175,
+      "probability_below_rope": 0.19165515899658245
+    },
+    "receipts": {
+      "api": {
+        "schema": "research_tools_api_receipt_v1",
+        "authority": "no_adoption",
+        "tool_ids": [
+          "bayesian",
+          "ast",
+          "qmc",
+          "denoise"
+        ],
+        "bounds": {
+          "max_source_chars": 20000,
+          "max_observation_count": 100000,
+          "max_qmc_budget": 256,
+          "max_qmc_dimensions": 8
+        },
+        "persistence": "none",
+        "sha256": "0b414650d84cc949a023ecaa227f99f7ea099242658e1cc34ca585513aa628c7"
+      },
+      "config": {
+        "schema_version": 1,
+        "method": "beta_binomial_regularized_incomplete_beta_v1",
+        "prior_alpha": 1.0,
+        "prior_beta": 1.0,
+        "rope_lower": 0.5,
+        "approve_prob_threshold": 0.95,
+        "reject_prob_threshold": 0.1,
+        "max_sample": 100,
+        "credible_mass": 0.95,
+        "quantile_iterations": 80,
+        "digest": "471a6e34f6cf59cca9c01fd9547ddc9fab9805d01341c402f36d190788a5abfa"
+      },
+      "seed": {
+        "schema_version": 1,
+        "purpose": "external_observations_no_rng",
+        "seed": null,
+        "digest": "428c0f12a51d294eb070acd34f05e518b3256e97662df2994a8681170d16cec1"
+      },
+      "looks": []
+    }
+  },
+  "ast": {
+    "ok": true,
+    "violations": [],
+    "estimated_work": 10.0,
+    "complexity": {
+      "total_lines": 37,
+      "assignment_count": 7,
+      "clause_count": 10,
+      "comment_count": 8,
+      "blank_count": 8,
+      "unknown_line_count": 0,
+      "function_call_count": 1,
+      "unique_function_count": 1,
+      "numeric_lookback_count": 0,
+      "max_numeric_lookback": 0.0,
+      "unresolved_lookback_count": 0
+    },
+    "canonical_sha256": "0ab4eb9ea8e29d1d2d48eb011a8a00602de5723adcc57ac3f8c4bd8fcd715457",
+    "receipts": {
+      "api": {
+        "schema": "research_tools_api_receipt_v1",
+        "authority": "no_adoption",
+        "tool_ids": [
+          "bayesian",
+          "ast",
+          "qmc",
+          "denoise"
+        ],
+        "bounds": {
+          "max_source_chars": 20000,
+          "max_observation_count": 100000,
+          "max_qmc_budget": 256,
+          "max_qmc_dimensions": 8
+        },
+        "persistence": "none",
+        "sha256": "0b414650d84cc949a023ecaa227f99f7ea099242658e1cc34ca585513aa628c7"
+      },
+      "config": {
+        "schema": "condition_ast_static_config_receipt_v1",
+        "canonicalizer_version": "condition_ast_canonicalizer_v1",
+        "allowed_functions": [
+          "self.Buy"
+        ],
+        "max_clauses": 100,
+        "max_lookback": 500.0,
+        "max_unknown_lines": 0,
+        "sha256": "7806430471a3f1096c272eca70d9e9881b919037c0ce4f1b6397b28da4ea1e60"
+      },
+      "seed": {
+        "schema": "condition_ast_seed_receipt_v1",
+        "seed": "condition_ast_deterministic_seed_v1",
+        "random_used": false,
+        "sha256": "804ce4bc69b163ed16b7073e40f91001928596cb8b8f9054ba668532542983fc"
+      }
+    }
+  },
+  "qmc": {
+    "ok": true,
+    "candidate_count": 8,
+    "candidates": [
+      {
+        "trial_index": 1,
+        "unit_sample": [
+          0.35321380506591726,
+          0.11963227151991163
+        ],
+        "parameters": {
+          "arm": 0.48853518557250897,
+          "give": 0.0957058172159293
+        },
+        "adoption_authority": "none",
+        "oos_claim": "none"
+      },
+      {
+        "trial_index": 2,
+        "unit_sample": [
+          0.10321380506591726,
+          0.4529656048532449
+        ],
+        "parameters": {
+          "arm": 0.213535185572509,
+          "give": 0.3623724838825959
+        },
+        "adoption_authority": "none",
+        "oos_claim": "none"
+      },
+      {
+        "trial_index": 3,
+        "unit_sample": [
+          0.6032138050659173,
+          0.8974100492976893
+        ],
+        "parameters": {
+          "arm": 0.7635351855725089,
+          "give": 0.7179280394381515
+        },
+        "adoption_authority": "none",
+        "oos_claim": "none"
+      },
+      {
+        "trial_index": 4,
+        "unit_sample": [
+          0.9782138050659172,
+          0.2307433826310228
+        ],
+        "parameters": {
+          "arm": 1.1760351855725089,
+          "give": 0.18459470610481823
+        },
+        "adoption_authority": "none",
+        "oos_claim": "none"
+      },
+      {
+        "trial_index": 5,
+        "unit_sample": [
+          0.47821380506591726,
+          0.5640767159643558
+        ],
+        "parameters": {
+          "arm": 0.6260351855725089,
+          "give": 0.4512613727714847
+        },
+        "adoption_authority": "none",
+        "oos_claim": "none"
+      },
+      {
+        "trial_index": 6,
+        "unit_sample": [
+          0.22821380506591726,
+          0.008521160408800466
+        ],
+        "parameters": {
+          "arm": 0.351035185572509,
+          "give": 0.006816928327040373
+        },
+        "adoption_authority": "none",
+        "oos_claim": "none"
+      },
+      {
+        "trial_index": 7,
+        "unit_sample": [
+          0.7282138050659173,
+          0.34185449374213395
+        ],
+        "parameters": {
+          "arm": 0.9010351855725088,
+          "give": 0.27348359499370717
+        },
+        "adoption_authority": "none",
+        "oos_claim": "none"
+      },
+      {
+        "trial_index": 8,
+        "unit_sample": [
+          0.9157138050659172,
+          0.675187827075467
+        ],
+        "parameters": {
+          "arm": 1.1072851855725088,
+          "give": 0.5401502616603736
+        },
+        "adoption_authority": "none",
+        "oos_claim": "none"
+      }
+    ],
+    "receipts": {
+      "api": {
+        "schema": "research_tools_api_receipt_v1",
+        "authority": "no_adoption",
+        "tool_ids": [
+          "bayesian",
+          "ast",
+          "qmc",
+          "denoise"
+        ],
+        "bounds": {
+          "max_source_chars": 20000,
+          "max_observation_count": 100000,
+          "max_qmc_budget": 256,
+          "max_qmc_dimensions": 8
+        },
+        "persistence": "none",
+        "sha256": "0b414650d84cc949a023ecaa227f99f7ea099242658e1cc34ca585513aa628c7"
+      },
+      "proposal": {
+        "seed": 20260814,
+        "scramble": true,
+        "scramble_method": "fixed_zero_digit_permutation_plus_cranley_patterson_shift",
+        "bases": [
+          2,
+          3
+        ],
+        "skip": 0,
+        "budget": 8,
+        "dimensions": [
+          "arm",
+          "give"
+        ],
+        "schema": "qmc_halton_candidate_batch_v1",
+        "scope": "offline_candidate_proposal_only",
+        "adoption_authority": "none",
+        "oos_claim": "none"
+      },
+      "seed": {
+        "schema": "qmc_seed_receipt_v1",
+        "seed": 20260814,
+        "scramble": true,
+        "skip": 0,
+        "proposal_receipt_schema": "qmc_halton_candidate_batch_v1",
+        "sha256": "cb45588cf8df89905dd3c980303e3e6636304d20fe1496189225cf2ed395e1ed"
+      }
+    }
+  },
+  "denoise": {
+    "ok": true,
+    "operator": "mask_one_clause",
+    "repair": {
+      "ok": true,
+      "source": "# G2 새 골격 — 변형 SEG_ONLY · G1 채굴 시드(초소형×이른 시각)\n# 사전 등록: 2026-08-13_G2_G4_사전등록.md (57782f64)\n\n매수 = True\n\n# --- 공통 안전절(체결 가능성 · 전략 아님) ---\nif not (관심종목 == 1):\n    매수 = False\nelif not (현재가 > 1000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\n\n# --- 세그먼트: 초소형 ---\nelif not (시가총액 < 1000):\n    매수 = False\n\n# --- 밴드 0900-0905 ---\nelif 90000 <= 시분초 < 90500:\n    pass\n\n# --- 밴드 0905-0910 ---\nelif 90500 <= 시분초 < 91000:\n    pass\n\n# --- 밴드 0910-0915 ---\nelif 91000 <= 시분초 < 91500:\n    pass\n\n# --- 밴드 밖 ---\nelse:\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "actions": [
+        {
+          "kind": "mask_replaced",
+          "clause_index": 2,
+          "line_number": 11
+        }
+      ],
+      "reason": "ok",
+      "receipt": {
+        "seed": 20260814,
+        "config_hash": "39ff877761a08a1495bc30c70a56227271d5090bc71328fb0a8dc38a60bc2bce",
+        "config_items": [
+          [
+            "mask_token",
+            "__CONDITION_DENOISING_MASK__"
+          ],
+          [
+            "operator",
+            "repair_masked_and_duplicate"
+          ]
+        ],
+        "adoption_authority": false,
+        "authority_scope": "none",
+        "evidence_scope": [
+          "canonical_condition_nodes",
+          "clean_template"
+        ]
+      }
+    },
+    "evaluation": {
+      "canonical_equal": true,
+      "syntax_valid": true,
+      "static_valid": false,
+      "complexity_delta": 0,
+      "clean_canonical_hash": "0ab4eb9ea8e29d1d2d48eb011a8a00602de5723adcc57ac3f8c4bd8fcd715457",
+      "candidate_canonical_hash": "0ab4eb9ea8e29d1d2d48eb011a8a00602de5723adcc57ac3f8c4bd8fcd715457",
+      "receipt": {
+        "seed": 20260814,
+        "config_hash": "fa220e32dba15ceeff62c7d1480937cb317ddcfd48b77e52916668e13cc138cc",
+        "config_items": [
+          [
+            "operator",
+            "evaluate_repair"
+          ],
+          [
+            "static_valid",
+            "False"
+          ],
+          [
+            "syntax_valid",
+            "True"
+          ]
+        ],
+        "adoption_authority": false,
+        "authority_scope": "none",
+        "evidence_scope": [
+          "canonical_condition_nodes"
+        ]
+      }
+    },
+    "receipts": {
+      "api": {
+        "schema": "research_tools_api_receipt_v1",
+        "authority": "no_adoption",
+        "tool_ids": [
+          "bayesian",
+          "ast",
+          "qmc",
+          "denoise"
+        ],
+        "bounds": {
+          "max_source_chars": 20000,
+          "max_observation_count": 100000,
+          "max_qmc_budget": 256,
+          "max_qmc_dimensions": 8
+        },
+        "persistence": "none",
+        "sha256": "0b414650d84cc949a023ecaa227f99f7ea099242658e1cc34ca585513aa628c7"
+      },
+      "corruption": {
+        "seed": 20260814,
+        "config_hash": "24eb176a5118f2a54f87f218ac04701755ade3f8e9d8284410c817aa59e80b0e",
+        "config_items": [
+          [
+            "clause_index",
+            "None"
+          ],
+          [
+            "mask_token",
+            "__CONDITION_DENOISING_MASK__"
+          ],
+          [
+            "operator",
+            "mask_one_clause"
+          ]
+        ],
+        "adoption_authority": false,
+        "authority_scope": "none",
+        "evidence_scope": [
+          "canonical_condition_nodes"
+        ]
+      },
+      "repair": {
+        "seed": 20260814,
+        "config_hash": "39ff877761a08a1495bc30c70a56227271d5090bc71328fb0a8dc38a60bc2bce",
+        "config_items": [
+          [
+            "mask_token",
+            "__CONDITION_DENOISING_MASK__"
+          ],
+          [
+            "operator",
+            "repair_masked_and_duplicate"
+          ]
+        ],
+        "adoption_authority": false,
+        "authority_scope": "none",
+        "evidence_scope": [
+          "canonical_condition_nodes",
+          "clean_template"
+        ]
+      },
+      "evaluation": {
+        "seed": 20260814,
+        "config_hash": "fa220e32dba15ceeff62c7d1480937cb317ddcfd48b77e52916668e13cc138cc",
+        "config_items": [
+          [
+            "operator",
+            "evaluate_repair"
+          ],
+          [
+            "static_valid",
+            "False"
+          ],
+          [
+            "syntax_valid",
+            "True"
+          ]
+        ],
+        "adoption_authority": false,
+        "authority_scope": "none",
+        "evidence_scope": [
+          "canonical_condition_nodes"
+        ]
+      }
+    }
+  }
+}

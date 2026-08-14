@@ -1,5 +1,6 @@
 
 import json
+import os
 import sys
 from threading import Thread, Event
 
@@ -32,6 +33,8 @@ class QueueDrainer(Thread):
             return
         if isinstance(diagnostic, dict):
             self.protocol_diagnostics.append(diagnostic)
+            if os.environ.get("STOM_CLI_BACKTEST_PROTOCOL_STREAM") == "1":
+                print(message, file=sys.stderr, flush=True)
 
     def run(self):
         while not self.stop_event.is_set():

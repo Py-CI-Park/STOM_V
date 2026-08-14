@@ -19,6 +19,96 @@ def test_backtest_mounts_trade_path_workbench() -> None:
     assert "<BtTradePathTab" in source
 
 
+def test_pages_25_to_34_receive_the_selected_base_url() -> None:
+    trade_path = _read("bt-trade-path-tab.jsx")
+    research = _read("v4-research.jsx")
+    settings = _read("v4-settings.jsx")
+
+    assert "<BtAnalysisCardTab baseUrl={baseUrl} jobId={jobId}/>" in trade_path
+    assert "<BtExitAxisPanel baseUrl={baseUrl}/>" in trade_path
+    assert 'fetch((baseUrl || "") + path' in _read("bt-analysis-card.jsx")
+    assert 'fetch((baseUrl || "") + path' in _read("bt-exit-axis.jsx")
+    assert "<AiProviderStatusPanel baseUrl={baseUrl} />" in settings
+    for panel in ("LoopAutonomyPanel", "LoopStandingPanel"):
+        assert f"<{panel} baseUrl={{baseUrl}} />" in research
+    assert "<LoopStrategyLedgerPanel baseUrl={baseUrl} reviewContext={reviewContext}" in research
+    for panel in (
+        "LoopPowerGaugePanel",
+        "LoopResponseSurfacePanel",
+        "LoopConditionDiffPanel",
+        "LoopTradePairsPanel",
+    ):
+        assert f"<{panel} baseUrl={{baseUrl}} reviewContext={{reviewContext}}" in research
+
+
+def test_v4_research_mounts_probability_research_tools_with_base_url() -> None:
+    research = _read("v4-research.jsx")
+    source = _read("loop-research-tools.jsx")
+
+    assert 'from "./loop-research-tools.jsx"' in research
+    assert "<LoopResearchToolsPanel baseUrl={baseUrl} />" in research
+    assert "확률 연구 도구" in research and "확률 연구 도구" in source
+    assert "fetch(loopRtBase(baseUrl) + path" in source
+
+
+def test_probability_research_tools_are_manual_no_adoption_only() -> None:
+    source = _read("loop-research-tools.jsx")
+
+    assert 'loopRtGet(baseUrl, "/loop/research-tools")' in source
+    for endpoint in (
+        "/loop/research-tools/bayesian",
+        "/loop/research-tools/ast",
+        "/loop/research-tools/qmc",
+        "/loop/research-tools/denoise",
+    ):
+        assert endpoint in source
+    # Only the status GET is mounted automatically; all POST calls stay behind submit handlers.
+    effect_block = source.split("useEffect_lrt(() =>", 1)[1].split("const updateError", 1)[0]
+    assert "loadStatus();" in effect_block
+    assert "loopRtPost" not in effect_block
+    for handler in ("onBayesianSubmit", "onAstSubmit", "onQmcSubmit", "onDenoiseSubmit"):
+        assert handler in source
+    assert "no_adoption" in source
+    assert "receipts" in source
+    assert "진단/제안 전용" in source
+    assert "OOS 판정·전략 채택·내보내기 권한이 없습니다" in source
+    assert "APPROVE" in source and "statistical boundary only" in source and "전략 승인 아님" in source
+    for forbidden in ("/export", "final_approval", "record_decision"):
+        assert forbidden not in source
+    for empty_or_error in ("상태 요청 실패", "아직 실행한 수동 진단이 없습니다", "요청 실패", "감사할 소스를 입력하세요"):
+        assert empty_or_error in source
+
+
+def test_probability_research_tools_match_strict_api_payload_shapes() -> None:
+    source = _read("loop-research-tools.jsx")
+    assert "counts: { successes, failures }" in source
+    assert "limits: {" in source
+    assert 'kind: "continuous"' in source
+    assert "budget: loopRtClamp(qmc.count" in source
+    assert 'operator: "mask_one_clause"' in source
+    assert "corruption_rate" not in source
+    assert "payload.posterior && payload.posterior.mean" in source
+    assert "payload.pareto.entries" in source
+
+
+def test_ledger_selection_publishes_shared_review_context() -> None:
+    research = _read("v4-research.jsx")
+    ledger = _read("loop-strategy-ledger.jsx")
+
+    assert "const [reviewContext, setReviewContext]" in research
+    assert "onSelectContext={setReviewContext}" in research
+    for field in (
+        "candidate_id",
+        "baseline_id",
+        "artifact_id",
+        "study_id",
+        "lane",
+        "split",
+        "source_hash",
+    ):
+        assert field in ledger
+
+
 def test_replay_reads_trade_path_deep_link_context() -> None:
     source = _read("v4-replay.jsx")
     assert 'from "./bt-replay-trade-context.jsx"' in source
