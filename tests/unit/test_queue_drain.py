@@ -38,6 +38,17 @@ def _stop_and_join(drainer, timeout=2.0):
     drainer.join(timeout=timeout)
 
 
+def test_protocol_stream_emits_bounded_jsonl_when_enabled(monkeypatch, capsys):
+    monkeypatch.setenv("STOM_CLI_BACKTEST_PROTOCOL_STREAM", "1")
+    drainer = QueueDrainer(Queue(), verbose=False)
+    message = '[CLI_DIAG] {"source":"BackTest","checkpoint":"waiting"}'
+    drainer._record_protocol_diagnostic(message)
+    assert capsys.readouterr().err.strip() == message
+    assert drainer.protocol_diagnostics == [
+        {"source": "BackTest", "checkpoint": "waiting"}
+    ]
+
+
 # ============================================================
 # tuple 메시지 수신
 # ============================================================

@@ -104,6 +104,20 @@ def test_submit_and_success(tmp_path: Path):
     assert manager.result_csv_path(job_id) == "backtest/csv/fake.csv"
 
 
+def test_protocol_jsonl_preserves_checkpoint_and_final_json():
+    output = "\n".join([
+        '[CLI_DIAG] {"source":"BackTest","checkpoint":"waiting_first"}',
+        '[CLI_DIAG] {"source":"BackTest","checkpoint":"waiting_heartbeat"}',
+        '{"status":"success","csv_path":"x.csv","metrics":{}}',
+    ])
+    assert backtest_jobs_module._parse_cli_json(output)["status"] == "success"
+    assert backtest_jobs_module._protocol_summary(output) == {
+        "event_count": 2,
+        "last_checkpoint": "waiting_heartbeat",
+        "last_by_source": {"BackTest": "waiting_heartbeat"},
+    }
+
+
 def test_normal_queued_jobs_complete_and_release_slot(tmp_path: Path):
     first_builder_entered = threading.Event()
     release_first_builder = threading.Event()

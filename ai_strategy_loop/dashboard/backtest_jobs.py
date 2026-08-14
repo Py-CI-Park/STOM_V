@@ -538,6 +538,9 @@ class BacktestJobManager:
         #   복구가 불가능하다. 실제로 잡 기록의 실패 사유가 "������ ���� ..." 로 남아
         #   사용자가 원인을 읽을 수 없었다(2026-07-26 실측).
         env["PYTHONIOENCODING"] = "utf-8"
+        # quiet CLI도 protocol checkpoint만 bounded JSONL로 내보내 워치독 종료 전에
+        # 마지막 엔진 단계를 job record에 보존한다.
+        env["STOM_CLI_BACKTEST_PROTOCOL_STREAM"] = "1"
         # 워크벤치는 운영 strategy.db 를 대상으로 한다(bootstrap 의 루프 격리 오버라이드를 되돌림).
         env["STOM_CLI_DB_STRATEGY"] = str(self._strategy_db)
         # 스모크/서브셋 백테: back_db_override 가 있으면 시세 DB를 교체한다.
@@ -667,7 +670,7 @@ class BacktestJobManager:
         status = payload.get("status")
         csv_path = payload.get("csv_path")
         metrics = payload.get("metrics")
-        diagnostics = payload.get("backtest_process_diagnostics")
+        diagnostics = payload.get("backtest_process_diagnostics") or _protocol_summary(stdout)
         mode = str((record.spec or {}).get("mode", "backtest") or "backtest")
 
         with self._lock:
@@ -879,6 +882,17 @@ def _parse_cli_json(stdout: str) -> Dict[str, Any]:
         return json.loads(text)
     except json.JSONDecodeError:
         pass
+    # protocol JSONL이 결과 앞에 스트리밍될 수 있으므로 마지막 완전한 JSON 행을 우선한다.
+    for line in reversed(text.splitlines()):
+        candidate = line.strip()
+        if not candidate or candidate.startswith("[CLI_DIAG] "):
+            continue
+        try:
+            parsed = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict):
+            return parsed
     start = text.find("{")
     end = text.rfind("}")
     if start != -1 and end != -1 and end > start:
@@ -887,6 +901,34 @@ def _parse_cli_json(stdout: str) -> Dict[str, Any]:
         except json.JSONDecodeError:
             return {}
     return {}
+
+
+def _protocol_summary(stdout: str) -> Optional[Dict[str, Any]]:
+    events: List[Dict[str, Any]] = []
+    prefix = "[CLI_DIAG] "
+    for line in stdout.splitlines():
+        text = line.strip()
+        if not text.startswith(prefix):
+            continue
+        try:
+            event = json.loads(text[len(prefix):])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict):
+            events.append(event)
+    if not events:
+        return None
+    last_by_source: Dict[str, str] = {}
+    for event in events:
+        source = str(event.get("source") or "")
+        checkpoint = str(event.get("checkpoint") or "")
+        if source and checkpoint:
+            last_by_source[source] = checkpoint
+    return {
+        "event_count": len(events),
+        "last_checkpoint": events[-1].get("checkpoint"),
+        "last_by_source": last_by_source,
+    }
 
 
 def _is_no_trades(returncode: int, payload: Dict[str, Any]) -> bool:
