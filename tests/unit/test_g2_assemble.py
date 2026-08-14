@@ -35,6 +35,7 @@ class TestRender:
     def test_안전절과_세그먼트가_항상_들어간다(self, variant):
         code = render_strategy(SEEDS, variant)
         assert "관심종목 == 1" in code
+        assert code.index("VI아래5호가 =") < code.index("현재가 < VI아래5호가")
         assert "현재가 < VI아래5호가" in code
         assert "라운드피겨위5호가이내" in code
         assert f"시가총액 < {MICRO_CAP_MAX}" in code

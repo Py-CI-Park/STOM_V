@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-14T02:54:42.968434+00:00",
-  "source_fingerprint": "066149aac66e865be5d4be45d544eb30f35b1a55ceb67af11a519aa94f616908",
-  "count": 1044,
+  "generated_at": "2026-08-14T08:30:50.662388+00:00",
+  "source_fingerprint": "48d611083c96d49c1c509f4b07eeaf081e3a44159d47813641889c73207c32bb",
+  "count": 1046,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -6963,6 +6963,13 @@
       "size": 1496
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-14_E1_worker_원인규명과_G2_교정결과.md",
+      "title": "E1 worker 원인규명과 G2 교정 결과 (2026-08-14)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-14T08:29:43.363215+00:00",
+      "size": 3320
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/2026-08-14_v4_잔여단계_전체완료_보고.md",
       "title": "v4 잔여 단계 전체 완료 보고 (2026-08-14)",
       "category": "quant_scoring_pipeline",
@@ -6975,6 +6982,13 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-08-14T01:09:43.590223+00:00",
       "size": 3787
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-14_확률발견_전체로드맵_실행등록부.md",
+      "title": "확률적 조건식 발견 전체 로드맵 실행등록부 (2026-08-14)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-14T07:54:44.750331+00:00",
+      "size": 2924
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
@@ -7071,8 +7085,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-14T02:52:32.058249+00:00",
-      "size": 10473
+      "updated_at": "2026-08-14T08:29:49.750506+00:00",
+      "size": 10745
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",

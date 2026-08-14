@@ -115,6 +115,7 @@ def test_protocol_jsonl_preserves_checkpoint_and_final_json():
         "event_count": 2,
         "last_checkpoint": "waiting_heartbeat",
         "last_by_source": {"BackTest": "waiting_heartbeat"},
+        "last_detail_by_source": {},
     }
 
 
@@ -128,6 +129,16 @@ def test_protocol_jsonl_allows_pretty_printed_final_json():
         "}",
     ])
     assert backtest_jobs_module._parse_cli_json(output)["status"] == "success"
+
+
+def test_job_strategy_db_override_is_explicit_and_default_preserving(monkeypatch, tmp_path):
+    monkeypatch.delenv("STOM_WEBBT_JOB_STRATEGY_DB", raising=False)
+    assert backtest_jobs_module._default_job_strategy_db() == (
+        backtest_jobs_module._OPERATIONAL_STRATEGY_DB
+    )
+    sidecar = tmp_path / "strategy.db"
+    monkeypatch.setenv("STOM_WEBBT_JOB_STRATEGY_DB", str(sidecar))
+    assert backtest_jobs_module._default_job_strategy_db() == sidecar
 
 
 def test_normal_queued_jobs_complete_and_release_slot(tmp_path: Path):

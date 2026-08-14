@@ -1,0 +1,125 @@
+{
+  "schema": "stom.e1_corrected_g2_metrics.v1",
+  "authority": "diagnostic_fixture_not_oos",
+  "source_hashes": {
+    "baseline": "4b1f6b370444b62a354f085384169bdafd837659f6e0cecb039d56bd8bbb1bf7",
+    "generated": "06c7399d95514bd773d8ad1b2c4a0f757306bd1df40dff1cdd8f8de885653ba0"
+  },
+  "rows": [
+    {
+      "arm": "baseline",
+      "repetition": 1,
+      "job_id": "20260814_172132_TickB902905_92036",
+      "status": "success",
+      "metrics": {
+        "trade_count": 3,
+        "daily_avg_trades": 0.6,
+        "win_rate": 66.67,
+        "avg_profit_pct": -0.05,
+        "total_profit_pct": -0.14,
+        "total_profit_krw": -1410,
+        "mdd_pct": 0.14,
+        "tpi": 0.93,
+        "max_hold_count": 1,
+        "avg_hold_time": 1174.0,
+        "day_count": 5
+      }
+    },
+    {
+      "arm": "baseline",
+      "repetition": 2,
+      "job_id": "20260814_172245_TickB902905_65979",
+      "status": "success",
+      "metrics": {
+        "trade_count": 3,
+        "daily_avg_trades": 0.6,
+        "win_rate": 66.67,
+        "avg_profit_pct": -0.05,
+        "total_profit_pct": -0.14,
+        "total_profit_krw": -1410,
+        "mdd_pct": 0.14,
+        "tpi": 0.93,
+        "max_hold_count": 1,
+        "avg_hold_time": 1174.0,
+        "day_count": 5
+      }
+    },
+    {
+      "arm": "baseline",
+      "repetition": 3,
+      "job_id": "20260814_172354_TickB902905_34147",
+      "status": "success",
+      "metrics": {
+        "trade_count": 3,
+        "daily_avg_trades": 0.6,
+        "win_rate": 66.67,
+        "avg_profit_pct": -0.05,
+        "total_profit_pct": -0.14,
+        "total_profit_krw": -1410,
+        "mdd_pct": 0.14,
+        "tpi": 0.93,
+        "max_hold_count": 1,
+        "avg_hold_time": 1174.0,
+        "day_count": 5
+      }
+    },
+    {
+      "arm": "generated",
+      "repetition": 1,
+      "job_id": "20260814_172502_G2BSEGONLY_2578",
+      "status": "success",
+      "metrics": {
+        "trade_count": 143,
+        "daily_avg_trades": 28.6,
+        "win_rate": 20.98,
+        "avg_profit_pct": -0.39,
+        "total_profit_pct": -6.93,
+        "total_profit_krw": -555903,
+        "mdd_pct": 7.23,
+        "tpi": 0.72,
+        "max_hold_count": 8,
+        "avg_hold_time": 244.13,
+        "day_count": 5
+      }
+    },
+    {
+      "arm": "generated",
+      "repetition": 2,
+      "job_id": "20260814_172611_G2BSEGONLY_71172",
+      "status": "success",
+      "metrics": {
+        "trade_count": 143,
+        "daily_avg_trades": 28.6,
+        "win_rate": 20.98,
+        "avg_profit_pct": -0.39,
+        "total_profit_pct": -6.93,
+        "total_profit_krw": -555903,
+        "mdd_pct": 7.23,
+        "tpi": 0.72,
+        "max_hold_count": 8,
+        "avg_hold_time": 244.13,
+        "day_count": 5
+      }
+    },
+    {
+      "arm": "generated",
+      "repetition": 3,
+      "job_id": "20260814_172719_G2BSEGONLY_39769",
+      "status": "success",
+      "metrics": {
+        "trade_count": 143,
+        "daily_avg_trades": 28.6,
+        "win_rate": 20.98,
+        "avg_profit_pct": -0.39,
+        "total_profit_pct": -6.93,
+        "total_profit_krw": -555903,
+        "mdd_pct": 7.23,
+        "tpi": 0.72,
+        "max_hold_count": 8,
+        "avg_hold_time": 244.13,
+        "day_count": 5
+      }
+    }
+  ],
+  "verdict": "EXECUTION_SUCCESS_ECONOMIC_FAILURE"
+}

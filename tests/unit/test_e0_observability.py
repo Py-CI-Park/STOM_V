@@ -45,6 +45,7 @@ def test_run_once_records_bounded_diagnostics():
     assert row["status"] == "success"
     assert row["metrics_available"] is True
     assert row["diagnostics"]["event_count"] == 3
+    assert row["diagnostics"]["last_detail_by_source"] == {}
     assert "events" not in row["diagnostics"]
     assert client.calls[0][2]["timeout"] == 10
 

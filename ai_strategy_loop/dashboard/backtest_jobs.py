@@ -930,15 +930,24 @@ def _protocol_summary(stdout: str) -> Optional[Dict[str, Any]]:
     if not events:
         return None
     last_by_source: Dict[str, str] = {}
+    last_detail_by_source: Dict[str, Dict[str, Any]] = {}
     for event in events:
         source = str(event.get("source") or "")
         checkpoint = str(event.get("checkpoint") or "")
         if source and checkpoint:
             last_by_source[source] = checkpoint
+            detail = event.get("detail")
+            if isinstance(detail, dict):
+                last_detail_by_source[source] = {
+                    str(key)[:64]: value
+                    for key, value in detail.items()
+                    if value is None or isinstance(value, (bool, int, float, str))
+                }
     return {
         "event_count": len(events),
         "last_checkpoint": events[-1].get("checkpoint"),
         "last_by_source": last_by_source,
+        "last_detail_by_source": last_detail_by_source,
     }
 
 
@@ -964,11 +973,16 @@ _manager: Optional[BacktestJobManager] = None
 _manager_lock = threading.Lock()
 
 
+def _default_job_strategy_db() -> Path:
+    override = os.environ.get("STOM_WEBBT_JOB_STRATEGY_DB")
+    return Path(override) if override else _OPERATIONAL_STRATEGY_DB
+
+
 def get_job_manager() -> BacktestJobManager:
     """프로세스 전역 잡 매니저 싱글톤을 반환한다(지연 초기화)."""
     global _manager
     if _manager is None:
         with _manager_lock:
             if _manager is None:
-                _manager = BacktestJobManager()
+                _manager = BacktestJobManager(strategy_db=_default_job_strategy_db())
     return _manager

@@ -72,6 +72,7 @@ def _diagnostic_summary(payload: dict[str, Any]) -> dict[str, Any]:
         "event_count": diagnostics.get("event_count"),
         "last_checkpoint": diagnostics.get("last_checkpoint"),
         "last_by_source": diagnostics.get("last_by_source") or {},
+        "last_detail_by_source": diagnostics.get("last_detail_by_source") or {},
     }
 
 
