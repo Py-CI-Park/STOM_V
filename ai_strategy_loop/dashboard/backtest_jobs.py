@@ -973,11 +973,16 @@ _manager: Optional[BacktestJobManager] = None
 _manager_lock = threading.Lock()
 
 
+def _default_job_strategy_db() -> Path:
+    override = os.environ.get("STOM_WEBBT_JOB_STRATEGY_DB")
+    return Path(override) if override else _OPERATIONAL_STRATEGY_DB
+
+
 def get_job_manager() -> BacktestJobManager:
     """프로세스 전역 잡 매니저 싱글톤을 반환한다(지연 초기화)."""
     global _manager
     if _manager is None:
         with _manager_lock:
             if _manager is None:
-                _manager = BacktestJobManager()
+                _manager = BacktestJobManager(strategy_db=_default_job_strategy_db())
     return _manager
