@@ -1,4 +1,8 @@
-from ai_strategy_loop.labeling.run_d1_engine_screen import _pareto, screen_decision
+from ai_strategy_loop.labeling.run_d1_engine_screen import (
+    _map_elites,
+    _pareto,
+    screen_decision,
+)
 
 
 def _metrics(**updates):
@@ -43,3 +47,14 @@ def test_pareto_preserves_non_dominated_tradeoffs_without_adoption():
     assert {item["candidate_id"] for item in result["entries"]} == {"A", "B"}
     assert result["authority"] == "none"
     assert result["oos_claim"] == "none"
+
+
+def test_map_elites_keeps_best_candidate_per_family_and_time_niche():
+    rows = [
+        {"candidate_id": "A", "family": "F", "parameters": {"time_end": 90500}, "status": "success", "metrics": _metrics(total_profit_pct=1)},
+        {"candidate_id": "B", "family": "F", "parameters": {"time_end": 90500}, "status": "success", "metrics": _metrics(total_profit_pct=2)},
+        {"candidate_id": "C", "family": "F", "parameters": {"time_end": 91000}, "status": "success", "metrics": _metrics(total_profit_pct=0.5)},
+    ]
+    result = _map_elites(rows)
+    assert [item["candidate_id"] for item in result["elites"]] == ["B", "C"]
+    assert result["authority"] == "none"

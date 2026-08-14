@@ -66,6 +66,40 @@ def _pareto(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _map_elites(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    elites: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        metrics = row.get("metrics")
+        if row.get("status") != "success" or not isinstance(metrics, dict):
+            continue
+        niche = f"{row['family']}|end={int(row['parameters']['time_end'])}"
+        quality = (
+            float(metrics.get("total_profit_pct") or 0.0),
+            -float(metrics.get("mdd_pct") or 0.0),
+            int(metrics.get("trade_count") or 0),
+        )
+        prior = elites.get(niche)
+        if prior is None or quality > tuple(prior["quality"]):
+            elites[niche] = {
+                "candidate_id": row["candidate_id"],
+                "family": row["family"],
+                "time_end": int(row["parameters"]["time_end"]),
+                "quality": list(quality),
+                "metrics": {
+                    "total_profit_pct": metrics.get("total_profit_pct"),
+                    "mdd_pct": metrics.get("mdd_pct"),
+                    "trade_count": metrics.get("trade_count"),
+                },
+            }
+    return {
+        "niche_definition": "family|time_end",
+        "quality_order": ["total_profit_pct_max", "mdd_pct_min", "trade_count_max"],
+        "elites": [elites[key] for key in sorted(elites)],
+        "authority": "none",
+        "oos_claim": "none",
+    }
+
+
 def run_screen(client: Any, **kwargs: Any) -> dict[str, Any]:
     batch = propose_discovery_batch(seed=20260814, budget=12)
     rows = []
@@ -99,6 +133,7 @@ def run_screen(client: Any, **kwargs: Any) -> dict[str, Any]:
         "config": kwargs,
         "rows": rows,
         "pareto": _pareto(rows),
+        "map_elites": _map_elites(rows),
         "advanced": advanced,
         "verdict": "SECOND_STAGE_CANDIDATES" if advanced else "NO_ECONOMIC_CANDIDATE",
     }
