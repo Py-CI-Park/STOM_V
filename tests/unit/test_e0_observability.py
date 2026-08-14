@@ -49,6 +49,25 @@ def test_run_once_records_bounded_diagnostics():
     assert client.calls[0][2]["timeout"] == 10
 
 
+def test_run_once_accepts_job_result_process_diagnostics_key():
+    client = FakeClient(["success"], {
+        "status": "success",
+        "process_diagnostics": {
+            "event_count": 4,
+            "last_checkpoint": "backtest_child_completed",
+            "last_by_source": {"BackTest": "backtest_child_completed"},
+        },
+    })
+    ticks = iter([0.0, 1.0])
+    row = run_once(
+        client, Fixture("x", "B", "S"), 1,
+        start=20230101, end=20230102, engines=2,
+        job_timeout=10, poll_timeout=20, poll_interval=0,
+        clock=lambda: next(ticks), sleep=lambda _: None,
+    )
+    assert row["diagnostics"]["last_checkpoint"] == "backtest_child_completed"
+
+
 def test_run_once_cancels_at_poll_deadline():
     client = FakeClient(["running"], {"status": "canceled"})
     ticks = iter([0.0, 21.0, 22.0])

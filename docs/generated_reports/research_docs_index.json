@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-14T02:25:24.170112+00:00",
-  "source_fingerprint": "6594a9ebdcf48a48d7560b2959c0c48782d1da72c1a04ab002c6f2ffcb61663a",
+  "generated_at": "2026-08-14T02:46:47.224122+00:00",
+  "source_fingerprint": "83b9c590a043dea89b757ec41333bfac6b1923e3127a5d7f6d0df2999ec5390c",
   "count": 1043,
   "docs": [
     {
@@ -6952,8 +6952,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-14_E0_엔진관측성_고정fixture_결과.md",
       "title": "E0 엔진 관측성 고정 fixture 대조 결과 (2026-08-14)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-14T01:47:01.335346+00:00",
-      "size": 1341
+      "updated_at": "2026-08-14T02:45:14.932697+00:00",
+      "size": 2110
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-14_E0_엔진관측성_고정fixture_사전등록.md",
@@ -7064,8 +7064,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-14T02:24:49.979873+00:00",
-      "size": 10333
+      "updated_at": "2026-08-14T02:45:24.480965+00:00",
+      "size": 10345
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",

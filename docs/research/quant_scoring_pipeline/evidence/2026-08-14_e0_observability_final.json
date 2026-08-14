@@ -1,0 +1,152 @@
+{
+  "schema": "stom.e0_observability.v1",
+  "authority": "diagnostic_only",
+  "fixtures": [
+    {
+      "name": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905"
+    },
+    {
+      "name": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905"
+    }
+  ],
+  "config": {
+    "start": 20231114,
+    "end": 20231121,
+    "engines": 16,
+    "job_timeout": 240,
+    "poll_timeout": 300
+  },
+  "rows": [
+    {
+      "arm": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_112337_TickB902905_17643",
+      "status": "success",
+      "elapsed_seconds": 107.678,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 465,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed"
+        }
+      }
+    },
+    {
+      "arm": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905",
+      "repetition": 2,
+      "job_id": "20260814_112525_TickB902905_25362",
+      "status": "success",
+      "elapsed_seconds": 108.284,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 465,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed"
+        }
+      }
+    },
+    {
+      "arm": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905",
+      "repetition": 3,
+      "job_id": "20260814_112713_TickB902905_33702",
+      "status": "success",
+      "elapsed_seconds": 113.151,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": 465,
+        "last_checkpoint": "backtest_child_completed",
+        "last_by_source": {
+          "BackTest": "backtest_child_completed"
+        }
+      }
+    },
+    {
+      "arm": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_112906_G2BSEGONLY_46897",
+      "status": "timeout",
+      "elapsed_seconds": 304.586,
+      "timed_out": true,
+      "message": "timeout (>300s)",
+      "idle_for_sec": null,
+      "result_status": "timeout",
+      "metrics_available": false,
+      "diagnostics": {
+        "event_count": 50,
+        "last_checkpoint": "backtest_child_waiting_mq_heartbeat",
+        "last_by_source": {
+          "BackTest": "backtest_child_waiting_mq_heartbeat"
+        }
+      }
+    },
+    {
+      "arm": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905",
+      "repetition": 2,
+      "job_id": "20260814_113411_G2BSEGONLY_51532",
+      "status": "timeout",
+      "elapsed_seconds": 302.077,
+      "timed_out": true,
+      "message": "timeout (>300s)",
+      "idle_for_sec": null,
+      "result_status": "timeout",
+      "metrics_available": false,
+      "diagnostics": {
+        "event_count": 49,
+        "last_checkpoint": "backtest_child_waiting_mq_heartbeat",
+        "last_by_source": {
+          "BackTest": "backtest_child_waiting_mq_heartbeat"
+        }
+      }
+    },
+    {
+      "arm": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905",
+      "repetition": 3,
+      "job_id": "20260814_113913_G2BSEGONLY_53670",
+      "status": "timeout",
+      "elapsed_seconds": 305.082,
+      "timed_out": true,
+      "message": "timeout (>300s)",
+      "idle_for_sec": null,
+      "result_status": "timeout",
+      "metrics_available": false,
+      "diagnostics": {
+        "event_count": 48,
+        "last_checkpoint": "backtest_child_waiting_mq_heartbeat",
+        "last_by_source": {
+          "BackTest": "backtest_child_waiting_mq_heartbeat"
+        }
+      }
+    }
+  ],
+  "verdict": "REPRODUCED"
+}

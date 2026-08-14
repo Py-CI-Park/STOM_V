@@ -65,9 +65,17 @@ class Client:
 
 
 def _diagnostic_summary(payload: dict[str, Any]) -> dict[str, Any]:
-    diagnostics = payload.get("backtest_process_diagnostics") or {}
+    diagnostics = (
+        payload.get("process_diagnostics")
+        or payload.get("backtest_process_diagnostics")
+        or {}
+    )
     if not diagnostics and isinstance(payload.get("result"), dict):
-        diagnostics = payload["result"].get("backtest_process_diagnostics") or {}
+        diagnostics = (
+            payload["result"].get("process_diagnostics")
+            or payload["result"].get("backtest_process_diagnostics")
+            or {}
+        )
     return {
         "event_count": diagnostics.get("event_count"),
         "last_checkpoint": diagnostics.get("last_checkpoint"),
