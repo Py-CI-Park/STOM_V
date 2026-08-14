@@ -46,6 +46,7 @@ class D2Batch:
     seed: int
     per_family_budget: int
     candidates: tuple[D2Candidate, ...]
+    qmc_receipts_by_family: Mapping[str, Any]
     authority: str = AUTHORITY
     can_adopt: bool = False
 
@@ -144,11 +145,13 @@ def render_d2_source(family: str, p: Mapping[str, Any]) -> str:
 
 def propose_d2_batch(*, seed: int = 20260815, per_family_budget: int = 4) -> D2Batch:
     candidates = []
+    receipts = {}
     for family_index, family in enumerate(FAMILIES):
         raw = propose_initial_candidates(
             _specs(family), per_family_budget,
             seed=seed + family_index, scramble=True,
         )
+        receipts[family] = raw.receipt
         for local_index, proposal in enumerate(raw.candidates, start=1):
             parameters = dict(proposal.parameters)
             source = render_d2_source(family, parameters)
@@ -174,4 +177,5 @@ def propose_d2_batch(*, seed: int = 20260815, per_family_budget: int = 4) -> D2B
         seed=int(seed),
         per_family_budget=int(per_family_budget),
         candidates=tuple(candidates),
+        qmc_receipts_by_family=MappingProxyType(receipts),
     )

@@ -48,7 +48,10 @@ def candidate_verdict(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "max_mdd_pct": max_mdd,
         "execution_ok": execution_ok,
         "robust": robust,
-        "verdict": "DEVELOPMENT_ROBUST" if robust else "DEVELOPMENT_REJECT",
+        "verdict": "DEVELOPMENT_RULE_PASS" if robust else "DEVELOPMENT_REJECT",
+        "posterior_underpowered": (
+            _bayesian(successes, len(rows) - successes)["decision"] != "APPROVE"
+        ),
         "bayesian": _bayesian(successes, len(rows) - successes),
     }
 

@@ -34,7 +34,8 @@ def test_candidate_verdict_requires_four_of_six_and_positive_aggregate():
     verdict = candidate_verdict(rows)
     assert verdict["successful_folds"] == 4
     assert verdict["robust"] is True
-    assert verdict["verdict"] == "DEVELOPMENT_ROBUST"
+    assert verdict["verdict"] == "DEVELOPMENT_RULE_PASS"
+    assert verdict["posterior_underpowered"] is True
     assert verdict["bayesian"]["can_adopt"] is False
 
 

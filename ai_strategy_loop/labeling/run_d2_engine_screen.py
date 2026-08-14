@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import urllib.parse
 from pathlib import Path
@@ -16,6 +17,11 @@ from ai_strategy_loop.labeling.run_d1_engine_screen import (
 )
 from ai_strategy_loop.labeling.run_e0_observability import Client, Fixture, run_once
 from ai_strategy_loop.revision.probabilistic_discovery_d2 import propose_d2_batch
+
+
+def _executed_source_hash(job: dict[str, Any]) -> str | None:
+    source = (job.get("spec") or {}).get("buy_code") or ""
+    return hashlib.sha256(str(source).encode("utf-8")).hexdigest() if source else None
 
 
 def select_family_representatives(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -46,14 +52,32 @@ def run_screen(client: Any, **kwargs: Any) -> dict[str, Any]:
         result = client.call(
             "GET", f"/bt/result?job_id={urllib.parse.quote(str(row.get('job_id') or ''))}"
         ) if row.get("job_id") else {}
+        job_rows = client.call("GET", "/bt/jobs").get("jobs") or []
+        job = next(
+            (item for item in job_rows if str(item.get("job_id")) == str(row.get("job_id"))),
+            {},
+        )
+        executed_sha256 = _executed_source_hash(job)
+        source_match = executed_sha256 == candidate.source_sha256
         metrics = result.get("metrics") if isinstance(result.get("metrics"), dict) else None
+        decision = screen_decision(
+            str(row.get("status") or ""), metrics, max_mdd_pct=15.0,
+        )
+        if not source_match:
+            decision = {
+                "advance": False,
+                "decision": "REJECT",
+                "reasons": [*decision["reasons"], "source_snapshot_mismatch"],
+            }
         row.update({
             "candidate_id": candidate.candidate_id,
             "family": candidate.family,
             "source_sha256": candidate.source_sha256,
             "parameters": dict(candidate.parameters),
+            "executed_source_sha256": executed_sha256,
+            "source_snapshot_match": source_match,
             "metrics": metrics,
-            "screen": screen_decision(str(row.get("status") or ""), metrics),
+            "screen": decision,
         })
         rows.append(row)
     representatives = select_family_representatives(rows)
@@ -65,6 +89,9 @@ def run_screen(client: Any, **kwargs: Any) -> dict[str, Any]:
         "config": kwargs,
         "rows": rows,
         "pareto": _pareto(rows),
+        "selection_pareto": _pareto(
+            [row for row in rows if row["screen"]["advance"]]
+        ),
         "map_elites": _map_elites(rows),
         "advanced": [row["candidate_id"] for row in rows if row["screen"]["advance"]],
         "representatives": [row["candidate_id"] for row in representatives],

@@ -1,4 +1,10 @@
-from ai_strategy_loop.labeling.run_d2_engine_screen import select_family_representatives
+import hashlib
+
+from ai_strategy_loop.labeling.run_d2_engine_screen import (
+    _executed_source_hash,
+    select_family_representatives,
+)
+from ai_strategy_loop.labeling.run_d1_engine_screen import screen_decision
 
 
 def _row(candidate, family, profit, *, advance=True, mdd=2.0, trades=20):
@@ -32,3 +38,22 @@ def test_tie_breaks_by_lower_mdd_then_more_trades():
         _row("A3", "A", 1.0, mdd=2.0, trades=20),
     ]
     assert select_family_representatives(rows)[0]["candidate_id"] == "A3"
+
+
+def test_d2_screen_uses_preregistered_fifteen_percent_mdd_limit():
+    metrics = {
+        "trade_count": 20,
+        "total_profit_pct": 1.0,
+        "avg_profit_pct": 0.1,
+        "mdd_pct": 12.0,
+    }
+    assert screen_decision("success", metrics, max_mdd_pct=15.0)["advance"] is True
+    metrics["mdd_pct"] = 15.1
+    assert screen_decision("success", metrics, max_mdd_pct=15.0)["advance"] is False
+
+
+def test_executed_source_hash_uses_job_code_snapshot_not_name():
+    source = "매수 = True"
+    job = {"spec": {"buy": "MUTABLE_NAME", "buy_code": source}}
+    assert _executed_source_hash(job) == hashlib.sha256(source.encode()).hexdigest()
+    assert _executed_source_hash({"spec": {"buy": "MUTABLE_NAME"}}) is None

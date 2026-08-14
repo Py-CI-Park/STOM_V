@@ -14,6 +14,13 @@ def test_d2_batch_has_exact_budget_per_family():
         family: 4 for family in FAMILIES
     })
     assert batch.can_adopt is False
+    assert set(batch.qmc_receipts_by_family) == set(FAMILIES)
+    assert all(
+        receipt.seed == 20260815 + index
+        for index, receipt in enumerate(
+            batch.qmc_receipts_by_family[family] for family in FAMILIES
+        )
+    )
 
 
 def test_d2_batch_is_deterministic_and_all_sources_pass_execution_contract():

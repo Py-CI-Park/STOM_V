@@ -293,5 +293,127 @@
       "can_adopt": false,
       "oos_claim": "none"
     }
-  ]
+  ],
+  "qmc_receipts_by_family": {
+    "VOL_EXPANSION_BREAKOUT": {
+      "seed": 20260815,
+      "scramble": true,
+      "scramble_method": "fixed_zero_digit_permutation_plus_cranley_patterson_shift",
+      "bases": [
+        2,
+        3,
+        5,
+        7,
+        11
+      ],
+      "skip": 0,
+      "budget": 4,
+      "dimensions": [
+        "time_end",
+        "cap_max",
+        "vol_window",
+        "vol_multiple",
+        "strength"
+      ],
+      "schema": "qmc_halton_candidate_batch_v1",
+      "scope": "offline_candidate_proposal_only",
+      "adoption_authority": "none",
+      "oos_claim": "none"
+    },
+    "BOOK_PERSISTENCE": {
+      "seed": 20260816,
+      "scramble": true,
+      "scramble_method": "fixed_zero_digit_permutation_plus_cranley_patterson_shift",
+      "bases": [
+        2,
+        3,
+        5,
+        7,
+        11
+      ],
+      "skip": 0,
+      "budget": 4,
+      "dimensions": [
+        "time_end",
+        "cap_max",
+        "book_window",
+        "book_ratio",
+        "buy_surge"
+      ],
+      "schema": "qmc_halton_candidate_batch_v1",
+      "scope": "offline_candidate_proposal_only",
+      "adoption_authority": "none",
+      "oos_claim": "none"
+    },
+    "DELAYED_FLOW_RESPONSE": {
+      "seed": 20260817,
+      "scramble": true,
+      "scramble_method": "fixed_zero_digit_permutation_plus_cranley_patterson_shift",
+      "bases": [
+        2,
+        3,
+        5,
+        7,
+        11,
+        13,
+        17
+      ],
+      "skip": 0,
+      "budget": 4,
+      "dimensions": [
+        "time_end",
+        "cap_max",
+        "flow_window",
+        "flow_multiple",
+        "price_window",
+        "rise_rate",
+        "strength"
+      ],
+      "schema": "qmc_halton_candidate_batch_v1",
+      "scope": "offline_candidate_proposal_only",
+      "adoption_authority": "none",
+      "oos_claim": "none"
+    },
+    "SPARSE_CONFIRMED_BREAKOUT": {
+      "seed": 20260818,
+      "scramble": true,
+      "scramble_method": "fixed_zero_digit_permutation_plus_cranley_patterson_shift",
+      "bases": [
+        2,
+        3,
+        5,
+        7,
+        11,
+        13,
+        17
+      ],
+      "skip": 0,
+      "budget": 4,
+      "dimensions": [
+        "time_end",
+        "cap_max",
+        "flow_window",
+        "flow_multiple",
+        "strength",
+        "rate_low",
+        "rate_width"
+      ],
+      "schema": "qmc_halton_candidate_batch_v1",
+      "scope": "offline_candidate_proposal_only",
+      "adoption_authority": "none",
+      "oos_claim": "none"
+    }
+  },
+  "dimension_count_by_family": {
+    "VOL_EXPANSION_BREAKOUT": 5,
+    "BOOK_PERSISTENCE": 5,
+    "DELAYED_FLOW_RESPONSE": 7,
+    "SPARSE_CONFIRMED_BREAKOUT": 7
+  },
+  "family_underexplored": {
+    "VOL_EXPANSION_BREAKOUT": true,
+    "BOOK_PERSISTENCE": true,
+    "DELAYED_FLOW_RESPONSE": true,
+    "SPARSE_CONFIRMED_BREAKOUT": true
+  }
 }

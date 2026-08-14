@@ -16,7 +16,12 @@ from ai_strategy_loop.revision.qmc_pareto import ParetoArchive
 SELL = "Tick_S_902_905"
 
 
-def screen_decision(status: str, metrics: dict[str, Any] | None) -> dict[str, Any]:
+def screen_decision(
+    status: str,
+    metrics: dict[str, Any] | None,
+    *,
+    max_mdd_pct: float = 10.0,
+) -> dict[str, Any]:
     reasons = []
     values = metrics or {}
     if status != "success" or not values:
@@ -28,7 +33,7 @@ def screen_decision(status: str, metrics: dict[str, Any] | None) -> dict[str, An
             reasons.append("non_positive_total_profit")
         if float(values.get("avg_profit_pct") or 0.0) <= 0:
             reasons.append("non_positive_avg_profit")
-        if float(values.get("mdd_pct") or 0.0) > 10.0:
+        if float(values.get("mdd_pct") or 0.0) > float(max_mdd_pct):
             reasons.append("mdd_exceeded")
     return {
         "advance": not reasons,
