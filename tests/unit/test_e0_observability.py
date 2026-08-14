@@ -80,3 +80,9 @@ def test_classify_reproduced_no_difference_and_unstable():
     rows[0]["status"] = "failed"
     assert classify(rows) == "UNSTABLE"
     assert classify(rows[:5]) == "BLOCKED_ENVIRONMENT"
+
+
+def test_classify_requires_protocol_checkpoint_evidence():
+    rows = _rows(("success", "received"), ("failed", "waiting"))
+    rows[4]["diagnostics"]["last_checkpoint"] = None
+    assert classify(rows) == "BLOCKED_ENVIRONMENT"

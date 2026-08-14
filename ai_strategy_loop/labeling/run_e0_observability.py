@@ -152,6 +152,8 @@ def run_once(
 def classify(rows: list[dict[str, Any]]) -> str:
     if len(rows) != 6 or any(row.get("status") == "no_job" for row in rows):
         return "BLOCKED_ENVIRONMENT"
+    if any(not (row.get("diagnostics") or {}).get("last_checkpoint") for row in rows):
+        return "BLOCKED_ENVIRONMENT"
     signatures: dict[str, set[tuple[Any, Any]]] = {}
     for row in rows:
         diag = row.get("diagnostics") or {}

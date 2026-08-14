@@ -1,0 +1,141 @@
+{
+  "schema": "stom.e0_observability.v1",
+  "authority": "diagnostic_only",
+  "fixtures": [
+    {
+      "name": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905"
+    },
+    {
+      "name": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905"
+    }
+  ],
+  "config": {
+    "start": 20231114,
+    "end": 20231121,
+    "engines": 16,
+    "job_timeout": 240,
+    "poll_timeout": 300
+  },
+  "rows": [
+    {
+      "arm": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_102033_TickB902905_33963",
+      "status": "success",
+      "elapsed_seconds": 196.989,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": null,
+        "last_checkpoint": null,
+        "last_by_source": {}
+      }
+    },
+    {
+      "arm": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905",
+      "repetition": 2,
+      "job_id": "20260814_102351_TickB902905_31029",
+      "status": "success",
+      "elapsed_seconds": 113.93,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": null,
+        "last_checkpoint": null,
+        "last_by_source": {}
+      }
+    },
+    {
+      "arm": "baseline",
+      "buy": "Tick_B_902_905",
+      "sell": "Tick_S_902_905",
+      "repetition": 3,
+      "job_id": "20260814_102545_TickB902905_45022",
+      "status": "success",
+      "elapsed_seconds": 147.401,
+      "timed_out": false,
+      "message": "ok",
+      "idle_for_sec": null,
+      "result_status": "success",
+      "metrics_available": true,
+      "diagnostics": {
+        "event_count": null,
+        "last_checkpoint": null,
+        "last_by_source": {}
+      }
+    },
+    {
+      "arm": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905",
+      "repetition": 1,
+      "job_id": "20260814_102812_G2BSEGONLY_92464",
+      "status": "timeout",
+      "elapsed_seconds": 305.184,
+      "timed_out": true,
+      "message": "timeout (>300s)",
+      "idle_for_sec": null,
+      "result_status": "timeout",
+      "metrics_available": false,
+      "diagnostics": {
+        "event_count": null,
+        "last_checkpoint": null,
+        "last_by_source": {}
+      }
+    },
+    {
+      "arm": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905",
+      "repetition": 2,
+      "job_id": "20260814_103317_G2BSEGONLY_97696",
+      "status": "timeout",
+      "elapsed_seconds": 304.521,
+      "timed_out": true,
+      "message": "timeout (>300s)",
+      "idle_for_sec": null,
+      "result_status": "timeout",
+      "metrics_available": false,
+      "diagnostics": {
+        "event_count": null,
+        "last_checkpoint": null,
+        "last_by_source": {}
+      }
+    },
+    {
+      "arm": "generated",
+      "buy": "G2_B_SEG_ONLY",
+      "sell": "Tick_S_902_905",
+      "repetition": 3,
+      "job_id": "20260814_103822_G2BSEGONLY_2274",
+      "status": "timeout",
+      "elapsed_seconds": 302.872,
+      "timed_out": true,
+      "message": "timeout (>300s)",
+      "idle_for_sec": null,
+      "result_status": "timeout",
+      "metrics_available": false,
+      "diagnostics": {
+        "event_count": null,
+        "last_checkpoint": null,
+        "last_by_source": {}
+      }
+    }
+  ],
+  "verdict": "BLOCKED_ENVIRONMENT",
+  "blocker": "8771 job result did not expose backtest_process_diagnostics; status difference reproduced but the preregistered first-MQ/checkpoint criterion cannot be judged"
+}
