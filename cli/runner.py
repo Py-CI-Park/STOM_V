@@ -8,6 +8,7 @@ import signal
 import sqlite3
 import atexit
 import pandas as pd
+from pathlib import Path
 from multiprocessing import Process, Queue, Value, Lock, shared_memory
 from queue import Empty
 
@@ -28,6 +29,8 @@ from backtest.backengine_kiwoom_min2 import BackEngineKiwoomMin2
 
 
 _child_procs = []
+_BACKTEST_CSV_DIR_ENV = 'STOM_CLI_BACKTEST_CSV_DIR'
+_DEFAULT_BACKTEST_CSV_DIR = 'backtest/csv'
 
 
 def _normalize_avg_list(avg_time):
@@ -49,6 +52,12 @@ def _ensure_cli_db_env():
     }
     for key, value in defaults.items():
         os.environ.setdefault(key, str(value))
+
+
+def _configured_csv_dir(csv_dir=_DEFAULT_BACKTEST_CSV_DIR):
+    if csv_dir is not None and str(csv_dir) != _DEFAULT_BACKTEST_CSV_DIR:
+        return str(csv_dir)
+    return os.environ.get(_BACKTEST_CSV_DIR_ENV) or _DEFAULT_BACKTEST_CSV_DIR
 
 
 def _get_backtest_last_rowid(table_name='stock_bt'):
@@ -339,8 +348,9 @@ def _engine_with_dict_set(engine_cls, dict_set_override, *args):
     engine_cls(*args)
 
 
-def _find_latest_csv(strategy_name, after_timestamp, csv_dir='backtest/csv'):
-    """backtest/csv/ 에서 strategy_name을 포함하며 after_timestamp 이후 생성된 최신 CSV를 반환한다."""
+def _find_latest_csv(strategy_name, after_timestamp, csv_dir=_DEFAULT_BACKTEST_CSV_DIR):
+    """설정된 CSV 디렉터리에서 strategy_name 포함 + after_timestamp 이후 최신 CSV를 반환한다."""
+    csv_dir = _configured_csv_dir(csv_dir)
     if not os.path.isdir(csv_dir):
         return None
     pattern = os.path.join(csv_dir, f'*{strategy_name}*.csv') if strategy_name else os.path.join(csv_dir, '*.csv')
@@ -351,6 +361,46 @@ def _find_latest_csv(strategy_name, after_timestamp, csv_dir='backtest/csv'):
     if not candidates:
         return None
     return max(candidates, key=os.path.getmtime)
+
+
+def _strategy_names(config):
+    if config is None:
+        return None
+    buy_name = getattr(config, 'buy_strategy', None)
+    sell_name = getattr(config, 'sell_strategy', None)
+    if not buy_name or not sell_name:
+        return None
+    return buy_name, sell_name
+
+
+def _read_strategy_source(con, table_name, strategy_name):
+    row = con.execute(
+        f'SELECT "전략코드" FROM {table_name} WHERE "index" = ? LIMIT 1',
+        (strategy_name,),
+    ).fetchone()
+    if row is None or row[0] is None:
+        return None
+    return str(row[0])
+
+
+def _current_strategy_source_filter(config):
+    names = _strategy_names(config)
+    if names is None:
+        return None, False
+    buy_name, sell_name = names
+    con = None
+    try:
+        con = sqlite3.connect(f"file:{Path(DB_STRATEGY).resolve().as_posix()}?mode=ro", uri=True)
+        buy_source = _read_strategy_source(con, 'stockbuy', buy_name)
+        sell_source = _read_strategy_source(con, 'stocksell', sell_name)
+    except Exception:
+        return None, True
+    finally:
+        if con is not None:
+            con.close()
+    if buy_source is None or sell_source is None:
+        return None, True
+    return (buy_source, sell_source), True
 
 
 def run_backtest(config):
@@ -695,16 +745,22 @@ def run_backtest(config):
 
 
 def _extract_metrics(config, min_rowid=0):
-    """backtest.db의 결과 테이블에서 최신 결과 행을 읽어 metrics dict로 변환."""
+    """backtest.db의 현재 전략 source와 일치하는 post-watermark 결과 행을 metrics로 변환."""
     table_name = 'stock_bt'
+    source_filter, source_filter_required = _current_strategy_source_filter(config)
+    if source_filter_required and source_filter is None:
+        return None
+    watermark = int(min_rowid or 0)
     con = None
     try:
         con = sqlite3.connect(DB_BACKTEST)
-        if min_rowid and min_rowid > 0:
-            query = f"SELECT rowid, * FROM '{table_name}' WHERE rowid > ? ORDER BY rowid DESC LIMIT 1"
-            df = pd.read_sql(query, con, params=[min_rowid])
-        else:
-            df = pd.read_sql(f"SELECT rowid, * FROM '{table_name}' ORDER BY rowid DESC LIMIT 1", con)
+        params = [watermark]
+        where = "WHERE rowid > ?"
+        if source_filter is not None:
+            where += ' AND "매수전략" = ? AND "매도전략" = ?'
+            params.extend(source_filter)
+        query = f"SELECT rowid, * FROM '{table_name}' {where} ORDER BY rowid DESC LIMIT 1"
+        df = pd.read_sql(query, con, params=params)
     except Exception:
         return None
     finally:

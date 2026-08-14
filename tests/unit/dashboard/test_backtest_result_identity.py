@@ -81,15 +81,27 @@ def test_jobs_api_adds_evidence_identity_actions_and_preserves_result_fields(mon
     db = tmp_path / 'strategy.db'
     _strategy_db(db)
     monkeypatch.setenv('STOM_WEBBT_STRATEGY_DB', str(db))
+    monkeypatch.setattr(backtest_api, 'REPO_ROOT', tmp_path)
     csv_path = tmp_path / 'result.csv'
     csv_path.write_text('종목코드,매수시간,매도시간,수익금\n000001,20250101090000,20250101090100,100\n', encoding='utf-8')
-    manager = BacktestJobManager(jobs_dir=tmp_path / 'jobs', command_builder=_success_command(str(csv_path)))
+    manager = BacktestJobManager(
+        jobs_dir=tmp_path / 'jobs',
+        command_builder=_success_command(str(csv_path)),
+        strategy_db=db,
+    )
     monkeypatch.setattr(backtest_api, 'get_job_manager', lambda: manager)
 
     job_id = manager.submit(BacktestJobSpec(
         buy='매수A', sell='매도A', start=20250101, end=20250102,
         buy_code='if A:\n    매수 = True\n', sell_code='if B:\n    매도 = True\n',
     ))['job_id']
+    con = sqlite3.connect(db)
+    try:
+        con.execute('UPDATE stockbuy SET "전략코드"=? WHERE "index"=?', ('mutated buy', '매수A'))
+        con.execute('UPDATE stocksell SET "전략코드"=? WHERE "index"=?', ('mutated sell', '매도A'))
+        con.commit()
+    finally:
+        con.close()
     _wait_status(manager, job_id, {'success', 'error', 'timeout'})
 
     jobs = backtest_api.list_jobs()['jobs']
@@ -97,6 +109,8 @@ def test_jobs_api_adds_evidence_identity_actions_and_preserves_result_fields(mon
     assert job['evidence_id'] == f'job:{job_id}'
     assert job['source_type'] == 'job'
     assert job['condition_identity']['kind'] == 'code_hash'
+    assert job['condition_identity']['buy_hash'] == backtest_api._condition_code_hash('if A:\n    매수 = True\n')
+    assert job['condition_identity']['sell_hash'] == backtest_api._condition_code_hash('if B:\n    매도 = True\n')
     assert job['status_kind'] == 'success'
     assert 'open_result' in job['open_actions']
     assert 'open_report' in job['open_actions']
@@ -110,9 +124,20 @@ def test_jobs_api_adds_evidence_identity_actions_and_preserves_result_fields(mon
 
 
 def test_no_trades_is_openable_and_auto_detail_contract(monkeypatch, tmp_path: Path):
-    manager = BacktestJobManager(jobs_dir=tmp_path / 'jobs', command_builder=_no_trades_command())
+    manager = BacktestJobManager(
+        jobs_dir=tmp_path / 'jobs',
+        command_builder=_no_trades_command(),
+        strategy_db=tmp_path / 'missing_strategy.db',
+    )
     monkeypatch.setattr(backtest_api, 'get_job_manager', lambda: manager)
-    job_id = manager.submit(BacktestJobSpec(buy='매수A', sell='매도A', start=20250101, end=20250102))['job_id']
+    job_id = manager.submit(BacktestJobSpec(
+        buy='매수A',
+        sell='매도A',
+        start=20250101,
+        end=20250102,
+        buy_code='if A:\n    매수 = True\n',
+        sell_code='if B:\n    매도 = True\n',
+    ))['job_id']
     _wait_status(manager, job_id, {'no_trades', 'error', 'timeout'})
 
     job = backtest_api.get_job(job_id)
@@ -147,6 +172,20 @@ def test_missing_artifact_exposes_recover_and_rerun_actions(tmp_path: Path):
     assert 'recover_result' in taxonomy['open_actions']
     assert 'rerun_same_condition' in taxonomy['open_actions']
     assert taxonomy['rerun_spec']['buy'] == '매수A'
+
+
+def test_artifact_resolver_is_repo_root_relative_and_bounded(monkeypatch, tmp_path: Path):
+    repo_root = tmp_path / 'repo'
+    inside = repo_root / 'backtest' / 'csv' / 'result.csv'
+    outside = tmp_path / 'outside.csv'
+    inside.parent.mkdir(parents=True)
+    inside.write_text('x\n', encoding='utf-8')
+    outside.write_text('secret\n', encoding='utf-8')
+    monkeypatch.setattr(backtest_api, 'REPO_ROOT', repo_root)
+
+    assert Path(backtest_api._resolve_artifact_path('backtest/csv/result.csv')).resolve() == inside.resolve()
+    assert backtest_api._resolve_artifact_path('../outside.csv') is None
+    assert backtest_api._resolve_artifact_path(str(outside)) is None
 
 
 def test_demo_result_exposes_phase1_additive_fields(monkeypatch):

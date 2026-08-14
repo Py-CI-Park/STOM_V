@@ -10,6 +10,8 @@ import sys
 import os
 import inspect
 import signal
+import sqlite3
+from pathlib import Path
 from multiprocessing import Queue, Process
 from unittest.mock import patch
 import time
@@ -501,6 +503,140 @@ def test_runner_exports_cli_db_paths_for_legacy_children(monkeypatch, tmp_path):
         run_backtest_body.index('_ensure_cli_db_env()')
         < run_backtest_body.index('_sync_dict_set(config)')
     )
+
+
+def test_backtest_csv_dir_default_and_env_override(monkeypatch, tmp_path):
+    import backtest.backtest as backtest_module
+
+    monkeypatch.delenv('STOM_CLI_BACKTEST_CSV_DIR', raising=False)
+    assert backtest_module._backtest_csv_dir() == Path('./backtest/csv')
+
+    override = tmp_path / 'job-csv'
+    monkeypatch.setenv('STOM_CLI_BACKTEST_CSV_DIR', str(override))
+    assert backtest_module._backtest_csv_dir() == override
+
+
+def test_find_latest_csv_uses_configured_dir_and_preserves_default(monkeypatch, tmp_path):
+    from cli import runner
+
+    monkeypatch.delenv('STOM_CLI_BACKTEST_CSV_DIR', raising=False)
+    assert runner._configured_csv_dir() == 'backtest/csv'
+
+    isolated_dir = tmp_path / 'isolated-csv'
+    isolated_dir.mkdir()
+    csv_path = isolated_dir / '20250101_테스트매수_result.csv'
+    before = time.time() - 1
+    csv_path.write_text('data', encoding='utf-8')
+
+    monkeypatch.setenv('STOM_CLI_BACKTEST_CSV_DIR', str(isolated_dir))
+    assert runner._find_latest_csv('테스트매수', before) == str(csv_path)
+
+
+def test_extract_metrics_selects_matching_source_row_after_watermark(monkeypatch, tmp_path):
+    from cli import runner
+
+    strategy_db = tmp_path / 'strategy.db'
+    result_db = tmp_path / 'backtest.db'
+    buy_source = 'if current_buy:\n    매수 = True\n'
+    sell_source = 'if current_sell:\n    매도 = True\n'
+    foreign_buy_source = 'if foreign_buy:\n    매수 = True\n'
+
+    con = sqlite3.connect(strategy_db)
+    try:
+        con.execute('CREATE TABLE stockbuy ("index" TEXT PRIMARY KEY, "전략코드" TEXT)')
+        con.execute('CREATE TABLE stocksell ("index" TEXT PRIMARY KEY, "전략코드" TEXT)')
+        con.execute('INSERT INTO stockbuy VALUES (?, ?)', ('매수A', buy_source))
+        con.execute('INSERT INTO stocksell VALUES (?, ?)', ('매도A', sell_source))
+        con.commit()
+    finally:
+        con.close()
+
+    con = sqlite3.connect(result_db)
+    try:
+        con.execute('''
+            CREATE TABLE stock_bt (
+                "배팅금액" INTEGER,
+                "필요자금" REAL,
+                "거래횟수" INTEGER,
+                "일평균거래횟수" REAL,
+                "최대보유종목수" INTEGER,
+                "평균보유기간" REAL,
+                "익절" INTEGER,
+                "손절" INTEGER,
+                "승률" REAL,
+                "평균수익률" REAL,
+                "수익률합계" REAL,
+                "최대낙폭률" REAL,
+                "수익금합계" INTEGER,
+                "매매성능지수" REAL,
+                "연간예상수익률" REAL,
+                "매수전략" TEXT,
+                "매도전략" TEXT
+            )
+        ''')
+        rows = [
+            (1000000, 1000000.0, 1, 1.0, 1, 5.0, 1, 0, 50.0, 1.0, 1.0, -1.0, 1000, 1.0, 1.0, buy_source, sell_source),
+            (1000000, 2000000.0, 22, 2.0, 3, 15.0, 2, 1, 70.0, 2.5, 12.5, -2.0, 125000, 2.0, 20.0, buy_source, sell_source),
+            (1000000, 9000000.0, 99, 9.0, 9, 99.0, 9, 9, 99.0, 9.9, 99.9, -9.0, 999999, 9.0, 99.0, foreign_buy_source, sell_source),
+        ]
+        con.executemany('INSERT INTO stock_bt VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', rows)
+        con.commit()
+    finally:
+        con.close()
+
+    monkeypatch.setattr(runner, 'DB_STRATEGY', str(strategy_db), raising=False)
+    monkeypatch.setattr(runner, 'DB_BACKTEST', str(result_db), raising=False)
+    config = types.SimpleNamespace(buy_strategy='매수A', sell_strategy='매도A')
+
+    metrics = runner._extract_metrics(config, min_rowid=1)
+
+    assert metrics is not None
+    assert metrics['trade_count'] == 22
+    assert metrics['total_profit_pct'] == 12.5
+
+
+def test_extract_metrics_returns_none_without_matching_source_after_watermark(monkeypatch, tmp_path):
+    from cli import runner
+
+    strategy_db = tmp_path / 'strategy.db'
+    result_db = tmp_path / 'backtest.db'
+    buy_source = 'if current_buy:\n    매수 = True\n'
+    sell_source = 'if current_sell:\n    매도 = True\n'
+
+    con = sqlite3.connect(strategy_db)
+    try:
+        con.execute('CREATE TABLE stockbuy ("index" TEXT PRIMARY KEY, "전략코드" TEXT)')
+        con.execute('CREATE TABLE stocksell ("index" TEXT PRIMARY KEY, "전략코드" TEXT)')
+        con.execute('INSERT INTO stockbuy VALUES (?, ?)', ('매수A', buy_source))
+        con.execute('INSERT INTO stocksell VALUES (?, ?)', ('매도A', sell_source))
+        con.commit()
+    finally:
+        con.close()
+
+    con = sqlite3.connect(result_db)
+    try:
+        con.execute('''
+            CREATE TABLE stock_bt (
+                "거래횟수" INTEGER,
+                "일평균거래횟수" REAL,
+                "수익률합계" REAL,
+                "매수전략" TEXT,
+                "매도전략" TEXT
+            )
+        ''')
+        con.execute(
+            'INSERT INTO stock_bt VALUES (?, ?, ?, ?, ?)',
+            (99, 9.0, 99.9, 'foreign buy', sell_source),
+        )
+        con.commit()
+    finally:
+        con.close()
+
+    monkeypatch.setattr(runner, 'DB_STRATEGY', str(strategy_db), raising=False)
+    monkeypatch.setattr(runner, 'DB_BACKTEST', str(result_db), raising=False)
+    config = types.SimpleNamespace(buy_strategy='매수A', sell_strategy='매도A')
+
+    assert runner._extract_metrics(config, min_rowid=0) is None
 
 
 def test_runner_records_timeout_checkpoint_fields():

@@ -34,6 +34,18 @@ def test_lane_separation_keeps_tick_and_min_exclusive_variables_apart() -> None:
     min_names = {item.name for item in catalog_for_lane("min")}
     assert "초당순매수수량" in tick_names and "초당순매수수량" not in min_names
     assert "분당순매수금액" in min_names and "분당순매수금액" not in tick_names
+    assert "시가갭수익률" in min_names and "시가갭수익률" not in tick_names
+    assert "시가대비등락율" in min_names and "시가대비등락율" not in tick_names
+
+
+def test_tick_templates_exclude_minute_bar_only_symbols() -> None:
+    minute_only = ("분봉시가", "분봉고가", "분봉저가")
+    for item in catalog_for_lane("tick"):
+        expression = f"{item.formula}\n{item.stom_template}"
+        assert not any(token in expression for token in minute_only), item.name
+
+    assert "분봉시가" in template_block(("시가갭수익률",), "min")
+    assert template_block(("시가갭수익률", "시가대비등락율"), "tick") == ""
 
 
 def test_template_block_orders_chained_dependencies() -> None:

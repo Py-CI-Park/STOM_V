@@ -6,7 +6,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
+import sqlite3
 import sys
 import threading
 import time
@@ -36,6 +38,8 @@ def _spec(
         sell="테스트매도",
         start=start,
         end=end,
+        buy_code=f"if {buy!r}:\n    매수 = True\n",
+        sell_code="if '테스트매도':\n    매도 = True\n",
         timeframe=timeframe,
         timeout=timeout,
     )
@@ -82,6 +86,34 @@ def _wait_status(manager, job_id, targets, timeout=15.0):
             return rec
         time.sleep(0.1)
     return manager.get(job_id)
+
+
+def _hash_code(code: str) -> str:
+    return hashlib.sha256(code.encode("utf-8")).hexdigest()
+
+
+def _write_strategy_db(path: Path, *, buy: str, sell: str, buy_code: str, sell_code: str) -> None:
+    con = sqlite3.connect(path)
+    try:
+        con.execute('CREATE TABLE stockbuy ("index" TEXT PRIMARY KEY, "전략코드" TEXT)')
+        con.execute('CREATE TABLE stocksell ("index" TEXT PRIMARY KEY, "전략코드" TEXT)')
+        con.execute('INSERT INTO stockbuy VALUES (?, ?)', (buy, buy_code))
+        con.execute('INSERT INTO stocksell VALUES (?, ?)', (sell, sell_code))
+        con.commit()
+    finally:
+        con.close()
+
+
+def _read_strategy_code(path: Path, table: str, name: str) -> str:
+    con = sqlite3.connect(path)
+    try:
+        row = con.execute(
+            f'SELECT "전략코드" FROM {table} WHERE "index" = ?',
+            (name,),
+        ).fetchone()
+        return row[0]
+    finally:
+        con.close()
 
 
 # ------------------------------------------------------------------ lifecycle
@@ -133,12 +165,180 @@ def test_protocol_jsonl_allows_pretty_printed_final_json():
 
 def test_job_strategy_db_override_is_explicit_and_default_preserving(monkeypatch, tmp_path):
     monkeypatch.delenv("STOM_WEBBT_JOB_STRATEGY_DB", raising=False)
+    monkeypatch.delenv("STOM_WEBBT_JOB_BACKTEST_DB", raising=False)
     assert backtest_jobs_module._default_job_strategy_db() == (
         backtest_jobs_module._OPERATIONAL_STRATEGY_DB
     )
+    assert backtest_jobs_module._default_job_backtest_db() is None
     sidecar = tmp_path / "strategy.db"
+    backtest_sidecar = tmp_path / "backtest.db"
     monkeypatch.setenv("STOM_WEBBT_JOB_STRATEGY_DB", str(sidecar))
+    monkeypatch.setenv("STOM_WEBBT_JOB_BACKTEST_DB", str(backtest_sidecar))
     assert backtest_jobs_module._default_job_strategy_db() == sidecar
+    assert backtest_jobs_module._default_job_backtest_db() == backtest_sidecar
+
+
+def test_submit_creates_immutable_strategy_snapshot_and_child_env(tmp_path: Path):
+    buy_code = "if original_buy:\n    매수 = True\n"
+    sell_code = "if original_sell:\n    매도 = True\n"
+    source_db = tmp_path / "source_strategy.db"
+    _write_strategy_db(
+        source_db,
+        buy="스냅매수",
+        sell="스냅매도",
+        buy_code="source buy should be overwritten",
+        sell_code="source sell should be overwritten",
+    )
+    builder_entered = threading.Event()
+    release_builder = threading.Event()
+
+    def snapshot_reader(spec):
+        builder_entered.set()
+        assert release_builder.wait(timeout=5.0)
+        code = (
+            "import hashlib,json,os,sqlite3;"
+            "strategy=os.environ['STOM_CLI_DB_STRATEGY'];"
+            "backtest=os.environ['STOM_CLI_DB_BACKTEST'];"
+            "csvdir=os.environ['STOM_CLI_BACKTEST_CSV_DIR'];"
+            f"buy_name={spec.buy!r};sell_name={spec.sell!r};"
+            "con=sqlite3.connect(strategy);"
+            "buy=con.execute('SELECT \"전략코드\" FROM stockbuy WHERE \"index\"=?',(buy_name,)).fetchone()[0];"
+            "sell=con.execute('SELECT \"전략코드\" FROM stocksell WHERE \"index\"=?',(sell_name,)).fetchone()[0];"
+            "con.close();"
+            "print(json.dumps({'status':'success','csv_path':'snapshot.csv','metrics':{"
+            "'strategy_path':strategy,'backtest_path':backtest,'csv_dir':csvdir,"
+            "'buy_code':buy,'sell_code':sell,"
+            "'buy_hash':hashlib.sha256(buy.encode('utf-8')).hexdigest(),"
+            "'sell_hash':hashlib.sha256(sell.encode('utf-8')).hexdigest()"
+            "}}, ensure_ascii=False))"
+        )
+        return [sys.executable, "-c", code]
+
+    manager = BacktestJobManager(
+        jobs_dir=tmp_path / "jobs",
+        command_builder=snapshot_reader,
+        strategy_db=source_db,
+    )
+    submitted = manager.submit(BacktestJobSpec(
+        buy="스냅매수",
+        sell="스냅매도",
+        start=20250407,
+        end=20250409,
+        buy_code=buy_code,
+        sell_code=sell_code,
+    ))
+    assert submitted["status"] == "ok"
+    job_id = submitted["job_id"]
+    assert builder_entered.wait(timeout=5.0)
+
+    con = sqlite3.connect(source_db)
+    try:
+        con.execute('UPDATE stockbuy SET "전략코드"=? WHERE "index"=?', ("mutated buy", "스냅매수"))
+        con.execute('UPDATE stocksell SET "전략코드"=? WHERE "index"=?', ("mutated sell", "스냅매도"))
+        con.commit()
+    finally:
+        con.close()
+
+    release_builder.set()
+    rec = _wait_status(manager, job_id, {"success", "error", "timeout"})
+    assert rec["status"] == "success"
+
+    jobs_root = (tmp_path / "jobs").resolve()
+    strategy_snapshot = Path(rec["strategy_db_snapshot_path"]).resolve()
+    backtest_snapshot = Path(rec["backtest_db_snapshot_path"]).resolve()
+    csv_snapshot = Path(rec["csv_dir_snapshot_path"]).resolve()
+    assert jobs_root in strategy_snapshot.parents
+    assert jobs_root in backtest_snapshot.parents
+    assert jobs_root in csv_snapshot.parents
+    assert strategy_snapshot.name == "strategy.db"
+    assert backtest_snapshot.name == "backtest.db"
+    assert csv_snapshot.name == "csv"
+    assert strategy_snapshot.parent == backtest_snapshot.parent == csv_snapshot.parent
+    assert strategy_snapshot.is_file()
+    assert backtest_snapshot.is_file()
+    assert csv_snapshot.is_dir()
+
+    expected_hashes = {"buy": _hash_code(buy_code), "sell": _hash_code(sell_code)}
+    assert rec["strategy_db_snapshot_hashes"] == expected_hashes
+    assert _read_strategy_code(strategy_snapshot, "stockbuy", "스냅매수") == buy_code
+    assert _read_strategy_code(strategy_snapshot, "stocksell", "스냅매도") == sell_code
+    assert _read_strategy_code(source_db, "stockbuy", "스냅매수") == "mutated buy"
+
+    metrics = rec["metrics"]
+    assert Path(metrics["strategy_path"]).resolve() == strategy_snapshot
+    assert Path(metrics["backtest_path"]).resolve() == backtest_snapshot
+    assert Path(metrics["csv_dir"]).resolve() == csv_snapshot
+    assert metrics["buy_code"] == buy_code
+    assert metrics["sell_code"] == sell_code
+    assert metrics["buy_hash"] == expected_hashes["buy"]
+    assert metrics["sell_hash"] == expected_hashes["sell"]
+
+
+def test_web_job_child_env_uses_unique_strategy_backtest_and_csv_artifacts(tmp_path: Path):
+    def env_echo(spec):
+        code = (
+            "import json,os;"
+            "csvdir=os.environ['STOM_CLI_BACKTEST_CSV_DIR'];"
+            "print(json.dumps({'status':'success','csv_path':os.path.join(csvdir,'result.csv'),"
+            "'metrics':{'strategy':os.environ['STOM_CLI_DB_STRATEGY'],"
+            "'backtest':os.environ['STOM_CLI_DB_BACKTEST'],"
+            "'csv_dir':csvdir}}))"
+        )
+        return [sys.executable, "-c", code]
+
+    manager = BacktestJobManager(
+        jobs_dir=tmp_path / "jobs",
+        command_builder=env_echo,
+        strategy_db=tmp_path / "source_strategy.db",
+    )
+    first_id = manager.submit(_spec("first"))["job_id"]
+    second_id = manager.submit(_spec("second"))["job_id"]
+
+    first = _wait_status(manager, first_id, {"success", "error", "timeout"})
+    second = _wait_status(manager, second_id, {"success", "error", "timeout"})
+
+    assert first["status"] == "success"
+    assert second["status"] == "success"
+    first_paths = {
+        "strategy": Path(first["metrics"]["strategy"]).resolve(),
+        "backtest": Path(first["metrics"]["backtest"]).resolve(),
+        "csv_dir": Path(first["metrics"]["csv_dir"]).resolve(),
+    }
+    second_paths = {
+        "strategy": Path(second["metrics"]["strategy"]).resolve(),
+        "backtest": Path(second["metrics"]["backtest"]).resolve(),
+        "csv_dir": Path(second["metrics"]["csv_dir"]).resolve(),
+    }
+
+    assert first_paths["strategy"] == Path(first["strategy_db_snapshot_path"]).resolve()
+    assert first_paths["backtest"] == Path(first["backtest_db_snapshot_path"]).resolve()
+    assert first_paths["csv_dir"] == Path(first["csv_dir_snapshot_path"]).resolve()
+    assert second_paths["strategy"] == Path(second["strategy_db_snapshot_path"]).resolve()
+    assert second_paths["backtest"] == Path(second["backtest_db_snapshot_path"]).resolve()
+    assert second_paths["csv_dir"] == Path(second["csv_dir_snapshot_path"]).resolve()
+    assert first_paths["strategy"] != second_paths["strategy"]
+    assert first_paths["backtest"] != second_paths["backtest"]
+    assert first_paths["csv_dir"] != second_paths["csv_dir"]
+    assert first_paths["csv_dir"].is_dir()
+    assert second_paths["csv_dir"].is_dir()
+
+
+def test_submit_rejects_missing_code_snapshot(tmp_path: Path):
+    def never_spawn(spec):
+        raise AssertionError("missing code must fail before command construction")
+
+    manager = BacktestJobManager(jobs_dir=tmp_path / "jobs", command_builder=never_spawn)
+    result = manager.submit(BacktestJobSpec(
+        buy="매수A",
+        sell="매도A",
+        start=20250407,
+        end=20250409,
+        buy_code="if A:\n    매수 = True\n",
+    ))
+
+    assert result["status"] == "error"
+    assert "sell code snapshot missing" in result["message"]
+    assert manager.list_jobs()["count"] == 0
 
 
 def test_normal_queued_jobs_complete_and_release_slot(tmp_path: Path):

@@ -135,15 +135,36 @@ def _condition_identity(
     }
 
 def _resolve_artifact_path(raw: Any) -> Optional[str]:
+    """Resolve an existing CSV/report artifact under REPO_ROOT, with CWD-independent relatives."""
     if not raw:
         return None
-    path = Path(str(raw))
+    text = str(raw).strip()
+    if not text or "\x00" in text:
+        return None
+    path = Path(text)
     if not path.is_absolute():
         path = REPO_ROOT / path
     try:
-        return str(path) if path.is_file() else None
-    except OSError:
+        resolved = path.resolve(strict=True)
+        root = Path(REPO_ROOT).resolve()
+        resolved.relative_to(root)
+        return str(resolved) if resolved.is_file() else None
+    except (OSError, RuntimeError, ValueError):
         return None
+
+
+def _resolved_record_csv_path(record: Dict[str, Any]) -> Optional[str]:
+    return _resolve_artifact_path(record.get("csv_path")) if isinstance(record, dict) else None
+
+
+def _resolved_job_csv_path(job_id: str) -> Optional[str]:
+    if not job_id:
+        return None
+    record = get_job_manager().get(job_id, log_tail=0)
+    if not record.get("available"):
+        return None
+    return _resolved_record_csv_path(record)
+
 
 def _rerun_spec_from_job(record: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     spec = record.get("spec") if isinstance(record, dict) else None
@@ -162,7 +183,7 @@ def _status_taxonomy(record: Dict[str, Any]) -> Dict[str, Any]:
     status = str(record.get("status") or "pending")
     phase = str(record.get("phase") or "")
     mode = str((record.get("spec") or {}).get("mode", "backtest") or "backtest")
-    csv_exists = _resolve_artifact_path(record.get("csv_path")) is not None
+    csv_exists = _resolved_record_csv_path(record) is not None
     mode_result = isinstance(record.get("mode_result"), dict) and bool(record.get("mode_result"))
     openable = status == "no_trades" or csv_exists or mode_result
     if phase == "stale" or status == "stale":
@@ -1151,7 +1172,7 @@ def _daily_db_dates(prefix: str) -> List[int]:
 
 
 def _back_range(db_path: Path) -> Optional[Dict[str, int]]:
-    """*_back.db 의 moneytop index(YYYYMMDDHHMM) min/max → 보유 날짜 범위(YYYYMMDD)."""
+    """*_back.db 의 moneytop index(YYYYMMDDHHMM[SS]) min/max → 날짜 범위(YYYYMMDD)."""
     con = _connect_ro(db_path)
     if con is None:
         return None
@@ -1163,7 +1184,22 @@ def _back_range(db_path: Path) -> Optional[Dict[str, int]]:
         con.close()
     if not row or row[0] is None or row[1] is None:
         return None
-    return {"start": int(row[0]) // 10000, "end": int(row[1]) // 10000}
+    start = _back_index_date(row[0])
+    end = _back_index_date(row[1])
+    if start is None or end is None:
+        return None
+    return {"start": start, "end": end}
+
+
+def _back_index_date(value: Any) -> Optional[int]:
+    """moneytop index 값에서 앞 8자리 YYYYMMDD 만 보존한다(분=12자리, tick=14자리)."""
+    try:
+        text = str(int(value))
+    except (TypeError, ValueError, OverflowError):
+        text = str(value or "").strip()
+    if len(text) >= 8 and text[:8].isdigit():
+        return int(text[:8])
+    return None
 
 
 # ------------------------------------------------------------------- jobs/run
@@ -1373,7 +1409,7 @@ def get_result(
     if not record.get("available"):
         return {"available": False, "job_id": job_id}
     status = record.get("status")
-    csv_path = record.get("csv_path")
+    csv_path = _resolved_record_csv_path(record)
     spec = record.get("spec") or {}
     mode = str(spec.get("mode", "backtest") or "backtest")
     # wfo/sweep 모드 — csv 단일 분석 대신 구조화 결과(윈도우별/조합별 표)를 반환한다.
@@ -1413,7 +1449,7 @@ def _analysis_for_job(
     job_id: str, t_start: Optional[int] = None, t_end: Optional[int] = None
 ) -> List[Dict[str, Any]]:
     """잡 결과 CSV → trades 리스트(분석 개별 엔드포인트 공용, 옵션 매수시간 범위 필터)."""
-    csv_path = get_job_manager().result_csv_path(job_id)
+    csv_path = _resolved_job_csv_path(job_id)
     trades = analysis.load_trades_csv(csv_path)
     return analysis.filter_trades(trades, t_start, t_end)
 
@@ -1551,12 +1587,8 @@ def _result_context(row: Dict[str, Any], run_id: str, gen_no: int,
 
 
 def _resolve_gen_csv(row: Dict[str, Any]) -> Optional[str]:
-    """세대 행의 csv_path 를 절대경로로 정규화한다(상대경로는 REPO_ROOT 기준). 없으면 None."""
-    raw_csv = row.get("csv_path")
-    if not raw_csv:
-        return None
-    csv_path = raw_csv if os.path.isabs(raw_csv) else os.path.join(str(REPO_ROOT), raw_csv)
-    return csv_path if os.path.isfile(csv_path) else None
+    """세대 행의 csv_path 를 안전 해석한다(상대경로는 REPO_ROOT 기준). 없으면 None."""
+    return _resolved_record_csv_path(row)
 
 
 @backtest_router.get("/evo_gens")
@@ -1782,7 +1814,7 @@ def _demo_result() -> Dict[str, Any]:
     실제 잡 CSV 와 동일한 full_analysis 묶음을 쓰므로 모든 차트/카드가 정상 렌더된다.
     CSV 생성 실패 시 빈 분석 구조로 폴백(무예외).
     """
-    csv_path = _ensure_demo_csv()
+    csv_path = _resolve_artifact_path(_ensure_demo_csv())
     bundle = analysis.full_analysis(csv_path)
     return {
         "available": True,
@@ -1901,7 +1933,7 @@ def analysis_leaf_matrix(
 
     csv_path: Optional[str] = None
     if job_id:
-        csv_path = get_job_manager().result_csv_path(job_id)
+        csv_path = _resolved_job_csv_path(job_id)
     elif run_id and gen_no is not None:
         row = _gen_row_readonly(run_id, int(gen_no))
         csv_path = _resolve_gen_csv(row) if row else None
@@ -1958,7 +1990,7 @@ def analysis_feature_map(
 
     csv_path: Optional[str] = None
     if job_id:
-        csv_path = get_job_manager().result_csv_path(job_id)
+        csv_path = _resolved_job_csv_path(job_id)
     elif run_id and gen_no is not None:
         row = _gen_row_readonly(run_id, int(gen_no))
         csv_path = _resolve_gen_csv(row) if row else None
@@ -2065,7 +2097,7 @@ def _compare_side(job_id: str) -> Optional[Dict[str, Any]]:
     record = manager.get(job_id, log_tail=0)
     if not record.get("available"):
         return None
-    csv_path = manager.result_csv_path(job_id)
+    csv_path = _resolved_record_csv_path(record)
     trades = analysis.load_trades_csv(csv_path)
     summary = analysis.summary_metrics(trades)
     cli_metrics = record.get("metrics")
@@ -2172,7 +2204,7 @@ def _overlay_series(job_id: str) -> Optional[Dict[str, Any]]:
     record = manager.get(job_id, log_tail=0)
     if not record.get("available"):
         return None
-    csv_path = manager.result_csv_path(job_id)
+    csv_path = _resolved_record_csv_path(record)
     trades = analysis.load_trades_csv(csv_path)
     summary = analysis.summary_metrics(trades)
     spec = record.get("spec") or {}
@@ -2228,40 +2260,53 @@ _PORTFOLIO_MIN = 2
 _PORTFOLIO_MAX = 6
 
 
-def _portfolio_item_trades(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    """포트폴리오 입력 1개({job_id} | {run_id,gen_no}) → {label, trades}. 못 찾으면 None.
+def _portfolio_item_trades(item: Dict[str, Any]) -> Dict[str, Any]:
+    """포트폴리오 입력 1개({job_id} | {run_id,gen_no}) → ok/data 또는 reason.
 
-    잡은 result_csv_path 로, 세대는 loop_runs.db(읽기 전용)의 csv_path 로 trades 를
-    읽는다. CSV 부재(세대 축약)면 trades=[] 로 포함한다(빈 전략 — 합성에 0 기여).
+    잡/세대 CSV 는 artifact resolver 를 통과한 실제 파일만 읽는다. CSV 부재를 빈
+    손익으로 합성하지 않는다. 단, job status 가 no_trades 인 완료 잡은 명시적 빈
+    입력으로 허용한다.
     """
     if not isinstance(item, dict):
-        return None
+        return {"ok": False, "reason": "invalid_item"}
     job_id = str(item.get("job_id", "") or "").strip()
     if job_id:
         manager = get_job_manager()
         record = manager.get(job_id, log_tail=0)
         if not record.get("available"):
-            return None
-        csv_path = manager.result_csv_path(job_id)
+            return {"ok": False, "reason": "job_not_found"}
         spec = record.get("spec") or {}
         label = str(item.get("label", "") or "").strip() or (
             f"{spec.get('buy', '')}·{job_id[:8]}" if spec.get("buy") else job_id[:12]
         )
-        return {"label": label, "trades": analysis.load_trades_csv(csv_path)}
+        if record.get("status") == "no_trades":
+            return {"ok": True, "label": label, "trades": [], "empty_reason": "no_trades"}
+        csv_path = _resolved_record_csv_path(record)
+        if not csv_path:
+            return {"ok": False, "reason": "job_csv_missing"}
+        trades = analysis.load_trades_csv(csv_path)
+        if not trades:
+            return {"ok": False, "reason": "job_csv_empty"}
+        return {"ok": True, "label": label, "trades": trades}
     run_id = str(item.get("run_id", "") or "").strip()
     gen_no = item.get("gen_no")
     if run_id and gen_no is not None:
         try:
             gen_int = int(gen_no)
         except (TypeError, ValueError):
-            return None
+            return {"ok": False, "reason": "generation_gen_no_invalid"}
         row = _gen_row_readonly(run_id, gen_int)
         if row is None:
-            return None
+            return {"ok": False, "reason": "generation_not_found"}
         csv_path = _resolve_gen_csv(row)
+        if not csv_path:
+            return {"ok": False, "reason": "generation_csv_missing"}
         label = str(item.get("label", "") or "").strip() or f"{run_id}/g{gen_int}"
-        return {"label": label, "trades": analysis.load_trades_csv(csv_path)}
-    return None
+        trades = analysis.load_trades_csv(csv_path)
+        if not trades:
+            return {"ok": False, "reason": "generation_csv_empty"}
+        return {"ok": True, "label": label, "trades": trades}
+    return {"ok": False, "reason": "missing_selector"}
 
 
 @backtest_router.post("/portfolio")
@@ -2280,17 +2325,25 @@ def portfolio_combine(payload: PortfolioPayload) -> Dict[str, Any]:
     raw_items = [item.model_dump(exclude_none=True) for item in payload.items]
     resolved: List[Dict[str, Any]] = []
     failed: List[int] = []
+    failed_reasons: List[Dict[str, Any]] = []
     for idx, item in enumerate(raw_items):
         got = _portfolio_item_trades(item)
-        if got is None:
+        if not got.get("ok"):
             failed.append(idx)
+            failed_reasons.append({"index": idx, "reason": str(got.get("reason") or "unresolved")})
         else:
-            resolved.append(got)
-    if len(resolved) < _PORTFOLIO_MIN:
+            resolved.append({"label": got["label"], "trades": got["trades"]})
+    if failed or len(resolved) < _PORTFOLIO_MIN:
+        if failed:
+            message = f"포트폴리오 입력을 해석할 수 없습니다(실패 인덱스: {failed})."
+        else:
+            message = f"유효한 전략이 {_PORTFOLIO_MIN}개 미만입니다."
         return {
             "status": "error",
-            "message": f"유효한 전략이 {_PORTFOLIO_MIN}개 미만입니다(해석 실패 인덱스: {failed}).",
+            "message": message,
             "failed": failed,
+            "failed_reasons": failed_reasons,
+            "resolved_count": len(resolved),
         }
     result = analysis.portfolio_analysis(resolved)
     return {"status": "ok", "portfolio": result, "failed": failed}
@@ -2316,7 +2369,7 @@ def _report_payload_for_job(
         return None
     status = record.get("status")
     spec = record.get("spec") or {}
-    csv_path = record.get("csv_path")
+    csv_path = None if status == "no_trades" else _resolved_record_csv_path(record)
     bundle = analysis.full_analysis(csv_path, t_start, t_end)
     trades = analysis.filter_trades(analysis.load_trades_csv(csv_path), t_start, t_end)
     mc = analysis.monte_carlo(trades, n=2000)
