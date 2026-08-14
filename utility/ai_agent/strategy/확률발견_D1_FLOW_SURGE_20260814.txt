@@ -1,0 +1,130 @@
+# D1 FLOW_SURGE 확률발견 후보군 · seed=20260814 · no_adoption
+
+===== D1_FLOW_SURGE_02_dd722404 =====
+{"cap_max": 4461, "family": "FLOW_SURGE", "mid_rate": -0.21647718616054945, "money_multiple": 4.776422420120489, "pressure_ratio": 1.879112170767912, "rate_low": 2.1561892569787187, "rate_width": 9.35143820803345, "strength": 151.03500596261733, "time_end": 91500, "turnover": 3.3505070693455323}
+# D1 확률발견 후보 · FLOW_SURGE
+# 후보 제안 전용 · 자동 채택/OOS 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 4461):
+    매수 = False
+elif not (90000 <= 시분초 < 91500):
+    매수 = False
+elif not (체결강도 >= 151.04 and 초당거래대금 >= 초당거래대금평균(30) * 4.7764 and 초당매수수량 >= 초당매도수량 * 1.8791):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D1_FLOW_SURGE_04_b506a923 =====
+{"cap_max": 3621, "family": "FLOW_SURGE", "mid_rate": 0.8270010747090151, "money_multiple": 3.685513329211397, "pressure_ratio": 1.3252660169217578, "rate_low": -1.9614578018448117, "rate_width": 9.930385576454501, "strength": 179.60643453404592, "time_end": 90500, "turnover": 0.1401622417593252}
+# D1 확률발견 후보 · FLOW_SURGE
+# 후보 제안 전용 · 자동 채택/OOS 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 3621):
+    매수 = False
+elif not (90000 <= 시분초 < 90500):
+    매수 = False
+elif not (체결강도 >= 179.61 and 초당거래대금 >= 초당거래대금평균(30) * 3.6855 and 초당매수수량 >= 초당매도수량 * 1.3253):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D1_FLOW_SURGE_08_faabd96b =====
+{"cap_max": 1773, "family": "FLOW_SURGE", "mid_rate": 2.5661315094916244, "money_multiple": 1.8673315110295792, "pressure_ratio": 1.1406506323063734, "rate_low": 2.9797186687434243, "rate_width": 13.404069786980816, "strength": 134.70847535037245, "time_end": 91500, "turnover": 0.9849898279662213}
+# D1 확률발견 후보 · FLOW_SURGE
+# 후보 제안 전용 · 자동 채택/OOS 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 1773):
+    매수 = False
+elif not (90000 <= 시분초 < 91500):
+    매수 = False
+elif not (체결강도 >= 134.71 and 초당거래대금 >= 초당거래대금평균(30) * 1.8673 and 초당매수수량 >= 초당매도수량 * 1.1407):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D1_FLOW_SURGE_10_5271af7f =====
+{"cap_max": 3117, "family": "FLOW_SURGE", "mid_rate": 1.870479335578581, "money_multiple": 4.412786056484125, "pressure_ratio": 1.602189093844835, "rate_low": 1.744424551096364, "rate_width": 8.193543471191344, "strength": 177.56561820751529, "time_end": 90500, "turnover": 1.8298174141731176}
+# D1 확률발견 후보 · FLOW_SURGE
+# 후보 제안 전용 · 자동 채택/OOS 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 3117):
+    매수 = False
+elif not (90000 <= 시분초 < 90500):
+    매수 = False
+elif not (체결강도 >= 177.57 and 초당거래대금 >= 초당거래대금평균(30) * 4.4128 and 초당매수수량 >= 초당매도수량 * 1.6022):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D1_FLOW_SURGE_12_40fd6bc9 =====
+{"cap_max": 4797, "family": "FLOW_SURGE", "mid_rate": 2.218305422535103, "money_multiple": 2.693777792021315, "pressure_ratio": 1.4175737092294503, "rate_low": 4.6267774922728355, "rate_width": 8.772490839612397, "strength": 106.13704677894387, "time_end": 91500, "turnover": 1.660851896931739}
+# D1 확률발견 후보 · FLOW_SURGE
+# 후보 제안 전용 · 자동 채택/OOS 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 4797):
+    매수 = False
+elif not (90000 <= 시분초 < 91500):
+    매수 = False
+elif not (체결강도 >= 106.14 and 초당거래대금 >= 초당거래대금평균(30) * 2.6938 and 초당매수수량 >= 초당매도수량 * 1.4176):
+    매수 = False
+
+if 매수:
+    self.Buy()

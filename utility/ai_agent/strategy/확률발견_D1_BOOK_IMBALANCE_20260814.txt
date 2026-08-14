@@ -1,0 +1,104 @@
+# D1 BOOK_IMBALANCE 확률발견 후보군 · seed=20260814 · no_adoption
+
+===== D1_BOOK_IMBALANCE_01_a0e44d3c =====
+{"cap_max": 1941, "family": "BOOK_IMBALANCE", "mid_rate": 2.3922184660133636, "money_multiple": 2.5946042383023062, "pressure_ratio": 2.0637275553832968, "rate_low": 3.803248080508129, "rate_width": 5.29880662908608, "strength": 122.46357739118878, "time_end": 90500, "turnover": 3.0125760348627737}
+# D1 확률발견 후보 · BOOK_IMBALANCE
+# 후보 제안 전용 · 자동 채택/OOS 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 1941):
+    매수 = False
+elif not (90000 <= 시분초 < 90500):
+    매수 = False
+elif not (체결강도 >= 122.46 and 매도총잔량 > 0 and 매수총잔량 >= 매도총잔량 * 2.0637):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D1_BOOK_IMBALANCE_05_c034db94 =====
+{"cap_max": 3453, "family": "BOOK_IMBALANCE", "mid_rate": -0.564303273117071, "money_multiple": 1.140058783756852, "pressure_ratio": 1.048342939998681, "rate_low": -1.5496930959624586, "rate_width": 11.088280313296607, "strength": 93.8921488197602, "time_end": 91500, "turnover": 0.4780932762420834}
+# D1 확률발견 후보 · BOOK_IMBALANCE
+# 후보 제안 전용 · 자동 채택/OOS 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 3453):
+    매수 = False
+elif not (90000 <= 시분초 < 91500):
+    매수 = False
+elif not (체결강도 >= 93.89 and 매도총잔량 > 0 and 매수총잔량 >= 매도총잔량 * 1.0483):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D1_BOOK_IMBALANCE_06_56521874 =====
+{"cap_max": 2613, "family": "BOOK_IMBALANCE", "mid_rate": 2.044392379056842, "money_multiple": 3.3218769655750338, "pressure_ratio": 1.9714198630756041, "rate_low": 1.3326598452140126, "rate_width": 14.561964523822924, "strength": 108.17786310547447, "time_end": 91000, "turnover": 3.85740362106967}
+# D1 확률발견 후보 · BOOK_IMBALANCE
+# 후보 제안 전용 · 자동 채택/OOS 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 2613):
+    매수 = False
+elif not (90000 <= 시분초 < 91000):
+    매수 = False
+elif not (체결강도 >= 108.18 and 매도총잔량 > 0 and 매수총잔량 >= 매도총잔량 * 1.9714):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+
+===== D1_BOOK_IMBALANCE_09_80b15171 =====
+{"cap_max": 4293, "family": "BOOK_IMBALANCE", "mid_rate": -0.3903902296388102, "money_multiple": 2.230967874665943, "pressure_ratio": 1.5098814015371425, "rate_low": -0.7261636841977526, "rate_width": 12.246175050138714, "strength": 163.279903921801, "time_end": 91000, "turnover": 4.8711967245179455}
+# D1 확률발견 후보 · BOOK_IMBALANCE
+# 후보 제안 전용 · 자동 채택/OOS 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 4293):
+    매수 = False
+elif not (90000 <= 시분초 < 91000):
+    매수 = False
+elif not (체결강도 >= 163.28 and 매도총잔량 > 0 and 매수총잔량 >= 매도총잔량 * 1.5099):
+    매수 = False
+
+if 매수:
+    self.Buy()
