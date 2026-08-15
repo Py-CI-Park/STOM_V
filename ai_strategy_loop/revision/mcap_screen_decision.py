@@ -10,7 +10,9 @@ def decide_d3_screen(screen: Mapping[str, Any]) -> dict[str, Any]:
     if screen.get("schema") != "stom.d3_mcap_engine_screen.v1":
         raise ValueError("D3 screen schema mismatch")
     rows = list(screen.get("rows") or [])
-    if screen.get("verdict") != "D3_SCREEN_COMPLETED" or len(rows) != 40:
+    if screen.get("verdict") not in {
+        "D3_SCREEN_COMPLETED", "D3_SCREEN_COMPLETED_WITH_EXECUTION_FAILURES",
+    } or len(rows) != 40:
         raise ValueError("D3 official screen is incomplete")
     if any(not row.get("source_snapshot_match") for row in rows):
         raise ValueError("D3 source snapshot mismatch")

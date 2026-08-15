@@ -164,18 +164,28 @@ def run_screen(client: Any, manifest: dict[str, Any], *,
 
 def _screen_report(manifest: dict[str, Any], manifest_sha: str,
                    rows: list[dict[str, Any]], config: dict[str, Any]) -> dict[str, Any]:
-    accepted_terminal = {"success", "no_trades"}
+    accepted_terminal = {"success", "no_trades", "error", "failed", "timeout"}
     valid_rows = [
         row for row in rows
         if row.get("status") in accepted_terminal
         and row.get("source_snapshot_match")
-        and (row.get("status") == "no_trades" or isinstance(row.get("metrics"), dict))
+        and (
+            row.get("status") in {"no_trades", "error", "failed", "timeout"}
+            or isinstance(row.get("metrics"), dict)
+        )
     ]
     reasons = []
     if len(rows) != 40:
         reasons.append("row_count_incomplete")
     if len(valid_rows) != 40:
         reasons.append("execution_or_evidence_failure")
+    execution_failures = sum(row.get("status") in {"error", "failed", "timeout"} for row in rows)
+    if reasons:
+        verdict = "D3_SCREEN_INCOMPLETE"
+    elif execution_failures:
+        verdict = "D3_SCREEN_COMPLETED_WITH_EXECUTION_FAILURES"
+    else:
+        verdict = "D3_SCREEN_COMPLETED"
     return {
         "schema": "stom.d3_mcap_engine_screen.v1",
         "authority": "existing_db_development_no_oos_no_adoption",
@@ -189,7 +199,9 @@ def _screen_report(manifest: dict[str, Any], manifest_sha: str,
         "metrics_count": sum(isinstance(row.get("metrics"), dict) for row in rows),
         "advanced": [row["candidate_id"] for row in rows if (row.get("screen") or {}).get("advance")],
         "failure_reasons": reasons,
-        "verdict": "D3_SCREEN_COMPLETED" if not reasons else "D3_SCREEN_INCOMPLETE",
+        "execution_failure_count": execution_failures,
+        "platform_verdict": "EXECUTION_FAILURES_PRESENT" if execution_failures else "PLATFORM_PASS",
+        "verdict": verdict,
     }
 
 

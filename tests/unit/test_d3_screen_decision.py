@@ -48,3 +48,15 @@ def test_incomplete_or_source_mismatch_fails_closed():
     payload["rows"][0]["source_snapshot_match"] = False
     with pytest.raises(ValueError, match="snapshot"):
         decide_d3_screen(payload)
+
+
+def test_terminal_execution_failures_are_completed_but_never_advanced():
+    payload = _screen()
+    payload["verdict"] = "D3_SCREEN_COMPLETED_WITH_EXECUTION_FAILURES"
+    payload["rows"][0]["status"] = "error"
+    payload["rows"][0]["metrics"] = None
+    payload["rows"][0]["screen"] = {"advance": False, "reasons": ["execution_failure"]}
+    decision = decide_d3_screen(payload)
+    assert decision["advanced_count"] == 0
+    assert decision["status_counts"]["error"] == 1
+    assert decision["d4_bo"] == "GATE_NOT_ENTERED"
