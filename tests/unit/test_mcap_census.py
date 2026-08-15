@@ -12,9 +12,11 @@ def _make_db(path: Path) -> None:
     connection.execute('CREATE TABLE moneytop ("index" INTEGER, "거래대금순위" TEXT)')
     membership = "000001;000002;000003;000004"
     connection.executemany('INSERT INTO moneytop VALUES (?, ?)', [
-        (20250102090000, membership), (20250102090500, membership),
+        (20250102090000, membership), (20250102090400, membership),
+        (20250102090500, membership),
         (20250102093000, membership), (20250102103000, membership),
-        (20250103090000, membership), (20250103090500, membership),
+        (20250103090000, membership), (20250103090400, membership),
+        (20250103090500, membership),
         (20250103093000, membership),
     ])
     columns = '"index" INTEGER, "시가총액" REAL, "당일거래대금" REAL, "초당거래대금" REAL, "체결강도" REAL'
@@ -22,8 +24,10 @@ def _make_db(path: Path) -> None:
         connection.execute(f'CREATE TABLE "{code}" ({columns})')
         connection.executemany(f'INSERT INTO "{code}" VALUES (?, ?, ?, ?, ?)', [
             (20250102090000, cap, 100, 10, 101),
+            (20250102090400, cap, 150, 15, 101),
             (20250102093000, cap, 200, 20, 102),
             (20250103090000, cap, 300, 30, 103),
+            (20250103090400, cap, 350, 35, 103),
         ])
     connection.execute('CREATE TABLE metadata (key TEXT)')
     connection.commit()
@@ -58,7 +62,7 @@ def test_census_uses_stock_table_window_not_wider_moneytop_window(tmp_path):
     assert result["window_contract"]["start"] == "090000"
     assert result["window_contract"]["end_exclusive"] == "090500"
     bands = {row["band_id"]: row for row in result["bands"]}
-    assert all(row["rows"] == 3 for row in bands.values())
+    assert all(row["rows"] == 5 for row in bands.values())
     assert all(row["days"] == 2 for row in bands.values())
     assert all(row["symbols"] == 1 for row in bands.values())
     assert all(row["verdict"] == "CENSUS_PASS" for row in bands.values())

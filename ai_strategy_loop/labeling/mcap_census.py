@@ -191,7 +191,7 @@ def scan_mcap_census(config: CensusConfig, *, progress: Callable[[dict[str, Any]
                 "first_index": None, "last_index": None, "min_time": None, "max_time": None,
                 "min_mcap": None, "max_mcap": None, "weighted_mcap": 0.0,
                 "intersection_code_days": 0, "bucket_rows": {}, "bucket_code_days": {},
-                "bucket_dates": {}, "bucket_symbols": {},
+                "bucket_dates": {}, "bucket_symbols": {}, "bucket_min_time": {}, "bucket_max_time": {},
             }
             for band in MCAP_BANDS
         }
@@ -222,6 +222,12 @@ def scan_mcap_census(config: CensusConfig, *, progress: Callable[[dict[str, Any]
                 target["dates"].update(row_days)
                 bucket = int(row["bucket_minute"])
                 target["bucket_rows"][bucket] = target["bucket_rows"].get(bucket, 0) + count
+                target["bucket_min_time"][bucket] = min(
+                    target["bucket_min_time"].get(bucket, row["min_time"]), row["min_time"]
+                )
+                target["bucket_max_time"][bucket] = max(
+                    target["bucket_max_time"].get(bucket, row["max_time"]), row["max_time"]
+                )
                 matching_dates = {
                     day for day in row_days if membership_masks.get((day, bucket), 0) & table_bit
                 }
@@ -256,11 +262,19 @@ def scan_mcap_census(config: CensusConfig, *, progress: Callable[[dict[str, Any]
                  "rows": item["bucket_rows"].get(bucket, 0),
                  "moneytop_code_days": item["bucket_code_days"].get(bucket, 0),
                  "days": len(bucket_dates.get(bucket, set())),
-                 "symbols": len(bucket_symbols.get(bucket, set()))}
+                 "symbols": len(bucket_symbols.get(bucket, set())),
+                 "min_time": item["bucket_min_time"].get(bucket),
+                 "max_time": item["bucket_max_time"].get(bucket),
+                 "full_bucket": (
+                     item["bucket_min_time"].get(bucket) <= _minute_to_hhmmss(bucket)
+                     and item["bucket_max_time"].get(bucket) >= _minute_to_hhmmss(bucket + 4)
+                 )}
                 for bucket in sorted(item["bucket_rows"])
             ]
             item.pop("bucket_rows")
             item.pop("bucket_code_days")
+            item.pop("bucket_min_time")
+            item.pop("bucket_max_time")
             item["verdict"] = (
                 "CENSUS_PASS" if item["days"] >= config.min_days and symbol_count >= config.min_symbols
                 and item["intersection_code_days"] > 0 else "INSUFFICIENT_SAMPLE"
@@ -268,6 +282,7 @@ def scan_mcap_census(config: CensusConfig, *, progress: Callable[[dict[str, Any]
             valid_bucket_sets.append({
                 bucket["minute"] for bucket in item["buckets"]
                 if bucket["days"] >= config.min_days and bucket["symbols"] >= config.min_symbols
+                and bucket["full_bucket"]
             })
             band_rows.append(item)
         common_buckets = _longest_contiguous_buckets(
