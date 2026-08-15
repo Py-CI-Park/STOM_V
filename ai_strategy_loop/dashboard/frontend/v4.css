@@ -2213,3 +2213,47 @@
 .bt-fm-rank td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .bt-fm-rank td.neg { color: var(--red); }
 .bt-fm-help { margin-top: 8px; font-size: 10.5px; color: var(--ink-3); }
+
+/* v5.16 research-program cockpit */
+.rp16-overview { margin: 12px 0; padding: 14px; border: 1px solid var(--line-1);
+  border-radius: 14px; background: color-mix(in srgb, var(--surface-2) 90%, transparent); }
+.rp16-overview.pending, .rp16-overview.danger { min-height: 92px; }
+.rp16-overview.danger { border-color: color-mix(in srgb, var(--red) 55%, var(--line-1)); }
+.rp16-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.rp16-heading h2 { margin: 2px 0 0; font-size: clamp(17px, 1.2vw, 22px); }
+.rp16-heading .eyebrow { color: var(--teal); font-size: 10px; letter-spacing: .12em; }
+.rp16-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.rp16-badge { display: inline-grid; gap: 2px; padding: 5px 8px; border: 1px solid var(--line-1);
+  border-radius: 8px; background: var(--surface-1); font-size: 10px; }
+.rp16-badge b { color: var(--ink-1); font-size: 11px; }
+.rp16-badge.safe { border-left: 4px solid var(--teal); }
+.rp16-badge.warn { border-left: 4px solid var(--amber); }
+.rp16-badge.danger { border-left: 4px solid var(--red); }
+.rp16-scope { display: grid; grid-template-columns: repeat(5, minmax(120px, 1fr)); gap: 6px; margin: 12px 0; }
+.rp16-scope > div { min-width: 0; padding: 7px; border: 1px solid var(--line-1); border-radius: 8px; }
+.rp16-scope span { display: block; color: var(--ink-3); font-size: 9px; }
+.rp16-scope b { display: block; overflow-wrap: anywhere; font-size: 10.5px; }
+.rp16-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr); gap: 10px; }
+.rp16-card { min-width: 0; padding: 10px; border: 1px solid var(--line-1); border-radius: 10px; background: var(--surface-1); }
+.rp16-card h3 { margin: 0 0 8px; font-size: 12px; }
+.rp16-card table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+.rp16-card th, .rp16-card td { padding: 5px; text-align: left; border-bottom: 1px solid var(--line-1); }
+.rp16-funnel { display: grid; grid-template-columns: repeat(7, minmax(72px, 1fr)); gap: 5px; margin: 0; padding: 0; list-style: none; }
+.rp16-funnel li { display: grid; grid-template-columns: auto 1fr; gap: 2px 5px; padding: 7px;
+  border: 1px solid var(--line-1); border-radius: 8px; min-width: 0; }
+.rp16-funnel li > span { grid-row: span 2; color: var(--ink-3); font-size: 9px; }
+.rp16-funnel b { overflow-wrap: anywhere; font-size: 9px; font-weight: 500; }
+.rp16-funnel strong { font-size: 14px; }
+.rp16-authority { margin: 9px 0 0; color: var(--ink-3); font-size: 10px; }
+.rp16-authority b { color: var(--amber); }
+@media (max-width: 900px) {
+  .rp16-scope { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rp16-grid { grid-template-columns: 1fr; }
+  .rp16-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 430px) {
+  .rp16-scope, .rp16-funnel { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rp16-overview *, .rp16-overview *::before, .rp16-overview *::after { animation: none !important; transition: none !important; }
+}

@@ -1,0 +1,54 @@
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[3]
+FRONTEND = ROOT / "ai_strategy_loop" / "dashboard" / "frontend"
+
+
+def _source(name: str) -> str:
+    return (FRONTEND / name).read_text(encoding="utf-8")
+
+
+def test_program_overview_is_wired_into_v4_research_only():
+    research = _source("v4-research.jsx")
+    component = _source("v4-research-program.jsx")
+    legacy = _source("app.jsx")
+    assert 'import { V516ResearchProgramOverview } from "./v4-research-program.jsx"' in research
+    assert "<V516ResearchProgramOverview baseUrl={baseUrl}" in research
+    assert "/research-program/summary" in component
+    assert "V516ResearchProgramOverview" not in legacy
+
+
+def test_program_overview_separates_platform_and_economic_verdicts():
+    source = _source("v4-research-program.jsx")
+    assert 'label="플랫폼"' in source
+    assert 'label="경제 판정"' in source
+    assert "플랫폼 PASS와 경제적 성공은 별도 판정" in source
+    assert "DEVELOPMENT ONLY" in source
+    assert "OOS·실전·자동채택 근거가 아닙니다" in source
+    assert "승인 후 Export" not in source
+    assert "final_approval" not in source
+
+
+def test_scope_funnel_timeline_and_failure_states_are_accessible():
+    source = _source("v4-research-program.jsx")
+    for marker in (
+        'role="list"',
+        'aria-label="연구 데이터 범위와 권위"',
+        'aria-label="조건식 연구 퍼널"',
+        'role="alert"',
+        "다시 시도",
+        "D1",
+        "D2",
+        "PAIRED",
+    ):
+        assert marker in source
+
+
+def test_program_overview_css_has_responsive_and_reduced_motion_contracts():
+    css = _source("v4.css")
+    assert ".rp16-overview" in css
+    assert "@media (max-width: 900px)" in css
+    assert "@media (max-width: 430px)" in css
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert "minmax(0, 1fr)" in css
