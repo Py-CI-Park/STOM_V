@@ -98,3 +98,29 @@ def test_evidence_inspector_is_bounded_and_keyboard_accessible():
     assert "<pre tabIndex={0}>" in source
     assert ".re16-evidence pre:focus-visible" in css
     assert 'aria-pressed={evidence.id === id}' in source
+
+
+def test_market_cap_native_health_and_designer_are_wired():
+    research = _source("v4-research.jsx")
+    source = _source("v4-research-mcap.jsx")
+    assert 'import { V516MarketCapNativeLab } from "./v4-research-mcap.jsx"' in research
+    assert "<V516MarketCapNativeLab baseUrl={baseUrl}" in research
+    assert "/research-program/market-cap-census" in source
+    assert "/research-program/jobs/health" in source
+    assert "/research-program/preregistration/preview" in source
+    for marker in ("BackFinder", "OptimizeConditions", "Genetic", "QMC/TPE", "RWFT"):
+        assert marker in source
+    assert 'min="24" max="48"' in source
+    assert 'min="1" max="8"' in source
+    assert 'min="1" max="6"' in source
+    assert "저장·실행·승인·Export를 수행하지 않습니다" in source
+
+
+def test_market_cap_lab_preserves_four_band_and_source_missing_states():
+    source = _source("v4-research-mcap.jsx")
+    css = _source("v4.css")
+    assert "시가총액 4개 고정 구간" in source
+    assert "SOURCE_MISSING" in source
+    assert "immutable connector N0 통과 전 실행 금지" in source
+    assert ".rm16-band-grid" in css
+    assert "@media (max-width: 460px)" in css

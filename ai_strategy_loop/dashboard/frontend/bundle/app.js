@@ -38453,6 +38453,53 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V516FailureEvidence });
 
+  // ai_strategy_loop/dashboard/frontend/v4-research-mcap.jsx
+  var { useEffect: useEffect_rm16, useState: useState_rm16 } = React;
+  function _rm16BandLabel(band) {
+    if (band.lower == null) return `< ${band.upper}\uC5B5`;
+    if (band.upper == null) return `\u2265 ${band.lower}\uC5B5`;
+    return `${band.lower}~${band.upper}\uC5B5`;
+  }
+  function V516MarketCapNativeLab({ baseUrl }) {
+    var _a;
+    const root2 = String(baseUrl || "").replace(/\/$/, "");
+    const [data, setData] = useState_rm16({ status: "loading", census: null, health: null, error: "" });
+    const [form, setForm] = useState_rm16({ family_id: "ABSORPTION_REVERSAL", compute_hours: 36, entry_variables: 8, exit_variables: 6 });
+    const [preview, setPreview] = useState_rm16({ status: "idle", data: null, error: "" });
+    useEffect_rm16(() => {
+      const controller = new AbortController();
+      Promise.all([
+        fetch(root2 + "/research-program/market-cap-census", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error(`census HTTP ${r.status}`))),
+        fetch(root2 + "/research-program/jobs/health", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error(`health HTTP ${r.status}`)))
+      ]).then(([census2, health2]) => setData({ status: "ready", census: census2, health: health2, error: "" })).catch((error) => {
+        if (error.name !== "AbortError") setData({ status: "error", census: null, health: null, error: String(error.message || error) });
+      });
+      return () => controller.abort();
+    }, [root2]);
+    const submit = (event) => {
+      event.preventDefault();
+      if (!data.census) return;
+      setPreview({ status: "loading", data: null, error: "" });
+      fetch(root2 + "/research-program/preregistration/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, bands: data.census.bands })
+      }).then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))).then((payload) => setPreview({ status: "ready", data: payload, error: "" })).catch((error) => setPreview({ status: "error", data: null, error: String(error.message || error) }));
+    };
+    if (data.status === "loading") return /* @__PURE__ */ React.createElement("section", { className: "rm16-panel pending", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("h2", null, "Market-cap Lab"), /* @__PURE__ */ React.createElement("p", null, "Census\uC640 Job Evidence\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4."));
+    if (data.status === "error") return /* @__PURE__ */ React.createElement("section", { className: "rm16-panel danger", role: "alert" }, /* @__PURE__ */ React.createElement("h2", null, "Market-cap Lab \uC694\uCCAD \uC2E4\uD328"), /* @__PURE__ */ React.createElement("p", null, data.error));
+    const census = data.census || {};
+    const health = data.health || {};
+    const bandRows = census.data && census.data.bands || [];
+    const byId = Object.fromEntries(bandRows.map((row) => [row.band_id, row]));
+    return /* @__PURE__ */ React.createElement("section", { className: "rm16-panel", "aria-labelledby": "rm16-title" }, /* @__PURE__ */ React.createElement("div", { className: "rm16-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "READ-ONLY RESEARCH DESIGN"), /* @__PURE__ */ React.createElement("h2", { id: "rm16-title" }, "Market-cap \xB7 Native Tools \xB7 Job Health")), /* @__PURE__ */ React.createElement("strong", null, census.available ? "CENSUS AVAILABLE" : String(census.reason || "SOURCE_UNAVAILABLE").toUpperCase())), /* @__PURE__ */ React.createElement("div", { className: "rm16-band-grid", role: "list", "aria-label": "\uC2DC\uAC00\uCD1D\uC561 4\uAC1C \uACE0\uC815 \uAD6C\uAC04" }, (census.bands || []).map((band) => {
+      var _a2, _b, _c;
+      const row = byId[band.band_id] || {};
+      return /* @__PURE__ */ React.createElement("article", { role: "listitem", key: band.band_id }, /* @__PURE__ */ React.createElement("span", null, band.band_id), /* @__PURE__ */ React.createElement("h3", null, _rm16BandLabel(band)), /* @__PURE__ */ React.createElement("dl", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uAC70\uB798\uC77C"), /* @__PURE__ */ React.createElement("dd", null, (_a2 = row.days) != null ? _a2 : "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uC885\uBAA9"), /* @__PURE__ */ React.createElement("dd", null, (_b = row.symbols) != null ? _b : "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "Event"), /* @__PURE__ */ React.createElement("dd", null, (_c = row.events) != null ? _c : "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uD310\uC815"), /* @__PURE__ */ React.createElement("dd", null, row.verdict || (census.available ? "PENDING_GATE" : "SOURCE_MISSING")))));
+    })), /* @__PURE__ */ React.createElement("div", { className: "rm16-two-col" }, /* @__PURE__ */ React.createElement("section", { className: "rm16-native" }, /* @__PURE__ */ React.createElement("h3", null, "Native Tools Gate"), /* @__PURE__ */ React.createElement("table", null, /* @__PURE__ */ React.createElement("tbody", null, [["BackFinder", "Census/Event"], ["OptimizeConditions", "Inner clause"], ["Genetic", "\uC870\uAC74\uBD80 \uAD6C\uC870"], ["QMC/TPE", "\uC22B\uC790 \uBCC0\uC218"], ["RWFT", "Rolling development"]].map(([tool, role]) => /* @__PURE__ */ React.createElement("tr", { key: tool }, /* @__PURE__ */ React.createElement("th", null, tool), /* @__PURE__ */ React.createElement("td", null, role), /* @__PURE__ */ React.createElement("td", null, health.runtime_queue === "not_started" ? "NOT_STARTED" : "EVIDENCE_ONLY"))))), /* @__PURE__ */ React.createElement("p", null, "\uC6B4\uC601 DB hash\xB7sidecar\xB7immutable connector N0 \uD1B5\uACFC \uC804 \uC2E4\uD589 \uAE08\uC9C0")), /* @__PURE__ */ React.createElement("section", { className: "rm16-health" }, /* @__PURE__ */ React.createElement("h3", null, "Compute / Job Health"), /* @__PURE__ */ React.createElement("dl", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uBAA8\uB4DC"), /* @__PURE__ */ React.createElement("dd", null, health.mode || "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "Runtime queue"), /* @__PURE__ */ React.createElement("dd", null, health.runtime_queue || "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "Engine terminal"), /* @__PURE__ */ React.createElement("dd", null, JSON.stringify(health.engine_terminal_counts || {}))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "Recovered"), /* @__PURE__ */ React.createElement("dd", null, (_a = health.recovered_terminal_rows) != null ? _a : 0))))), /* @__PURE__ */ React.createElement("form", { className: "rm16-designer", onSubmit: submit }, /* @__PURE__ */ React.createElement("h3", null, "Next Research Designer \xB7 Preview only"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", null, "Family", /* @__PURE__ */ React.createElement("select", { value: form.family_id, onChange: (e) => setForm({ ...form, family_id: e.target.value }) }, ["ABSORPTION_REVERSAL", "FAILED_BREAKOUT_RETURN", "COMPRESSION_CONFIRMED_BREAKOUT", "FLOW_PRICE_DIVERGENCE", "OPENING_OVERREACTION_MEAN_REVERT"].map((id2) => /* @__PURE__ */ React.createElement("option", { key: id2 }, id2)))), /* @__PURE__ */ React.createElement("label", null, "Compute hours", /* @__PURE__ */ React.createElement("input", { type: "number", min: "24", max: "48", value: form.compute_hours, onChange: (e) => setForm({ ...form, compute_hours: Number(e.target.value) }) })), /* @__PURE__ */ React.createElement("label", null, "Entry variables", /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "8", value: form.entry_variables, onChange: (e) => setForm({ ...form, entry_variables: Number(e.target.value) }) })), /* @__PURE__ */ React.createElement("label", null, "Exit variables", /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "6", value: form.exit_variables, onChange: (e) => setForm({ ...form, exit_variables: Number(e.target.value) }) }))), /* @__PURE__ */ React.createElement("button", { type: "submit", className: "btn primary" }, "\uC0AC\uC804\uB4F1\uB85D Preview \uAC80\uC99D"), /* @__PURE__ */ React.createElement("p", null, "Preview\uB294 \uC800\uC7A5\xB7\uC2E4\uD589\xB7\uC2B9\uC778\xB7Export\uB97C \uC218\uD589\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), preview.status === "loading" && /* @__PURE__ */ React.createElement("span", { "aria-live": "polite" }, "\uAC80\uC99D \uC911"), preview.status === "error" && /* @__PURE__ */ React.createElement("span", { role: "alert" }, "Preview \uC2E4\uD328 \xB7 ", preview.error), preview.status === "ready" && /* @__PURE__ */ React.createElement("output", null, "VALID \xB7 ", preview.data.preview_sha256)));
+  }
+  Object.assign(window, { V516MarketCapNativeLab });
+
   // ai_strategy_loop/dashboard/frontend/v4-research.jsx
   var { useEffect: useEffect_v4r, useState: useState_v4r } = React;
   var _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -38707,7 +38754,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       setApprovalBlockReason("");
       setApprovalOpen(false);
     };
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-research v6-live v6-live-density-" + liveStageDensity, "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "panel-hd-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(V516ResearchProgramOverview, { baseUrl }), /* @__PURE__ */ React.createElement(V516FamilyFoldExplorer, { baseUrl }), /* @__PURE__ */ React.createElement(V516FailureEvidence, { baseUrl }), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-research v6-live v6-live-density-" + liveStageDensity, "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "panel-hd-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(V516ResearchProgramOverview, { baseUrl }), /* @__PURE__ */ React.createElement(V516FamilyFoldExplorer, { baseUrl }), /* @__PURE__ */ React.createElement(V516FailureEvidence, { baseUrl }), /* @__PURE__ */ React.createElement(V516MarketCapNativeLab, { baseUrl }), /* @__PURE__ */ React.createElement(
       _V6StatusBoard,
       {
         state: s,
