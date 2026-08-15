@@ -75,3 +75,26 @@ def test_family_fold_css_has_keyboard_scroll_and_color_independent_patterns():
     assert ".rf16-fold-scroll:focus-visible" in css
     assert "repeating-linear-gradient" in css
     assert ".rf16-cell.insufficient" in css
+
+
+def test_failure_atlas_and_evidence_inspector_use_allowlisted_read_only_api():
+    research = _source("v4-research.jsx")
+    source = _source("v4-research-evidence.jsx")
+    assert 'import { V516FailureEvidence } from "./v4-research-evidence.jsx"' in research
+    assert "<V516FailureEvidence baseUrl={baseUrl}" in research
+    assert "/research-program/failures" in source
+    assert "/research-program/evidence/" in source
+    for state in ("PROVEN", "REFUTED", "FIXED", "OPEN", "LIMITATION"):
+        assert state in source
+    assert "source_missing" not in source
+    assert "method:" not in source
+    assert "경제적 성공 권한은 부여하지 않습니다" in source
+
+
+def test_evidence_inspector_is_bounded_and_keyboard_accessible():
+    source = _source("v4-research-evidence.jsx")
+    css = _source("v4.css")
+    assert ".slice(0, 12000)" in source
+    assert "<pre tabIndex={0}>" in source
+    assert ".re16-evidence pre:focus-visible" in css
+    assert 'aria-pressed={evidence.id === id}' in source

@@ -30,6 +30,7 @@ import { V4HeroChart } from "./v4-charts.jsx";
 import { BtResultArea } from "./backtest-charts.jsx";
 import { V516ResearchProgramOverview } from "./v4-research-program.jsx";
 import { V516FamilyFoldExplorer } from "./v4-research-family.jsx";
+import { V516FailureEvidence } from "./v4-research-evidence.jsx";
 const { useEffect: useEffect_v4r, useState: useState_v4r } = React;
 
 const _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -449,6 +450,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
       <ExportStatusBanner reply={lastReply} />
       <V516ResearchProgramOverview baseUrl={baseUrl} />
       <V516FamilyFoldExplorer baseUrl={baseUrl} />
+      <V516FailureEvidence baseUrl={baseUrl} />
 
       {/* ===== 통합 상황판(벨트 + 현재세대 + KPI + 게이트) ===== */}
       <_V6StatusBoard state={s} liveStage={liveStage} activeStage={activeStage} onStagePin={onStagePin}
