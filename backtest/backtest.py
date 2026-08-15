@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from traceback import format_exc
 from utility.static import now, str_ymdhms
+from utility.sqlite_readonly import connect_existing_db_readonly
 from backtest.back_static_numba import GetResult, bootstrap_test
 from utility.setting_user import stockreadlines, coinreadlines, futurereadlines
 from backtest.back_static import PlotShow, GetMoneytopQuery, GetResultDataframe, AddMdd
@@ -48,7 +49,7 @@ def _read_moneytop_with_diagnostics(
         db, is_tick, ui_gubun, startday, endday, starttime, endtime, back_queue):
     con = None
     try:
-        con = sqlite3.connect(db)
+        con = connect_existing_db_readonly(db)
         query = GetMoneytopQuery(is_tick, ui_gubun, startday, endday, starttime, endtime)
         return pd.read_sql(query, con)
     except Exception as e:
