@@ -119,6 +119,8 @@ def test_manager_closes_process_job_on_normal_and_error_results(
         BacktestJobSpec(
             buy="resource-close",
             sell="sell",
+            buy_code="매수 = True",
+            sell_code="매도 = False",
             start=20250407,
             end=20250409,
         )
@@ -185,6 +187,8 @@ print(json.dumps({"status": "success", "csv_path": "backtest/csv/misleading.csv"
         BacktestJobSpec(
             buy="orphan-grandchild",
             sell="sell",
+            buy_code="매수 = True",
+            sell_code="매도 = False",
             start=20250407,
             end=20250409,
         )
