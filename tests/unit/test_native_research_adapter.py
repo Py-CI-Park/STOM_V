@@ -22,7 +22,7 @@ def _db(path: Path, table: str = "sample") -> None:
 
 
 def _spec(tmp_path: Path) -> NativeRunSpec:
-    for name in ("strategy", "backtest", "setting", "optuna", "market"):
+    for name in ("strategy", "backtest", "setting", "optuna", "stock_tick_back"):
         _db(tmp_path / f"{name}.db")
     return NativeRunSpec(
         run_id="run-001",
@@ -31,7 +31,7 @@ def _spec(tmp_path: Path) -> NativeRunSpec:
         backtest_db=str(tmp_path / "backtest.db"),
         setting_db=str(tmp_path / "setting.db"),
         optuna_db=str(tmp_path / "optuna.db"),
-        market_db_paths=(str(tmp_path / "market.db"),),
+        market_db_paths=(str(tmp_path / "stock_tick_back.db"),),
         output_root=str(tmp_path / "native_runs"),
     )
 
@@ -49,6 +49,7 @@ def test_adapter_prepares_only_run_local_writable_databases(tmp_path):
     assert environment["STOM_CLI_DB_STRATEGY"] == str(adapter.run_dir / "strategy.db")
     assert environment["STOM_CLI_DB_BACKTEST"] == str(adapter.run_dir / "backtest.db")
     assert environment["STOM_CLI_DB_OPTUNA"] == str(adapter.run_dir / "optuna.db")
+    assert environment["STOM_CLI_DB_STOCK_BACK_TICK"] == str(tmp_path / "stock_tick_back.db")
     verified = adapter.verify_operational_unchanged()
     assert verified["operational_fingerprints_after"] == verified["operational_fingerprints_before"]
 

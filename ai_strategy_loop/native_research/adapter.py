@@ -22,6 +22,12 @@ from .contracts import NativeRunSpec, NativeTerminalStatus
 from .sidecar import NativeSidecar, canonical_json
 
 _RUN_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$")
+_MARKET_ENV_BY_NAME = {
+    "stock_tick_back.db": "STOM_CLI_DB_STOCK_BACK_TICK",
+    "stock_min_back.db": "STOM_CLI_DB_STOCK_BACK_MIN",
+    "coin_tick_back.db": "STOM_CLI_DB_COIN_BACK_TICK",
+    "coin_min_back.db": "STOM_CLI_DB_COIN_BACK_MIN",
+}
 
 
 def _copy_sqlite_snapshot(source: str | Path, destination: Path) -> None:
@@ -104,6 +110,14 @@ class NativeResearchAdapter:
         optuna = self.run_dir / "optuna.db"
         if optuna.exists():
             environment["STOM_CLI_DB_OPTUNA"] = str(optuna)
+        for raw_path in self.spec.market_db_paths:
+            market_path = Path(raw_path).expanduser().resolve()
+            variable = _MARKET_ENV_BY_NAME.get(market_path.name.lower())
+            if variable is None:
+                raise ValueError(f"unsupported native market DB: {market_path.name}")
+            if variable in environment and Path(environment[variable]).resolve() != market_path:
+                raise ValueError(f"duplicate native market DB binding: {variable}")
+            environment[variable] = str(market_path)
         return environment
 
     def verify_operational_unchanged(self) -> dict[str, Any]:
