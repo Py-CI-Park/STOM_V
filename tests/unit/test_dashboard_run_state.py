@@ -307,8 +307,8 @@ class TestBestWinnerMerge:
 
     def test_app_branches_on_same_gen(self):
         """best.gen===winner.gen이면 병합 카드, 아니면 2카드."""
-        src = _read_front("app.jsx")
-        assert "state.best.gen === state.winner.gen" in src
+        src = _read_front("v4-research.jsx")
+        assert "s.best.gen === s.winner.gen" in src
         assert "<MergedBestWinnerCard" in src
         # 하위호환: 분기 else에 기존 BestCard/WinnerCard 유지.
         assert "<BestCard" in src

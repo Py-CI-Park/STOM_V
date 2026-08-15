@@ -58,8 +58,8 @@ def test_dashboard_bundle_loads_integrated_panels_before_app() -> None:
 
 
 def test_final_approval_remains_dialog_gated() -> None:
-    """Given app.jsx, When layout changes, Then final approval is still user-dialog gated."""
-    src = _read("app.jsx")
+    """Given Research Cockpit, When layout changes, Then final approval is still dialog gated."""
+    src = _read("v4-research.jsx")
 
     assert '<ApprovalDialog' in src
     assert 'onConfirm={onApprove}' in src
