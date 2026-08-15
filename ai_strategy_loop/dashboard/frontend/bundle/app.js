@@ -38335,6 +38335,55 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4HeroChart });
 
+  // ai_strategy_loop/dashboard/frontend/v4-research-program.jsx
+  var { useCallback: useCallback_rp16, useEffect: useEffect_rp16, useState: useState_rp16 } = React;
+  function _Rp16Badge({ label, value, tone = "neutral" }) {
+    return /* @__PURE__ */ React.createElement("span", { className: `rp16-badge ${tone}` }, /* @__PURE__ */ React.createElement("span", null, label), /* @__PURE__ */ React.createElement("b", null, value == null ? "\u2014" : String(value)));
+  }
+  function _Rp16Scope({ scope, authority }) {
+    const rows = [
+      ["DATA", scope && scope.source || "existing_database_only"],
+      ["LANE", scope && scope.lane || "pending_census"],
+      ["WINDOW", scope && scope.window_contract || "pending_census"],
+      ["DB", scope && scope.operational_db || "read_only"],
+      ["AUTHORITY", authority || "development_no_adoption"]
+    ];
+    return /* @__PURE__ */ React.createElement("div", { className: "rp16-scope", role: "list", "aria-label": "\uC5F0\uAD6C \uB370\uC774\uD130 \uBC94\uC704\uC640 \uAD8C\uC704" }, rows.map(([key, value]) => /* @__PURE__ */ React.createElement("div", { key, role: "listitem" }, /* @__PURE__ */ React.createElement("span", null, key), /* @__PURE__ */ React.createElement("b", null, value))));
+  }
+  function _Rp16Funnel({ funnel }) {
+    const rows = [
+      ["\uC0DD\uC131", "generated"],
+      ["\uC2E4\uD589\uACC4\uC57D", "execution_contract"],
+      ["\uACF5\uC2DD\uC5D4\uC9C4", "official_engine_rows"],
+      ["\uAD6D\uC18C \uC591\uC218", "local_positive"],
+      ["\uAC1C\uBC1C Rule-pass", "development_rule_pass"],
+      ["Bayesian \uC2B9\uC778", "bayesian_approve"],
+      ["BO \uC801\uACA9", "bo_eligible"]
+    ];
+    return /* @__PURE__ */ React.createElement("ol", { className: "rp16-funnel", "aria-label": "\uC870\uAC74\uC2DD \uC5F0\uAD6C \uD37C\uB110" }, rows.map(([label, key], index2) => /* @__PURE__ */ React.createElement("li", { key }, /* @__PURE__ */ React.createElement("span", null, index2 + 1), /* @__PURE__ */ React.createElement("b", null, label), /* @__PURE__ */ React.createElement("strong", null, Number(funnel && funnel[key] || 0).toLocaleString()))));
+  }
+  function V516ResearchProgramOverview({ baseUrl }) {
+    const [view, setView] = useState_rp16({ status: "loading", data: null, error: "" });
+    const load = useCallback_rp16(() => {
+      const controller = new AbortController();
+      setView((current) => ({ ...current, status: "loading", error: "" }));
+      const endpoint = String(baseUrl || "").replace(/\/$/, "") + "/research-program/summary";
+      fetch(endpoint, { signal: controller.signal }).then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))).then((data2) => setView({ status: "ready", data: data2, error: "" })).catch((error) => {
+        if (error && error.name !== "AbortError") setView({ status: "error", data: null, error: String(error.message || error) });
+      });
+      return () => controller.abort();
+    }, [baseUrl]);
+    useEffect_rp16(() => load(), [load]);
+    if (view.status === "loading" && !view.data) return /* @__PURE__ */ React.createElement("section", { className: "rp16-overview pending", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("h2", null, "Research Program"), /* @__PURE__ */ React.createElement("p", null, "\uC5F0\uAD6C \uC6D0\uC7A5\uACFC Evidence\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4."));
+    if (view.status === "error") return /* @__PURE__ */ React.createElement("section", { className: "rp16-overview danger", role: "alert" }, /* @__PURE__ */ React.createElement("h2", null, "Research Program \uC694\uCCAD \uC2E4\uD328"), /* @__PURE__ */ React.createElement("p", null, view.error), /* @__PURE__ */ React.createElement("button", { type: "button", className: "btn", onClick: load }, "\uB2E4\uC2DC \uC2DC\uB3C4"));
+    const data = view.data || {};
+    const platform = data.platform || {};
+    const economic = data.economic || {};
+    const phases = data.phases || {};
+    return /* @__PURE__ */ React.createElement("section", { className: "rp16-overview", "aria-labelledby": "rp16-overview-title" }, /* @__PURE__ */ React.createElement("div", { className: "rp16-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "eyebrow" }, "v5.16 PROGRAM COCKPIT"), /* @__PURE__ */ React.createElement("h2", { id: "rp16-overview-title" }, "\uAE30\uC874 DB \uC870\uAC74\uC2DD \uC5F0\uAD6C \uD604\uD669")), /* @__PURE__ */ React.createElement("div", { className: "rp16-badges", "aria-label": "\uC5F0\uAD6C \uCD5C\uC0C1\uC704 \uD310\uC815" }, /* @__PURE__ */ React.createElement(_Rp16Badge, { label: "\uD50C\uB7AB\uD3FC", value: platform.verdict || "SOURCE_UNAVAILABLE", tone: platform.verdict === "PASS" ? "safe" : "warn" }), /* @__PURE__ */ React.createElement(_Rp16Badge, { label: "\uACBD\uC81C \uD310\uC815", value: economic.verdict || "SOURCE_UNAVAILABLE", tone: "danger" }), /* @__PURE__ */ React.createElement(_Rp16Badge, { label: "Robust", value: economic.robust_candidates || 0 }), /* @__PURE__ */ React.createElement(_Rp16Badge, { label: "BO", value: economic.bo_eligible || 0 }))), /* @__PURE__ */ React.createElement(_Rp16Scope, { scope: data.data_scope, authority: data.authority }), /* @__PURE__ */ React.createElement("div", { className: "rp16-grid" }, /* @__PURE__ */ React.createElement("div", { className: "rp16-card" }, /* @__PURE__ */ React.createElement("h3", null, "\uC5F0\uAD6C Funnel"), /* @__PURE__ */ React.createElement(_Rp16Funnel, { funnel: data.funnel || {} })), /* @__PURE__ */ React.createElement("div", { className: "rp16-card" }, /* @__PURE__ */ React.createElement("h3", null, "\uB2E8\uACC4 Timeline"), /* @__PURE__ */ React.createElement("table", null, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uB2E8\uACC4"), /* @__PURE__ */ React.createElement("th", null, "\uBD09\uC778 \uD310\uC815"))), /* @__PURE__ */ React.createElement("tbody", null, ["D1", "D2", "PAIRED"].map((key) => /* @__PURE__ */ React.createElement("tr", { key }, /* @__PURE__ */ React.createElement("th", null, key), /* @__PURE__ */ React.createElement("td", null, phases[key] || "SOURCE_UNAVAILABLE"))))))), /* @__PURE__ */ React.createElement("p", { className: "rp16-authority" }, /* @__PURE__ */ React.createElement("b", null, "DEVELOPMENT ONLY"), " \xB7 \uAE30\uC874 \uACB0\uACFC\uB294 OOS\xB7\uC2E4\uC804\xB7\uC790\uB3D9\uCC44\uD0DD \uADFC\uAC70\uAC00 \uC544\uB2D9\uB2C8\uB2E4. \uD50C\uB7AB\uD3FC PASS\uC640 \uACBD\uC81C\uC801 \uC131\uACF5\uC740 \uBCC4\uB3C4 \uD310\uC815\uC785\uB2C8\uB2E4."));
+  }
+  Object.assign(window, { V516ResearchProgramOverview });
+
   // ai_strategy_loop/dashboard/frontend/v4-research.jsx
   var { useEffect: useEffect_v4r, useState: useState_v4r } = React;
   var _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -38589,7 +38638,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       setApprovalBlockReason("");
       setApprovalOpen(false);
     };
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-research v6-live v6-live-density-" + liveStageDensity, "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "panel-hd-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-research v6-live v6-live-density-" + liveStageDensity, "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "panel-hd-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(V516ResearchProgramOverview, { baseUrl }), /* @__PURE__ */ React.createElement(
       _V6StatusBoard,
       {
         state: s,
@@ -41886,7 +41935,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
-  var V4_DASH_VERSION = "v5.15.0";
+  var V4_DASH_VERSION = "v5.16.0";
   (function _initFeLogBuffer() {
     const capacity = 200;
     const redact = (value) => {
