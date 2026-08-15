@@ -1016,7 +1016,7 @@ def test_read_moneytop_with_diagnostics_emits_on_connect_failure(monkeypatch):
     def fail_connect(_db):
         raise RuntimeError('cannot open db')
 
-    monkeypatch.setattr(backtest_module.sqlite3, 'connect', fail_connect)
+    monkeypatch.setattr(backtest_module, 'connect_existing_db_readonly', fail_connect)
 
     with pytest.raises(RuntimeError, match='cannot open db'):
         backtest_module._read_moneytop_with_diagnostics(
