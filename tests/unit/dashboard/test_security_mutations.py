@@ -235,10 +235,9 @@ def test_enabled_strategy_and_decision_writes_stay_in_temp_targets(
 
     assert strategy.status_code == 200
     assert strategy.json()["status"] == "ok", strategy.json()
-    assert decision.status_code == 200
-    assert decision.json()["status"] == "ok"
-    records = [json.loads(line) for line in decision_file.read_text(encoding="utf-8").splitlines()]
-    assert [(row["verdict"], row["note"]) for row in records] == [("hold", "test-only")]
+    assert decision.status_code == 409
+    assert decision.json()["code"] == "decision_identity_unavailable"
+    assert not decision_file.exists()
 
 
 def test_mutation_body_limit_is_enforced_before_validation(monkeypatch, tmp_path: Path) -> None:

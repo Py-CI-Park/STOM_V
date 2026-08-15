@@ -1,0 +1,142 @@
+{
+  "advanced": [],
+  "advanced_count": 0,
+  "attempted": 40,
+  "authority": "existing_db_development_no_oos_no_adoption",
+  "bayesian": "APPROVE_0_OF_0",
+  "can_adopt": false,
+  "cells": {
+    "ABSORPTION_REVERSAL:MCAP_A_LT3000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 1,
+      "no_trades": 0
+    },
+    "ABSORPTION_REVERSAL:MCAP_B_3000_5000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 0
+    },
+    "ABSORPTION_REVERSAL:MCAP_C_5000_10000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 1
+    },
+    "ABSORPTION_REVERSAL:MCAP_D_GE10000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 1
+    },
+    "COMPRESSION_CONFIRMED_BREAKOUT:MCAP_A_LT3000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 1,
+      "no_trades": 0
+    },
+    "COMPRESSION_CONFIRMED_BREAKOUT:MCAP_B_3000_5000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 1
+    },
+    "COMPRESSION_CONFIRMED_BREAKOUT:MCAP_C_5000_10000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 2
+    },
+    "COMPRESSION_CONFIRMED_BREAKOUT:MCAP_D_GE10000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 1
+    },
+    "FAILED_BREAKOUT_RETURN:MCAP_A_LT3000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 2
+    },
+    "FAILED_BREAKOUT_RETURN:MCAP_B_3000_5000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 2
+    },
+    "FAILED_BREAKOUT_RETURN:MCAP_C_5000_10000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 1
+    },
+    "FAILED_BREAKOUT_RETURN:MCAP_D_GE10000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 1
+    },
+    "FLOW_PRICE_DIVERGENCE:MCAP_A_LT3000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 0
+    },
+    "FLOW_PRICE_DIVERGENCE:MCAP_B_3000_5000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 1
+    },
+    "FLOW_PRICE_DIVERGENCE:MCAP_C_5000_10000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 2
+    },
+    "FLOW_PRICE_DIVERGENCE:MCAP_D_GE10000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 2
+    },
+    "OPENING_OVERREACTION_MEAN_REVERT:MCAP_A_LT3000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 0
+    },
+    "OPENING_OVERREACTION_MEAN_REVERT:MCAP_B_3000_5000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 2
+    },
+    "OPENING_OVERREACTION_MEAN_REVERT:MCAP_C_5000_10000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 2
+    },
+    "OPENING_OVERREACTION_MEAN_REVERT:MCAP_D_GE10000": {
+      "advanced": 0,
+      "attempted": 2,
+      "metrics": 0,
+      "no_trades": 0
+    }
+  },
+  "controls": "NOT_ENTERED_NO_EVENT_QUALIFIED_CANDIDATE",
+  "d4_bo": "GATE_NOT_ENTERED",
+  "metrics_count": 2,
+  "schema": "stom.d3_screen_decision.v1",
+  "screen_manifest_sha256": "39a6d3fd8b4cce65979a530375cdd228fda542ef03dd5963968f7d1ddf326fc0",
+  "status_counts": {
+    "error": 15,
+    "no_trades": 21,
+    "success": 2,
+    "timeout": 2
+  },
+  "verdict": "NO_EVENT_QUALIFIED_D3_CANDIDATE"
+}

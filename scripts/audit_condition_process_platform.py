@@ -102,8 +102,8 @@ def run_audit() -> dict[str, object]:
             "ai_strategy_loop/dashboard/trade_path_official_api.py",
             '@official_trade_path_router.post("/promotion-gate")', "persist: bool = False",
         )),
-        ("P7", "product_release_is_v5_15", lambda: _has(
-            "ai_strategy_loop/dashboard/app.py", '_DASHBOARD_RELEASE = "v5.15.0"',
+        ("P7", "product_release_is_v5_16", lambda: _has(
+            "ai_strategy_loop/dashboard/app.py", '_DASHBOARD_RELEASE = "v5.16.0"',
         )),
     ]
     rows = []

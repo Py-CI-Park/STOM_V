@@ -90,9 +90,9 @@ class TestDecisionFlowCrossLink:
         assert "record_decision" in dp
 
     def test_backend_routes_unchanged(self) -> None:
-        # final_approval 은 app.jsx WS send, /record_decision 은 dashboard-pages.jsx REST POST 그대로.
-        app = _read("app.jsx")
-        assert 'action: "final_approval"' in app
+        # final_approval 은 Research Cockpit WS send, /record_decision 은 dashboard-pages.jsx REST POST.
+        research = _read("v4-research.jsx")
+        assert 'action: "final_approval"' in research
         dp = _read("dashboard-pages.jsx")
         assert 'base + "/record_decision"' in dp
 

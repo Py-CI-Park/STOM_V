@@ -7,6 +7,7 @@ import pytest
 if 'utility.lazy_imports' not in sys.modules:
     fake_lazy_imports = types.ModuleType('utility.lazy_imports')
     fake_lazy_imports.get_np = lambda: None
+    fake_lazy_imports.get_pd = lambda: None
     fake_lazy_imports.get_talib_stream = lambda: None
     sys.modules['utility.lazy_imports'] = fake_lazy_imports
 

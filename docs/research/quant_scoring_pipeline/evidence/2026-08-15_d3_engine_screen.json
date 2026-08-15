@@ -1,0 +1,2377 @@
+{
+  "advanced": [],
+  "authority": "existing_db_development_no_oos_no_adoption",
+  "can_adopt": false,
+  "config": {
+    "base_urls": [
+      "http://127.0.0.1:8779",
+      "http://127.0.0.1:8780",
+      "http://127.0.0.1:8781",
+      "http://127.0.0.1:8782"
+    ],
+    "end": 20231114,
+    "engines": 1,
+    "job_timeout": 150,
+    "poll_timeout": 240,
+    "start": 20231114,
+    "workers": 4
+  },
+  "execution_failure_count": 17,
+  "failure_reasons": [],
+  "manifest_sha256": "39a6d3fd8b4cce65979a530375cdd228fda542ef03dd5963968f7d1ddf326fc0",
+  "manifest_window_sha256": "69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b",
+  "metrics_count": 2,
+  "platform_verdict": "EXECUTION_FAILURES_PRESENT",
+  "rows": [
+    {
+      "band_id": "MCAP_A_LT3000",
+      "candidate_id": "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee",
+      "diagnostics": {
+        "event_count": 210,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "backtest_child_completed"
+        },
+        "last_checkpoint": "backtest_child_completed",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 2.137,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 140.467,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "f158a8291b6b6d4cc7e2f0d61d2453aed75f3d960ea4cdb0bbd86117650d37be",
+        "buy_name": "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee",
+        "confidence": "high",
+        "display_name": "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "ABSORPTION_REVERSAL",
+      "job_id": "20260815_170623_D3ABSORPTIONREVERSALMCAP_83877",
+      "metrics": {
+        "avg_hold_time": 175.5,
+        "avg_profit_pct": -1.67,
+        "cagr": -418.02,
+        "daily_avg_trades": 2.0,
+        "day_count": 1,
+        "max_hold_count": 2,
+        "mdd_amount": 0.0,
+        "mdd_pct": 1.03,
+        "seed_capital": 1996950.0,
+        "total_profit_krw": -33391,
+        "total_profit_pct": -1.67,
+        "tpi": 0.0,
+        "trade_count": 2,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "book_window": 58,
+        "flow_ratio": 1.1492376231220987,
+        "flow_window": 22,
+        "price_window": 5,
+        "prior_book_max": 0.19845404039379866,
+        "recovery_rate": 1.1772276519147074
+      },
+      "result_status": "success",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 2,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "sample_too_small",
+          "non_positive_total_profit",
+          "non_positive_avg_profit"
+        ],
+        "underpowered_evidence": true
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "91a666673ceb5488c64bc8647855ec62700a722093bb4b373c4cddb466f93277",
+      "source_snapshot_match": true,
+      "status": "success",
+      "strategy_db_snapshot_hashes": {
+        "buy": "91a666673ceb5488c64bc8647855ec62700a722093bb4b373c4cddb466f93277",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_A_LT3000",
+      "candidate_id": "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_7cc938d0ce",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 196.125,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "31e272c6da48ced82a12dddbfbad14836b17c8ee08ef40bb72f959af8c6209c2",
+        "buy_name": "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_7cc938d0ce",
+        "confidence": "high",
+        "display_name": "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_7cc938d0ce / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "ABSORPTION_REVERSAL",
+      "job_id": "20260815_170623_D3ABSORPTIONREVERSALMCAP_83878",
+      "metrics": null,
+      "parameters": {
+        "book_window": 16,
+        "flow_ratio": 1.9461607000451755,
+        "flow_window": 12,
+        "price_window": 32,
+        "prior_book_max": 0.47956515150490975,
+        "recovery_rate": 0.05273785599634006
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "2d08df2aa9e0af2e84c22ab3747349141b3c39a63d9bbdc4e2c2ecc27e46a2f5",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "2d08df2aa9e0af2e84c22ab3747349141b3c39a63d9bbdc4e2c2ecc27e46a2f5",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_B_3000_5000",
+      "candidate_id": "D3_ABSORPTION_REVERSAL_MCAP_B_3000_5000_5c17e271ab",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 196.235,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "486536be17912dae47abbe2065b5c98e339cc4c291b78b1c8d06f22ce53d2d30",
+        "buy_name": "D3_ABSORPTION_REVERSAL_MCAP_B_3000_5000_5c17e271ab",
+        "confidence": "high",
+        "display_name": "D3_ABSORPTION_REVERSAL_MCAP_B_3000_5000_5c17e271ab / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "ABSORPTION_REVERSAL",
+      "job_id": "20260815_170623_D3ABSORPTIONREVERSALMCAP_83894",
+      "metrics": null,
+      "parameters": {
+        "book_window": 58,
+        "flow_ratio": 2.0748622344867886,
+        "flow_window": 54,
+        "price_window": 42,
+        "prior_book_max": 0.26827817055577063,
+        "recovery_rate": 1.3042212803688564
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "6775b70b63e0a71bc27d7d4a61dd24b89b236cfa150026859caa4b4ac414404c",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "6775b70b63e0a71bc27d7d4a61dd24b89b236cfa150026859caa4b4ac414404c",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_B_3000_5000",
+      "candidate_id": "D3_ABSORPTION_REVERSAL_MCAP_B_3000_5000_87568ebd34",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 201.204,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "73fb60511f49cf49a484d9b53836931661ed9fc8431ce269cfc9933dd724551a",
+        "buy_name": "D3_ABSORPTION_REVERSAL_MCAP_B_3000_5000_87568ebd34",
+        "confidence": "high",
+        "display_name": "D3_ABSORPTION_REVERSAL_MCAP_B_3000_5000_87568ebd34 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "ABSORPTION_REVERSAL",
+      "job_id": "20260815_170623_D3ABSORPTIONREVERSALMCAP_83878",
+      "metrics": null,
+      "parameters": {
+        "book_window": 12,
+        "flow_ratio": 1.1553356072678533,
+        "flow_window": 11,
+        "price_window": 23,
+        "prior_book_max": 0.20309298537058545,
+        "recovery_rate": 0.17973148445048914
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "ceb60bcc33bab5b993be6dc87cae026af657461e9dcb2fd885d86adf4e12cdf4",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "ceb60bcc33bab5b993be6dc87cae026af657461e9dcb2fd885d86adf4e12cdf4",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_C_5000_10000",
+      "candidate_id": "D3_ABSORPTION_REVERSAL_MCAP_C_5000_10000_4704be8ce0",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 1.967,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 74.922,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "5db35ed13897dff65e9d7f293f3902da3cfe5ceecb37b3a8c339da7219caf1f3",
+        "buy_name": "D3_ABSORPTION_REVERSAL_MCAP_C_5000_10000_4704be8ce0",
+        "confidence": "high",
+        "display_name": "D3_ABSORPTION_REVERSAL_MCAP_C_5000_10000_4704be8ce0 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "ABSORPTION_REVERSAL",
+      "job_id": "20260815_170844_D3ABSORPTIONREVERSALMCAP_24543",
+      "metrics": null,
+      "parameters": {
+        "book_window": 19,
+        "flow_ratio": 2.2784453357088825,
+        "flow_window": 14,
+        "price_window": 13,
+        "prior_book_max": 0.3826332645297111,
+        "recovery_rate": 0.3485336295014821
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "8ff5d22b1e69ccccc9d5eb88c302e1a310fe668cd3170c41f248e40ae34c8467",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "8ff5d22b1e69ccccc9d5eb88c302e1a310fe668cd3170c41f248e40ae34c8467",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_C_5000_10000",
+      "candidate_id": "D3_ABSORPTION_REVERSAL_MCAP_C_5000_10000_d269d9f1c0",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 186.141,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "986285aabd4860460cc6cecb95e35d6aa3696d7f1bfaa27aad7b8256bdd43e67",
+        "buy_name": "D3_ABSORPTION_REVERSAL_MCAP_C_5000_10000_d269d9f1c0",
+        "confidence": "high",
+        "display_name": "D3_ABSORPTION_REVERSAL_MCAP_C_5000_10000_d269d9f1c0 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "ABSORPTION_REVERSAL",
+      "job_id": "20260815_170940_D3ABSORPTIONREVERSALMCAP_80211",
+      "metrics": null,
+      "parameters": {
+        "book_window": 59,
+        "flow_ratio": 1.3501613120402434,
+        "flow_window": 27,
+        "price_window": 45,
+        "prior_book_max": 0.18707770897415554,
+        "recovery_rate": 1.4138397519504615
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "caa298bef266e7ee1b7c51823df172b04d9d0c0f18f5e6766a9f74b7601a492e",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "caa298bef266e7ee1b7c51823df172b04d9d0c0f18f5e6766a9f74b7601a492e",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_D_GE10000",
+      "candidate_id": "D3_ABSORPTION_REVERSAL_MCAP_D_GE10000_ef63503349",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 2.047,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 120.828,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "cac4f97ad23b6d70a5b53e08715a298c29f1075302f9e069e63482c808b4314b",
+        "buy_name": "D3_ABSORPTION_REVERSAL_MCAP_D_GE10000_ef63503349",
+        "confidence": "high",
+        "display_name": "D3_ABSORPTION_REVERSAL_MCAP_D_GE10000_ef63503349 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "ABSORPTION_REVERSAL",
+      "job_id": "20260815_170940_D3ABSORPTIONREVERSALMCAP_80299",
+      "metrics": null,
+      "parameters": {
+        "book_window": 15,
+        "flow_ratio": 2.4644545562130586,
+        "flow_window": 52,
+        "price_window": 8,
+        "prior_book_max": 0.3832696167392583,
+        "recovery_rate": 0.4976397730074808
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "e9a04f270f9ab7d2ed7be1d291b32b0ac1f2bb3968727bc342aca409c3822891",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "e9a04f270f9ab7d2ed7be1d291b32b0ac1f2bb3968727bc342aca409c3822891",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_D_GE10000",
+      "candidate_id": "D3_ABSORPTION_REVERSAL_MCAP_D_GE10000_c34f3c4d1e",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 211.412,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "8090d03fc1e895cf2632de71975245ff6f1c8fc5f6f4ddf50ca5ab4ac8f39610",
+        "buy_name": "D3_ABSORPTION_REVERSAL_MCAP_D_GE10000_c34f3c4d1e",
+        "confidence": "high",
+        "display_name": "D3_ABSORPTION_REVERSAL_MCAP_D_GE10000_c34f3c4d1e / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "ABSORPTION_REVERSAL",
+      "job_id": "20260815_170945_D3ABSORPTIONREVERSALMCAP_85283",
+      "metrics": null,
+      "parameters": {
+        "book_window": 53,
+        "flow_ratio": 2.3506084023669045,
+        "flow_window": 15,
+        "price_window": 45,
+        "prior_book_max": 0.199936283405925,
+        "recovery_rate": 1.3262112015789096
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "6cd6234ac82a5781f721fd7f3b313be7284118c51a1dad1ba6005f90ec4e63c7",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "6cd6234ac82a5781f721fd7f3b313be7284118c51a1dad1ba6005f90ec4e63c7",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_A_LT3000",
+      "candidate_id": "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_cc12f7a023",
+      "diagnostics": {
+        "event_count": 19,
+        "last_by_source": {
+          "BackEngine:0": "engine_strategy_exception",
+          "BackTest": "backtest_child_waiting_mq_second"
+        },
+        "last_checkpoint": "engine_strategy_exception",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code": "006740",
+            "error": "TypeError: list indices must be integers or slices, not str",
+            "index": 20231114091855
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 121.706,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "4b86312f3aba58cc940495f0d8c76694cebc0a644891650f51228b3b7bfa82b7",
+        "buy_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_cc12f7a023",
+        "confidence": "high",
+        "display_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_cc12f7a023 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FAILED_BREAKOUT_RETURN",
+      "job_id": "20260815_170959_D3FAILEDBREAKOUTRETURNMC_99651",
+      "metrics": null,
+      "parameters": {
+        "breakout_window": 36,
+        "confirmation": 1.0917842812846887,
+        "flow_window": 18,
+        "persistence": 28,
+        "return_rate": 1.427476694498665,
+        "turnover_ratio": 3.35197261014053
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "35f8d350c98649d56314445da341ed2757e5099cc50056c961d9b5fc39995dc5",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "35f8d350c98649d56314445da341ed2757e5099cc50056c961d9b5fc39995dc5",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_A_LT3000",
+      "candidate_id": "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_8432eb62ad",
+      "diagnostics": {
+        "event_count": 17,
+        "last_by_source": {
+          "BackEngine:0": "engine_strategy_exception",
+          "BackTest": "backtest_child_mq_first_received"
+        },
+        "last_checkpoint": "backtest_child_mq_first_received",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code": "006740",
+            "error": "TypeError: list indices must be integers or slices, not str",
+            "index": 20231114091311
+          },
+          "BackTest": {
+            "message_kind": "백테중지"
+          }
+        }
+      },
+      "elapsed_seconds": 165.812,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "3fd3a43bc22e42fc6a3e907b63c185a09f3788b54f0e25f62557e20a22da6ab8",
+        "buy_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_8432eb62ad",
+        "confidence": "high",
+        "display_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_8432eb62ad / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FAILED_BREAKOUT_RETURN",
+      "job_id": "20260815_171141_D3FAILEDBREAKOUTRETURNMC_1293",
+      "metrics": null,
+      "parameters": {
+        "breakout_window": 59,
+        "confirmation": 2.1826933721937802,
+        "flow_window": 54,
+        "persistence": 2,
+        "return_rate": 0.1385878056097759,
+        "turnover_ratio": 2.3484223142825416
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "d67263bc6c5c4e4a3a220ecf5dd75d171ce4e90477a37ba95007d9e76ccf263b",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "d67263bc6c5c4e4a3a220ecf5dd75d171ce4e90477a37ba95007d9e76ccf263b",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_B_3000_5000",
+      "candidate_id": "D3_FAILED_BREAKOUT_RETURN_MCAP_B_3000_5000_751a7d3b41",
+      "diagnostics": {
+        "event_count": 21,
+        "last_by_source": {
+          "BackEngine:0": "engine_strategy_exception",
+          "BackTest": "backtest_child_waiting_mq_second"
+        },
+        "last_checkpoint": "engine_strategy_exception",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code": "319400",
+            "error": "TypeError: list indices must be integers or slices, not str",
+            "index": 20231114090120
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 75.467,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "b0fee38171baa7d61570781cb2b8ebb6f034983e61920fc39b181307d7f57813",
+        "buy_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_B_3000_5000_751a7d3b41",
+        "confidence": "high",
+        "display_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_B_3000_5000_751a7d3b41 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FAILED_BREAKOUT_RETURN",
+      "job_id": "20260815_171201_D3FAILEDBREAKOUTRETURNMC_21630",
+      "metrics": null,
+      "parameters": {
+        "breakout_window": 52,
+        "confirmation": 1.090934232603502,
+        "flow_window": 54,
+        "persistence": 30,
+        "return_rate": 0.3784587166433754,
+        "turnover_ratio": 0.9389039898943331
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "86416647c29377fae8a4ce7f881599710e72f54482bf498e649a8aefca0ff7ea",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "86416647c29377fae8a4ce7f881599710e72f54482bf498e649a8aefca0ff7ea",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_B_3000_5000",
+      "candidate_id": "D3_FAILED_BREAKOUT_RETURN_MCAP_B_3000_5000_f093b8a2fb",
+      "diagnostics": {
+        "event_count": 21,
+        "last_by_source": {
+          "BackEngine:0": "engine_strategy_exception",
+          "BackTest": "backtest_child_waiting_mq_second"
+        },
+        "last_checkpoint": "engine_strategy_exception",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code": "319400",
+            "error": "TypeError: list indices must be integers or slices, not str",
+            "index": 20231114090254
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 145.977,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "a77e5dcaa2faaac05bca7fe9a5e8181678aa6f0f374106855dfb8ccd50274509",
+        "buy_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_B_3000_5000_f093b8a2fb",
+        "confidence": "high",
+        "display_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_B_3000_5000_f093b8a2fb / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FAILED_BREAKOUT_RETURN",
+      "job_id": "20260815_171246_D3FAILEDBREAKOUTRETURNMC_66520",
+      "metrics": null,
+      "parameters": {
+        "breakout_window": 24,
+        "confirmation": 1.8149011747522623,
+        "flow_window": 17,
+        "persistence": 4,
+        "return_rate": 1.0766068647915237,
+        "turnover_ratio": 3.8927501437404874
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "30b74dc6190d88368ca856185d43b4bd6a49ce82e358b003269d7d6a19427225",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "30b74dc6190d88368ca856185d43b4bd6a49ce82e358b003269d7d6a19427225",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_C_5000_10000",
+      "candidate_id": "D3_FAILED_BREAKOUT_RETURN_MCAP_C_5000_10000_3b2c875549",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 191.106,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "71cf7391ecce4ba7aa61af6770f87ccfd58480e57e5ed96ea913e9eda0ac15ef",
+        "buy_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_C_5000_10000_3b2c875549",
+        "confidence": "high",
+        "display_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_C_5000_10000_3b2c875549 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FAILED_BREAKOUT_RETURN",
+      "job_id": "20260815_171316_D3FAILEDBREAKOUTRETURNMC_96855",
+      "metrics": null,
+      "parameters": {
+        "breakout_window": 60,
+        "confirmation": 1.4085235692651439,
+        "flow_window": 23,
+        "persistence": 28,
+        "return_rate": 0.7545948819352934,
+        "turnover_ratio": 1.869019831686452
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "daf5ce48214bd0fde1feec55355a2801551482a0cb23df49cc736ad87523f25b",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "daf5ce48214bd0fde1feec55355a2801551482a0cb23df49cc736ad87523f25b",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_C_5000_10000",
+      "candidate_id": "D3_FAILED_BREAKOUT_RETURN_MCAP_C_5000_10000_34e12a2363",
+      "diagnostics": {
+        "event_count": 135,
+        "last_by_source": {
+          "BackEngine:0": "engine_strategy_exception",
+          "BackTest": "backtest_child_waiting_mq_second"
+        },
+        "last_checkpoint": "engine_strategy_exception",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code": "257720",
+            "error": "TypeError: list indices must be integers or slices, not str",
+            "index": 20231114091944
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 170.757,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "2e5517429bcee3cd31a9b75f5c633c1bdc956f3324dacbdbbf17aaa7fffc55b3",
+        "buy_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_C_5000_10000_34e12a2363",
+        "confidence": "high",
+        "display_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_C_5000_10000_34e12a2363 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FAILED_BREAKOUT_RETURN",
+      "job_id": "20260815_171317_D3FAILEDBREAKOUTRETURNMC_97263",
+      "metrics": null,
+      "parameters": {
+        "breakout_window": 10,
+        "confirmation": 2.0432343130667965,
+        "flow_window": 58,
+        "persistence": 2,
+        "return_rate": 1.345335622676034,
+        "turnover_ratio": 1.8122150979586413
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "19203091aace5b1ac706863fb3b97ced8c40de4c9723e28d17de8cb4e491fa20",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "19203091aace5b1ac706863fb3b97ced8c40de4c9723e28d17de8cb4e491fa20",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_D_GE10000",
+      "candidate_id": "D3_FAILED_BREAKOUT_RETURN_MCAP_D_GE10000_ea61c165fc",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 186.343,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "2ac8c67d19b19c3372d00fe36c7b8a361962aa6376592e0d55c05788c99c3078",
+        "buy_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_D_GE10000_ea61c165fc",
+        "confidence": "high",
+        "display_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_D_GE10000_ea61c165fc / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FAILED_BREAKOUT_RETURN",
+      "job_id": "20260815_171427_D3FAILEDBREAKOUTRETURNMC_67242",
+      "metrics": null,
+      "parameters": {
+        "breakout_window": 59,
+        "confirmation": 2.02305169849764,
+        "flow_window": 48,
+        "persistence": 10,
+        "return_rate": 1.4880114770653494,
+        "turnover_ratio": 3.947010221494499
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "517dbf11a3c3960a155d95d3d0ef64367ea0aa2bada982d9df4a76f88121256f",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "517dbf11a3c3960a155d95d3d0ef64367ea0aa2bada982d9df4a76f88121256f",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_D_GE10000",
+      "candidate_id": "D3_FAILED_BREAKOUT_RETURN_MCAP_D_GE10000_5f125370a6",
+      "diagnostics": {
+        "event_count": 19,
+        "last_by_source": {
+          "BackEngine:0": "engine_strategy_exception",
+          "BackTest": "backtest_child_waiting_mq_second"
+        },
+        "last_checkpoint": "engine_strategy_exception",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code": "454910",
+            "error": "TypeError: list indices must be integers or slices, not str",
+            "index": 20231114090203
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 75.521,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "a64cecd796264a3823e93dae10724f4b3e1a6a4018db94b0daec136155d9dee9",
+        "buy_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_D_GE10000_5f125370a6",
+        "confidence": "high",
+        "display_name": "D3_FAILED_BREAKOUT_RETURN_MCAP_D_GE10000_5f125370a6 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FAILED_BREAKOUT_RETURN",
+      "job_id": "20260815_171512_D3FAILEDBREAKOUTRETURNMC_12686",
+      "metrics": null,
+      "parameters": {
+        "breakout_window": 15,
+        "confirmation": 1.1701591365141686,
+        "flow_window": 41,
+        "persistence": 28,
+        "return_rate": 0.4139374029912754,
+        "turnover_ratio": 1.2393179138021908
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "794323c5679a30359556885a96ab1c5d80a5529a83083bb977329299606016a3",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "794323c5679a30359556885a96ab1c5d80a5529a83083bb977329299606016a3",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_A_LT3000",
+      "candidate_id": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_f6320dda9d",
+      "diagnostics": {
+        "event_count": 210,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "backtest_child_completed"
+        },
+        "last_checkpoint": "backtest_child_completed",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 4.814,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 127.752,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "c98387d77e7d0f8935a198cdbdbb17e4457563004d0d22d56794bb574a9f195f",
+        "buy_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_f6320dda9d",
+        "confidence": "high",
+        "display_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_f6320dda9d / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "COMPRESSION_CONFIRMED_BREAKOUT",
+      "job_id": "20260815_171608_D3COMPRESSIONCONFIRMEDBR_68279",
+      "metrics": {
+        "avg_hold_time": 204.75,
+        "avg_profit_pct": -0.48,
+        "cagr": -483.54,
+        "daily_avg_trades": 4.0,
+        "day_count": 1,
+        "max_hold_count": 1,
+        "mdd_amount": 0.0,
+        "mdd_pct": 4.01,
+        "seed_capital": 1001000.0,
+        "total_profit_krw": -19361,
+        "total_profit_pct": -1.93,
+        "tpi": 0.7,
+        "trade_count": 4,
+        "win_rate": 25.0
+      },
+      "parameters": {
+        "compression": 0.7355254128466254,
+        "expansion": 4.527245110789917,
+        "flow_window": 60,
+        "price_window": 50,
+        "strength_ratio": 1.1893480371414649,
+        "vol_window": 11
+      },
+      "result_status": "success",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 4,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "sample_too_small",
+          "non_positive_total_profit",
+          "non_positive_avg_profit"
+        ],
+        "underpowered_evidence": true
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "89be531494ca51a4e729f7d522aee5a1b3ccabcc4522375d20847c2d13e6d10e",
+      "source_snapshot_match": true,
+      "status": "success",
+      "strategy_db_snapshot_hashes": {
+        "buy": "89be531494ca51a4e729f7d522aee5a1b3ccabcc4522375d20847c2d13e6d10e",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_A_LT3000",
+      "candidate_id": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_c467ae6049",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 186.366,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "54dcf4596baf847a51059d32eeff8ef8017b41de276ee830b384452821388c10",
+        "buy_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_c467ae6049",
+        "confidence": "high",
+        "display_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_c467ae6049 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "COMPRESSION_CONFIRMED_BREAKOUT",
+      "job_id": "20260815_171628_D3COMPRESSIONCONFIRMEDBR_88215",
+      "metrics": null,
+      "parameters": {
+        "compression": 0.778118005439218,
+        "expansion": 1.7192451107899176,
+        "flow_window": 23,
+        "price_window": 14,
+        "strength_ratio": 2.405324368502412,
+        "vol_window": 57
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "ce319e33ab2e0381c1b7f7d887928772da8a1fce1ba4d46bff916dd0fcc9a5cc",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "ce319e33ab2e0381c1b7f7d887928772da8a1fce1ba4d46bff916dd0fcc9a5cc",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_B_3000_5000",
+      "candidate_id": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_B_3000_5000_b6c0c32100",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 2.834,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 181.007,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "154d52ccb71770053b6b81c945c8b2e55b7dbecdcc5dbd9019f9edd1393008ea",
+        "buy_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_B_3000_5000_b6c0c32100",
+        "confidence": "high",
+        "display_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_B_3000_5000_b6c0c32100 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "COMPRESSION_CONFIRMED_BREAKOUT",
+      "job_id": "20260815_171628_D3COMPRESSIONCONFIRMEDBR_88536",
+      "metrics": null,
+      "parameters": {
+        "compression": 1.1342642139523982,
+        "expansion": 1.1314580382894859,
+        "flow_window": 50,
+        "price_window": 26,
+        "strength_ratio": 2.4593023394818117,
+        "vol_window": 31
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "1d274b151a617ffb11a3984ec7ed5d97172bb1b29e739f76d6314eea4f949958",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "1d274b151a617ffb11a3984ec7ed5d97172bb1b29e739f76d6314eea4f949958",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_B_3000_5000",
+      "candidate_id": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_B_3000_5000_3c238bbb9c",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 201.405,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "660b092b2bcbad5ab331ab42e0032efff8a69fcd9a4cb24ecf1c641bb14f0351",
+        "buy_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_B_3000_5000_3c238bbb9c",
+        "confidence": "high",
+        "display_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_B_3000_5000_3c238bbb9c / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "COMPRESSION_CONFIRMED_BREAKOUT",
+      "job_id": "20260815_171733_D3COMPRESSIONCONFIRMEDBR_53748",
+      "metrics": null,
+      "parameters": {
+        "compression": 0.11204199173017615,
+        "expansion": 3.190658038289486,
+        "flow_window": 13,
+        "price_window": 50,
+        "strength_ratio": 1.1279413927362498,
+        "vol_window": 54
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "bc9b4b4f8b4d0f5ec2e6c90bf82fb87aac0df452d3ca4bc68c3d7f491c95ed28",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "bc9b4b4f8b4d0f5ec2e6c90bf82fb87aac0df452d3ca4bc68c3d7f491c95ed28",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_C_5000_10000",
+      "candidate_id": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_C_5000_10000_0799f795b2",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 2.37,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 94.242,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "69d9d1e8fd97cde95258fe82c5d6ea1ad7af3d431cbfb3c6d59818dad4a7ae7b",
+        "buy_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_C_5000_10000_0799f795b2",
+        "confidence": "high",
+        "display_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_C_5000_10000_0799f795b2 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "COMPRESSION_CONFIRMED_BREAKOUT",
+      "job_id": "20260815_171816_D3COMPRESSIONCONFIRMEDBR_96233",
+      "metrics": null,
+      "parameters": {
+        "compression": 1.1975742235595523,
+        "expansion": 2.558527494425314,
+        "flow_window": 15,
+        "price_window": 17,
+        "strength_ratio": 1.1002538286739845,
+        "vol_window": 34
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "3f4cabd21b34bc9b9aebe9a719b1b529d5728990c181d83a9cab973be4070846",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "3f4cabd21b34bc9b9aebe9a719b1b529d5728990c181d83a9cab973be4070846",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_C_5000_10000",
+      "candidate_id": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_C_5000_10000_c246276038",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 2.346,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 90.581,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "4abce2ae1a93e672d2fe568516eae9dacdd21004ccbca0e003baf0dd87e7c219",
+        "buy_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_C_5000_10000_c246276038",
+        "confidence": "high",
+        "display_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_C_5000_10000_c246276038 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "COMPRESSION_CONFIRMED_BREAKOUT",
+      "job_id": "20260815_171929_D3COMPRESSIONCONFIRMEDBR_69714",
+      "metrics": null,
+      "parameters": {
+        "compression": 0.13275940874473757,
+        "expansion": 3.026527494425313,
+        "flow_window": 60,
+        "price_window": 58,
+        "strength_ratio": 1.9789520535260556,
+        "vol_window": 10
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "91d457a21d0490c9737ba31fd54d1dacde5197e8821f39b690d236d36d9b71b1",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "91d457a21d0490c9737ba31fd54d1dacde5197e8821f39b690d236d36d9b71b1",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_D_GE10000",
+      "candidate_id": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_D_GE10000_0a730ca5ac",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 191.436,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "4ffe44800bfb4dd23fff4e99ef19f14749782c35029350bceb38df56b84cef1f",
+        "buy_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_D_GE10000_0a730ca5ac",
+        "confidence": "high",
+        "display_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_D_GE10000_0a730ca5ac / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "COMPRESSION_CONFIRMED_BREAKOUT",
+      "job_id": "20260815_171934_D3COMPRESSIONCONFIRMEDBR_74761",
+      "metrics": null,
+      "parameters": {
+        "compression": 0.48282868292846853,
+        "expansion": 4.457184458147546,
+        "flow_window": 11,
+        "price_window": 13,
+        "strength_ratio": 1.1132050980572132,
+        "vol_window": 42
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "26b23f597411407f63334a423534acd857678df9e651675a2e12d3c980e70cde",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "26b23f597411407f63334a423534acd857678df9e651675a2e12d3c980e70cde",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_D_GE10000",
+      "candidate_id": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_D_GE10000_5ce8895918",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 3.074,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 165.709,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "d3ac4738ef34a4955e1f56ecd6f200c41ac45d2e75a3fc575dc78ef8c0f5d617",
+        "buy_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_D_GE10000_5ce8895918",
+        "confidence": "high",
+        "display_name": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_D_GE10000_5ce8895918 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "COMPRESSION_CONFIRMED_BREAKOUT",
+      "job_id": "20260815_171950_D3COMPRESSIONCONFIRMEDBR_90832",
+      "metrics": null,
+      "parameters": {
+        "compression": 1.1785076952741476,
+        "expansion": 1.9923844581475456,
+        "flow_window": 58,
+        "price_window": 60,
+        "strength_ratio": 2.142790896873781,
+        "vol_window": 46
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "e274f162a27ec51757f92a1dc19b5d72bafce5b2c79db7e4e1f4ee784f7ae7c8",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "e274f162a27ec51757f92a1dc19b5d72bafce5b2c79db7e4e1f4ee784f7ae7c8",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_A_LT3000",
+      "candidate_id": "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_0d4702a73a",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 191.579,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "3e0a3761e8e74979e079aee358a4635b03692a1aa9e5a2492bc1b7cd2c47913b",
+        "buy_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_0d4702a73a",
+        "confidence": "high",
+        "display_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_0d4702a73a / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FLOW_PRICE_DIVERGENCE",
+      "job_id": "20260815_172055_D3FLOWPRICEDIVERGENCEMCA_55325",
+      "metrics": null,
+      "parameters": {
+        "current_flow": 1.6980335572774203,
+        "flow_window": 27,
+        "price_window": 51,
+        "prior_flow": 2.83454448488816,
+        "reaction_ceiling": 0.731935530722704,
+        "recovery_rate": 1.065588572198189
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "a971831a8bf0d47748960a694248cec9fe5a8958c9663ea9a5ee22adeecd14ce",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "a971831a8bf0d47748960a694248cec9fe5a8958c9663ea9a5ee22adeecd14ce",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_A_LT3000",
+      "candidate_id": "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_f3a20122f8",
+      "diagnostics": {
+        "event_count": null,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 241.823,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "03bd0e3f15c3e577449d2091c94d37d0e53334359728bb02aec1e044644acdee",
+        "buy_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_f3a20122f8",
+        "confidence": "high",
+        "display_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_f3a20122f8 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FLOW_PRICE_DIVERGENCE",
+      "job_id": "20260815_172100_D3FLOWPRICEDIVERGENCEMCA_60475",
+      "metrics": null,
+      "parameters": {
+        "current_flow": 2.454231904384858,
+        "flow_window": 47,
+        "price_window": 6,
+        "prior_flow": 1.1012111515548266,
+        "reaction_ceiling": 0.5247926735798468,
+        "recovery_rate": 0.07209744793783404
+      },
+      "result_status": "timeout",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "cc82a8b6b880aaced78d5ca6a6366887cac8e5b9b249a7d33ddbfe507e10ffbd",
+      "source_snapshot_match": true,
+      "status": "timeout",
+      "strategy_db_snapshot_hashes": {
+        "buy": "cc82a8b6b880aaced78d5ca6a6366887cac8e5b9b249a7d33ddbfe507e10ffbd",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_B_3000_5000",
+      "candidate_id": "D3_FLOW_PRICE_DIVERGENCE_MCAP_B_3000_5000_b61a7c25cc",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 2.095,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 90.617,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "3d48f37b9069a562fbc662dfa943a57d2ab991591489135a14f6c95e4a4bc382",
+        "buy_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_B_3000_5000_b61a7c25cc",
+        "confidence": "high",
+        "display_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_B_3000_5000_b61a7c25cc / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FLOW_PRICE_DIVERGENCE",
+      "job_id": "20260815_172236_D3FLOWPRICEDIVERGENCEMCA_56831",
+      "metrics": null,
+      "parameters": {
+        "current_flow": 2.086023158485423,
+        "flow_window": 20,
+        "price_window": 35,
+        "prior_flow": 2.9671729557515336,
+        "reaction_ceiling": 1.2113683513812594,
+        "recovery_rate": 0.17739708741342403
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "cf019547f4b71cf54b397ddacc2141a17909529d3651bdc425cf94ff7c7c668a",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "cf019547f4b71cf54b397ddacc2141a17909529d3651bdc425cf94ff7c7c668a",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_B_3000_5000",
+      "candidate_id": "D3_FLOW_PRICE_DIVERGENCE_MCAP_B_3000_5000_77653e5c33",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 191.384,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "c377d4481928a6ade5dde5be0aebf43ea2ad93afe318cbdffc272db6f625a092",
+        "buy_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_B_3000_5000_77653e5c33",
+        "confidence": "high",
+        "display_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_B_3000_5000_77653e5c33 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FLOW_PRICE_DIVERGENCE",
+      "job_id": "20260815_172246_D3FLOWPRICEDIVERGENCEMCA_66380",
+      "metrics": null,
+      "parameters": {
+        "current_flow": 1.0447008444358363,
+        "flow_window": 57,
+        "price_window": 14,
+        "prior_flow": 1.0653211038996815,
+        "reaction_ceiling": 0.057286718728198266,
+        "recovery_rate": 0.8238467915554358
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "67c3c6d74daf808303f6ce8993844151c1ada933645ee700bb90a47b87a6565a",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "67c3c6d74daf808303f6ce8993844151c1ada933645ee700bb90a47b87a6565a",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_C_5000_10000",
+      "candidate_id": "D3_FLOW_PRICE_DIVERGENCE_MCAP_C_5000_10000_a553f05635",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 2.011,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 84.93,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "fbffb8da993065c9ac41f2f6875dd7fcec5992f7d0efae18ce668a602821d2ec",
+        "buy_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_C_5000_10000_a553f05635",
+        "confidence": "high",
+        "display_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_C_5000_10000_a553f05635 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FLOW_PRICE_DIVERGENCE",
+      "job_id": "20260815_172407_D3FLOWPRICEDIVERGENCEMCA_47051",
+      "metrics": null,
+      "parameters": {
+        "current_flow": 2.0973867375984176,
+        "flow_window": 40,
+        "price_window": 28,
+        "prior_flow": 2.6585272205859525,
+        "reaction_ceiling": 1.3240116787025482,
+        "recovery_rate": 1.1887566312669477
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "2032c3fccfb6c24b833d27bd847b02dc0df79f13919a8dc86c28969912e8ff24",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "2032c3fccfb6c24b833d27bd847b02dc0df79f13919a8dc86c28969912e8ff24",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_C_5000_10000",
+      "candidate_id": "D3_FLOW_PRICE_DIVERGENCE_MCAP_C_5000_10000_da47d7b628",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 2.006,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 115.518,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "a3543b15e05e8c70a339827cea454524e26f2a335530c1b42e33eb3c5a5e0cf4",
+        "buy_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_C_5000_10000_da47d7b628",
+        "confidence": "high",
+        "display_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_C_5000_10000_da47d7b628 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FLOW_PRICE_DIVERGENCE",
+      "job_id": "20260815_172407_D3FLOWPRICEDIVERGENCEMCA_47630",
+      "metrics": null,
+      "parameters": {
+        "current_flow": 1.2916016136314754,
+        "flow_window": 14,
+        "price_window": 51,
+        "prior_flow": 1.3585272205859529,
+        "reaction_ceiling": 0.08115453584540513,
+        "recovery_rate": 0.12721816972848615
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "02d2e7365981e67aa67465c75cf27b9494ccff4c0c35516fd2a8cd21a81833c8",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "02d2e7365981e67aa67465c75cf27b9494ccff4c0c35516fd2a8cd21a81833c8",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_D_GE10000",
+      "candidate_id": "D3_FLOW_PRICE_DIVERGENCE_MCAP_D_GE10000_31ece2aeb7",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 2.127,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 85.702,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "7b0603063675c812337cfe1a0bd585a6019f5db50b5a9f8f879535b28753d045",
+        "buy_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_D_GE10000_31ece2aeb7",
+        "confidence": "high",
+        "display_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_D_GE10000_31ece2aeb7 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FLOW_PRICE_DIVERGENCE",
+      "job_id": "20260815_172502_D3FLOWPRICEDIVERGENCEMCA_2471",
+      "metrics": null,
+      "parameters": {
+        "current_flow": 2.3404409055686584,
+        "flow_window": 47,
+        "price_window": 59,
+        "prior_flow": 2.653158094648367,
+        "reaction_ceiling": 0.6062548305210711,
+        "recovery_rate": 1.1318483270415336
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "e597e415aec2da602b245ef755a8c34375fc97de70f7e522716256fa1aac07ca",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "e597e415aec2da602b245ef755a8c34375fc97de70f7e522716256fa1aac07ca",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_D_GE10000",
+      "candidate_id": "D3_FLOW_PRICE_DIVERGENCE_MCAP_D_GE10000_13098c1e61",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 2.145,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 150.986,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "801ec008e307cee81da2370f2387f2b03bb26b58303d2f275b024be60ce9b089",
+        "buy_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_D_GE10000_13098c1e61",
+        "confidence": "high",
+        "display_name": "D3_FLOW_PRICE_DIVERGENCE_MCAP_D_GE10000_13098c1e61 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "FLOW_PRICE_DIVERGENCE",
+      "job_id": "20260815_172532_D3FLOWPRICEDIVERGENCEMCA_32153",
+      "metrics": null,
+      "parameters": {
+        "current_flow": 1.4850690047422122,
+        "flow_window": 12,
+        "price_window": 10,
+        "prior_flow": 1.7142692057594782,
+        "reaction_ceiling": 0.19196911623535662,
+        "recovery_rate": 0.24723294242614913
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "67933588c49b626b12b4d26defd4f02c3904d2e80abc4be5ebe2bb777f000862",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "67933588c49b626b12b4d26defd4f02c3904d2e80abc4be5ebe2bb777f000862",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_A_LT3000",
+      "candidate_id": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_329183a66b",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 191.463,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "0c7942d8d25fc46394a03f9b03e618ee9b1c5710e4f63166b73975d95a0dff53",
+        "buy_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_329183a66b",
+        "confidence": "high",
+        "display_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_329183a66b / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "job_id": "20260815_172557_D3OPENINGOVERREACTIONMEA_57938",
+      "metrics": null,
+      "parameters": {
+        "cooldown": 0.35030145135240065,
+        "flow_window": 52,
+        "overreaction": -0.3852444180005219,
+        "persistence": 7,
+        "price_window": 60,
+        "rebound": 1.1596452755313724
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "1d928b896b384183cbc29192ba2b276664374b6ae5625bd6075e1c8571994c1b",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "1d928b896b384183cbc29192ba2b276664374b6ae5625bd6075e1c8571994c1b",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_A_LT3000",
+      "candidate_id": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_7c32ce3533",
+      "diagnostics": {
+        "event_count": null,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 241.657,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "6d8fb1e46282a6954762c9e9e3da0d4fe34cd8cca87ed83766fbb1f5a8c8c464",
+        "buy_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_7c32ce3533",
+        "confidence": "high",
+        "display_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_7c32ce3533 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "job_id": "20260815_172603_D3OPENINGOVERREACTIONMEA_63314",
+      "metrics": null,
+      "parameters": {
+        "cooldown": 1.1378754158494422,
+        "flow_window": 13,
+        "overreaction": -3.5370962698523742,
+        "persistence": 14,
+        "price_window": 9,
+        "rebound": 0.20454323471504615
+      },
+      "result_status": "timeout",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "f177172e7718bd229a23e1615788af76345f1ed3a27b8ff0619f196fa6e774dc",
+      "source_snapshot_match": true,
+      "status": "timeout",
+      "strategy_db_snapshot_hashes": {
+        "buy": "f177172e7718bd229a23e1615788af76345f1ed3a27b8ff0619f196fa6e774dc",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_B_3000_5000",
+      "candidate_id": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_B_3000_5000_c2bb54f0ee",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 1.951,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 115.876,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "6b838eb1017af8153246f732ee4ea83ac8dc7fd40cb216f889c48f009c1c6d59",
+        "buy_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_B_3000_5000_c2bb54f0ee",
+        "confidence": "high",
+        "display_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_B_3000_5000_c2bb54f0ee / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "job_id": "20260815_172628_D3OPENINGOVERREACTIONMEA_88466",
+      "metrics": null,
+      "parameters": {
+        "cooldown": 0.7077562227034859,
+        "flow_window": 50,
+        "overreaction": -3.903892125201672,
+        "persistence": 2,
+        "price_window": 6,
+        "rebound": 1.7258757122951676
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "0c745449b6bb9d761510199cf2a8614f9540ac916f94f277a08e94bd142bf960",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "0c745449b6bb9d761510199cf2a8614f9540ac916f94f277a08e94bd142bf960",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_B_3000_5000",
+      "candidate_id": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_B_3000_5000_26614d570b",
+      "diagnostics": {
+        "event_count": 21,
+        "last_by_source": {
+          "BackEngine:0": "engine_strategy_exception",
+          "BackTest": "backtest_child_waiting_mq_second"
+        },
+        "last_checkpoint": "engine_strategy_exception",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code": "372320",
+            "error": "TypeError: list indices must be integers or slices, not str",
+            "index": 20231114092534
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 65.456,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "de574bb262085b44e7ffdd24d1d9a8581a743361c81c6b9dfcb37aecf2b17f7b",
+        "buy_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_B_3000_5000_26614d570b",
+        "confidence": "high",
+        "display_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_B_3000_5000_26614d570b / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "job_id": "20260815_172803_D3OPENINGOVERREACTIONMEA_83497",
+      "metrics": null,
+      "parameters": {
+        "cooldown": 0.49947219903484685,
+        "flow_window": 16,
+        "overreaction": -0.3409291622387087,
+        "persistence": 23,
+        "price_window": 56,
+        "rebound": 1.5666920388257797
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "e9f0ee5665a41bdf52b85daeaf43a442ffb885f0a339233dd129b34eda982905",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "e9f0ee5665a41bdf52b85daeaf43a442ffb885f0a339233dd129b34eda982905",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_C_5000_10000",
+      "candidate_id": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_C_5000_10000_4cda0f334a",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 1.928,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 148.209,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "468f795c8e289fa75aa757665e822f2d71841f3d8feaabce14d3436f9b28640c",
+        "buy_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_C_5000_10000_4cda0f334a",
+        "confidence": "high",
+        "display_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_C_5000_10000_4cda0f334a / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "job_id": "20260815_172824_D3OPENINGOVERREACTIONMEA_4712",
+      "metrics": null,
+      "parameters": {
+        "cooldown": 0.2895851530142194,
+        "flow_window": 39,
+        "overreaction": -2.496390435013704,
+        "persistence": 30,
+        "price_window": 54,
+        "rebound": 1.8950312299433834
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "4e271410a491d3ef57d9ccbd7f2f9e139f35c235700ce2340bb3e1855aff9c95",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "4e271410a491d3ef57d9ccbd7f2f9e139f35c235700ce2340bb3e1855aff9c95",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_C_5000_10000",
+      "candidate_id": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_C_5000_10000_dfda17f04f",
+      "diagnostics": {
+        "event_count": 204,
+        "last_by_source": {
+          "BackEngine:0": "engine_backtest_completed",
+          "BackTest": "total_report_no_trades"
+        },
+        "last_checkpoint": "total_report_no_trades",
+        "last_detail_by_source": {
+          "BackEngine:0": {
+            "code_count": 87,
+            "elapsed_seconds": 1.938,
+            "tick_count": 138524
+          },
+          "BackTest": {}
+        }
+      },
+      "elapsed_seconds": 130.974,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "80b72bd467886e766eda50974d0578db455389f2386a9230887c9ac8356bfe65",
+        "buy_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_C_5000_10000_dfda17f04f",
+        "confidence": "high",
+        "display_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_C_5000_10000_dfda17f04f / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "job_id": "20260815_172909_D3OPENINGOVERREACTIONMEA_49110",
+      "metrics": null,
+      "parameters": {
+        "cooldown": 0.1594076382213198,
+        "flow_window": 29,
+        "overreaction": -0.6235509288408645,
+        "persistence": 3,
+        "price_window": 7,
+        "rebound": 0.38278633198419976
+      },
+      "result_status": "no_trades",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "8dfc0acf527f7c01363fca636722be04b845c5ec30cb1921e98448b8d7699a7d",
+      "source_snapshot_match": true,
+      "status": "no_trades",
+      "strategy_db_snapshot_hashes": {
+        "buy": "8dfc0acf527f7c01363fca636722be04b845c5ec30cb1921e98448b8d7699a7d",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_D_GE10000",
+      "candidate_id": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_D_GE10000_f80d263235",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 191.679,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "a502180f4f90a3dcd818dd5fcee38aa780ba47894c6362bc32a3b3dda93154db",
+        "buy_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_D_GE10000_f80d263235",
+        "confidence": "high",
+        "display_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_D_GE10000_f80d263235 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "job_id": "20260815_172909_D3OPENINGOVERREACTIONMEA_49605",
+      "metrics": null,
+      "parameters": {
+        "cooldown": 0.13974598407238453,
+        "flow_window": 11,
+        "overreaction": -0.45035108613259034,
+        "persistence": 23,
+        "price_window": 60,
+        "rebound": 1.819334528630811
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "209edb6a41663d372438b10c2d1bb8e6746d56d9718fd5138434a702d565c27e",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "209edb6a41663d372438b10c2d1bb8e6746d56d9718fd5138434a702d565c27e",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    },
+    {
+      "band_id": "MCAP_D_GE10000",
+      "candidate_id": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_D_GE10000_dde9422b12",
+      "diagnostics": {
+        "event_count": 0,
+        "last_by_source": {},
+        "last_checkpoint": null,
+        "last_detail_by_source": {}
+      },
+      "elapsed_seconds": 196.363,
+      "executed_source_identity": {
+        "artifact_note": "job_strategy_code_snapshot",
+        "buy_hash": "fc6c481b36bcdbe94578e77e54466d2ab84a0aae8377d712b858b4bbe8a27be1",
+        "buy_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_D_GE10000_dde9422b12",
+        "confidence": "high",
+        "display_name": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_D_GE10000_dde9422b12 / D3_BASELINE_RISK_TIME_EXIT",
+        "kind": "code_hash",
+        "sell_hash": "cb14b3f5bd6cd8c1bcc90fb100721bb6e616daca04f55482b4f9cdaa8615bdf4",
+        "sell_name": "D3_BASELINE_RISK_TIME_EXIT"
+      },
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "job_id": "20260815_173005_D3OPENINGOVERREACTIONMEA_5161",
+      "metrics": null,
+      "parameters": {
+        "cooldown": 0.5302785284510827,
+        "flow_window": 57,
+        "overreaction": -3.7849189873671585,
+        "persistence": 19,
+        "price_window": 25,
+        "rebound": 0.06831412046754541
+      },
+      "result_status": "error",
+      "screen": {
+        "advance": false,
+        "decision": "REJECT",
+        "evidence_trade_count": 0,
+        "minimum_sample_trades": 10,
+        "minimum_selection_trades": 12,
+        "reasons": [
+          "execution_failure"
+        ],
+        "underpowered_evidence": false
+      },
+      "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+      "source_sha256": "0d4729d68904891ef4e51eb0ea69e74bb0a21b89bcc27f4211a72490c60de10b",
+      "source_snapshot_match": true,
+      "status": "error",
+      "strategy_db_snapshot_hashes": {
+        "buy": "0d4729d68904891ef4e51eb0ea69e74bb0a21b89bcc27f4211a72490c60de10b",
+        "sell": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4"
+      }
+    }
+  ],
+  "schema": "stom.d3_mcap_engine_screen.v1",
+  "source_match_count": 40,
+  "terminal_count": 38,
+  "verdict": "D3_SCREEN_COMPLETED_WITH_EXECUTION_FAILURES"
+}

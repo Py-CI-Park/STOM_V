@@ -67,31 +67,31 @@ class McapStateCandidate:
 
 FAMILIES = (
     StateFamily("ABSORPTION_REVERSAL", "매도호가 압력이 지속돼도 저점 진행이 제한된 뒤 체결 Flow가 반전한다.", (
-        ParameterSpec("book_window", "integer", 10, 90, 30),
+        ParameterSpec("book_window", "integer", 10, 60, 30),
         ParameterSpec("prior_book_max", "continuous", 0.15, 0.48, 0.35),
         ParameterSpec("price_window", "integer", 5, 45, 15),
         ParameterSpec("recovery_rate", "continuous", 0.05, 1.5, 0.35),
-        ParameterSpec("flow_window", "integer", 10, 90, 30),
+        ParameterSpec("flow_window", "integer", 10, 60, 30),
         ParameterSpec("flow_ratio", "continuous", 1.02, 2.5, 1.15),
     )),
     StateFamily("FAILED_BREAKOUT_RETURN", "고점 돌파가 지속되지 못한 뒤 Range 복귀와 매수 Flow 재확인이 발생한다.", (
-        ParameterSpec("breakout_window", "integer", 10, 120, 45),
+        ParameterSpec("breakout_window", "integer", 10, 60, 45),
         ParameterSpec("return_rate", "continuous", 0.05, 1.5, 0.35),
         ParameterSpec("persistence", "integer", 2, 30, 6),
-        ParameterSpec("flow_window", "integer", 10, 90, 30),
+        ParameterSpec("flow_window", "integer", 10, 60, 30),
         ParameterSpec("confirmation", "continuous", 1.0, 2.2, 1.12),
         ParameterSpec("turnover_ratio", "continuous", 0.8, 4.0, 1.2),
     )),
     StateFamily("COMPRESSION_CONFIRMED_BREAKOUT", "직전 변동성 압축 뒤 확장·신고가·Flow 확인이 순차 발생한다.", (
-        ParameterSpec("vol_window", "integer", 10, 90, 30),
+        ParameterSpec("vol_window", "integer", 10, 60, 30),
         ParameterSpec("compression", "continuous", 0.05, 1.2, 0.4),
         ParameterSpec("expansion", "continuous", 1.1, 5.0, 1.8),
         ParameterSpec("price_window", "integer", 5, 60, 20),
-        ParameterSpec("flow_window", "integer", 10, 90, 30),
+        ParameterSpec("flow_window", "integer", 10, 60, 30),
         ParameterSpec("strength_ratio", "continuous", 1.0, 2.5, 1.15),
     )),
     StateFamily("FLOW_PRICE_DIVERGENCE", "직전 강한 체결 Flow 대비 가격 반응이 제한된 후 가격·Flow가 같은 방향으로 확인된다.", (
-        ParameterSpec("flow_window", "integer", 10, 90, 30),
+        ParameterSpec("flow_window", "integer", 10, 60, 30),
         ParameterSpec("prior_flow", "continuous", 1.05, 3.0, 1.4),
         ParameterSpec("price_window", "integer", 5, 60, 20),
         ParameterSpec("reaction_ceiling", "continuous", 0.05, 1.5, 0.4),
@@ -99,11 +99,11 @@ FAMILIES = (
         ParameterSpec("recovery_rate", "continuous", 0.05, 1.2, 0.25),
     )),
     StateFamily("OPENING_OVERREACTION_MEAN_REVERT", "시초 급락 뒤 저점 미갱신 지속·거래대금 둔화·가격 회귀가 확인된다.", (
-        ParameterSpec("price_window", "integer", 5, 90, 30),
+        ParameterSpec("price_window", "integer", 5, 60, 30),
         ParameterSpec("overreaction", "continuous", -4.0, -0.3, -1.2),
         ParameterSpec("persistence", "integer", 2, 30, 6),
         ParameterSpec("rebound", "continuous", 0.05, 2.0, 0.4),
-        ParameterSpec("flow_window", "integer", 10, 90, 30),
+        ParameterSpec("flow_window", "integer", 10, 60, 30),
         ParameterSpec("cooldown", "continuous", 0.1, 1.2, 0.7),
     )),
 )

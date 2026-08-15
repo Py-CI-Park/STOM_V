@@ -19,6 +19,7 @@ from backtest.back_static import GetMoneytopQuery
 from backtest.back_subtotal import BackSubTotal
 from backtest.backtest import BackTest
 from cli.queue_drain import QueueDrainer
+from utility.sqlite_readonly import connect_existing_db_readonly
 
 
 # 엔진 import (backengine_base.py의 PyQt5 의존성은 Phase 0에서 격리됨)
@@ -503,7 +504,7 @@ def run_backtest(config):
         db = DB_STOCK_BACK_TICK if config.is_tick else DB_STOCK_BACK_MIN
         checkpoint.mark('stock_back_db_selected', detail={'db_path': db})
 
-        con = sqlite3.connect(db)
+        con = connect_existing_db_readonly(db)
         try:
             try:
                 df_info = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')

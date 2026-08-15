@@ -46,6 +46,8 @@ def test_cancel_after_process_exit_precedes_success_finalization(
         BacktestJobSpec(
             buy="finalize-race",
             sell="sell",
+            buy_code="매수 = True",
+            sell_code="매도 = False",
             start=20250407,
             end=20250409,
         )
@@ -94,6 +96,8 @@ print(json.dumps({"status": "success", "csv_path": "backtest/csv/misleading.csv"
         BacktestJobSpec(
             buy="orphan-tree",
             sell="sell",
+            buy_code="매수 = True",
+            sell_code="매도 = False",
             start=20250407,
             end=20250409,
         )

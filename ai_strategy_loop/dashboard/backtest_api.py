@@ -318,6 +318,9 @@ class SweepSpecPayload(_MutationPayload):
 class BacktestRunPayload(_MutationPayload):
     buy: StrategyName
     sell: StrategyName
+    buy_code: StrategyCode | None = None
+    sell_code: StrategyCode | None = None
+    source_authority: Literal["saved_strategy", "research_direct_source"] = "saved_strategy"
     start: int = Field(ge=20_000_101, le=20_991_231)
     end: int = Field(ge=20_000_101, le=20_991_231)
     start_time: int = Field(default=90000, ge=0, le=235_959)
@@ -1245,8 +1248,41 @@ def run_backtest(payload: BacktestRunPayload) -> Dict[str, Any]:
     # 없는 조건식으로는 잡을 만들지 않는다. 이전에는 그대로 실행돼 CLI 가 0.05초 만에
     #   exit=1 로 죽었고, 화면에는 종료 기록만 쌓여 "결과가 왜 없냐"로 읽혔다.
     #   (2026-07-26 전수 조사: 잡 333건 전부 이미 삭제된 `기존매수`/`기존매도` 참조)
-    buy_code = _lookup_strategy_code("buy", payload.buy)
-    sell_code = _lookup_strategy_code("sell", payload.sell)
+    direct_source = payload.buy_code is not None or payload.sell_code is not None
+    if direct_source and (payload.buy_code is None or payload.sell_code is None):
+        return {
+            "status": "error",
+            "code": "source_pair_required",
+            "message": "직접 실행 source는 매수·매도 코드를 함께 제출해야 합니다.",
+        }
+    if direct_source:
+        if payload.source_authority != "research_direct_source" or payload.timeframe != "tick":
+            return {
+                "status": "error",
+                "code": "direct_source_not_authorized",
+                "message": "직접 source 실행은 명시적 research_direct_source Tick 권위가 필요합니다.",
+            }
+        from ai_strategy_loop.revision.execution_contract import evaluate_execution_contract  # noqa: PLC0415
+        from ai_strategy_loop.revision.mcap_state_machine import D3_ALLOWED_FUNCTIONS  # noqa: PLC0415
+        from ai_strategy_loop.revision.condition_ast import static_check_condition_source  # noqa: PLC0415
+        buy_contract = evaluate_execution_contract(
+            payload.buy_code, allowed_functions=D3_ALLOWED_FUNCTIONS,
+            max_clauses=32, max_lookback=240, max_estimated_work=256,
+        )
+        sell_contract = static_check_condition_source(
+            payload.sell_code, allowed_functions=("self.Sell",),
+            max_clauses=32, max_lookback=240, max_unknown_lines=0,
+        )
+        if not buy_contract.ok or sell_contract.violations:
+            return {
+                "status": "error",
+                "code": "direct_source_contract_failed",
+                "message": "직접 source가 D3 static/runtime 실행계약을 통과하지 못했습니다.",
+                "buy_reasons": list(buy_contract.reasons),
+                "sell_reasons": [item.code for item in sell_contract.violations],
+            }
+    buy_code = payload.buy_code or _lookup_strategy_code("buy", payload.buy)
+    sell_code = payload.sell_code or _lookup_strategy_code("sell", payload.sell)
     missing = [
         label for label, name, code in (
             ("매수", payload.buy, buy_code),
