@@ -38384,6 +38384,52 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V516ResearchProgramOverview });
 
+  // ai_strategy_loop/dashboard/frontend/v4-research-family.jsx
+  var { useEffect: useEffect_rf16, useMemo: useMemo_rf16, useState: useState_rf16 } = React;
+  function _rf16Text(value, fallback = "\u2014") {
+    return value == null || value === "" ? fallback : String(value);
+  }
+  function _rf16Metric(row, keys) {
+    for (const key of keys) {
+      if (row && row[key] != null) return row[key];
+      if (row && row.metrics && row.metrics[key] != null) return row.metrics[key];
+    }
+    return null;
+  }
+  function _rf16Tone(row) {
+    const profit = Number(_rf16Metric(row, ["total_profit", "total_profit_amount", "profit", "profit_rate"]));
+    const trades = Number(_rf16Metric(row, ["trade_count", "trades"]));
+    if (!Number.isFinite(trades) || trades < 20) return "insufficient";
+    if (!Number.isFinite(profit)) return "unknown";
+    return profit > 0 ? "positive" : "negative";
+  }
+  function V516FamilyFoldExplorer({ baseUrl }) {
+    const [state, setState] = useState_rf16({ status: "loading", families: [], folds: [], error: "" });
+    const [selected2, setSelected] = useState_rf16("ALL");
+    useEffect_rf16(() => {
+      const controller = new AbortController();
+      const root2 = String(baseUrl || "").replace(/\/$/, "");
+      Promise.all([
+        fetch(root2 + "/research-program/families", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error(`families HTTP ${r.status}`))),
+        fetch(root2 + "/research-program/folds", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error(`folds HTTP ${r.status}`)))
+      ]).then(([families, folds]) => setState({ status: "ready", families: families.families || [], folds: folds.rows || [], error: "" })).catch((error) => {
+        if (error.name !== "AbortError") setState({ status: "error", families: [], folds: [], error: String(error.message || error) });
+      });
+      return () => controller.abort();
+    }, [baseUrl]);
+    const visible = useMemo_rf16(() => state.folds.filter((row) => {
+      if (selected2 === "ALL") return true;
+      return [row.family, row.family_id, row.candidate_family].map(String).includes(selected2);
+    }), [state.folds, selected2]);
+    if (state.status === "loading") return /* @__PURE__ */ React.createElement("section", { className: "rf16-panel pending", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("h2", null, "Family Explorer"), /* @__PURE__ */ React.createElement("p", null, "Family\uC640 Fold Evidence\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4."));
+    if (state.status === "error") return /* @__PURE__ */ React.createElement("section", { className: "rf16-panel danger", role: "alert" }, /* @__PURE__ */ React.createElement("h2", null, "Family/Fold \uC694\uCCAD \uC2E4\uD328"), /* @__PURE__ */ React.createElement("p", null, state.error));
+    return /* @__PURE__ */ React.createElement("section", { className: "rf16-panel", "aria-labelledby": "rf16-title" }, /* @__PURE__ */ React.createElement("div", { className: "rf16-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "V5.16 DEVELOPMENT EVIDENCE"), /* @__PURE__ */ React.createElement("h2", { id: "rf16-title" }, "Family Explorer \xB7 Fold Heatmap")), /* @__PURE__ */ React.createElement("label", null, "Family \uD544\uD130", /* @__PURE__ */ React.createElement("select", { value: selected2, onChange: (event) => setSelected(event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "ALL" }, "\uC804\uCCB4"), state.families.map((item) => /* @__PURE__ */ React.createElement("option", { key: item.family, value: item.family }, item.family))))), /* @__PURE__ */ React.createElement("div", { className: "rf16-family-grid", role: "list", "aria-label": "\uC5F0\uAD6C Family \uBAA9\uB85D" }, state.families.length ? state.families.map((item) => /* @__PURE__ */ React.createElement("button", { type: "button", role: "listitem", key: item.family, className: selected2 === item.family ? "active" : "", onClick: () => setSelected(item.family) }, /* @__PURE__ */ React.createElement("b", null, item.family), /* @__PURE__ */ React.createElement("span", null, "\uD6C4\uBCF4 ", item.candidate_count), /* @__PURE__ */ React.createElement("span", null, "\uAD6D\uC18C\uD1B5\uACFC ", item.local_advanced), /* @__PURE__ */ React.createElement("strong", null, item.status))) : /* @__PURE__ */ React.createElement("p", null, "Family Evidence\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "rf16-fold-scroll", tabIndex: 0, "aria-label": "Fold \uC131\uACFC \uD45C. \uC0C9\uC0C1\uACFC \uD568\uAED8 \uC0C1\uD0DC \uD14D\uC2A4\uD2B8\uB97C \uC81C\uACF5\uD569\uB2C8\uB2E4." }, /* @__PURE__ */ React.createElement("table", { className: "rf16-fold-table" }, /* @__PURE__ */ React.createElement("caption", null, "Development fold evidence \xB7 OOS \uC544\uB2D8"), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uB2E8\uACC4"), /* @__PURE__ */ React.createElement("th", null, "Family/Candidate"), /* @__PURE__ */ React.createElement("th", null, "Fold"), /* @__PURE__ */ React.createElement("th", null, "\uC218\uC775"), /* @__PURE__ */ React.createElement("th", null, "\uD3C9\uADE0"), /* @__PURE__ */ React.createElement("th", null, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("th", null, "MDD"), /* @__PURE__ */ React.createElement("th", null, "\uC0C1\uD0DC"))), /* @__PURE__ */ React.createElement("tbody", null, visible.length ? visible.map((row, index2) => {
+      const tone = _rf16Tone(row);
+      return /* @__PURE__ */ React.createElement("tr", { key: String(row.candidate_id || row.pair_id || row.family || "row") + index2, className: tone }, /* @__PURE__ */ React.createElement("td", null, _rf16Text(row.phase)), /* @__PURE__ */ React.createElement("th", null, _rf16Text(row.family || row.family_id || row.candidate_id || row.pair_id)), /* @__PURE__ */ React.createElement("td", null, _rf16Text(row.fold_id || row.fold || row.period)), /* @__PURE__ */ React.createElement("td", null, _rf16Text(_rf16Metric(row, ["total_profit", "total_profit_amount", "profit", "profit_rate"]))), /* @__PURE__ */ React.createElement("td", null, _rf16Text(_rf16Metric(row, ["average_return", "avg_return", "average_profit_rate"]))), /* @__PURE__ */ React.createElement("td", null, _rf16Text(_rf16Metric(row, ["trade_count", "trades"]))), /* @__PURE__ */ React.createElement("td", null, _rf16Text(_rf16Metric(row, ["mdd", "max_drawdown"]))), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("span", { className: `rf16-cell ${tone}` }, tone === "positive" ? "\uC591\uC218" : tone === "negative" ? "\uC74C\uC218" : tone === "insufficient" ? "\uD45C\uBCF8\uBD80\uC871" : "\uBBF8\uD655\uC778")));
+    }) : /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("td", { colSpan: "8" }, "\uC120\uD0DD\uB41C Family\uC758 Fold Evidence\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."))))), /* @__PURE__ */ React.createElement("p", { className: "rf16-note" }, "Heatmap \uC0C9\uC0C1\uC740 \uBCF4\uC870\uD45C\uD604\uC774\uBA70 \uD45C\uBCF8\xB7\uC218\uC775\xB7MDD\uC640 \uC0C1\uD0DC \uD14D\uC2A4\uD2B8\uAC00 \uD310\uC815 \uADFC\uAC70\uC785\uB2C8\uB2E4."));
+  }
+  Object.assign(window, { V516FamilyFoldExplorer });
+
   // ai_strategy_loop/dashboard/frontend/v4-research.jsx
   var { useEffect: useEffect_v4r, useState: useState_v4r } = React;
   var _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -38638,7 +38684,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       setApprovalBlockReason("");
       setApprovalOpen(false);
     };
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-research v6-live v6-live-density-" + liveStageDensity, "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "panel-hd-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(V516ResearchProgramOverview, { baseUrl }), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-research v6-live v6-live-density-" + liveStageDensity, "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "panel-hd-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(V516ResearchProgramOverview, { baseUrl }), /* @__PURE__ */ React.createElement(V516FamilyFoldExplorer, { baseUrl }), /* @__PURE__ */ React.createElement(
       _V6StatusBoard,
       {
         state: s,
