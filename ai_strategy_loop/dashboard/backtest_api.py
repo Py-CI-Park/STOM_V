@@ -318,6 +318,8 @@ class SweepSpecPayload(_MutationPayload):
 class BacktestRunPayload(_MutationPayload):
     buy: StrategyName
     sell: StrategyName
+    buy_code: StrategyCode | None = None
+    sell_code: StrategyCode | None = None
     start: int = Field(ge=20_000_101, le=20_991_231)
     end: int = Field(ge=20_000_101, le=20_991_231)
     start_time: int = Field(default=90000, ge=0, le=235_959)
@@ -1245,8 +1247,15 @@ def run_backtest(payload: BacktestRunPayload) -> Dict[str, Any]:
     # 없는 조건식으로는 잡을 만들지 않는다. 이전에는 그대로 실행돼 CLI 가 0.05초 만에
     #   exit=1 로 죽었고, 화면에는 종료 기록만 쌓여 "결과가 왜 없냐"로 읽혔다.
     #   (2026-07-26 전수 조사: 잡 333건 전부 이미 삭제된 `기존매수`/`기존매도` 참조)
-    buy_code = _lookup_strategy_code("buy", payload.buy)
-    sell_code = _lookup_strategy_code("sell", payload.sell)
+    direct_source = payload.buy_code is not None or payload.sell_code is not None
+    if direct_source and (payload.buy_code is None or payload.sell_code is None):
+        return {
+            "status": "error",
+            "code": "source_pair_required",
+            "message": "직접 실행 source는 매수·매도 코드를 함께 제출해야 합니다.",
+        }
+    buy_code = payload.buy_code or _lookup_strategy_code("buy", payload.buy)
+    sell_code = payload.sell_code or _lookup_strategy_code("sell", payload.sell)
     missing = [
         label for label, name, code in (
             ("매수", payload.buy, buy_code),

@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import sqlite3
 import sys
@@ -473,6 +474,33 @@ class TestRunRejectsMissingStrategy:
 
         assert body["status"] == "ok", body
         client.post("/bt/job/cancel", json={"job_id": body["job_id"]})
+
+    def test_direct_source_pair_submits_without_strategy_db_write(self, client) -> None:
+        buy_code = "매수 = True\nif 매수:\n    self.Buy()\n"
+        sell_code = "매도 = False\nif 수익률 <= -2:\n    매도 = True\nif 매도:\n    self.Sell()\n"
+        body = client.post("/bt/run", json={
+            "buy": "D3_DIRECT_BUY", "sell": "D3_DIRECT_SELL",
+            "buy_code": buy_code, "sell_code": sell_code,
+            "start": 20250407, "end": 20250409, "timeframe": "tick",
+        }).json()
+        assert body["status"] == "ok", body
+        job = next(row for row in client.get("/bt/jobs").json()["jobs"] if row["job_id"] == body["job_id"])
+        identity = job["condition_identity"]
+        assert identity["kind"] == "code_hash"
+        assert job["spec"]["buy_code"] == buy_code
+        assert job["spec"]["sell_code"] == sell_code
+        assert job["strategy_db_snapshot_hashes"]["buy"] == hashlib.sha256(buy_code.encode("utf-8")).hexdigest()
+        assert job["strategy_db_snapshot_hashes"]["sell"] == hashlib.sha256(sell_code.encode("utf-8")).hexdigest()
+        client.post("/bt/job/cancel", json={"job_id": body["job_id"]})
+
+    def test_direct_source_requires_buy_and_sell_pair(self, client) -> None:
+        body = client.post("/bt/run", json={
+            "buy": "D3_DIRECT_BUY", "sell": "D3_DIRECT_SELL",
+            "buy_code": "매수 = True",
+            "start": 20250407, "end": 20250409,
+        }).json()
+        assert body["status"] == "error"
+        assert body["code"] == "source_pair_required"
 
 
 class TestChildProcessEmitsUtf8:
