@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import json
 from pathlib import Path
@@ -119,25 +120,41 @@ def _write_checkpoint(path: Path, report: dict[str, Any]) -> None:
 
 
 def run_screen(client: Any, manifest: dict[str, Any], *,
-               checkpoint_path: Path | None = None, **kwargs: Any) -> dict[str, Any]:
+               checkpoint_path: Path | None = None, workers: int = 1, **kwargs: Any) -> dict[str, Any]:
+    if workers < 1 or workers > 8:
+        raise ValueError("D3 screen workers must be between 1 and 8")
     selected, manifest_sha = validate_manifest(manifest)
+    config = {**kwargs, "workers": workers}
     rows: list[dict[str, Any]] = []
     if checkpoint_path is not None and checkpoint_path.exists():
         prior = json.loads(checkpoint_path.read_text(encoding="utf-8"))
-        if prior.get("manifest_sha256") != manifest_sha or prior.get("config") != kwargs:
+        if prior.get("manifest_sha256") != manifest_sha:
             raise ValueError("D3 screen checkpoint identity mismatch")
+        prior_config = prior.get("config") or {}
+        if any(prior_config.get(key) != value for key, value in kwargs.items()):
+            raise ValueError("D3 screen checkpoint config mismatch")
         rows = [
             row for row in prior.get("rows") or []
             if row.get("status") in {"success", "no_trades"} and row.get("source_snapshot_match")
         ]
     completed_ids = {row["candidate_id"] for row in rows}
-    for candidate in selected:
-        if candidate["candidate_id"] in completed_ids:
-            continue
-        rows.append(_run_direct(client, candidate, **kwargs))
-        if checkpoint_path is not None:
-            _write_checkpoint(checkpoint_path, _screen_report(manifest, manifest_sha, rows, kwargs))
-    return _screen_report(manifest, manifest_sha, rows, kwargs)
+    pending = [candidate for candidate in selected if candidate["candidate_id"] not in completed_ids]
+
+    def execute(candidate: dict[str, Any]) -> dict[str, Any]:
+        worker_client = Client(client.base_url) if workers > 1 and hasattr(client, "base_url") else client
+        return _run_direct(worker_client, candidate, **kwargs)
+
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = {executor.submit(execute, candidate): candidate for candidate in pending}
+        for future in as_completed(futures):
+            rows.append(future.result())
+            rows.sort(key=lambda row: next(
+                index for index, candidate in enumerate(selected)
+                if candidate["candidate_id"] == row["candidate_id"]
+            ))
+            if checkpoint_path is not None:
+                _write_checkpoint(checkpoint_path, _screen_report(manifest, manifest_sha, rows, config))
+    return _screen_report(manifest, manifest_sha, rows, config)
 
 
 def _screen_report(manifest: dict[str, Any], manifest_sha: str,
@@ -181,11 +198,13 @@ def main() -> None:
     parser.add_argument("--engines", type=int, default=16)
     parser.add_argument("--job-timeout", type=int, default=900)
     parser.add_argument("--poll-timeout", type=int, default=1200)
+    parser.add_argument("--workers", type=int, default=4)
     args = parser.parse_args()
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     report = run_screen(
         Client(args.base_url), manifest, start=args.start, end=args.end, engines=args.engines,
         job_timeout=args.job_timeout, poll_timeout=args.poll_timeout,
+        workers=args.workers,
         checkpoint_path=args.output,
     )
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
