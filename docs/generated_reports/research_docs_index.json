@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-14T14:33:22.319253+00:00",
-  "source_fingerprint": "65b3ab35fad5d5816ace4df76ff67c26b47db1b6909dfe749bd9cfebcf5fca6b",
-  "count": 1056,
+  "generated_at": "2026-08-15T02:58:23.663505+00:00",
+  "source_fingerprint": "2157210069c9b42bd6c28ecbfb4591ffa2606373cae0ffb9dee6d71a662726e1",
+  "count": 1057,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7061,6 +7061,13 @@
       "size": 3261
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-15_기존DB_시가총액분할_상태전이연구와_v5.16_재출발_마스터플랜.md",
+      "title": "기존 DB 시가총액 분할·상태전이 연구와 Dashboard v5.16 재출발 마스터플랜 (2026-08-15)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-15T02:56:22.398997+00:00",
+      "size": 13231
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
       "title": "핸드오프 — QSP7 매도식 연구 (2026-08-01)",
       "category": "quant_scoring_pipeline",
@@ -7155,8 +7162,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-14T14:31:38.997467+00:00",
-      "size": 12317
+      "updated_at": "2026-08-15T02:57:38.846217+00:00",
+      "size": 12493
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
