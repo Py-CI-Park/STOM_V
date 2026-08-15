@@ -10,8 +10,12 @@ from ai_strategy_loop.revision.mcap_bands import band_for_value, mcap_band_case_
 def _make_db(path: Path) -> None:
     connection = sqlite3.connect(path)
     connection.execute('CREATE TABLE moneytop ("index" INTEGER, "거래대금순위" TEXT)')
+    membership = "000001;000002;000003;000004"
     connection.executemany('INSERT INTO moneytop VALUES (?, ?)', [
-        (20250102090000, "000001;000002"), (20250102103000, "000001;000002")
+        (20250102090000, membership), (20250102090500, membership),
+        (20250102093000, membership), (20250102103000, membership),
+        (20250103090000, membership), (20250103090500, membership),
+        (20250103093000, membership),
     ])
     columns = '"index" INTEGER, "시가총액" REAL, "당일거래대금" REAL, "초당거래대금" REAL, "체결강도" REAL'
     for code, cap in (("000001", 2999), ("000002", 3000), ("000003", 5000), ("000004", 10000)):
@@ -49,11 +53,16 @@ def test_census_uses_stock_table_window_not_wider_moneytop_window(tmp_path):
     assert result["stock_table_scope"]["max_time"] == "093000"
     assert result["stock_table_scope"]["scanned_tables"] == 4
     assert result["stock_table_scope"]["skipped_tables"] == 1
+    assert result["schema"] == "stom.mcap_census.v2"
+    assert result["window_contract"]["status"] == "AVAILABLE"
+    assert result["window_contract"]["start"] == "090000"
+    assert result["window_contract"]["end_exclusive"] == "090500"
     bands = {row["band_id"]: row for row in result["bands"]}
     assert all(row["rows"] == 3 for row in bands.values())
     assert all(row["days"] == 2 for row in bands.values())
     assert all(row["symbols"] == 1 for row in bands.values())
     assert all(row["verdict"] == "CENSUS_PASS" for row in bands.values())
+    assert all(row["intersection_code_days"] == 2 for row in bands.values())
     assert not Path(str(path) + "-wal").exists()
     assert not Path(str(path) + "-shm").exists()
 
