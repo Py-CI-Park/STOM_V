@@ -120,11 +120,15 @@ def _write_checkpoint(path: Path, report: dict[str, Any]) -> None:
 
 
 def run_screen(client: Any, manifest: dict[str, Any], *,
-               checkpoint_path: Path | None = None, workers: int = 1, **kwargs: Any) -> dict[str, Any]:
+               checkpoint_path: Path | None = None, workers: int = 1,
+               worker_base_urls: tuple[str, ...] = (), **kwargs: Any) -> dict[str, Any]:
     if workers < 1 or workers > 8:
         raise ValueError("D3 screen workers must be between 1 and 8")
     selected, manifest_sha = validate_manifest(manifest)
-    config = {**kwargs, "workers": workers}
+    base_urls = worker_base_urls or ((client.base_url,) if hasattr(client, "base_url") else ())
+    if len(base_urls) > workers:
+        raise ValueError("D3 worker URL count cannot exceed workers")
+    config = {**kwargs, "workers": workers, "base_urls": list(base_urls)}
     rows: list[dict[str, Any]] = []
     if checkpoint_path is not None and checkpoint_path.exists():
         prior = json.loads(checkpoint_path.read_text(encoding="utf-8"))
@@ -141,7 +145,8 @@ def run_screen(client: Any, manifest: dict[str, Any], *,
     pending = [candidate for candidate in selected if candidate["candidate_id"] not in completed_ids]
 
     def execute(candidate: dict[str, Any]) -> dict[str, Any]:
-        worker_client = Client(client.base_url) if workers > 1 and hasattr(client, "base_url") else client
+        index = next(i for i, row in enumerate(selected) if row["candidate_id"] == candidate["candidate_id"])
+        worker_client = Client(base_urls[index % len(base_urls)]) if base_urls else client
         return _run_direct(worker_client, candidate, **kwargs)
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
@@ -191,6 +196,7 @@ def _screen_report(manifest: dict[str, Any], manifest_sha: str,
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url", default="http://127.0.0.1:8779")
+    parser.add_argument("--base-urls", default="")
     parser.add_argument("--manifest", type=Path, default=Path("docs/research/quant_scoring_pipeline/evidence/2026-08-15_d3_candidate_manifest.json"))
     parser.add_argument("--output", type=Path, default=Path("docs/research/quant_scoring_pipeline/evidence/2026-08-15_d3_engine_screen.json"))
     parser.add_argument("--start", type=int, default=20231114)
@@ -201,10 +207,13 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=4)
     args = parser.parse_args()
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    worker_base_urls = tuple(
+        value.strip().rstrip("/") for value in args.base_urls.split(",") if value.strip()
+    ) or (args.base_url.rstrip("/"),)
     report = run_screen(
-        Client(args.base_url), manifest, start=args.start, end=args.end, engines=args.engines,
+        Client(worker_base_urls[0]), manifest, start=args.start, end=args.end, engines=args.engines,
         job_timeout=args.job_timeout, poll_timeout=args.poll_timeout,
-        workers=args.workers,
+        workers=args.workers, worker_base_urls=worker_base_urls,
         checkpoint_path=args.output,
     )
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
