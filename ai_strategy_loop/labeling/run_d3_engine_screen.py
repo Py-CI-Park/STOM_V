@@ -27,6 +27,32 @@ elif 시분초 >= 92900:
 if 매도:
     self.Sell()
 """
+_MANIFEST_SCHEMA = "stom.d3_mcap_qmc_manifest.v1"
+_MANIFEST_AUTHORITY = "existing_db_development_proposal_only_no_adoption"
+
+
+def _manifest_sha256(manifest: dict[str, Any]) -> str:
+    canonical = json.dumps(manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def validate_manifest(manifest: dict[str, Any]) -> tuple[list[dict[str, Any]], str]:
+    if manifest.get("schema") != _MANIFEST_SCHEMA or manifest.get("authority") != _MANIFEST_AUTHORITY:
+        raise ValueError("D3 manifest schema or authority mismatch")
+    window_sha = (manifest.get("window_contract") or {}).get("contract_sha256")
+    if not isinstance(window_sha, str) or len(window_sha) != 64:
+        raise ValueError("D3 manifest window contract is missing")
+    selected = [row for row in manifest.get("candidates") or [] if row.get("selected_for_engine")]
+    ids = [str(row.get("candidate_id") or "") for row in selected]
+    if len(selected) != 40 or len(set(ids)) != 40 or any(not candidate_id for candidate_id in ids):
+        raise ValueError(f"D3 manifest must contain 40 unique selected candidates, observed {len(selected)}")
+    for row in selected:
+        observed = hashlib.sha256(str(row.get("source") or "").encode("utf-8")).hexdigest()
+        if observed != row.get("source_sha256"):
+            raise ValueError(f"D3 manifest source hash mismatch: {row.get('candidate_id')}")
+        if row.get("window_contract_sha256") != window_sha:
+            raise ValueError(f"D3 manifest candidate window mismatch: {row.get('candidate_id')}")
+    return selected, _manifest_sha256(manifest)
 
 
 def _run_direct(client: Any, candidate: dict[str, Any], *, start: int, end: int, engines: int,
@@ -36,6 +62,7 @@ def _run_direct(client: Any, candidate: dict[str, Any], *, start: int, end: int,
     submitted = client.call("POST", "/bt/run", {
         "buy": buy_name, "sell": sell_name,
         "buy_code": candidate["source"], "sell_code": SELL_SOURCE,
+        "source_authority": "research_direct_source",
         "start": start, "end": end, "start_time": 90000, "end_time": 93000,
         "timeframe": "tick", "engines": engines, "timeout": job_timeout,
     })
@@ -84,23 +111,63 @@ def _run_direct(client: Any, candidate: dict[str, Any], *, start: int, end: int,
     }
 
 
-def run_screen(client: Any, manifest: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
-    selected = [row for row in manifest.get("candidates") or [] if row.get("selected_for_engine")]
-    if len(selected) != 40:
-        raise ValueError(f"D3 manifest must contain 40 selected candidates, observed {len(selected)}")
-    rows = [_run_direct(client, candidate, **kwargs) for candidate in selected]
+def _write_checkpoint(path: Path, report: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
+    temporary.replace(path)
+
+
+def run_screen(client: Any, manifest: dict[str, Any], *,
+               checkpoint_path: Path | None = None, **kwargs: Any) -> dict[str, Any]:
+    selected, manifest_sha = validate_manifest(manifest)
+    rows: list[dict[str, Any]] = []
+    if checkpoint_path is not None and checkpoint_path.exists():
+        prior = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+        if prior.get("manifest_sha256") != manifest_sha or prior.get("config") != kwargs:
+            raise ValueError("D3 screen checkpoint identity mismatch")
+        rows = [
+            row for row in prior.get("rows") or []
+            if row.get("status") in {"success", "no_trades"} and row.get("source_snapshot_match")
+        ]
+    completed_ids = {row["candidate_id"] for row in rows}
+    for candidate in selected:
+        if candidate["candidate_id"] in completed_ids:
+            continue
+        rows.append(_run_direct(client, candidate, **kwargs))
+        if checkpoint_path is not None:
+            _write_checkpoint(checkpoint_path, _screen_report(manifest, manifest_sha, rows, kwargs))
+    return _screen_report(manifest, manifest_sha, rows, kwargs)
+
+
+def _screen_report(manifest: dict[str, Any], manifest_sha: str,
+                   rows: list[dict[str, Any]], config: dict[str, Any]) -> dict[str, Any]:
+    accepted_terminal = {"success", "no_trades"}
+    valid_rows = [
+        row for row in rows
+        if row.get("status") in accepted_terminal
+        and row.get("source_snapshot_match")
+        and (row.get("status") == "no_trades" or isinstance(row.get("metrics"), dict))
+    ]
+    reasons = []
+    if len(rows) != 40:
+        reasons.append("row_count_incomplete")
+    if len(valid_rows) != 40:
+        reasons.append("execution_or_evidence_failure")
     return {
         "schema": "stom.d3_mcap_engine_screen.v1",
         "authority": "existing_db_development_no_oos_no_adoption",
         "can_adopt": False,
+        "manifest_sha256": manifest_sha,
         "manifest_window_sha256": (manifest.get("window_contract") or {}).get("contract_sha256"),
-        "config": kwargs,
+        "config": config,
         "rows": rows,
         "terminal_count": sum(str(row.get("status")) in TERMINAL for row in rows),
         "source_match_count": sum(bool(row.get("source_snapshot_match")) for row in rows),
         "metrics_count": sum(isinstance(row.get("metrics"), dict) for row in rows),
         "advanced": [row["candidate_id"] for row in rows if (row.get("screen") or {}).get("advance")],
-        "verdict": "D3_SCREEN_COMPLETED" if len(rows) == 40 else "D3_SCREEN_INCOMPLETE",
+        "failure_reasons": reasons,
+        "verdict": "D3_SCREEN_COMPLETED" if not reasons else "D3_SCREEN_INCOMPLETE",
     }
 
 
@@ -119,6 +186,7 @@ def main() -> None:
     report = run_screen(
         Client(args.base_url), manifest, start=args.start, end=args.end, engines=args.engines,
         job_timeout=args.job_timeout, poll_timeout=args.poll_timeout,
+        checkpoint_path=args.output,
     )
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
     print(json.dumps({"output": str(args.output), "verdict": report["verdict"],

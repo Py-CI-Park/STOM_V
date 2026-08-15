@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from itertools import combinations
+import math
 from ai_strategy_loop.revision.mcap_qmc import dimension_specs_for_family, propose_d3_candidates
 from ai_strategy_loop.revision.mcap_state_machine import FAMILIES
 from ai_strategy_loop.revision.window_contract import ResearchWindowContract
@@ -34,6 +36,27 @@ def test_qmc_manifest_identity_is_deterministic_and_seed_sensitive():
     changed = propose_d3_candidates(window=_window(), seed=20260816, per_cell_budget=4, selected_per_cell=2)
     assert [row.candidate_id for row in first.raw_candidates] == [row.candidate_id for row in second.raw_candidates]
     assert [row.candidate_id for row in first.raw_candidates] != [row.candidate_id for row in changed.raw_candidates]
+
+
+def test_two_candidate_selection_is_exact_maximum_distance_pair():
+    batch = propose_d3_candidates(
+        window=_window(), seed=20260815, per_cell_budget=4, selected_per_cell=2,
+        eligible_bands=["MCAP_A_LT3000"],
+    )
+    cell = batch.raw_candidates[:4]
+    chosen = batch.selected_candidates[:2]
+    specs = dimension_specs_for_family(cell[0].family_id)
+
+    def vector(row):
+        return tuple(
+            (float(row.parameters[spec.name]) - float(spec.low)) / (float(spec.high) - float(spec.low))
+            for spec in specs
+        )
+
+    def distance(pair):
+        return math.dist(vector(pair[0]), vector(pair[1]))
+
+    assert distance(chosen) == max(distance(pair) for pair in combinations(cell, 2))
 
 
 def test_budget_and_band_contracts_fail_closed():

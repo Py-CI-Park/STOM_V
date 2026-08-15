@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import math
+from itertools import combinations
 from typing import Any, Iterable
 
 from ai_strategy_loop.revision.mcap_bands import MCAP_BANDS
@@ -61,8 +62,17 @@ def select_maximin(candidates: Iterable[McapStateCandidate], *, count: int) -> t
         raise ValueError("maximin selection requires one Family×Band cell")
     specs = dimension_specs_for_family(family_id)
     vectors = {row.candidate_id: _normalized(row, specs) for row in rows}
-    selected = [rows[0]]
-    remaining = list(rows[1:])
+    first, second = max(
+        combinations(rows, 2),
+        key=lambda pair: (
+            _distance(vectors[pair[0].candidate_id], vectors[pair[1].candidate_id]),
+            tuple(sorted((pair[0].canonical_sha256, pair[1].canonical_sha256))),
+        ),
+    )
+    selected = [first, second]
+    if count == 1:
+        return (first,)
+    remaining = [row for row in rows if row not in selected]
     while len(selected) < count:
         next_row = max(
             remaining,

@@ -39,13 +39,18 @@ class FakeClient:
 
 
 def _manifest():
+    candidates = [{
+        "candidate_id": f"C{i}", "family_id": f"F{i % 5}", "band_id": f"B{i % 4}",
+        "parameters": {"x": i}, "source": f"매수 = True\n# {i}\nif 매수:\n    self.Buy()\n",
+        "window_contract_sha256": "a" * 64, "selected_for_engine": True,
+    } for i in range(40)]
+    for candidate in candidates:
+        candidate["source_sha256"] = hashlib.sha256(candidate["source"].encode()).hexdigest()
     return {
+        "schema": "stom.d3_mcap_qmc_manifest.v1",
+        "authority": "existing_db_development_proposal_only_no_adoption",
         "window_contract": {"contract_sha256": "a" * 64},
-        "candidates": [{
-            "candidate_id": f"C{i}", "family_id": f"F{i % 5}", "band_id": f"B{i % 4}",
-            "parameters": {"x": i}, "source": f"매수 = True\n# {i}\nif 매수:\n    self.Buy()\n",
-            "selected_for_engine": True,
-        } for i in range(40)],
+        "candidates": candidates,
     }
 
 
@@ -70,6 +75,35 @@ def test_screen_rejects_manifest_not_exactly_40_selected():
     try:
         run_screen(FakeClient(), manifest, start=1, end=2, engines=1, job_timeout=1, poll_timeout=1)
     except ValueError as exc:
-        assert "40 selected" in str(exc)
+        assert "40 unique selected" in str(exc)
     else:
         raise AssertionError("invalid screen manifest accepted")
+
+
+def test_screen_rejects_tampered_manifest_source():
+    manifest = _manifest()
+    manifest["candidates"][0]["source"] += "# tampered\n"
+    try:
+        run_screen(FakeClient(), manifest, start=1, end=2, engines=1, job_timeout=1, poll_timeout=1)
+    except ValueError as exc:
+        assert "source hash mismatch" in str(exc)
+    else:
+        raise AssertionError("tampered manifest accepted")
+
+
+def test_screen_checkpoint_resumes_only_verified_success_rows(tmp_path):
+    checkpoint = tmp_path / "screen.json"
+    first_client = FakeClient()
+    first = run_screen(
+        first_client, _manifest(), checkpoint_path=checkpoint,
+        start=20231114, end=20231114, engines=1, job_timeout=30, poll_timeout=30, poll_interval=0,
+    )
+    assert first["verdict"] == "D3_SCREEN_COMPLETED"
+    assert len(first_client.submissions) == 40
+    second_client = FakeClient()
+    second = run_screen(
+        second_client, _manifest(), checkpoint_path=checkpoint,
+        start=20231114, end=20231114, engines=1, job_timeout=30, poll_timeout=30, poll_interval=0,
+    )
+    assert second["verdict"] == "D3_SCREEN_COMPLETED"
+    assert second_client.submissions == []

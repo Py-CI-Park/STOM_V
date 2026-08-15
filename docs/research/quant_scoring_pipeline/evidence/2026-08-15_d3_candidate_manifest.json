@@ -18,7 +18,7 @@
         "recovery_rate": 0.9700847947718503
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(76, 76) <= 0.2351 and 구간저가대비현재가등락율(25) >= 0.9701 and 체결강도평균대비비율(67) >= 1.2631):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "4c94499fbb503971afaddf814de8fd69dc37b1e2fcfc6b79159d8847c0666b6c",
       "steps": [
@@ -130,7 +130,7 @@
         "recovery_rate": 1.1772276519147074
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(86, 86) <= 0.1985 and 구간저가대비현재가등락율(5) >= 1.1772 and 체결강도평균대비비율(30) >= 1.1492):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "b1c76bb0a5426d7843093bdbb0be3af23ac10491581f76b14001ba97752a5914",
       "steps": [
@@ -914,7 +914,7 @@
         "recovery_rate": 0.061364137511713525
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(77, 77) <= 0.3049 and 구간저가대비현재가등락율(14) >= 0.0614 and 체결강도평균대비비율(51) >= 2.1887):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "b6e46fc67b2c83a1bf0b637d25986a744651239e455dc209d600282afafeaf01",
       "steps": [
@@ -1026,7 +1026,7 @@
         "recovery_rate": 1.3042212803688564
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(87, 87) <= 0.2683 and 구간저가대비현재가등락율(42) >= 1.3042 and 체결강도평균대비비율(81) >= 2.0749):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "b809bc05ea031159d05e6a578040e19b0fd8a08a9c7e6407a922efb5beee421b",
       "steps": [
@@ -1418,7 +1418,7 @@
         "recovery_rate": 1.4817723007770196
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(19, 19) <= 0.3172 and 구간저가대비현재가등락율(24) >= 1.4818 and 체결강도평균대비비율(75) >= 1.6370):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "c474e01e9d6f2e3794ce6573314f0828e785c7c3b2e878483c10b79375361902",
       "steps": [
@@ -1698,7 +1698,7 @@
         "recovery_rate": 0.17973148445048914
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(14, 14) <= 0.2031 and 구간저가대비현재가등락율(23) >= 0.1797 and 체결강도평균대비비율(13) >= 1.1553):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "eafd1ce843a320b0be1d7c04903ce3c830f10341a62cc49a2041a7fcae5c6627",
       "steps": [
@@ -1810,7 +1810,7 @@
         "recovery_rate": 0.4077173029708696
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(20, 20) <= 0.2482 and 구간저가대비현재가등락율(44) >= 0.4077 and 체결강도평균대비비율(46) >= 2.1646):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "6aea99f8202c306f4d4bc9f22632107f2f47359ac186c98a07c01a2690a171cd",
       "steps": [
@@ -1894,7 +1894,7 @@
         "recovery_rate": 1.4434315886851554
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(71, 71) <= 0.3215 and 구간저가대비현재가등락율(12) >= 1.4434 and 체결강도평균대비비율(31) >= 1.1400):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "db4da10eb0144f5997b0f638e0abbb46124492df00b7815ad5e23552dc6a8cd6",
       "steps": [
@@ -2034,7 +2034,7 @@
         "recovery_rate": 0.3485336295014821
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(25, 25) <= 0.3826 and 구간저가대비현재가등락율(13) >= 0.3485 and 체결강도평균대비비율(17) >= 2.2784):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "95fc4a560474ea5504ffda2068b61239188b6b345756d7f10f88d1cb6ba7c695",
       "steps": [
@@ -2510,7 +2510,7 @@
         "recovery_rate": 1.4138397519504615
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(88, 88) <= 0.1871 and 구간저가대비현재가등락율(45) >= 1.4138 and 체결강도평균대비비율(37) >= 1.3502):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "79b8c5a43b43d3890dc8d7306d48456696c0c7a02849081d6e1e6078df91481f",
       "steps": [
@@ -2706,7 +2706,7 @@
         "recovery_rate": 0.4680479362727869
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(81, 81) <= 0.2692 and 구간저가대비현재가등락율(23) >= 0.4680 and 체결강도평균대비비율(69) >= 1.8164):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "458525d726cdb6dce158578a7f023b607ad306951ae8cfa363e770b4fe49ec5b",
       "steps": [
@@ -2818,7 +2818,7 @@
         "recovery_rate": 1.0894765077013584
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(10, 10) <= 0.4159 and 구간저가대비현재가등락율(44) >= 1.0895 and 체결강도평균대비비율(39) >= 1.5887):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "916606c4579787e086b289c3cc6f64f3461717cb9c81da45e18a4a41e190a077",
       "steps": [
@@ -3490,7 +3490,7 @@
         "recovery_rate": 0.4976397730074808
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(18, 18) <= 0.3833 and 구간저가대비현재가등락율(8) >= 0.4976 and 체결강도평균대비비율(77) >= 2.4645):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "b426e603da66ec2e0e11aa365576a0000395e23b7dd0566a1917b9ed676fbb41",
       "steps": [
@@ -3518,7 +3518,7 @@
         "recovery_rate": 1.3262112015789096
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(79, 79) <= 0.1999 and 구간저가대비현재가등락율(45) >= 1.3262 and 체결강도평균대비비율(18) >= 2.3506):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "4f4be7ffac57f1b24ed348d1f29dcc95d8e7e34128a3b355ec990b1517102e7a",
       "steps": [
@@ -3602,7 +3602,7 @@
         "turnover_ratio": 1.4395465746375713
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(23) <= -0.6756 and 2 <= 고가미갱신지속틱수() <= 23 and 체결강도평균대비비율(61) >= 1.0719 and 거래대금평균대비비율(61) >= 1.4395):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "00fefe3eef473d137e67aab0b07a335e9c723413dac9862cdb48b99188b95e36",
       "steps": [
@@ -4078,7 +4078,7 @@
         "turnover_ratio": 3.8442803024482224
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(110) <= -0.2997 and 26 <= 고가미갱신지속틱수() <= 110 and 체결강도평균대비비율(90) >= 2.0439 and 거래대금평균대비비율(90) >= 3.8443):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "edd5ae5a9cb716f33f7d92e2b19f02b40cdf99ba2e95aa602a358ad13c649c72",
       "steps": [
@@ -4218,7 +4218,7 @@
         "turnover_ratio": 3.35197261014053
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(68) <= -1.4275 and 28 <= 고가미갱신지속틱수() <= 68 and 체결강도평균대비비율(23) >= 1.0918 and 거래대금평균대비비율(23) >= 3.3520):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "0bbc2dc8547a7b6f1be96bbe410da4b16090980d43c95b53f1cc6c016232b7bf",
       "steps": [
@@ -4302,7 +4302,7 @@
         "turnover_ratio": 2.3484223142825416
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(117) <= -0.1386 and 2 <= 고가미갱신지속틱수() <= 117 and 체결강도평균대비비율(80) >= 2.1827 and 거래대금평균대비비율(80) >= 2.3484):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "bc9c59a50fb59e496316c0844881a1037b2ffc975cfcfdb9f5e8eb365455cea2",
       "steps": [
@@ -4498,7 +4498,7 @@
         "turnover_ratio": 1.9235193745097179
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(117) <= -0.5396 and 28 <= 고가미갱신지속틱수() <= 117 and 체결강도평균대비비율(34) >= 1.3091 and 거래대금평균대비비율(34) >= 1.9235):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "dc47459f5019d10af10a86f103581cb0099c3fd3468236b986d444ed364420ff",
       "steps": [
@@ -4638,7 +4638,7 @@
         "turnover_ratio": 0.9389039898943331
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(103) <= -0.3785 and 30 <= 고가미갱신지속틱수() <= 103 and 체결강도평균대비비율(80) >= 1.0909 and 거래대금평균대비비율(80) >= 0.9389):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "06bdb0412ae927c965a44192b82d7b5fbe8dfd178af1b08febf086f469d49046",
       "steps": [
@@ -4778,7 +4778,7 @@
         "turnover_ratio": 3.8927501437404874
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(40) <= -1.0766 and 4 <= 고가미갱신지속틱수() <= 40 and 체결강도평균대비비율(21) >= 1.8149 and 거래대금평균대비비율(21) >= 3.8928):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "acfb670745fbd3f7ff2c3e6b593e9bd0c74685de3d2fa3a20245f7258ee86149",
       "steps": [
@@ -4834,7 +4834,7 @@
         "turnover_ratio": 3.305767895219777
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(26) <= -0.7544 and 9 <= 고가미갱신지속틱수() <= 26 and 체결강도평균대비비율(90) >= 1.9240 and 거래대금평균대비비율(90) >= 3.3058):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "2543383ea4ae90012723eea80475bdbe7777f73887cb0ea4378c84a294afcdbd",
       "steps": [
@@ -5394,7 +5394,7 @@
         "turnover_ratio": 3.345942908609529
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(56) <= -1.3990 and 12 <= 고가미갱신지속틱수() <= 56 and 체결강도평균대비비율(21) >= 1.6267 and 거래대금평균대비비율(21) >= 3.3459):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "aa8f72d48c18493e077ec8284a116c247d26a790e386732e81577012cca3b921",
       "steps": [
@@ -5590,7 +5590,7 @@
         "turnover_ratio": 1.869019831686452
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(118) <= -0.7546 and 28 <= 고가미갱신지속틱수() <= 118 and 체결강도평균대비비율(31) >= 1.4085 and 거래대금평균대비비율(31) >= 1.8690):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "4e7e04eed78280c0f307ea15306389d90ccc12172bba5d135023a9f9376ae786",
       "steps": [
@@ -5730,7 +5730,7 @@
         "turnover_ratio": 1.0737535594971028
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(77) <= -0.1639 and 27 <= 고가미갱신지속틱수() <= 77 and 체결강도평균대비비율(78) >= 2.0135 and 거래대금평균대비비율(78) >= 1.0738):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "46ed56a6e886a47d78225f9cc352df05e23b0d8398ff5a291972329daee1fd3c",
       "steps": [
@@ -6038,7 +6038,7 @@
         "turnover_ratio": 1.8122150979586413
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(11) <= -1.3453 and 2 <= 고가미갱신지속틱수() <= 11 and 체결강도평균대비비율(86) >= 2.0432 and 거래대금평균대비비율(86) >= 1.8122):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "3c4114ffc45c3bcf703c8c47e5eae76048190e10038fde2dfdc0d5da3a5049e9",
       "steps": [
@@ -6290,7 +6290,7 @@
         "turnover_ratio": 3.4547025291868065
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(55) <= -0.6825 and 20 <= 고가미갱신지속틱수() <= 55 and 체결강도평균대비비율(66) >= 1.1503 and 거래대금평균대비비율(66) >= 3.4547):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "fae41f7469fefd92388a4eb0a2e1e4cf8ad89cff7d60acda081230c22ab5a222",
       "steps": [
@@ -6598,7 +6598,7 @@
         "turnover_ratio": 1.2393179138021908
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(21) <= -0.4139 and 28 <= 고가미갱신지속틱수() <= 21 and 체결강도평균대비비율(59) >= 1.1702 and 거래대금평균대비비율(59) >= 1.2393):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "b0df5564600c491c48a133f94689fc04ffe0b497d7bd33955169c5ed16b8f493",
       "steps": [
@@ -7186,7 +7186,7 @@
         "vol_window": 32
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(32, 32) > 0 and 변동성(32, 32) <= 1.1189 and 변동성급증(32, 2.1872) and 현재가 > 최고현재가(34, 1) and 체결강도평균대비비율(53) >= 1.7663):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "6d0acb46afb4f17ab2519aabc2e5a5cabbf95e099f3aff0ff4f9d0f8e6f8a594",
       "steps": [
@@ -7214,7 +7214,7 @@
         "vol_window": 12
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(12, 12) > 0 and 변동성(12, 12) <= 0.7355 and 변동성급증(12, 4.5272) and 현재가 > 최고현재가(50, 1) and 체결강도평균대비비율(90) >= 1.1893):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "56501b9b9084b1ce2be2869a1c032f5d1837a45d8c0329ceb3b034ec7cb29f1e",
       "steps": [
@@ -7354,7 +7354,7 @@
         "vol_window": 63
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(63, 63) > 0 and 변동성(63, 63) <= 0.0966 and 변동성급증(63, 4.6832) and 현재가 > 최고현재가(20, 1) and 체결강도평균대비비율(83) >= 2.3432):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "9f9e5e256c1c88177a31abe6ae383a16d232b1f4d3bc02f519d78ea245e853d6",
       "steps": [
@@ -7718,7 +7718,7 @@
         "vol_window": 85
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(85, 85) > 0 and 변동성(85, 85) <= 0.7781 and 변동성급증(85, 1.7192) and 현재가 > 최고현재가(14, 1) and 체결강도평균대비비율(32) >= 2.4053):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "3f16a77ccf47c1916cc650500acd9e016d402d1f5c96c91dd73e17517fa0c10b",
       "steps": [
@@ -8082,7 +8082,7 @@
         "vol_window": 11
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(11, 11) > 0 and 변동성(11, 11) <= 0.5380 and 변동성급증(11, 3.1595) and 현재가 > 최고현재가(30, 1) and 체결강도평균대비비율(69) >= 1.2877):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "5e678cf8dfd8e8cff39102e957e179de817ab4b9c6e661cefbac5555eb16694b",
       "steps": [
@@ -8698,7 +8698,7 @@
         "vol_window": 44
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(44, 44) > 0 and 변동성(44, 44) <= 1.1343 and 변동성급증(44, 1.1315) and 현재가 > 최고현재가(26, 1) and 체결강도평균대비비율(73) >= 2.4593):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "d44e1d9cf9c3781170916bc17a3a958c0a026d52bdb06de8ad4d46d41941cfaf",
       "steps": [
@@ -8782,7 +8782,7 @@
         "vol_window": 80
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(80, 80) > 0 and 변동성(80, 80) <= 0.1120 and 변동성급증(80, 3.1907) and 현재가 > 최고현재가(50, 1) and 체결강도평균대비비율(14) >= 1.1279):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "6611b3e8198981b78e8ea531ac981e274ba00ebaddd0b2687a5d71d1837891e7",
       "steps": [
@@ -8894,7 +8894,7 @@
         "vol_window": 90
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(90, 90) > 0 and 변동성(90, 90) <= 0.2966 and 변동성급증(90, 2.5667) and 현재가 > 최고현재가(24, 1) and 체결강도평균대비비율(22) >= 2.2818):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "def484763ec82aecae65b325c446929cfe2b08fd66ac25a65aeab00bbb2294f3",
       "steps": [
@@ -8978,7 +8978,7 @@
         "vol_window": 44
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(44, 44) > 0 and 변동성(44, 44) <= 0.7291 and 변동성급증(44, 3.9625) and 현재가 > 최고현재가(43, 1) and 체결강도평균대비비율(55) >= 1.4464):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "8b1a4613293689ac3cfdddf36739913e3cdd438476f5157b5c138e6606673579",
       "steps": [
@@ -9174,7 +9174,7 @@
         "vol_window": 89
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(89, 89) > 0 and 변동성(89, 89) <= 0.4735 and 변동성급증(89, 1.7785) and 현재가 > 최고현재가(49, 1) and 체결강도평균대비비율(78) >= 2.4849):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "05fad0e11186cece4aee492b75d54179ef79134fb1625b0c3796fcd4f6943dd2",
       "steps": [
@@ -9202,7 +9202,7 @@
         "vol_window": 49
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(49, 49) > 0 and 변동성(49, 49) <= 1.1976 and 변동성급증(49, 2.5585) and 현재가 > 최고현재가(17, 1) and 체결강도평균대비비율(19) >= 1.1003):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "d09c9ae7f1679e2f833dfeb1323708ace2208ff2b4933184391dafd05c3a56c2",
       "steps": [
@@ -9622,7 +9622,7 @@
         "vol_window": 11
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(11, 11) > 0 and 변동성(11, 11) <= 0.1328 and 변동성급증(11, 3.0265) and 현재가 > 최고현재가(58, 1) and 체결강도평균대비비율(90) >= 1.9790):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "d033ebb5dbee6877567669a98adf8f1dcab72a99e822fc7978c3f7d351824ada",
       "steps": [
@@ -9874,7 +9874,7 @@
         "vol_window": 69
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(69, 69) > 0 and 변동성(69, 69) <= 0.2699 and 변동성급증(69, 2.5852) and 현재가 > 최고현재가(7, 1) and 체결강도평균대비비율(75) >= 1.5481):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "1de39b766554afee0230708a0859554e39712ee28d0b0a73e5e4de2ec0b840f4",
       "steps": [
@@ -10098,7 +10098,7 @@
         "vol_window": 75
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(75, 75) > 0 and 변동성(75, 75) <= 1.0791 and 변동성급증(75, 3.5212) and 현재가 > 최고현재가(57, 1) and 체결강도평균대비비율(23) >= 1.0866):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "99ceb1e67faad7ce4d5d6befd669b2b96272dbd2e23dcaf9b17290e0d4812c32",
       "steps": [
@@ -10462,7 +10462,7 @@
         "vol_window": 62
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(62, 62) > 0 and 변동성(62, 62) <= 0.4828 and 변동성급증(62, 4.4572) and 현재가 > 최고현재가(13, 1) and 체결강도평균대비비율(13) >= 1.1132):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "f1acdd06930b8edcd6050733c73d3cda7555a52a25d500f3e8934267c82a767b",
       "steps": [
@@ -10686,7 +10686,7 @@
         "vol_window": 67
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(67, 67) > 0 and 변동성(67, 67) <= 1.1785 and 변동성급증(67, 1.9924) and 현재가 > 최고현재가(60, 1) and 체결강도평균대비비율(86) >= 2.1428):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "ec79192b722d444e2b74d36643972959d74af8022370e0ce5371121aba20bb65",
       "steps": [
@@ -10770,7 +10770,7 @@
         "recovery_rate": 0.8886654952751122
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (체결강도평균대비비율(53, 53) >= 2.7623 and 현재가N(33) <= 최저현재가(33, 33) * 1.008503 and 체결강도평균대비비율(53) >= 1.4253 and 구간저가대비현재가등락율(33) >= 0.8887):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "7d8bcbacd572ffdc5cb2e50c1e8f943c2504263554391e884b2452cd6f54407b",
       "steps": [
@@ -11022,7 +11022,7 @@
         "recovery_rate": 1.065588572198189
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (체결강도평균대비비율(38, 38) >= 2.8345 and 현재가N(51) <= 최저현재가(51, 51) * 1.007319 and 체결강도평균대비비율(38) >= 1.6980 and 구간저가대비현재가등락율(51) >= 1.0656):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "624ad9ada0047e369b049c8e0904b607abb7ff17a04baf16c33c91a6efb02513",
       "steps": [
@@ -12562,7 +12562,7 @@
         "recovery_rate": 1.0118335543438708
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (체결강도평균대비비율(72, 72) >= 2.5863 and 현재가N(42) <= 최저현재가(42, 42) * 1.008505 and 체결강도평균대비비율(72) >= 1.4156 and 구간저가대비현재가등락율(42) >= 1.0118):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "1bc08e3b462b488c60c42c8cb982484d7dabca7a485f5e6261e0f4abee22b27c",
       "steps": [
@@ -12814,7 +12814,7 @@
         "recovery_rate": 1.1887566312669477
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (체결강도평균대비비율(57, 57) >= 2.6585 and 현재가N(28) <= 최저현재가(28, 28) * 1.013240 and 체결강도평균대비비율(57) >= 2.0974 and 구간저가대비현재가등락율(28) >= 1.1888):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "3a9f2515ffd72641251c8d0567a3d116f4a22b526997ac8e11d227d0fa05be73",
       "steps": [
@@ -13458,7 +13458,7 @@
         "recovery_rate": 0.9549252501184565
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (체결강도평균대비비율(39, 39) >= 2.4365 and 현재가N(23) <= 최저현재가(23, 23) * 1.013165 and 체결강도평균대비비율(39) >= 1.3859 and 구간저가대비현재가등락율(23) >= 0.9549):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "0e83e6783d39dc9330ef05941e80e91da0517abd4f0d8d50bf62397e33b6ce3e",
       "steps": [
@@ -13626,7 +13626,7 @@
         "recovery_rate": 1.1318483270415336
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (체결강도평균대비비율(69, 69) >= 2.6532 and 현재가N(59) <= 최저현재가(59, 59) * 1.006063 and 체결강도평균대비비율(69) >= 2.3404 and 구간저가대비현재가등락율(59) >= 1.1318):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "44715f596656379fdfe50d1f74c32d6d84a10812315a42d192944e3e1df62b0c",
       "steps": [
@@ -13766,7 +13766,7 @@
         "recovery_rate": 0.24723294242614913
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (체결강도평균대비비율(14, 14) >= 1.7143 and 현재가N(10) <= 최저현재가(10, 10) * 1.001920 and 체결강도평균대비비율(14) >= 1.4851 and 구간저가대비현재가등락율(10) >= 0.2472):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "54ec25a2b40cc4ed481b18ff263415c95f7a08394af7f2c954745b087b01d127",
       "steps": [
@@ -14102,7 +14102,7 @@
         "recovery_rate": 0.11113826786993591
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (체결강도평균대비비율(87, 87) >= 1.4254 and 현재가N(39) <= 최저현재가(39, 39) * 1.009614 and 체결강도평균대비비율(87) >= 2.2413 and 구간저가대비현재가등락율(39) >= 0.1111):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "f2b34f4e5646315313aeb63f8e4622c231ce0600f1059c43830af0b461bf69ae",
       "steps": [
@@ -14354,7 +14354,7 @@
         "rebound": 0.6025024183885156
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(25) <= -2.8519 and 저가미갱신지속틱수() >= 13 and 구간저가대비현재가등락율(25) >= 0.6025 and 거래대금평균대비비율(40) <= 0.8580):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "f20b7ad664660064d22894a9071baea573ea5609da3f5bc65baf39fc2d40521e",
       "steps": [
@@ -15054,7 +15054,7 @@
         "rebound": 0.20454323471504615
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(11) <= -3.5371 and 저가미갱신지속틱수() >= 14 and 구간저가대비현재가등락율(11) >= 0.2045 and 거래대금평균대비비율(15) <= 1.1379):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "22758c6adc5566304ea1b73aeab47833b366f54b1418da9838215cdf8d07eadc",
       "steps": [
@@ -15250,7 +15250,7 @@
         "rebound": 0.8901614265808818
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(38) <= -1.0261 and 저가미갱신지속틱수() >= 20 and 구간저가대비현재가등락율(38) >= 0.8902 and 거래대금평균대비비율(52) <= 0.9616):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "8267b732be69606e14d5efbddc931162a9d8afa83547c00d43291e1ea680bca3",
       "steps": [
@@ -15670,7 +15670,7 @@
         "rebound": 1.5666920388257797
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_B_3000_5000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (3000 <= 시가총액 < 5000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(84) <= -0.3409 and 저가미갱신지속틱수() >= 23 and 구간저가대비현재가등락율(84) >= 1.5667 and 거래대금평균대비비율(20) <= 0.4995):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "8f678a5e8a39027d62f463bee55650b3944b787c89c601ff26d8401ab9ab2fa9",
       "steps": [
@@ -16146,7 +16146,7 @@
         "rebound": 1.2980924544331793
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(11) <= -2.7705 and 저가미갱신지속틱수() >= 11 and 구간저가대비현재가등락율(11) >= 1.2981 and 거래대금평균대비비율(12) <= 0.3742):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "ca0c4cfff7a0e787a3e07a22d8403763e0b23f5924fe01bfa76609e010be274e",
       "steps": [
@@ -16174,7 +16174,7 @@
         "rebound": 0.1838067401474649
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(75) <= -0.3038 and 저가미갱신지속틱수() >= 6 and 구간저가대비현재가등락율(75) >= 0.1838 and 거래대금평균대비비율(48) <= 1.0511):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "2196b29e97b4ddf623aeb3a480dab66fa93efd24fbd1816fe162d4da387f0f05",
       "steps": [
@@ -16398,7 +16398,7 @@
         "rebound": 1.8950312299433834
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(81) <= -2.4964 and 저가미갱신지속틱수() >= 30 and 구간저가대비현재가등락율(81) >= 1.8950 and 거래대금평균대비비율(56) <= 0.2896):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "fbfd1db80caaf4a9c72293391660f5fb9ae40acd6f0df951c34a4b1f3c588d03",
       "steps": [
@@ -16958,7 +16958,7 @@
         "rebound": 0.38278633198419976
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_C_5000_10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (5000 <= 시가총액 < 10000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(8) <= -0.6236 and 저가미갱신지속틱수() >= 3 and 구간저가대비현재가등락율(8) >= 0.3828 and 거래대금평균대비비율(40) <= 0.1594):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "7514cfda2c757cd1f4ead61418798d3c88e37db02afa337570869cdcf159f59e",
       "steps": [
@@ -17042,7 +17042,7 @@
         "rebound": 0.3070896306716273
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(39) <= -2.2318 and 저가미갱신지속틱수() >= 28 and 구간저가대비현재가등락율(39) >= 0.3071 and 거래대금평균대비비율(22) <= 0.7581):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "7b5df0c5d72bab7867d28ada9bdd1833b46d3c69d3df80530f8915aa0f652472",
       "steps": [
@@ -17070,7 +17070,7 @@
         "rebound": 1.9785182021001986
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": true,
+      "selected_for_engine": false,
       "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(18) <= -3.4652 and 저가미갱신지속틱수() >= 5 and 구간저가대비현재가등락율(18) >= 1.9785 and 거래대금평균대비비율(89) <= 0.3350):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "3643854032106b1e177e0f627f0067bcd0b108bde99306be9569c83f41ca7e8f",
       "steps": [
@@ -17686,7 +17686,7 @@
         "rebound": 1.819334528630811
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(90) <= -0.4504 and 저가미갱신지속틱수() >= 23 and 구간저가대비현재가등락율(90) >= 1.8193 and 거래대금평균대비비율(12) <= 0.1397):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "b2af3f0572805435cc8072aa5bbdf7f843291e378d79ffd05f93f0c707cffc51",
       "steps": [
@@ -17854,7 +17854,7 @@
         "rebound": 0.06831412046754541
       },
       "schema": "stom.d3_mcap_state_candidate.v1",
-      "selected_for_engine": false,
+      "selected_for_engine": true,
       "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_D_GE10000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (10000 <= 시가총액):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(37) <= -3.7849 and 저가미갱신지속틱수() >= 19 and 구간저가대비현재가등락율(37) >= 0.0683 and 거래대금평균대비비율(85) <= 0.5303):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
       "source_sha256": "13fc6ec061ffe1db511f6f6ad503526fea25e3844b3d3ac1aa46e0a577a98e88",
       "steps": [
@@ -17923,7 +17923,7 @@
       "window_contract_sha256": "69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b"
     }
   ],
-  "created_at": "2026-08-15T06:33:39.721918+00:00",
+  "created_at": "2026-08-15T07:40:07.761623+00:00",
   "eligible_bands": [
     "MCAP_A_LT3000",
     "MCAP_B_3000_5000",

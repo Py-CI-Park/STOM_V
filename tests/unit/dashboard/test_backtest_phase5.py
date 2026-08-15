@@ -485,6 +485,7 @@ class TestRunRejectsMissingStrategy:
         body = client.post("/bt/run", json={
             "buy": "D3_DIRECT_BUY", "sell": "D3_DIRECT_SELL",
             "buy_code": buy_code, "sell_code": sell_code,
+            "source_authority": "research_direct_source",
             "start": 20250407, "end": 20250409, "timeframe": "tick",
         }).json()
         assert body["status"] == "ok", body
@@ -505,6 +506,15 @@ class TestRunRejectsMissingStrategy:
         }).json()
         assert body["status"] == "error"
         assert body["code"] == "source_pair_required"
+
+    def test_direct_source_requires_explicit_research_authority(self, client) -> None:
+        body = client.post("/bt/run", json={
+            "buy": "D3_DIRECT_BUY", "sell": "D3_DIRECT_SELL",
+            "buy_code": "매수 = True", "sell_code": "매도 = False",
+            "start": 20250407, "end": 20250409, "timeframe": "tick",
+        }).json()
+        assert body["status"] == "error"
+        assert body["code"] == "direct_source_not_authorized"
 
 
 class TestChildProcessEmitsUtf8:
