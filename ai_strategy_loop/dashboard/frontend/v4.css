@@ -2290,3 +2290,35 @@
   .rf16-family-grid { grid-template-columns: 1fr; }
   .rf16-heading label, .rf16-heading select { width: 100%; }
 }
+
+.re16-panel { margin: 12px 0; padding: 14px; border: 1px solid var(--line-1); border-radius: 14px; background: var(--surface-2); }
+.re16-heading { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.re16-heading > div > span { color: var(--teal); font-size: 9px; letter-spacing: .12em; }
+.re16-heading h2 { margin: 2px 0; font-size: 16px; }
+.re16-legend { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.re16-legend span, .re16-failure strong { padding: 2px 5px; border: 1px solid var(--line-1); border-radius: 5px; font-size: 8.5px; }
+.re16-legend .proven, .re16-failure.proven strong { border-color: var(--red); }
+.re16-legend .refuted, .re16-failure.refuted strong { border-color: var(--teal); }
+.re16-legend .fixed, .re16-failure.fixed strong { border-color: var(--blue); }
+.re16-legend .open, .re16-failure.open strong { border-color: var(--amber); }
+.re16-legend .limitation, .re16-failure.limitation strong { border-style: dashed; }
+.re16-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 7px; margin: 10px 0; }
+.re16-failure { padding: 9px; border: 1px solid var(--line-1); border-left-width: 4px; border-radius: 9px; background: var(--surface-1); }
+.re16-failure.proven { border-left-color: var(--red); }
+.re16-failure.refuted { border-left-color: var(--teal); }
+.re16-failure.fixed { border-left-color: var(--blue); }
+.re16-failure.open { border-left-color: var(--amber); }
+.re16-failure.limitation { border-left-style: dashed; }
+.re16-failure header { display: flex; justify-content: space-between; }
+.re16-failure h3 { margin: 7px 0; font-size: 11px; }
+.re16-failure button { margin: 2px; padding: 3px 5px; font-size: 9px; overflow-wrap: anywhere; }
+.re16-failure button[aria-pressed=\"true\"] { outline: 2px solid var(--teal); }
+.re16-inspector { padding: 10px; border: 1px solid var(--line-1); border-radius: 10px; background: var(--surface-1); }
+.re16-inspector h3 { margin: 0 0 8px; font-size: 12px; }
+.re16-evidence dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 6px; }
+.re16-evidence dl > div { min-width: 0; }
+.re16-evidence dt { color: var(--ink-3); font-size: 9px; }
+.re16-evidence dd { margin: 2px 0; font-size: 10px; overflow-wrap: anywhere; }
+.re16-evidence pre { max-height: 320px; overflow: auto; padding: 8px; border: 1px solid var(--line-1); border-radius: 7px; font-size: 9px; }
+.re16-evidence pre:focus-visible { outline: 2px solid var(--teal); }
+.re16-note { margin: 7px 0 0; color: var(--ink-3); font-size: 9.5px; }
