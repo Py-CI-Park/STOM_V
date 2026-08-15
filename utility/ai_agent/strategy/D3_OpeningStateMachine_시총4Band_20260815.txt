@@ -1,5 +1,5 @@
 ====================================================================================================
-D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_c6c1bd1b3b
+D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee
 # D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_A_LT3000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -18,7 +18,7 @@ elif not (시가총액 < 3000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간호가총잔량비율(86, 86) <= 0.1985 and 구간저가대비현재가등락율(5) >= 1.1772 and 체결강도평균대비비율(30) >= 1.1492):
+elif not (구간호가총잔량비율(58, 58) <= 0.1985 and 구간저가대비현재가등락율(5) >= 1.1772 and 체결강도평균대비비율(22) >= 1.1492):
     매수 = False
 
 if 매수:
@@ -26,7 +26,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_5c527b4711
+D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_7cc938d0ce
 # D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_A_LT3000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -45,7 +45,7 @@ elif not (시가총액 < 3000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간호가총잔량비율(20, 20) <= 0.4796 and 구간저가대비현재가등락율(32) >= 0.0527 and 체결강도평균대비비율(13) >= 1.9462):
+elif not (구간호가총잔량비율(16, 16) <= 0.4796 and 구간저가대비현재가등락율(32) >= 0.0527 and 체결강도평균대비비율(12) >= 1.9462):
     매수 = False
 
 if 매수:
@@ -53,7 +53,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_ABSORPTION_REVERSAL_MCAP_B_3000_5000_9f50d4e6e0
+D3_ABSORPTION_REVERSAL_MCAP_B_3000_5000_5c17e271ab
 # D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_B_3000_5000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -72,7 +72,7 @@ elif not (3000 <= 시가총액 < 5000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간호가총잔량비율(87, 87) <= 0.2683 and 구간저가대비현재가등락율(42) >= 1.3042 and 체결강도평균대비비율(81) >= 2.0749):
+elif not (구간호가총잔량비율(58, 58) <= 0.2683 and 구간저가대비현재가등락율(42) >= 1.3042 and 체결강도평균대비비율(54) >= 2.0749):
     매수 = False
 
 if 매수:
@@ -80,7 +80,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_ABSORPTION_REVERSAL_MCAP_B_3000_5000_b6b8131d62
+D3_ABSORPTION_REVERSAL_MCAP_B_3000_5000_87568ebd34
 # D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_B_3000_5000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -99,7 +99,7 @@ elif not (3000 <= 시가총액 < 5000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간호가총잔량비율(14, 14) <= 0.2031 and 구간저가대비현재가등락율(23) >= 0.1797 and 체결강도평균대비비율(13) >= 1.1553):
+elif not (구간호가총잔량비율(12, 12) <= 0.2031 and 구간저가대비현재가등락율(23) >= 0.1797 and 체결강도평균대비비율(11) >= 1.1553):
     매수 = False
 
 if 매수:
@@ -107,7 +107,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_ABSORPTION_REVERSAL_MCAP_C_5000_10000_6e9f5edb91
+D3_ABSORPTION_REVERSAL_MCAP_C_5000_10000_4704be8ce0
 # D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_C_5000_10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -126,7 +126,7 @@ elif not (5000 <= 시가총액 < 10000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간호가총잔량비율(25, 25) <= 0.3826 and 구간저가대비현재가등락율(13) >= 0.3485 and 체결강도평균대비비율(17) >= 2.2784):
+elif not (구간호가총잔량비율(19, 19) <= 0.3826 and 구간저가대비현재가등락율(13) >= 0.3485 and 체결강도평균대비비율(14) >= 2.2784):
     매수 = False
 
 if 매수:
@@ -134,7 +134,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_ABSORPTION_REVERSAL_MCAP_C_5000_10000_b29f113213
+D3_ABSORPTION_REVERSAL_MCAP_C_5000_10000_d269d9f1c0
 # D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_C_5000_10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -153,7 +153,7 @@ elif not (5000 <= 시가총액 < 10000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간호가총잔량비율(88, 88) <= 0.1871 and 구간저가대비현재가등락율(45) >= 1.4138 and 체결강도평균대비비율(37) >= 1.3502):
+elif not (구간호가총잔량비율(59, 59) <= 0.1871 and 구간저가대비현재가등락율(45) >= 1.4138 and 체결강도평균대비비율(27) >= 1.3502):
     매수 = False
 
 if 매수:
@@ -161,7 +161,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_ABSORPTION_REVERSAL_MCAP_D_GE10000_f4c0298453
+D3_ABSORPTION_REVERSAL_MCAP_D_GE10000_ef63503349
 # D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_D_GE10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -180,7 +180,7 @@ elif not (10000 <= 시가총액):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간호가총잔량비율(18, 18) <= 0.3833 and 구간저가대비현재가등락율(8) >= 0.4976 and 체결강도평균대비비율(77) >= 2.4645):
+elif not (구간호가총잔량비율(15, 15) <= 0.3833 and 구간저가대비현재가등락율(8) >= 0.4976 and 체결강도평균대비비율(52) >= 2.4645):
     매수 = False
 
 if 매수:
@@ -188,7 +188,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_ABSORPTION_REVERSAL_MCAP_D_GE10000_4f0ad57768
+D3_ABSORPTION_REVERSAL_MCAP_D_GE10000_c34f3c4d1e
 # D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_D_GE10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -207,7 +207,7 @@ elif not (10000 <= 시가총액):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간호가총잔량비율(79, 79) <= 0.1999 and 구간저가대비현재가등락율(45) >= 1.3262 and 체결강도평균대비비율(18) >= 2.3506):
+elif not (구간호가총잔량비율(53, 53) <= 0.1999 and 구간저가대비현재가등락율(45) >= 1.3262 and 체결강도평균대비비율(15) >= 2.3506):
     매수 = False
 
 if 매수:
@@ -215,7 +215,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_90038a45b4
+D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_cc12f7a023
 # D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_A_LT3000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -234,7 +234,7 @@ elif not (시가총액 < 3000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간고가대비현재가등락율(68) <= -1.4275 and 28 <= 고가미갱신지속틱수() <= 68 and 체결강도평균대비비율(23) >= 1.0918 and 거래대금평균대비비율(23) >= 3.3520):
+elif not (구간고가대비현재가등락율(36) <= -1.4275 and 28 <= 고가미갱신지속틱수() <= 36 and 체결강도평균대비비율(18) >= 1.0918 and 거래대금평균대비비율(18) >= 3.3520):
     매수 = False
 
 if 매수:
@@ -242,7 +242,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_a3da25c2ba
+D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_8432eb62ad
 # D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_A_LT3000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -261,7 +261,7 @@ elif not (시가총액 < 3000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간고가대비현재가등락율(117) <= -0.1386 and 2 <= 고가미갱신지속틱수() <= 117 and 체결강도평균대비비율(80) >= 2.1827 and 거래대금평균대비비율(80) >= 2.3484):
+elif not (구간고가대비현재가등락율(59) <= -0.1386 and 2 <= 고가미갱신지속틱수() <= 59 and 체결강도평균대비비율(54) >= 2.1827 and 거래대금평균대비비율(54) >= 2.3484):
     매수 = False
 
 if 매수:
@@ -269,7 +269,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FAILED_BREAKOUT_RETURN_MCAP_B_3000_5000_0a2b36f914
+D3_FAILED_BREAKOUT_RETURN_MCAP_B_3000_5000_751a7d3b41
 # D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_B_3000_5000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -288,7 +288,7 @@ elif not (3000 <= 시가총액 < 5000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간고가대비현재가등락율(103) <= -0.3785 and 30 <= 고가미갱신지속틱수() <= 103 and 체결강도평균대비비율(80) >= 1.0909 and 거래대금평균대비비율(80) >= 0.9389):
+elif not (구간고가대비현재가등락율(52) <= -0.3785 and 30 <= 고가미갱신지속틱수() <= 52 and 체결강도평균대비비율(54) >= 1.0909 and 거래대금평균대비비율(54) >= 0.9389):
     매수 = False
 
 if 매수:
@@ -296,7 +296,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FAILED_BREAKOUT_RETURN_MCAP_B_3000_5000_08040b0d28
+D3_FAILED_BREAKOUT_RETURN_MCAP_B_3000_5000_f093b8a2fb
 # D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_B_3000_5000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -315,7 +315,7 @@ elif not (3000 <= 시가총액 < 5000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간고가대비현재가등락율(40) <= -1.0766 and 4 <= 고가미갱신지속틱수() <= 40 and 체결강도평균대비비율(21) >= 1.8149 and 거래대금평균대비비율(21) >= 3.8928):
+elif not (구간고가대비현재가등락율(24) <= -1.0766 and 4 <= 고가미갱신지속틱수() <= 24 and 체결강도평균대비비율(17) >= 1.8149 and 거래대금평균대비비율(17) >= 3.8928):
     매수 = False
 
 if 매수:
@@ -323,7 +323,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FAILED_BREAKOUT_RETURN_MCAP_C_5000_10000_340b222993
+D3_FAILED_BREAKOUT_RETURN_MCAP_C_5000_10000_3b2c875549
 # D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_C_5000_10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -342,7 +342,7 @@ elif not (5000 <= 시가총액 < 10000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간고가대비현재가등락율(118) <= -0.7546 and 28 <= 고가미갱신지속틱수() <= 118 and 체결강도평균대비비율(31) >= 1.4085 and 거래대금평균대비비율(31) >= 1.8690):
+elif not (구간고가대비현재가등락율(60) <= -0.7546 and 28 <= 고가미갱신지속틱수() <= 60 and 체결강도평균대비비율(23) >= 1.4085 and 거래대금평균대비비율(23) >= 1.8690):
     매수 = False
 
 if 매수:
@@ -350,7 +350,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FAILED_BREAKOUT_RETURN_MCAP_C_5000_10000_d709849669
+D3_FAILED_BREAKOUT_RETURN_MCAP_C_5000_10000_34e12a2363
 # D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_C_5000_10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -369,7 +369,7 @@ elif not (5000 <= 시가총액 < 10000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간고가대비현재가등락율(11) <= -1.3453 and 2 <= 고가미갱신지속틱수() <= 11 and 체결강도평균대비비율(86) >= 2.0432 and 거래대금평균대비비율(86) >= 1.8122):
+elif not (구간고가대비현재가등락율(10) <= -1.3453 and 2 <= 고가미갱신지속틱수() <= 10 and 체결강도평균대비비율(58) >= 2.0432 and 거래대금평균대비비율(58) >= 1.8122):
     매수 = False
 
 if 매수:
@@ -377,7 +377,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FAILED_BREAKOUT_RETURN_MCAP_D_GE10000_5c1cd15494
+D3_FAILED_BREAKOUT_RETURN_MCAP_D_GE10000_ea61c165fc
 # D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_D_GE10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -396,7 +396,7 @@ elif not (10000 <= 시가총액):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간고가대비현재가등락율(118) <= -1.4880 and 10 <= 고가미갱신지속틱수() <= 118 and 체결강도평균대비비율(70) >= 2.0231 and 거래대금평균대비비율(70) >= 3.9470):
+elif not (구간고가대비현재가등락율(59) <= -1.4880 and 10 <= 고가미갱신지속틱수() <= 59 and 체결강도평균대비비율(48) >= 2.0231 and 거래대금평균대비비율(48) >= 3.9470):
     매수 = False
 
 if 매수:
@@ -404,7 +404,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FAILED_BREAKOUT_RETURN_MCAP_D_GE10000_cb9e5201ee
+D3_FAILED_BREAKOUT_RETURN_MCAP_D_GE10000_5f125370a6
 # D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_D_GE10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -423,7 +423,7 @@ elif not (10000 <= 시가총액):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (구간고가대비현재가등락율(21) <= -0.4139 and 28 <= 고가미갱신지속틱수() <= 21 and 체결강도평균대비비율(59) >= 1.1702 and 거래대금평균대비비율(59) >= 1.2393):
+elif not (구간고가대비현재가등락율(15) <= -0.4139 and 28 <= 고가미갱신지속틱수() <= 15 and 체결강도평균대비비율(41) >= 1.1702 and 거래대금평균대비비율(41) >= 1.2393):
     매수 = False
 
 if 매수:
@@ -431,7 +431,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_953fb92e35
+D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_f6320dda9d
 # D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_A_LT3000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -450,7 +450,7 @@ elif not (시가총액 < 3000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (변동성(12, 12) > 0 and 변동성(12, 12) <= 0.7355 and 변동성급증(12, 4.5272) and 현재가 > 최고현재가(50, 1) and 체결강도평균대비비율(90) >= 1.1893):
+elif not (변동성(11, 11) > 0 and 변동성(11, 11) <= 0.7355 and 변동성급증(11, 4.5272) and 현재가 > 최고현재가(50, 1) and 체결강도평균대비비율(60) >= 1.1893):
     매수 = False
 
 if 매수:
@@ -458,7 +458,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_8640a652c1
+D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_c467ae6049
 # D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_A_LT3000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -477,7 +477,7 @@ elif not (시가총액 < 3000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (변동성(85, 85) > 0 and 변동성(85, 85) <= 0.7781 and 변동성급증(85, 1.7192) and 현재가 > 최고현재가(14, 1) and 체결강도평균대비비율(32) >= 2.4053):
+elif not (변동성(57, 57) > 0 and 변동성(57, 57) <= 0.7781 and 변동성급증(57, 1.7192) and 현재가 > 최고현재가(14, 1) and 체결강도평균대비비율(23) >= 2.4053):
     매수 = False
 
 if 매수:
@@ -485,7 +485,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_B_3000_5000_e9234ed967
+D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_B_3000_5000_b6c0c32100
 # D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_B_3000_5000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -504,7 +504,7 @@ elif not (3000 <= 시가총액 < 5000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (변동성(44, 44) > 0 and 변동성(44, 44) <= 1.1343 and 변동성급증(44, 1.1315) and 현재가 > 최고현재가(26, 1) and 체결강도평균대비비율(73) >= 2.4593):
+elif not (변동성(31, 31) > 0 and 변동성(31, 31) <= 1.1343 and 변동성급증(31, 1.1315) and 현재가 > 최고현재가(26, 1) and 체결강도평균대비비율(50) >= 2.4593):
     매수 = False
 
 if 매수:
@@ -512,7 +512,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_B_3000_5000_801fee2a72
+D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_B_3000_5000_3c238bbb9c
 # D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_B_3000_5000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -531,7 +531,7 @@ elif not (3000 <= 시가총액 < 5000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (변동성(80, 80) > 0 and 변동성(80, 80) <= 0.1120 and 변동성급증(80, 3.1907) and 현재가 > 최고현재가(50, 1) and 체결강도평균대비비율(14) >= 1.1279):
+elif not (변동성(54, 54) > 0 and 변동성(54, 54) <= 0.1120 and 변동성급증(54, 3.1907) and 현재가 > 최고현재가(50, 1) and 체결강도평균대비비율(13) >= 1.1279):
     매수 = False
 
 if 매수:
@@ -539,7 +539,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_C_5000_10000_faa8ecb207
+D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_C_5000_10000_0799f795b2
 # D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_C_5000_10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -558,7 +558,7 @@ elif not (5000 <= 시가총액 < 10000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (변동성(49, 49) > 0 and 변동성(49, 49) <= 1.1976 and 변동성급증(49, 2.5585) and 현재가 > 최고현재가(17, 1) and 체결강도평균대비비율(19) >= 1.1003):
+elif not (변동성(34, 34) > 0 and 변동성(34, 34) <= 1.1976 and 변동성급증(34, 2.5585) and 현재가 > 최고현재가(17, 1) and 체결강도평균대비비율(15) >= 1.1003):
     매수 = False
 
 if 매수:
@@ -566,7 +566,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_C_5000_10000_d98632d92b
+D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_C_5000_10000_c246276038
 # D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_C_5000_10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -585,7 +585,7 @@ elif not (5000 <= 시가총액 < 10000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (변동성(11, 11) > 0 and 변동성(11, 11) <= 0.1328 and 변동성급증(11, 3.0265) and 현재가 > 최고현재가(58, 1) and 체결강도평균대비비율(90) >= 1.9790):
+elif not (변동성(10, 10) > 0 and 변동성(10, 10) <= 0.1328 and 변동성급증(10, 3.0265) and 현재가 > 최고현재가(58, 1) and 체결강도평균대비비율(60) >= 1.9790):
     매수 = False
 
 if 매수:
@@ -593,7 +593,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_D_GE10000_a2f177514a
+D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_D_GE10000_0a730ca5ac
 # D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_D_GE10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -612,7 +612,7 @@ elif not (10000 <= 시가총액):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (변동성(62, 62) > 0 and 변동성(62, 62) <= 0.4828 and 변동성급증(62, 4.4572) and 현재가 > 최고현재가(13, 1) and 체결강도평균대비비율(13) >= 1.1132):
+elif not (변동성(42, 42) > 0 and 변동성(42, 42) <= 0.4828 and 변동성급증(42, 4.4572) and 현재가 > 최고현재가(13, 1) and 체결강도평균대비비율(11) >= 1.1132):
     매수 = False
 
 if 매수:
@@ -620,7 +620,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_D_GE10000_86803c0be7
+D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_D_GE10000_5ce8895918
 # D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_D_GE10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -639,7 +639,7 @@ elif not (10000 <= 시가총액):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (변동성(67, 67) > 0 and 변동성(67, 67) <= 1.1785 and 변동성급증(67, 1.9924) and 현재가 > 최고현재가(60, 1) and 체결강도평균대비비율(86) >= 2.1428):
+elif not (변동성(46, 46) > 0 and 변동성(46, 46) <= 1.1785 and 변동성급증(46, 1.9924) and 현재가 > 최고현재가(60, 1) and 체결강도평균대비비율(58) >= 2.1428):
     매수 = False
 
 if 매수:
@@ -647,7 +647,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_aa8746fd42
+D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_0d4702a73a
 # D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_A_LT3000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -666,7 +666,7 @@ elif not (시가총액 < 3000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (체결강도평균대비비율(38, 38) >= 2.8345 and 현재가N(51) <= 최저현재가(51, 51) * 1.007319 and 체결강도평균대비비율(38) >= 1.6980 and 구간저가대비현재가등락율(51) >= 1.0656):
+elif not (체결강도평균대비비율(27, 27) >= 2.8345 and 현재가N(51) <= 최저현재가(51, 51) * 1.007319 and 체결강도평균대비비율(27) >= 1.6980 and 구간저가대비현재가등락율(51) >= 1.0656):
     매수 = False
 
 if 매수:
@@ -674,7 +674,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_fb3252a714
+D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_f3a20122f8
 # D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_A_LT3000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -693,7 +693,7 @@ elif not (시가총액 < 3000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (체결강도평균대비비율(68, 68) >= 1.1012 and 현재가N(6) <= 최저현재가(6, 6) * 1.005248 and 체결강도평균대비비율(68) >= 2.4542 and 구간저가대비현재가등락율(6) >= 0.0721):
+elif not (체결강도평균대비비율(47, 47) >= 1.1012 and 현재가N(6) <= 최저현재가(6, 6) * 1.005248 and 체결강도평균대비비율(47) >= 2.4542 and 구간저가대비현재가등락율(6) >= 0.0721):
     매수 = False
 
 if 매수:
@@ -701,7 +701,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FLOW_PRICE_DIVERGENCE_MCAP_B_3000_5000_9d7374a5db
+D3_FLOW_PRICE_DIVERGENCE_MCAP_B_3000_5000_b61a7c25cc
 # D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_B_3000_5000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -720,7 +720,7 @@ elif not (3000 <= 시가총액 < 5000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (체결강도평균대비비율(27, 27) >= 2.9672 and 현재가N(35) <= 최저현재가(35, 35) * 1.012114 and 체결강도평균대비비율(27) >= 2.0860 and 구간저가대비현재가등락율(35) >= 0.1774):
+elif not (체결강도평균대비비율(20, 20) >= 2.9672 and 현재가N(35) <= 최저현재가(35, 35) * 1.012114 and 체결강도평균대비비율(20) >= 2.0860 and 구간저가대비현재가등락율(35) >= 0.1774):
     매수 = False
 
 if 매수:
@@ -728,7 +728,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FLOW_PRICE_DIVERGENCE_MCAP_B_3000_5000_2eda2ded65
+D3_FLOW_PRICE_DIVERGENCE_MCAP_B_3000_5000_77653e5c33
 # D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_B_3000_5000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -747,7 +747,7 @@ elif not (3000 <= 시가총액 < 5000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (체결강도평균대비비율(85, 85) >= 1.0653 and 현재가N(14) <= 최저현재가(14, 14) * 1.000573 and 체결강도평균대비비율(85) >= 1.0447 and 구간저가대비현재가등락율(14) >= 0.8238):
+elif not (체결강도평균대비비율(57, 57) >= 1.0653 and 현재가N(14) <= 최저현재가(14, 14) * 1.000573 and 체결강도평균대비비율(57) >= 1.0447 and 구간저가대비현재가등락율(14) >= 0.8238):
     매수 = False
 
 if 매수:
@@ -755,7 +755,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FLOW_PRICE_DIVERGENCE_MCAP_C_5000_10000_c5721e157e
+D3_FLOW_PRICE_DIVERGENCE_MCAP_C_5000_10000_a553f05635
 # D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_C_5000_10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -774,7 +774,7 @@ elif not (5000 <= 시가총액 < 10000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (체결강도평균대비비율(57, 57) >= 2.6585 and 현재가N(28) <= 최저현재가(28, 28) * 1.013240 and 체결강도평균대비비율(57) >= 2.0974 and 구간저가대비현재가등락율(28) >= 1.1888):
+elif not (체결강도평균대비비율(40, 40) >= 2.6585 and 현재가N(28) <= 최저현재가(28, 28) * 1.013240 and 체결강도평균대비비율(40) >= 2.0974 and 구간저가대비현재가등락율(28) >= 1.1888):
     매수 = False
 
 if 매수:
@@ -782,7 +782,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FLOW_PRICE_DIVERGENCE_MCAP_C_5000_10000_a031dd72a4
+D3_FLOW_PRICE_DIVERGENCE_MCAP_C_5000_10000_da47d7b628
 # D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_C_5000_10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -801,7 +801,7 @@ elif not (5000 <= 시가총액 < 10000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (체결강도평균대비비율(17, 17) >= 1.3585 and 현재가N(51) <= 최저현재가(51, 51) * 1.000812 and 체결강도평균대비비율(17) >= 1.2916 and 구간저가대비현재가등락율(51) >= 0.1272):
+elif not (체결강도평균대비비율(14, 14) >= 1.3585 and 현재가N(51) <= 최저현재가(51, 51) * 1.000812 and 체결강도평균대비비율(14) >= 1.2916 and 구간저가대비현재가등락율(51) >= 0.1272):
     매수 = False
 
 if 매수:
@@ -809,7 +809,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FLOW_PRICE_DIVERGENCE_MCAP_D_GE10000_5905fd493f
+D3_FLOW_PRICE_DIVERGENCE_MCAP_D_GE10000_31ece2aeb7
 # D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_D_GE10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -828,7 +828,7 @@ elif not (10000 <= 시가총액):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (체결강도평균대비비율(69, 69) >= 2.6532 and 현재가N(59) <= 최저현재가(59, 59) * 1.006063 and 체결강도평균대비비율(69) >= 2.3404 and 구간저가대비현재가등락율(59) >= 1.1318):
+elif not (체결강도평균대비비율(47, 47) >= 2.6532 and 현재가N(59) <= 최저현재가(59, 59) * 1.006063 and 체결강도평균대비비율(47) >= 2.3404 and 구간저가대비현재가등락율(59) >= 1.1318):
     매수 = False
 
 if 매수:
@@ -836,7 +836,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_FLOW_PRICE_DIVERGENCE_MCAP_D_GE10000_02d682e1c9
+D3_FLOW_PRICE_DIVERGENCE_MCAP_D_GE10000_13098c1e61
 # D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_D_GE10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -855,7 +855,7 @@ elif not (10000 <= 시가총액):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (체결강도평균대비비율(14, 14) >= 1.7143 and 현재가N(10) <= 최저현재가(10, 10) * 1.001920 and 체결강도평균대비비율(14) >= 1.4851 and 구간저가대비현재가등락율(10) >= 0.2472):
+elif not (체결강도평균대비비율(12, 12) >= 1.7143 and 현재가N(10) <= 최저현재가(10, 10) * 1.001920 and 체결강도평균대비비율(12) >= 1.4851 and 구간저가대비현재가등락율(10) >= 0.2472):
     매수 = False
 
 if 매수:
@@ -863,7 +863,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_db3e6c3626
+D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_329183a66b
 # D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_A_LT3000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -882,7 +882,7 @@ elif not (시가총액 < 3000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (등락율N(89) <= -0.3852 and 저가미갱신지속틱수() >= 7 and 구간저가대비현재가등락율(89) >= 1.1596 and 거래대금평균대비비율(77) <= 0.3503):
+elif not (등락율N(60) <= -0.3852 and 저가미갱신지속틱수() >= 7 and 구간저가대비현재가등락율(60) >= 1.1596 and 거래대금평균대비비율(52) <= 0.3503):
     매수 = False
 
 if 매수:
@@ -890,7 +890,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_0038c0bde6
+D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_7c32ce3533
 # D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_A_LT3000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -909,7 +909,7 @@ elif not (시가총액 < 3000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (등락율N(11) <= -3.5371 and 저가미갱신지속틱수() >= 14 and 구간저가대비현재가등락율(11) >= 0.2045 and 거래대금평균대비비율(15) <= 1.1379):
+elif not (등락율N(9) <= -3.5371 and 저가미갱신지속틱수() >= 14 and 구간저가대비현재가등락율(9) >= 0.2045 and 거래대금평균대비비율(13) <= 1.1379):
     매수 = False
 
 if 매수:
@@ -917,7 +917,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_B_3000_5000_6500a3daa3
+D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_B_3000_5000_c2bb54f0ee
 # D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_B_3000_5000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -936,7 +936,7 @@ elif not (3000 <= 시가총액 < 5000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (등락율N(6) <= -3.9039 and 저가미갱신지속틱수() >= 2 and 구간저가대비현재가등락율(6) >= 1.7259 and 거래대금평균대비비율(74) <= 0.7078):
+elif not (등락율N(6) <= -3.9039 and 저가미갱신지속틱수() >= 2 and 구간저가대비현재가등락율(6) >= 1.7259 and 거래대금평균대비비율(50) <= 0.7078):
     매수 = False
 
 if 매수:
@@ -944,7 +944,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_B_3000_5000_695c3c3ed6
+D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_B_3000_5000_26614d570b
 # D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_B_3000_5000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -963,7 +963,7 @@ elif not (3000 <= 시가총액 < 5000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (등락율N(84) <= -0.3409 and 저가미갱신지속틱수() >= 23 and 구간저가대비현재가등락율(84) >= 1.5667 and 거래대금평균대비비율(20) <= 0.4995):
+elif not (등락율N(56) <= -0.3409 and 저가미갱신지속틱수() >= 23 and 구간저가대비현재가등락율(56) >= 1.5667 and 거래대금평균대비비율(16) <= 0.4995):
     매수 = False
 
 if 매수:
@@ -971,7 +971,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_C_5000_10000_beb3da1f1b
+D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_C_5000_10000_4cda0f334a
 # D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_C_5000_10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -990,7 +990,7 @@ elif not (5000 <= 시가총액 < 10000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (등락율N(81) <= -2.4964 and 저가미갱신지속틱수() >= 30 and 구간저가대비현재가등락율(81) >= 1.8950 and 거래대금평균대비비율(56) <= 0.2896):
+elif not (등락율N(54) <= -2.4964 and 저가미갱신지속틱수() >= 30 and 구간저가대비현재가등락율(54) >= 1.8950 and 거래대금평균대비비율(39) <= 0.2896):
     매수 = False
 
 if 매수:
@@ -998,7 +998,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_C_5000_10000_43c6d76919
+D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_C_5000_10000_dfda17f04f
 # D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_C_5000_10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -1017,7 +1017,7 @@ elif not (5000 <= 시가총액 < 10000):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (등락율N(8) <= -0.6236 and 저가미갱신지속틱수() >= 3 and 구간저가대비현재가등락율(8) >= 0.3828 and 거래대금평균대비비율(40) <= 0.1594):
+elif not (등락율N(7) <= -0.6236 and 저가미갱신지속틱수() >= 3 and 구간저가대비현재가등락율(7) >= 0.3828 and 거래대금평균대비비율(29) <= 0.1594):
     매수 = False
 
 if 매수:
@@ -1025,7 +1025,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_D_GE10000_2d098f44aa
+D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_D_GE10000_f80d263235
 # D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_D_GE10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -1044,7 +1044,7 @@ elif not (10000 <= 시가총액):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (등락율N(90) <= -0.4504 and 저가미갱신지속틱수() >= 23 and 구간저가대비현재가등락율(90) >= 1.8193 and 거래대금평균대비비율(12) <= 0.1397):
+elif not (등락율N(60) <= -0.4504 and 저가미갱신지속틱수() >= 23 and 구간저가대비현재가등락율(60) >= 1.8193 and 거래대금평균대비비율(11) <= 0.1397):
     매수 = False
 
 if 매수:
@@ -1052,7 +1052,7 @@ if 매수:
 
 
 ====================================================================================================
-D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_D_GE10000_5d5d709abb
+D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_D_GE10000_dde9422b12
 # D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_D_GE10000
 # window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
 # existing DB development only · OOS/자동채택/실전 권한 없음
@@ -1071,7 +1071,7 @@ elif not (10000 <= 시가총액):
     매수 = False
 elif not (90000 <= 시분초 < 93000):
     매수 = False
-elif not (등락율N(37) <= -3.7849 and 저가미갱신지속틱수() >= 19 and 구간저가대비현재가등락율(37) >= 0.0683 and 거래대금평균대비비율(85) <= 0.5303):
+elif not (등락율N(25) <= -3.7849 and 저가미갱신지속틱수() >= 19 and 구간저가대비현재가등락율(25) >= 0.0683 and 거래대금평균대비비율(57) <= 0.5303):
     매수 = False
 
 if 매수:
