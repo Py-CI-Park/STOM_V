@@ -2322,3 +2322,38 @@
 .re16-evidence pre { max-height: 320px; overflow: auto; padding: 8px; border: 1px solid var(--line-1); border-radius: 7px; font-size: 9px; }
 .re16-evidence pre:focus-visible { outline: 2px solid var(--teal); }
 .re16-note { margin: 7px 0 0; color: var(--ink-3); font-size: 9.5px; }
+
+.rm16-panel { margin: 12px 0; padding: 14px; border: 1px solid var(--line-1); border-radius: 14px; background: var(--surface-2); }
+.rm16-panel.danger { border-color: var(--red); }
+.rm16-heading { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.rm16-heading span { color: var(--teal); font-size: 9px; letter-spacing: .12em; }
+.rm16-heading h2 { margin: 2px 0; font-size: 16px; }
+.rm16-heading > strong { color: var(--amber); font-size: 10px; }
+.rm16-band-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin: 10px 0; }
+.rm16-band-grid article { min-width: 0; padding: 9px; border: 1px solid var(--line-1); border-radius: 9px; background: var(--surface-1); }
+.rm16-band-grid article > span { font-size: 8px; color: var(--ink-3); overflow-wrap: anywhere; }
+.rm16-band-grid h3 { margin: 4px 0; font-size: 14px; }
+.rm16-band-grid dl, .rm16-health dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+.rm16-band-grid dl > div, .rm16-health dl > div { min-width: 0; }
+.rm16-band-grid dt, .rm16-health dt { color: var(--ink-3); font-size: 8px; }
+.rm16-band-grid dd, .rm16-health dd { margin: 1px 0; font-size: 9.5px; overflow-wrap: anywhere; }
+.rm16-two-col { display: grid; grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr); gap: 8px; }
+.rm16-native, .rm16-health, .rm16-designer { min-width: 0; padding: 10px; border: 1px solid var(--line-1); border-radius: 9px; background: var(--surface-1); }
+.rm16-native h3, .rm16-health h3, .rm16-designer h3 { margin: 0 0 7px; font-size: 11px; }
+.rm16-native table { width: 100%; border-collapse: collapse; font-size: 9px; }
+.rm16-native th, .rm16-native td { padding: 4px; border-bottom: 1px solid var(--line-1); text-align: left; }
+.rm16-native p, .rm16-designer p { color: var(--ink-3); font-size: 9px; }
+.rm16-designer { margin-top: 8px; }
+.rm16-designer > div { display: grid; grid-template-columns: minmax(190px, 2fr) repeat(3, minmax(100px, 1fr)); gap: 6px; }
+.rm16-designer label { display: grid; gap: 3px; font-size: 9px; color: var(--ink-3); }
+.rm16-designer input, .rm16-designer select { width: 100%; min-width: 0; }
+.rm16-designer button { margin-top: 8px; }
+.rm16-designer output { display: block; margin-top: 6px; overflow-wrap: anywhere; color: var(--teal); font-size: 9px; }
+@media (max-width: 900px) {
+  .rm16-band-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rm16-two-col { grid-template-columns: 1fr; }
+  .rm16-designer > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 460px) {
+  .rm16-band-grid, .rm16-designer > div { grid-template-columns: 1fr; }
+}
