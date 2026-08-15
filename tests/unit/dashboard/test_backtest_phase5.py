@@ -64,7 +64,11 @@ def client(monkeypatch, tmp_path: Path) -> TestClient:
 
 
 def _spec(**kw):
-    base = dict(buy="테스트매수", sell="테스트매도", start=20250407, end=20250409, timeframe="min")
+    base = dict(
+        buy="테스트매수", sell="테스트매도",
+        buy_code="매수 = True", sell_code="매도 = False",
+        start=20250407, end=20250409, timeframe="min",
+    )
     base.update(kw)
     return BacktestJobSpec(**base)
 
