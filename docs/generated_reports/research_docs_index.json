@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-15T08:35:13.668779+00:00",
-  "source_fingerprint": "e557171a735782790679f398926c3440eedfb9f7c6a4b5e4a97bf61499ff643d",
-  "count": 1061,
+  "generated_at": "2026-08-15T10:39:09.301485+00:00",
+  "source_fingerprint": "9cde7eb9a6435bcb565b32c2feec1ec06a0a90ac16932624872b13ce2c182765",
+  "count": 1062,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7071,15 +7071,22 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-15_D3_시총4Band_OpeningStateMachine_최종결과.md",
       "title": "D3 시총 4Band Opening State Machine 최종결과 (2026-08-15)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-15T08:34:31.136913+00:00",
+      "updated_at": "2026-08-15T10:34:36.244852+00:00",
       "size": 2882
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-15_v5.16_D3_전체계획_실행등록부.md",
       "title": "v5.16 시총분할 D3 전체계획 실행등록부 (2026-08-15)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-15T08:34:38.780420+00:00",
-      "size": 3856
+      "updated_at": "2026-08-15T10:38:31.542018+00:00",
+      "size": 3892
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-15_v5.16_전체로드맵_C1_최종보고.md",
+      "title": "v5.16 전체 연구 로드맵 C1 최종보고 (2026-08-15)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-15T10:38:23.212364+00:00",
+      "size": 6588
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-15_기존DB_OpeningStateMachine_D3_사전등록.md",
@@ -7190,8 +7197,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-15T08:34:45.924551+00:00",
-      "size": 13126
+      "updated_at": "2026-08-15T10:38:37.977306+00:00",
+      "size": 13265
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
