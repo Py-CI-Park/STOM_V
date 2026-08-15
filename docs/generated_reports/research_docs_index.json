@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-15T06:31:03.126123+00:00",
-  "source_fingerprint": "4952c7fcda680f0140dc1c02df6cdc4bb3f923e6f71c23e81c0740b20d35904a",
-  "count": 1060,
+  "generated_at": "2026-08-15T08:35:13.668779+00:00",
+  "source_fingerprint": "e557171a735782790679f398926c3440eedfb9f7c6a4b5e4a97bf61499ff643d",
+  "count": 1061,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7064,21 +7064,28 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-15_C0_기존DB_시가총액4band_Census_결과.md",
       "title": "C0 기존 DB 시가총액 4Band Census 결과 (2026-08-15)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-15T06:25:56.322361+00:00",
+      "updated_at": "2026-08-15T06:32:10.564947+00:00",
       "size": 2002
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-15_D3_시총4Band_OpeningStateMachine_최종결과.md",
+      "title": "D3 시총 4Band Opening State Machine 최종결과 (2026-08-15)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-15T08:34:31.136913+00:00",
+      "size": 2882
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-15_v5.16_D3_전체계획_실행등록부.md",
       "title": "v5.16 시총분할 D3 전체계획 실행등록부 (2026-08-15)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-15T06:30:25.289949+00:00",
-      "size": 3761
+      "updated_at": "2026-08-15T08:34:38.780420+00:00",
+      "size": 3856
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-15_기존DB_OpeningStateMachine_D3_사전등록.md",
       "title": "기존 DB Opening State Machine D3 사전등록 (2026-08-15)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-15T06:30:18.276962+00:00",
+      "updated_at": "2026-08-15T06:32:10.575118+00:00",
       "size": 2342
     },
     {
@@ -7183,8 +7190,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-15T06:30:32.520633+00:00",
-      "size": 12952
+      "updated_at": "2026-08-15T08:34:45.924551+00:00",
+      "size": 13126
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
