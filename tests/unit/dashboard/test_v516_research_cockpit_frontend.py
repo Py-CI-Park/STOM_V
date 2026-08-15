@@ -52,3 +52,26 @@ def test_program_overview_css_has_responsive_and_reduced_motion_contracts():
     assert "@media (max-width: 430px)" in css
     assert "@media (prefers-reduced-motion: reduce)" in css
     assert "minmax(0, 1fr)" in css
+
+
+def test_family_explorer_and_fold_heatmap_are_v4_read_only_surfaces():
+    research = _source("v4-research.jsx")
+    source = _source("v4-research-family.jsx")
+    assert 'import { V516FamilyFoldExplorer } from "./v4-research-family.jsx"' in research
+    assert "<V516FamilyFoldExplorer baseUrl={baseUrl}" in research
+    assert "/research-program/families" in source
+    assert "/research-program/folds" in source
+    assert "Development fold evidence · OOS 아님" in source
+    assert "표본부족" in source
+    assert "색상과 함께 상태 텍스트" in source
+    assert "fetch(" in source
+    assert "method:" not in source
+
+
+def test_family_fold_css_has_keyboard_scroll_and_color_independent_patterns():
+    css = _source("v4.css")
+    source = _source("v4-research-family.jsx")
+    assert 'tabIndex={0}' in source
+    assert ".rf16-fold-scroll:focus-visible" in css
+    assert "repeating-linear-gradient" in css
+    assert ".rf16-cell.insufficient" in css
