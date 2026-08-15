@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-15T06:25:06.221358+00:00",
-  "source_fingerprint": "6b03341b566fccde6091e090a03021c4c65911b9c50123b802228eab0cddc963",
-  "count": 1059,
+  "generated_at": "2026-08-15T06:31:03.126123+00:00",
+  "source_fingerprint": "4952c7fcda680f0140dc1c02df6cdc4bb3f923e6f71c23e81c0740b20d35904a",
+  "count": 1060,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7064,15 +7064,22 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-15_C0_기존DB_시가총액4band_Census_결과.md",
       "title": "C0 기존 DB 시가총액 4Band Census 결과 (2026-08-15)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-15T06:24:08.529693+00:00",
+      "updated_at": "2026-08-15T06:25:56.322361+00:00",
       "size": 2002
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-15_v5.16_D3_전체계획_실행등록부.md",
       "title": "v5.16 시총분할 D3 전체계획 실행등록부 (2026-08-15)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-15T06:24:21.501202+00:00",
-      "size": 3715
+      "updated_at": "2026-08-15T06:30:25.289949+00:00",
+      "size": 3761
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-15_기존DB_OpeningStateMachine_D3_사전등록.md",
+      "title": "기존 DB Opening State Machine D3 사전등록 (2026-08-15)",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-15T06:30:18.276962+00:00",
+      "size": 2342
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-15_기존DB_시가총액분할_상태전이연구와_v5.16_재출발_마스터플랜.md",
@@ -7176,8 +7183,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-15T06:24:29.109946+00:00",
-      "size": 12807
+      "updated_at": "2026-08-15T06:30:32.520633+00:00",
+      "size": 12952
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
