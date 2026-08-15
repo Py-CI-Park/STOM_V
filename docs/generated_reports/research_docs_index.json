@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-15T05:10:21.215275+00:00",
-  "source_fingerprint": "a06f8f0c83eb1486083b3b3f79178374bfba49221d684d8f74a68be883972705",
+  "generated_at": "2026-08-15T05:23:34.411958+00:00",
+  "source_fingerprint": "ea588ead32d7ec7af74b49135073c626ba6d706fe25bee4b416ce130638d35b7",
   "count": 1058,
   "docs": [
     {
@@ -7064,15 +7064,15 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-15_v5.16_D3_전체계획_실행등록부.md",
       "title": "v5.16 시총분할 D3 전체계획 실행등록부 (2026-08-15)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-15T05:09:44.964757+00:00",
-      "size": 3568
+      "updated_at": "2026-08-15T05:12:10.139115+00:00",
+      "size": 3586
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-15_기존DB_시가총액분할_상태전이연구와_v5.16_재출발_마스터플랜.md",
       "title": "기존 DB 시가총액 분할·상태전이 연구와 Dashboard v5.16 재출발 마스터플랜 (2026-08-15)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-15T05:09:24.857253+00:00",
-      "size": 25602
+      "updated_at": "2026-08-15T05:12:00.090178+00:00",
+      "size": 25900
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
