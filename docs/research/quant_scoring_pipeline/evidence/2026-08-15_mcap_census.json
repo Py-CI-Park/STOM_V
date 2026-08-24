@@ -1,0 +1,788 @@
+{
+  "authority": "existing_db_development_no_oos_no_adoption",
+  "bands": [
+    {
+      "avg_mcap": 1589.2919215397787,
+      "band_id": "MCAP_A_LT3000",
+      "buckets": [
+        {
+          "days": 951,
+          "full_bucket": true,
+          "max_time": "090459",
+          "min_time": "090000",
+          "minute": 540,
+          "moneytop_code_days": 22310,
+          "rows": 6442202,
+          "symbols": 1844,
+          "time": "090000"
+        },
+        {
+          "days": 951,
+          "full_bucket": true,
+          "max_time": "090959",
+          "min_time": "090500",
+          "minute": 545,
+          "moneytop_code_days": 16763,
+          "rows": 7169470,
+          "symbols": 1730,
+          "time": "090500"
+        },
+        {
+          "days": 951,
+          "full_bucket": true,
+          "max_time": "091459",
+          "min_time": "091000",
+          "minute": 550,
+          "moneytop_code_days": 16094,
+          "rows": 7177343,
+          "symbols": 1699,
+          "time": "091000"
+        },
+        {
+          "days": 951,
+          "full_bucket": true,
+          "max_time": "091959",
+          "min_time": "091500",
+          "minute": 555,
+          "moneytop_code_days": 15689,
+          "rows": 7137010,
+          "symbols": 1684,
+          "time": "091500"
+        },
+        {
+          "days": 950,
+          "full_bucket": true,
+          "max_time": "092459",
+          "min_time": "092000",
+          "minute": 560,
+          "moneytop_code_days": 15492,
+          "rows": 7084398,
+          "symbols": 1667,
+          "time": "092000"
+        },
+        {
+          "days": 950,
+          "full_bucket": true,
+          "max_time": "092959",
+          "min_time": "092500",
+          "minute": 565,
+          "moneytop_code_days": 15715,
+          "rows": 7036281,
+          "symbols": 1674,
+          "time": "092500"
+        },
+        {
+          "days": 848,
+          "full_bucket": false,
+          "max_time": "093001",
+          "min_time": "093000",
+          "minute": 570,
+          "moneytop_code_days": 11077,
+          "rows": 17104,
+          "symbols": 1580,
+          "time": "093000"
+        },
+        {
+          "days": 1,
+          "full_bucket": false,
+          "max_time": "100459",
+          "min_time": "100003",
+          "minute": 600,
+          "moneytop_code_days": 26,
+          "rows": 6402,
+          "symbols": 26,
+          "time": "100000"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "100959",
+          "min_time": "100500",
+          "minute": 605,
+          "moneytop_code_days": 21,
+          "rows": 7722,
+          "symbols": 21,
+          "time": "100500"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "101459",
+          "min_time": "101000",
+          "minute": 610,
+          "moneytop_code_days": 21,
+          "rows": 7448,
+          "symbols": 21,
+          "time": "101000"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "101959",
+          "min_time": "101500",
+          "minute": 615,
+          "moneytop_code_days": 20,
+          "rows": 7566,
+          "symbols": 20,
+          "time": "101500"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "102459",
+          "min_time": "102000",
+          "minute": 620,
+          "moneytop_code_days": 19,
+          "rows": 7407,
+          "symbols": 19,
+          "time": "102000"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "102959",
+          "min_time": "102500",
+          "minute": 625,
+          "moneytop_code_days": 19,
+          "rows": 7179,
+          "symbols": 19,
+          "time": "102500"
+        },
+        {
+          "days": 1,
+          "full_bucket": false,
+          "max_time": "103000",
+          "min_time": "103000",
+          "minute": 630,
+          "moneytop_code_days": 16,
+          "rows": 22,
+          "symbols": 16,
+          "time": "103000"
+        }
+      ],
+      "days": 952,
+      "first_index": 20220323090002,
+      "intersection_code_days": 26292,
+      "last_index": 20260227093000,
+      "max_mcap": 2999.0,
+      "max_time": "103000",
+      "min_mcap": 100.0,
+      "min_time": "090000",
+      "rows": 42107554,
+      "symbols": 1902,
+      "verdict": "CENSUS_PASS"
+    },
+    {
+      "avg_mcap": 3880.6044393170105,
+      "band_id": "MCAP_B_3000_5000",
+      "buckets": [
+        {
+          "days": 950,
+          "full_bucket": true,
+          "max_time": "090459",
+          "min_time": "090000",
+          "minute": 540,
+          "moneytop_code_days": 8153,
+          "rows": 2310357,
+          "symbols": 744,
+          "time": "090000"
+        },
+        {
+          "days": 947,
+          "full_bucket": true,
+          "max_time": "090959",
+          "min_time": "090500",
+          "minute": 545,
+          "moneytop_code_days": 6062,
+          "rows": 2486293,
+          "symbols": 677,
+          "time": "090500"
+        },
+        {
+          "days": 948,
+          "full_bucket": true,
+          "max_time": "091459",
+          "min_time": "091000",
+          "minute": 550,
+          "moneytop_code_days": 5840,
+          "rows": 2467465,
+          "symbols": 659,
+          "time": "091000"
+        },
+        {
+          "days": 946,
+          "full_bucket": true,
+          "max_time": "091959",
+          "min_time": "091500",
+          "minute": 555,
+          "moneytop_code_days": 5580,
+          "rows": 2449812,
+          "symbols": 653,
+          "time": "091500"
+        },
+        {
+          "days": 944,
+          "full_bucket": true,
+          "max_time": "092459",
+          "min_time": "092000",
+          "minute": 560,
+          "moneytop_code_days": 5472,
+          "rows": 2427082,
+          "symbols": 649,
+          "time": "092000"
+        },
+        {
+          "days": 946,
+          "full_bucket": true,
+          "max_time": "092959",
+          "min_time": "092500",
+          "minute": 565,
+          "moneytop_code_days": 5529,
+          "rows": 2408424,
+          "symbols": 650,
+          "time": "092500"
+        },
+        {
+          "days": 812,
+          "full_bucket": false,
+          "max_time": "093001",
+          "min_time": "093000",
+          "minute": 570,
+          "moneytop_code_days": 3707,
+          "rows": 5792,
+          "symbols": 594,
+          "time": "093000"
+        },
+        {
+          "days": 1,
+          "full_bucket": false,
+          "max_time": "100459",
+          "min_time": "100003",
+          "minute": 600,
+          "moneytop_code_days": 12,
+          "rows": 3009,
+          "symbols": 12,
+          "time": "100000"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "100959",
+          "min_time": "100500",
+          "minute": 605,
+          "moneytop_code_days": 11,
+          "rows": 3064,
+          "symbols": 11,
+          "time": "100500"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "101459",
+          "min_time": "101000",
+          "minute": 610,
+          "moneytop_code_days": 7,
+          "rows": 3161,
+          "symbols": 7,
+          "time": "101000"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "101959",
+          "min_time": "101500",
+          "minute": 615,
+          "moneytop_code_days": 7,
+          "rows": 3109,
+          "symbols": 7,
+          "time": "101500"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "102459",
+          "min_time": "102000",
+          "minute": 620,
+          "moneytop_code_days": 7,
+          "rows": 2831,
+          "symbols": 7,
+          "time": "102000"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "102959",
+          "min_time": "102500",
+          "minute": 625,
+          "moneytop_code_days": 7,
+          "rows": 3049,
+          "symbols": 7,
+          "time": "102500"
+        },
+        {
+          "days": 1,
+          "full_bucket": false,
+          "max_time": "103000",
+          "min_time": "103000",
+          "minute": 630,
+          "moneytop_code_days": 7,
+          "rows": 10,
+          "symbols": 7,
+          "time": "103000"
+        }
+      ],
+      "days": 952,
+      "first_index": 20220323090002,
+      "intersection_code_days": 9650,
+      "last_index": 20260227093000,
+      "max_mcap": 4999.0,
+      "max_time": "103000",
+      "min_mcap": 3000.0,
+      "min_time": "090000",
+      "rows": 14573458,
+      "symbols": 804,
+      "verdict": "CENSUS_PASS"
+    },
+    {
+      "avg_mcap": 7099.3396273983635,
+      "band_id": "MCAP_C_5000_10000",
+      "buckets": [
+        {
+          "days": 950,
+          "full_bucket": true,
+          "max_time": "090459",
+          "min_time": "090000",
+          "minute": 540,
+          "moneytop_code_days": 8422,
+          "rows": 2470295,
+          "symbols": 568,
+          "time": "090000"
+        },
+        {
+          "days": 939,
+          "full_bucket": true,
+          "max_time": "090959",
+          "min_time": "090500",
+          "minute": 545,
+          "moneytop_code_days": 6108,
+          "rows": 2620879,
+          "symbols": 525,
+          "time": "090500"
+        },
+        {
+          "days": 941,
+          "full_bucket": true,
+          "max_time": "091459",
+          "min_time": "091000",
+          "minute": 550,
+          "moneytop_code_days": 5857,
+          "rows": 2599412,
+          "symbols": 512,
+          "time": "091000"
+        },
+        {
+          "days": 944,
+          "full_bucket": true,
+          "max_time": "091959",
+          "min_time": "091500",
+          "minute": 555,
+          "moneytop_code_days": 5622,
+          "rows": 2574691,
+          "symbols": 510,
+          "time": "091500"
+        },
+        {
+          "days": 942,
+          "full_bucket": true,
+          "max_time": "092459",
+          "min_time": "092000",
+          "minute": 560,
+          "moneytop_code_days": 5528,
+          "rows": 2553008,
+          "symbols": 507,
+          "time": "092000"
+        },
+        {
+          "days": 941,
+          "full_bucket": true,
+          "max_time": "092959",
+          "min_time": "092500",
+          "minute": 565,
+          "moneytop_code_days": 5639,
+          "rows": 2532956,
+          "symbols": 519,
+          "time": "092500"
+        },
+        {
+          "days": 803,
+          "full_bucket": false,
+          "max_time": "093001",
+          "min_time": "093000",
+          "minute": 570,
+          "moneytop_code_days": 3885,
+          "rows": 6151,
+          "symbols": 483,
+          "time": "093000"
+        },
+        {
+          "days": 1,
+          "full_bucket": false,
+          "max_time": "100459",
+          "min_time": "100013",
+          "minute": 600,
+          "moneytop_code_days": 2,
+          "rows": 437,
+          "symbols": 2,
+          "time": "100000"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "100959",
+          "min_time": "100500",
+          "minute": 605,
+          "moneytop_code_days": 3,
+          "rows": 716,
+          "symbols": 3,
+          "time": "100500"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "101459",
+          "min_time": "101000",
+          "minute": 610,
+          "moneytop_code_days": 3,
+          "rows": 900,
+          "symbols": 3,
+          "time": "101000"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "101959",
+          "min_time": "101500",
+          "minute": 615,
+          "moneytop_code_days": 3,
+          "rows": 900,
+          "symbols": 3,
+          "time": "101500"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "102459",
+          "min_time": "102000",
+          "minute": 620,
+          "moneytop_code_days": 3,
+          "rows": 896,
+          "symbols": 3,
+          "time": "102000"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "102959",
+          "min_time": "102500",
+          "minute": 625,
+          "moneytop_code_days": 3,
+          "rows": 900,
+          "symbols": 3,
+          "time": "102500"
+        },
+        {
+          "days": 1,
+          "full_bucket": false,
+          "max_time": "103000",
+          "min_time": "103000",
+          "minute": 630,
+          "moneytop_code_days": 3,
+          "rows": 3,
+          "symbols": 3,
+          "time": "103000"
+        }
+      ],
+      "days": 952,
+      "first_index": 20220323090002,
+      "intersection_code_days": 9882,
+      "last_index": 20260227093000,
+      "max_mcap": 9999.0,
+      "max_time": "103000",
+      "min_mcap": 5000.0,
+      "min_time": "090000",
+      "rows": 15362144,
+      "symbols": 600,
+      "verdict": "CENSUS_PASS"
+    },
+    {
+      "avg_mcap": 40250.216855955405,
+      "band_id": "MCAP_D_GE10000",
+      "buckets": [
+        {
+          "days": 950,
+          "full_bucket": true,
+          "max_time": "090459",
+          "min_time": "090000",
+          "minute": 540,
+          "moneytop_code_days": 26768,
+          "rows": 8252009,
+          "symbols": 459,
+          "time": "090000"
+        },
+        {
+          "days": 950,
+          "full_bucket": true,
+          "max_time": "090959",
+          "min_time": "090500",
+          "minute": 545,
+          "moneytop_code_days": 19010,
+          "rows": 8641136,
+          "symbols": 435,
+          "time": "090500"
+        },
+        {
+          "days": 951,
+          "full_bucket": true,
+          "max_time": "091459",
+          "min_time": "091000",
+          "minute": 550,
+          "moneytop_code_days": 18064,
+          "rows": 8524815,
+          "symbols": 429,
+          "time": "091000"
+        },
+        {
+          "days": 951,
+          "full_bucket": true,
+          "max_time": "091959",
+          "min_time": "091500",
+          "minute": 555,
+          "moneytop_code_days": 17383,
+          "rows": 8424944,
+          "symbols": 427,
+          "time": "091500"
+        },
+        {
+          "days": 950,
+          "full_bucket": true,
+          "max_time": "092459",
+          "min_time": "092000",
+          "minute": 560,
+          "moneytop_code_days": 17198,
+          "rows": 8327329,
+          "symbols": 428,
+          "time": "092000"
+        },
+        {
+          "days": 950,
+          "full_bucket": true,
+          "max_time": "092959",
+          "min_time": "092500",
+          "minute": 565,
+          "moneytop_code_days": 17709,
+          "rows": 8239983,
+          "symbols": 431,
+          "time": "092500"
+        },
+        {
+          "days": 840,
+          "full_bucket": false,
+          "max_time": "093001",
+          "min_time": "093000",
+          "minute": 570,
+          "moneytop_code_days": 12539,
+          "rows": 20820,
+          "symbols": 417,
+          "time": "093000"
+        },
+        {
+          "days": 1,
+          "full_bucket": false,
+          "max_time": "100459",
+          "min_time": "100001",
+          "minute": 600,
+          "moneytop_code_days": 27,
+          "rows": 7773,
+          "symbols": 27,
+          "time": "100000"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "100959",
+          "min_time": "100500",
+          "minute": 605,
+          "moneytop_code_days": 19,
+          "rows": 8067,
+          "symbols": 19,
+          "time": "100500"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "101459",
+          "min_time": "101000",
+          "minute": 610,
+          "moneytop_code_days": 21,
+          "rows": 8070,
+          "symbols": 21,
+          "time": "101000"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "101959",
+          "min_time": "101500",
+          "minute": 615,
+          "moneytop_code_days": 21,
+          "rows": 8169,
+          "symbols": 21,
+          "time": "101500"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "102459",
+          "min_time": "102000",
+          "minute": 620,
+          "moneytop_code_days": 20,
+          "rows": 7996,
+          "symbols": 20,
+          "time": "102000"
+        },
+        {
+          "days": 1,
+          "full_bucket": true,
+          "max_time": "102959",
+          "min_time": "102500",
+          "minute": 625,
+          "moneytop_code_days": 23,
+          "rows": 8007,
+          "symbols": 23,
+          "time": "102500"
+        },
+        {
+          "days": 1,
+          "full_bucket": false,
+          "max_time": "103000",
+          "min_time": "103000",
+          "minute": 630,
+          "moneytop_code_days": 21,
+          "rows": 26,
+          "symbols": 21,
+          "time": "103000"
+        }
+      ],
+      "days": 952,
+      "first_index": 20220323090001,
+      "intersection_code_days": 30504,
+      "last_index": 20260227093000,
+      "max_mcap": 112107.0,
+      "max_time": "103000",
+      "min_mcap": 10000.0,
+      "min_time": "090000",
+      "rows": 50479144,
+      "symbols": 473,
+      "verdict": "CENSUS_PASS"
+    }
+  ],
+  "can_adopt": false,
+  "completed_at": "2026-08-15T06:23:23.155328+00:00",
+  "distribution_scope": {
+    "available": true,
+    "metrics": [
+      "rows",
+      "mcap_min_max_weighted_mean",
+      "five_minute_moneytop_intersection"
+    ],
+    "microstructure": "deferred_to_backfinder_event_stage",
+    "quantiles": "deferred_to_backfinder_event_stage"
+  },
+  "elapsed_seconds": 498.932,
+  "invalid": {
+    "rows": 0,
+    "symbols": 0
+  },
+  "moneytop_scope": {
+    "available": true,
+    "day_buckets": 6646,
+    "days": 952,
+    "first_index": 20220323090000,
+    "last_index": 20260227093000,
+    "max_time": "103000",
+    "membership_column": "거래대금순위",
+    "min_time": "090000",
+    "rows": 1713159,
+    "unknown_code_sample": [
+      "000590",
+      "000700",
+      "000890",
+      "001420",
+      "001540",
+      "001770",
+      "002320",
+      "002810",
+      "002920",
+      "003550",
+      "003690",
+      "004780",
+      "004970",
+      "005680",
+      "005820",
+      "006120",
+      "006380",
+      "006840",
+      "007280",
+      "007590"
+    ],
+    "unknown_codes": 124
+  },
+  "schema": "stom.mcap_census.v2",
+  "skipped": {
+    "counts_by_reason": {
+      "required_columns_missing": 1
+    },
+    "sample": [
+      {
+        "reason": "required_columns_missing",
+        "table": "stockinfo"
+      }
+    ]
+  },
+  "source": {
+    "fingerprint": {
+      "hash_mode": "sampled_v1",
+      "mtime_ns": 1773807677056219500,
+      "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database\\stock_tick_back.db",
+      "sha256": "a944f7c2bf2d22188688c768e3b202406734c4a38ba19bf81dbde6616eb03a48",
+      "size": 29727162368
+    },
+    "fingerprint_semantics": "sampled_v1",
+    "lane": "stock_tick",
+    "path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database\\stock_tick_back.db",
+    "source_mode": "aggregate_engine_parity"
+  },
+  "started_at": "2026-08-15T06:15:04.223726+00:00",
+  "status": "CENSUS_COMPLETED",
+  "stock_table_scope": {
+    "max_time": "103000",
+    "min_time": "090000",
+    "scanned_tables": 2425,
+    "skipped_tables": 1,
+    "table_count": 2426
+  },
+  "window_contract": {
+    "basis": "moneytop_stock_intersection_all_four_bands",
+    "bucket_minutes": [
+      540,
+      545,
+      550,
+      555,
+      560,
+      565
+    ],
+    "end_exclusive": "093000",
+    "start": "090000",
+    "status": "AVAILABLE"
+  }
+}

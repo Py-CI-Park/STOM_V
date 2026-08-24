@@ -174,6 +174,7 @@ class TestAnalysisRangeAndMaeMfe:
     def _patch_manager(self, monkeypatch, csv_path: str) -> None:
         rec = {"available": True, "status": "success", "csv_path": csv_path}
         monkeypatch.setattr(BA, "get_job_manager", lambda: _FakeJobManager(rec, csv_path))
+        monkeypatch.setattr(BA, "REPO_ROOT", Path(csv_path).resolve().parent)
 
     def test_mae_mfe_endpoint(self, monkeypatch, client, tmp_path):
         self._patch_manager(monkeypatch, _sample_csv(tmp_path / "bt.csv"))
@@ -230,6 +231,7 @@ class TestMonteCarloAndOrderflow:
     def _patch_manager(self, monkeypatch, csv_path: str) -> None:
         rec = {"available": True, "status": "success", "csv_path": csv_path}
         monkeypatch.setattr(BA, "get_job_manager", lambda: _FakeJobManager(rec, csv_path))
+        monkeypatch.setattr(BA, "REPO_ROOT", Path(csv_path).resolve().parent)
 
     def test_montecarlo_endpoint_shape(self, monkeypatch, client, tmp_path):
         self._patch_manager(monkeypatch, _orderflow_csv(tmp_path / "of.csv"))

@@ -38335,6 +38335,171 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4HeroChart });
 
+  // ai_strategy_loop/dashboard/frontend/v4-research-program.jsx
+  var { useCallback: useCallback_rp16, useEffect: useEffect_rp16, useState: useState_rp16 } = React;
+  function _Rp16Badge({ label, value, tone = "neutral" }) {
+    return /* @__PURE__ */ React.createElement("span", { className: `rp16-badge ${tone}` }, /* @__PURE__ */ React.createElement("span", null, label), /* @__PURE__ */ React.createElement("b", null, value == null ? "\u2014" : String(value)));
+  }
+  function _Rp16Scope({ scope, authority }) {
+    const rows = [
+      ["DATA", scope && scope.source || "existing_database_only"],
+      ["LANE", scope && scope.lane || "pending_census"],
+      ["WINDOW", scope && scope.window_contract || "pending_census"],
+      ["DB", scope && scope.operational_db || "read_only"],
+      ["AUTHORITY", authority || "development_no_adoption"]
+    ];
+    return /* @__PURE__ */ React.createElement("div", { className: "rp16-scope", role: "list", "aria-label": "\uC5F0\uAD6C \uB370\uC774\uD130 \uBC94\uC704\uC640 \uAD8C\uC704" }, rows.map(([key, value]) => /* @__PURE__ */ React.createElement("div", { key, role: "listitem" }, /* @__PURE__ */ React.createElement("span", null, key), /* @__PURE__ */ React.createElement("b", null, value))));
+  }
+  function _Rp16Funnel({ funnel }) {
+    const rows = [
+      ["\uC0DD\uC131", "generated"],
+      ["\uC2E4\uD589\uACC4\uC57D", "execution_contract"],
+      ["\uACF5\uC2DD\uC5D4\uC9C4", "official_engine_rows"],
+      ["\uAD6D\uC18C \uC591\uC218", "local_positive"],
+      ["\uAC1C\uBC1C Rule-pass", "development_rule_pass"],
+      ["Bayesian \uC2B9\uC778", "bayesian_approve"],
+      ["BO \uC801\uACA9", "bo_eligible"]
+    ];
+    return /* @__PURE__ */ React.createElement("ol", { className: "rp16-funnel", "aria-label": "\uC870\uAC74\uC2DD \uC5F0\uAD6C \uD37C\uB110" }, rows.map(([label, key], index2) => /* @__PURE__ */ React.createElement("li", { key }, /* @__PURE__ */ React.createElement("span", null, index2 + 1), /* @__PURE__ */ React.createElement("b", null, label), /* @__PURE__ */ React.createElement("strong", null, Number(funnel && funnel[key] || 0).toLocaleString()))));
+  }
+  function V516ResearchProgramOverview({ baseUrl }) {
+    const [view, setView] = useState_rp16({ status: "loading", data: null, error: "" });
+    const load = useCallback_rp16(() => {
+      const controller = new AbortController();
+      setView((current) => ({ ...current, status: "loading", error: "" }));
+      const endpoint = String(baseUrl || "").replace(/\/$/, "") + "/research-program/summary";
+      fetch(endpoint, { signal: controller.signal }).then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))).then((data2) => setView({ status: "ready", data: data2, error: "" })).catch((error) => {
+        if (error && error.name !== "AbortError") setView({ status: "error", data: null, error: String(error.message || error) });
+      });
+      return () => controller.abort();
+    }, [baseUrl]);
+    useEffect_rp16(() => load(), [load]);
+    if (view.status === "loading" && !view.data) return /* @__PURE__ */ React.createElement("section", { className: "rp16-overview pending", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("h2", null, "Research Program"), /* @__PURE__ */ React.createElement("p", null, "\uC5F0\uAD6C \uC6D0\uC7A5\uACFC Evidence\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4."));
+    if (view.status === "error") return /* @__PURE__ */ React.createElement("section", { className: "rp16-overview danger", role: "alert" }, /* @__PURE__ */ React.createElement("h2", null, "Research Program \uC694\uCCAD \uC2E4\uD328"), /* @__PURE__ */ React.createElement("p", null, view.error), /* @__PURE__ */ React.createElement("button", { type: "button", className: "btn", onClick: load }, "\uB2E4\uC2DC \uC2DC\uB3C4"));
+    const data = view.data || {};
+    const platform = data.platform || {};
+    const economic = data.economic || {};
+    const phases = data.phases || {};
+    return /* @__PURE__ */ React.createElement("section", { className: "rp16-overview", "aria-labelledby": "rp16-overview-title" }, /* @__PURE__ */ React.createElement("div", { className: "rp16-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "eyebrow" }, "v5.16 PROGRAM COCKPIT"), /* @__PURE__ */ React.createElement("h2", { id: "rp16-overview-title" }, "\uAE30\uC874 DB \uC870\uAC74\uC2DD \uC5F0\uAD6C \uD604\uD669")), /* @__PURE__ */ React.createElement("div", { className: "rp16-badges", "aria-label": "\uC5F0\uAD6C \uCD5C\uC0C1\uC704 \uD310\uC815" }, /* @__PURE__ */ React.createElement(_Rp16Badge, { label: "\uD50C\uB7AB\uD3FC", value: platform.verdict || "SOURCE_UNAVAILABLE", tone: platform.verdict === "PASS" ? "safe" : "warn" }), /* @__PURE__ */ React.createElement(_Rp16Badge, { label: "\uACBD\uC81C \uD310\uC815", value: economic.verdict || "SOURCE_UNAVAILABLE", tone: "danger" }), /* @__PURE__ */ React.createElement(_Rp16Badge, { label: "Robust", value: economic.robust_candidates || 0 }), /* @__PURE__ */ React.createElement(_Rp16Badge, { label: "BO", value: economic.bo_eligible || 0 }))), /* @__PURE__ */ React.createElement(_Rp16Scope, { scope: data.data_scope, authority: data.authority }), /* @__PURE__ */ React.createElement("div", { className: "rp16-grid" }, /* @__PURE__ */ React.createElement("div", { className: "rp16-card" }, /* @__PURE__ */ React.createElement("h3", null, "\uC5F0\uAD6C Funnel"), /* @__PURE__ */ React.createElement(_Rp16Funnel, { funnel: data.funnel || {} })), /* @__PURE__ */ React.createElement("div", { className: "rp16-card" }, /* @__PURE__ */ React.createElement("h3", null, "\uB2E8\uACC4 Timeline"), /* @__PURE__ */ React.createElement("table", null, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uB2E8\uACC4"), /* @__PURE__ */ React.createElement("th", null, "\uBD09\uC778 \uD310\uC815"))), /* @__PURE__ */ React.createElement("tbody", null, ["D1", "D2", "PAIRED"].map((key) => /* @__PURE__ */ React.createElement("tr", { key }, /* @__PURE__ */ React.createElement("th", null, key), /* @__PURE__ */ React.createElement("td", null, phases[key] || "SOURCE_UNAVAILABLE"))))))), /* @__PURE__ */ React.createElement("p", { className: "rp16-authority" }, /* @__PURE__ */ React.createElement("b", null, "DEVELOPMENT ONLY"), " \xB7 \uAE30\uC874 \uACB0\uACFC\uB294 OOS\xB7\uC2E4\uC804\xB7\uC790\uB3D9\uCC44\uD0DD \uADFC\uAC70\uAC00 \uC544\uB2D9\uB2C8\uB2E4. \uD50C\uB7AB\uD3FC PASS\uC640 \uACBD\uC81C\uC801 \uC131\uACF5\uC740 \uBCC4\uB3C4 \uD310\uC815\uC785\uB2C8\uB2E4."));
+  }
+  Object.assign(window, { V516ResearchProgramOverview });
+
+  // ai_strategy_loop/dashboard/frontend/v4-research-family.jsx
+  var { useEffect: useEffect_rf16, useMemo: useMemo_rf16, useState: useState_rf16 } = React;
+  function _rf16Text(value, fallback = "\u2014") {
+    return value == null || value === "" ? fallback : String(value);
+  }
+  function _rf16Metric(row, keys) {
+    for (const key of keys) {
+      if (row && row[key] != null) return row[key];
+      if (row && row.metrics && row.metrics[key] != null) return row.metrics[key];
+    }
+    return null;
+  }
+  function _rf16Tone(row) {
+    const profit = Number(_rf16Metric(row, ["total_profit", "total_profit_amount", "profit", "profit_rate"]));
+    const trades = Number(_rf16Metric(row, ["trade_count", "trades"]));
+    if (!Number.isFinite(trades) || trades < 20) return "insufficient";
+    if (!Number.isFinite(profit)) return "unknown";
+    return profit > 0 ? "positive" : "negative";
+  }
+  function V516FamilyFoldExplorer({ baseUrl }) {
+    const [state, setState] = useState_rf16({ status: "loading", families: [], folds: [], error: "" });
+    const [selected2, setSelected] = useState_rf16("ALL");
+    useEffect_rf16(() => {
+      const controller = new AbortController();
+      const root2 = String(baseUrl || "").replace(/\/$/, "");
+      Promise.all([
+        fetch(root2 + "/research-program/families", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error(`families HTTP ${r.status}`))),
+        fetch(root2 + "/research-program/folds", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error(`folds HTTP ${r.status}`)))
+      ]).then(([families, folds]) => setState({ status: "ready", families: families.families || [], folds: folds.rows || [], error: "" })).catch((error) => {
+        if (error.name !== "AbortError") setState({ status: "error", families: [], folds: [], error: String(error.message || error) });
+      });
+      return () => controller.abort();
+    }, [baseUrl]);
+    const visible = useMemo_rf16(() => state.folds.filter((row) => {
+      if (selected2 === "ALL") return true;
+      return [row.family, row.family_id, row.candidate_family].map(String).includes(selected2);
+    }), [state.folds, selected2]);
+    if (state.status === "loading") return /* @__PURE__ */ React.createElement("section", { className: "rf16-panel pending", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("h2", null, "Family Explorer"), /* @__PURE__ */ React.createElement("p", null, "Family\uC640 Fold Evidence\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4."));
+    if (state.status === "error") return /* @__PURE__ */ React.createElement("section", { className: "rf16-panel danger", role: "alert" }, /* @__PURE__ */ React.createElement("h2", null, "Family/Fold \uC694\uCCAD \uC2E4\uD328"), /* @__PURE__ */ React.createElement("p", null, state.error));
+    return /* @__PURE__ */ React.createElement("section", { className: "rf16-panel", "aria-labelledby": "rf16-title" }, /* @__PURE__ */ React.createElement("div", { className: "rf16-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "V5.16 DEVELOPMENT EVIDENCE"), /* @__PURE__ */ React.createElement("h2", { id: "rf16-title" }, "Family Explorer \xB7 Fold Heatmap")), /* @__PURE__ */ React.createElement("label", null, "Family \uD544\uD130", /* @__PURE__ */ React.createElement("select", { value: selected2, onChange: (event) => setSelected(event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "ALL" }, "\uC804\uCCB4"), state.families.map((item) => /* @__PURE__ */ React.createElement("option", { key: item.family, value: item.family }, item.family))))), /* @__PURE__ */ React.createElement("div", { className: "rf16-family-grid", role: "list", "aria-label": "\uC5F0\uAD6C Family \uBAA9\uB85D" }, state.families.length ? state.families.map((item) => /* @__PURE__ */ React.createElement("button", { type: "button", role: "listitem", key: item.family, className: selected2 === item.family ? "active" : "", onClick: () => setSelected(item.family) }, /* @__PURE__ */ React.createElement("b", null, item.family), /* @__PURE__ */ React.createElement("span", null, "\uD6C4\uBCF4 ", item.candidate_count), /* @__PURE__ */ React.createElement("span", null, "\uAD6D\uC18C\uD1B5\uACFC ", item.local_advanced), /* @__PURE__ */ React.createElement("strong", null, item.status))) : /* @__PURE__ */ React.createElement("p", null, "Family Evidence\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "rf16-fold-scroll", tabIndex: 0, "aria-label": "Fold \uC131\uACFC \uD45C. \uC0C9\uC0C1\uACFC \uD568\uAED8 \uC0C1\uD0DC \uD14D\uC2A4\uD2B8\uB97C \uC81C\uACF5\uD569\uB2C8\uB2E4." }, /* @__PURE__ */ React.createElement("table", { className: "rf16-fold-table" }, /* @__PURE__ */ React.createElement("caption", null, "Development fold evidence \xB7 OOS \uC544\uB2D8"), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uB2E8\uACC4"), /* @__PURE__ */ React.createElement("th", null, "Family/Candidate"), /* @__PURE__ */ React.createElement("th", null, "Fold"), /* @__PURE__ */ React.createElement("th", null, "\uC218\uC775"), /* @__PURE__ */ React.createElement("th", null, "\uD3C9\uADE0"), /* @__PURE__ */ React.createElement("th", null, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("th", null, "MDD"), /* @__PURE__ */ React.createElement("th", null, "\uC0C1\uD0DC"))), /* @__PURE__ */ React.createElement("tbody", null, visible.length ? visible.map((row, index2) => {
+      const tone = _rf16Tone(row);
+      return /* @__PURE__ */ React.createElement("tr", { key: String(row.candidate_id || row.pair_id || row.family || "row") + index2, className: tone }, /* @__PURE__ */ React.createElement("td", null, _rf16Text(row.phase)), /* @__PURE__ */ React.createElement("th", null, _rf16Text(row.family || row.family_id || row.candidate_id || row.pair_id)), /* @__PURE__ */ React.createElement("td", null, _rf16Text(row.fold_id || row.fold || row.period)), /* @__PURE__ */ React.createElement("td", null, _rf16Text(_rf16Metric(row, ["total_profit", "total_profit_amount", "profit", "profit_rate"]))), /* @__PURE__ */ React.createElement("td", null, _rf16Text(_rf16Metric(row, ["average_return", "avg_return", "average_profit_rate"]))), /* @__PURE__ */ React.createElement("td", null, _rf16Text(_rf16Metric(row, ["trade_count", "trades"]))), /* @__PURE__ */ React.createElement("td", null, _rf16Text(_rf16Metric(row, ["mdd", "max_drawdown"]))), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("span", { className: `rf16-cell ${tone}` }, tone === "positive" ? "\uC591\uC218" : tone === "negative" ? "\uC74C\uC218" : tone === "insufficient" ? "\uD45C\uBCF8\uBD80\uC871" : "\uBBF8\uD655\uC778")));
+    }) : /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("td", { colSpan: "8" }, "\uC120\uD0DD\uB41C Family\uC758 Fold Evidence\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."))))), /* @__PURE__ */ React.createElement("p", { className: "rf16-note" }, "Heatmap \uC0C9\uC0C1\uC740 \uBCF4\uC870\uD45C\uD604\uC774\uBA70 \uD45C\uBCF8\xB7\uC218\uC775\xB7MDD\uC640 \uC0C1\uD0DC \uD14D\uC2A4\uD2B8\uAC00 \uD310\uC815 \uADFC\uAC70\uC785\uB2C8\uB2E4."));
+  }
+  Object.assign(window, { V516FamilyFoldExplorer });
+
+  // ai_strategy_loop/dashboard/frontend/v4-research-evidence.jsx
+  var { useEffect: useEffect_re16, useState: useState_re16 } = React;
+  var RE16_STATES = ["PROVEN", "REFUTED", "FIXED", "OPEN", "LIMITATION"];
+  function V516FailureEvidence({ baseUrl }) {
+    const [failures, setFailures] = useState_re16({ status: "loading", rows: [], error: "" });
+    const [evidence, setEvidence] = useState_re16({ status: "idle", id: "", data: null, error: "" });
+    const root2 = String(baseUrl || "").replace(/\/$/, "");
+    useEffect_re16(() => {
+      const controller = new AbortController();
+      fetch(root2 + "/research-program/failures", { signal: controller.signal }).then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))).then((payload) => setFailures({ status: "ready", rows: payload.failures || [], error: "" })).catch((error) => {
+        if (error.name !== "AbortError") setFailures({ status: "error", rows: [], error: String(error.message || error) });
+      });
+      return () => controller.abort();
+    }, [root2]);
+    const inspect = (evidenceId) => {
+      if (!evidenceId) return;
+      setEvidence({ status: "loading", id: evidenceId, data: null, error: "" });
+      fetch(root2 + "/research-program/evidence/" + encodeURIComponent(evidenceId)).then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))).then((payload) => setEvidence({ status: "ready", id: evidenceId, data: payload, error: "" })).catch((error) => setEvidence({ status: "error", id: evidenceId, data: null, error: String(error.message || error) }));
+    };
+    return /* @__PURE__ */ React.createElement("section", { className: "re16-panel", "aria-labelledby": "re16-title" }, /* @__PURE__ */ React.createElement("div", { className: "re16-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "CAUSE \xB7 EVIDENCE \xB7 AUTHORITY"), /* @__PURE__ */ React.createElement("h2", { id: "re16-title" }, "Failure Atlas \xB7 Evidence Inspector")), /* @__PURE__ */ React.createElement("div", { className: "re16-legend", "aria-label": "\uC2E4\uD328\uC6D0\uC778 \uC0C1\uD0DC \uBC94\uB840" }, RE16_STATES.map((state) => /* @__PURE__ */ React.createElement("span", { key: state, className: state.toLowerCase() }, state)))), failures.status === "loading" && /* @__PURE__ */ React.createElement("p", { "aria-live": "polite" }, "\uC2E4\uD328 \uC6D0\uC778 \uC6D0\uC7A5\uC744 \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4."), failures.status === "error" && /* @__PURE__ */ React.createElement("p", { role: "alert" }, "Failure Atlas \uC694\uCCAD \uC2E4\uD328 \xB7 ", failures.error), /* @__PURE__ */ React.createElement("div", { className: "re16-grid", role: "list", "aria-label": "\uC2E4\uD328 \uC6D0\uC778 \uC6D0\uC7A5" }, failures.rows.map((item) => /* @__PURE__ */ React.createElement("article", { key: item.failure_id, role: "listitem", className: `re16-failure ${String(item.state).toLowerCase()}` }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("b", null, item.failure_id), /* @__PURE__ */ React.createElement("strong", null, item.state)), /* @__PURE__ */ React.createElement("h3", null, item.title), /* @__PURE__ */ React.createElement("div", null, (item.evidence || []).map((id2) => /* @__PURE__ */ React.createElement("button", { type: "button", key: id2, onClick: () => inspect(id2), "aria-pressed": evidence.id === id2 }, id2)))))), /* @__PURE__ */ React.createElement("section", { className: "re16-inspector", "aria-labelledby": "re16-inspector-title" }, /* @__PURE__ */ React.createElement("h3", { id: "re16-inspector-title" }, "Evidence Inspector"), evidence.status === "idle" && /* @__PURE__ */ React.createElement("p", null, "Failure Atlas\uC758 Evidence ID\uB97C \uC120\uD0DD\uD558\uC2ED\uC2DC\uC624."), evidence.status === "loading" && /* @__PURE__ */ React.createElement("p", { "aria-live": "polite" }, evidence.id, " \uAC80\uC99D \uBA54\uD0C0\uB370\uC774\uD130\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4."), evidence.status === "error" && /* @__PURE__ */ React.createElement("p", { role: "alert" }, "Evidence \uC694\uCCAD \uC2E4\uD328 \xB7 ", evidence.error), evidence.status === "ready" && evidence.data && /* @__PURE__ */ React.createElement("div", { className: "re16-evidence" }, /* @__PURE__ */ React.createElement("dl", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "ID"), /* @__PURE__ */ React.createElement("dd", null, evidence.id)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uC0C1\uD0DC"), /* @__PURE__ */ React.createElement("dd", null, evidence.data.available ? "AVAILABLE" : String(evidence.data.reason || "UNAVAILABLE"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "SHA-256"), /* @__PURE__ */ React.createElement("dd", { className: "mono" }, evidence.data.sha256 || "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uACBD\uB85C"), /* @__PURE__ */ React.createElement("dd", null, evidence.data.source && evidence.data.source.path || "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uAD8C\uC704"), /* @__PURE__ */ React.createElement("dd", null, evidence.data.authority))), /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", null, "\uAC80\uC99D\uB41C Evidence \uC694\uC57D \uBCF4\uAE30"), /* @__PURE__ */ React.createElement("pre", { tabIndex: 0 }, JSON.stringify(evidence.data.data, null, 2).slice(0, 12e3))))), /* @__PURE__ */ React.createElement("p", { className: "re16-note" }, "Evidence\uB294 read-only allowlist\uB85C \uC870\uD68C\uD558\uBA70 \uB204\uB77D\uACFC \uC190\uC0C1\uC744 \uAD6C\uBD84\uD569\uB2C8\uB2E4. \uC6D0\uBCF8 \uACB0\uACFC\uAC00 \uD50C\uB7AB\uD3FC PASS\uC5EC\uB3C4 \uACBD\uC81C\uC801 \uC131\uACF5 \uAD8C\uD55C\uC740 \uBD80\uC5EC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."));
+  }
+  Object.assign(window, { V516FailureEvidence });
+
+  // ai_strategy_loop/dashboard/frontend/v4-research-mcap.jsx
+  var { useEffect: useEffect_rm16, useState: useState_rm16 } = React;
+  function _rm16BandLabel(band) {
+    if (band.lower == null) return `< ${band.upper}\uC5B5`;
+    if (band.upper == null) return `\u2265 ${band.lower}\uC5B5`;
+    return `${band.lower}~${band.upper}\uC5B5`;
+  }
+  function V516MarketCapNativeLab({ baseUrl }) {
+    var _a;
+    const root2 = String(baseUrl || "").replace(/\/$/, "");
+    const [data, setData] = useState_rm16({ status: "loading", census: null, health: null, error: "" });
+    const [form, setForm] = useState_rm16({ family_id: "ABSORPTION_REVERSAL", compute_hours: 36, entry_variables: 8, exit_variables: 6 });
+    const [preview, setPreview] = useState_rm16({ status: "idle", data: null, error: "" });
+    useEffect_rm16(() => {
+      const controller = new AbortController();
+      Promise.all([
+        fetch(root2 + "/research-program/market-cap-census", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error(`census HTTP ${r.status}`))),
+        fetch(root2 + "/research-program/jobs/health", { signal: controller.signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error(`health HTTP ${r.status}`)))
+      ]).then(([census2, health2]) => setData({ status: "ready", census: census2, health: health2, error: "" })).catch((error) => {
+        if (error.name !== "AbortError") setData({ status: "error", census: null, health: null, error: String(error.message || error) });
+      });
+      return () => controller.abort();
+    }, [root2]);
+    const submit = (event) => {
+      event.preventDefault();
+      if (!data.census) return;
+      setPreview({ status: "loading", data: null, error: "" });
+      fetch(root2 + "/research-program/preregistration/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, bands: data.census.bands })
+      }).then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))).then((payload) => setPreview({ status: "ready", data: payload, error: "" })).catch((error) => setPreview({ status: "error", data: null, error: String(error.message || error) }));
+    };
+    if (data.status === "loading") return /* @__PURE__ */ React.createElement("section", { className: "rm16-panel pending", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("h2", null, "Market-cap Lab"), /* @__PURE__ */ React.createElement("p", null, "Census\uC640 Job Evidence\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4."));
+    if (data.status === "error") return /* @__PURE__ */ React.createElement("section", { className: "rm16-panel danger", role: "alert" }, /* @__PURE__ */ React.createElement("h2", null, "Market-cap Lab \uC694\uCCAD \uC2E4\uD328"), /* @__PURE__ */ React.createElement("p", null, data.error));
+    const census = data.census || {};
+    const health = data.health || {};
+    const bandRows = census.data && census.data.bands || [];
+    const byId = Object.fromEntries(bandRows.map((row) => [row.band_id, row]));
+    return /* @__PURE__ */ React.createElement("section", { className: "rm16-panel", "aria-labelledby": "rm16-title" }, /* @__PURE__ */ React.createElement("div", { className: "rm16-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "READ-ONLY RESEARCH DESIGN"), /* @__PURE__ */ React.createElement("h2", { id: "rm16-title" }, "Market-cap \xB7 Native Tools \xB7 Job Health")), /* @__PURE__ */ React.createElement("strong", null, census.available ? "CENSUS AVAILABLE" : String(census.reason || "SOURCE_UNAVAILABLE").toUpperCase())), /* @__PURE__ */ React.createElement("div", { className: "rm16-band-grid", role: "list", "aria-label": "\uC2DC\uAC00\uCD1D\uC561 4\uAC1C \uACE0\uC815 \uAD6C\uAC04" }, (census.bands || []).map((band) => {
+      var _a2, _b, _c;
+      const row = byId[band.band_id] || {};
+      return /* @__PURE__ */ React.createElement("article", { role: "listitem", key: band.band_id }, /* @__PURE__ */ React.createElement("span", null, band.band_id), /* @__PURE__ */ React.createElement("h3", null, _rm16BandLabel(band)), /* @__PURE__ */ React.createElement("dl", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uAC70\uB798\uC77C"), /* @__PURE__ */ React.createElement("dd", null, (_a2 = row.days) != null ? _a2 : "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uC885\uBAA9"), /* @__PURE__ */ React.createElement("dd", null, (_b = row.symbols) != null ? _b : "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "Event"), /* @__PURE__ */ React.createElement("dd", null, (_c = row.events) != null ? _c : "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uD310\uC815"), /* @__PURE__ */ React.createElement("dd", null, row.verdict || (census.available ? "PENDING_GATE" : "SOURCE_MISSING")))));
+    })), /* @__PURE__ */ React.createElement("div", { className: "rm16-two-col" }, /* @__PURE__ */ React.createElement("section", { className: "rm16-native" }, /* @__PURE__ */ React.createElement("h3", null, "Native Tools Gate"), /* @__PURE__ */ React.createElement("table", null, /* @__PURE__ */ React.createElement("tbody", null, [["BackFinder", "Census/Event"], ["OptimizeConditions", "Inner clause"], ["Genetic", "\uC870\uAC74\uBD80 \uAD6C\uC870"], ["QMC/TPE", "\uC22B\uC790 \uBCC0\uC218"], ["RWFT", "Rolling development"]].map(([tool, role]) => /* @__PURE__ */ React.createElement("tr", { key: tool }, /* @__PURE__ */ React.createElement("th", null, tool), /* @__PURE__ */ React.createElement("td", null, role), /* @__PURE__ */ React.createElement("td", null, health.runtime_queue === "not_started" ? "NOT_STARTED" : "EVIDENCE_ONLY"))))), /* @__PURE__ */ React.createElement("p", null, "\uC6B4\uC601 DB hash\xB7sidecar\xB7immutable connector N0 \uD1B5\uACFC \uC804 \uC2E4\uD589 \uAE08\uC9C0")), /* @__PURE__ */ React.createElement("section", { className: "rm16-health" }, /* @__PURE__ */ React.createElement("h3", null, "Compute / Job Health"), /* @__PURE__ */ React.createElement("dl", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uBAA8\uB4DC"), /* @__PURE__ */ React.createElement("dd", null, health.mode || "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "Runtime queue"), /* @__PURE__ */ React.createElement("dd", null, health.runtime_queue || "\u2014")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "Engine terminal"), /* @__PURE__ */ React.createElement("dd", null, JSON.stringify(health.engine_terminal_counts || {}))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "Recovered"), /* @__PURE__ */ React.createElement("dd", null, (_a = health.recovered_terminal_rows) != null ? _a : 0))))), /* @__PURE__ */ React.createElement("form", { className: "rm16-designer", onSubmit: submit }, /* @__PURE__ */ React.createElement("h3", null, "Next Research Designer \xB7 Preview only"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", null, "Family", /* @__PURE__ */ React.createElement("select", { value: form.family_id, onChange: (e) => setForm({ ...form, family_id: e.target.value }) }, ["ABSORPTION_REVERSAL", "FAILED_BREAKOUT_RETURN", "COMPRESSION_CONFIRMED_BREAKOUT", "FLOW_PRICE_DIVERGENCE", "OPENING_OVERREACTION_MEAN_REVERT"].map((id2) => /* @__PURE__ */ React.createElement("option", { key: id2 }, id2)))), /* @__PURE__ */ React.createElement("label", null, "Compute hours", /* @__PURE__ */ React.createElement("input", { type: "number", min: "24", max: "48", value: form.compute_hours, onChange: (e) => setForm({ ...form, compute_hours: Number(e.target.value) }) })), /* @__PURE__ */ React.createElement("label", null, "Entry variables", /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "8", value: form.entry_variables, onChange: (e) => setForm({ ...form, entry_variables: Number(e.target.value) }) })), /* @__PURE__ */ React.createElement("label", null, "Exit variables", /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "6", value: form.exit_variables, onChange: (e) => setForm({ ...form, exit_variables: Number(e.target.value) }) }))), /* @__PURE__ */ React.createElement("button", { type: "submit", className: "btn primary" }, "\uC0AC\uC804\uB4F1\uB85D Preview \uAC80\uC99D"), /* @__PURE__ */ React.createElement("p", null, "Preview\uB294 \uC800\uC7A5\xB7\uC2E4\uD589\xB7\uC2B9\uC778\xB7Export\uB97C \uC218\uD589\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), preview.status === "loading" && /* @__PURE__ */ React.createElement("span", { "aria-live": "polite" }, "\uAC80\uC99D \uC911"), preview.status === "error" && /* @__PURE__ */ React.createElement("span", { role: "alert" }, "Preview \uC2E4\uD328 \xB7 ", preview.error), preview.status === "ready" && /* @__PURE__ */ React.createElement("output", null, "VALID \xB7 ", preview.data.preview_sha256)));
+  }
+  Object.assign(window, { V516MarketCapNativeLab });
+
   // ai_strategy_loop/dashboard/frontend/v4-research.jsx
   var { useEffect: useEffect_v4r, useState: useState_v4r } = React;
   var _V4_APPROVAL_HASH_KEYS = ["review_hash", "evidence_hash", "buy_code_hash", "sell_code_hash"];
@@ -38589,7 +38754,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       setApprovalBlockReason("");
       setApprovalOpen(false);
     };
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-research v6-live v6-live-density-" + liveStageDensity, "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "panel-hd-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-research v6-live v6-live-density-" + liveStageDensity, "aria-labelledby": "v4-research-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "v4-research-heading", className: "panel-hd-title" }, "Research \xB7 \uC870\uAC74\uC2DD \uC5F0\uAD6C \uAD00\uCC30"), /* @__PURE__ */ React.createElement(ExportStatusBanner, { reply: lastReply }), /* @__PURE__ */ React.createElement(V516ResearchProgramOverview, { baseUrl }), /* @__PURE__ */ React.createElement(V516FamilyFoldExplorer, { baseUrl }), /* @__PURE__ */ React.createElement(V516FailureEvidence, { baseUrl }), /* @__PURE__ */ React.createElement(V516MarketCapNativeLab, { baseUrl }), /* @__PURE__ */ React.createElement(
       _V6StatusBoard,
       {
         state: s,
@@ -41886,7 +42051,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
 
   // ai_strategy_loop/dashboard/frontend/dashboard-v4-shell.jsx
   var { useState: useState_v4, useEffect: useEffect_v4, useCallback: useCallback_v4, useRef: useRef_v4 } = React;
-  var V4_DASH_VERSION = "v5.15.0";
+  var V4_DASH_VERSION = "v5.16.0";
   (function _initFeLogBuffer() {
     const capacity = 200;
     const redact = (value) => {

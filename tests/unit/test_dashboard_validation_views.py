@@ -229,14 +229,42 @@ class TestDecisions:
     """F3/P-D(2026-06-11) — V6 결정 기록: append-only·검증값 거부·이력 순서."""
 
     def test_record_and_list_roundtrip(self, seeded_validation_db, tmp_path, monkeypatch):
+        import hashlib
         import ai_strategy_loop.dashboard.app as A
+        from ai_strategy_loop.controller import evidence_contract
+
+        digest = lambda value: hashlib.sha256(value.encode("utf-8")).hexdigest()
+        buy_hash, sell_hash = digest("buy = 1"), digest("sell = 1")
+        identity = evidence_contract.CandidateIdentityV2(
+            run_id="decision-roundtrip",
+            gen_no=1,
+            candidate_id=evidence_contract.compute_candidate_id(
+                buy_hash, sell_hash, "strict-test", "day"
+            ),
+            buy_body_sha256=buy_hash,
+            sell_body_sha256=sell_hash,
+            profile_sha256=digest("profile"),
+            config_sha256=digest("config"),
+            data_sha256=digest("data"),
+            cost_sha256=digest("cost"),
+            fill_sha256=digest("fill"),
+        ).to_dict()
+        monkeypatch.setattr(A, "_current_state_payload", lambda: {
+            "run_id": "decision-roundtrip",
+            "winner": {"gen": 1, "candidate_identity": identity},
+            "generations": [{"gen_no": 1, "candidate_identity": identity}],
+        })
 
         monkeypatch.setenv("STOM_DASHBOARD_DECISIONS_FILE", str(tmp_path / "decisions.jsonl"))
         monkeypatch.setenv("STOM_DASHBOARD_ALLOW_DECISION_WRITE", "1")
         client = authorized_dashboard_client(A.create_app())
-        r1 = client.post("/record_decision", json={"verdict": "hold", "note": "검증 추가 대기"})
+        r1 = client.post("/record_decision", json={
+            "verdict": "hold", "note": "검증 추가 대기", "candidate_identity": identity,
+        })
         assert r1.json()["status"] == "ok"
-        r2 = client.post("/record_decision", json={"verdict": "promote", "note": "OOS 통과"})
+        r2 = client.post("/record_decision", json={
+            "verdict": "promote", "note": "OOS 통과", "candidate_identity": identity,
+        })
         assert r2.json()["status"] == "ok"
         hist = client.get("/decisions").json()
         assert hist["count"] == 2

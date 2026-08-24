@@ -91,6 +91,7 @@ from ai_strategy_loop.dashboard.response_surface_api import response_surface_rou
 from ai_strategy_loop.dashboard.condition_diff_api import condition_diff_router  # noqa: E402
 from ai_strategy_loop.dashboard.trade_pairs_api import trade_pairs_router  # noqa: E402
 from ai_strategy_loop.dashboard.research_tools_api import research_tools_router  # noqa: E402
+from ai_strategy_loop.dashboard.research_program_api import research_program_router  # noqa: E402
 from ai_strategy_loop.fitness.research_criteria import normalize_research_oos_mode, research_mode_payload  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
@@ -101,7 +102,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 #   서빙한다(REST/WS API와 동일 출처 → CORS 우회 + 단일 진입점).
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 _REMODEL_FRONTEND_DIR = os.path.join(_FRONTEND_DIR, "remodel")
-_DASHBOARD_RELEASE = "v5.15.0"
+_DASHBOARD_RELEASE = "v5.16.0"
 _DASHBOARD_SHELL = "v4-ops"
 _DASHBOARD_BUILD_RE = re.compile(r"^[0-9A-Za-z._-]{1,64}$")
 _DASHBOARD_PROCESS_STARTED_AT = int(time.time())
@@ -3564,6 +3565,7 @@ def create_app(
     app.include_router(condition_diff_router)
     app.include_router(trade_pairs_router)
     app.include_router(research_tools_router)
+    app.include_router(research_program_router)
 
     @app.get("/", response_class=HTMLResponse)
     def root(request: Request) -> HTMLResponse:

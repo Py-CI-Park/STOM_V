@@ -75,4 +75,5 @@ HTTP_CAPABILITIES: Final = {
     ("POST", "/loop/research-tools/ast"): Capability.RESEARCH_DIAGNOSTIC,
     ("POST", "/loop/research-tools/qmc"): Capability.RESEARCH_DIAGNOSTIC,
     ("POST", "/loop/research-tools/denoise"): Capability.RESEARCH_DIAGNOSTIC,
+    ("POST", "/research-program/preregistration/preview"): Capability.RESEARCH_DIAGNOSTIC,
 }

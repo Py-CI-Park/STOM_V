@@ -28,6 +28,12 @@
 | **0.0000000000016** | **`2026-08-14_기존DB_entry_exit_paired_개선연구_사전등록.md`** | **R5 개선 연구 봉인** — D2 entry 2개×기존 exit 4개·8 pairs·6fold 48회·source snapshot·BO posterior gate |
 | **0.0000000000017** | **`2026-08-14_기존DB_entry_exit_paired_개선연구_최종결과.md`** | **Paired 최종 `NO_ROBUST_ENTRY_EXIT_PAIR`** — screen 8·fold evidence 48·대체 exit 악화·BO eligible 0·entry edge 부재 판정 |
 | **0.0000000000018** | **`2026-08-15_기존DB_시가총액분할_상태전이연구와_v5.16_재출발_마스터플랜.md`** | **재출발 정본 계획** — 시총 4band census·v5.16 Cockpit·상태전이 D3·BackFinder/Optimizer/GA/RWFT sidecar 통합·조건부 BO |
+| **0.0000000000019** | **`2026-08-15_v5.16_D3_전체계획_실행등록부.md`** | **전체 실행 추적** — `research/v516-d3-mcap-dev` 통합·대페이지별 feature branch·진행률·시간·토큰·안전 gate |
+| **0.0000000000020** | **`2026-08-15_C0_기존DB_시가총액4band_Census_결과.md`** | **C0 완료** — 4Band 4/4 PASS·952일·moneytop×stock 교집합·공통 Tick W0 `09:00~09:30` |
+| **0.0000000000021** | **`2026-08-15_기존DB_OpeningStateMachine_D3_사전등록.md`** | **D3 사전등록** — 상태전이 5Family×시총4Band×QMC32·공식엔진40·Controls·조건부 D4 |
+| **0.0000000000022** | **`2026-08-15_D3_시총4Band_OpeningStateMachine_최종결과.md`** | **D3/D4 종료** — 640→40·Rule-pass 0·`NO_EVENT_QUALIFIED_D3_CANDIDATE`·D4 `GATE_NOT_ENTERED` |
+| **0.0000000000023** | **`2026-08-15_v5.16_전체로드맵_C1_최종보고.md`** | **C1 최종 정본** — 81/81·PR #136~#146·7,710 tests·시간/토큰·Robust 0·플랫폼≠경제 성공 |
+| **0.0000000000024** | **`HANDOFF_2026-08-24_v516_시총별_반복연구_재개.md`** | **최신 재개 정본** — 81/81 해석 정정·단일 일자 screen 한계·17 execution failure·Band별 생성→분석→개선 반복 미완료·`<3000`부터 재개 |
 | **0.000000000001** | **`2026-08-13_v4_단계별_실행완료_보고.md`** | **v4 실행 결과** — 정본 교정·대시보드 정확성·E0 관측 계약·이동 블록 Monte Carlo·ReviewContext·중지 조건 이행 |
 | 0.00000000001 | `2026-08-12_마스터플랜_v3.md` | (근거 보존 · v4 로 대체) G 레인 설계 원문 — 실행 지시 효력 없음 |
 | 0.0000000005 | `2026-08-10_HOF_차터_로드맵.md` | (근거 보존) HOF 차터 — 계획 효력은 v3 로 이관 |

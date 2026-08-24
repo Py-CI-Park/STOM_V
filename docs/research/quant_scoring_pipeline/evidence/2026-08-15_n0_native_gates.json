@@ -1,0 +1,75 @@
+{
+  "authority": "connector_isolation_only_no_research_result_no_adoption",
+  "created_at": "2026-08-15T07:33:50.191377+00:00",
+  "passed": 5,
+  "rows": [
+    {
+      "config_sha256": "db061cc4a132e287d20e3ac51a7ba034adcd73db4f7b6c7ed2efcec130902f81",
+      "module": "backtest.backfinder",
+      "operational_unchanged": true,
+      "receipt_sha256": "7590470c6bee75eacc656a6aacb59b93d9c353e302ab03fc8dc21484809641c7",
+      "returncode": 0,
+      "run_id": "N0-backfinder-20260815T073311Z",
+      "status": "connector_gate_pass",
+      "stdout_tail": "NATIVE_GATE_PASS\n",
+      "subprocess_status": "engine_success",
+      "symbol": "BackFinder",
+      "tool": "backfinder"
+    },
+    {
+      "config_sha256": "ac58a054719f15fd82f822e08740fe36bc1a89c57b0d923c54a33c3cd598db9a",
+      "module": "backtest.optimiz_conditions",
+      "operational_unchanged": true,
+      "receipt_sha256": "7c656328f15027fbb7330e197c7e3fa6cea17f775a1940eb0f30c3d9230a3012",
+      "returncode": 0,
+      "run_id": "N0-optimize_conditions-20260815T073311Z",
+      "status": "connector_gate_pass",
+      "stdout_tail": "NATIVE_GATE_PASS\n",
+      "subprocess_status": "engine_success",
+      "symbol": "OptimizeConditions",
+      "tool": "optimize_conditions"
+    },
+    {
+      "config_sha256": "a741ef73e11a868d5204ecc7bca84fbd26d3784b034ec446cafbb82ee84b67b7",
+      "module": "backtest.optimiz",
+      "operational_unchanged": true,
+      "receipt_sha256": "03d989062079317d45c628534d11601690b1fddd6a054bbbf4e4ba651deb9725",
+      "returncode": 0,
+      "run_id": "N0-optimize-20260815T073311Z",
+      "status": "connector_gate_pass",
+      "stdout_tail": "NATIVE_GATE_PASS\n",
+      "subprocess_status": "engine_success",
+      "symbol": "Optimize",
+      "tool": "optimize"
+    },
+    {
+      "config_sha256": "e5e933eb735833609283615d8c7dd9140b61af0c538a37444cccf3b64487fa1c",
+      "module": "backtest.optimiz_genetic_algorithm",
+      "operational_unchanged": true,
+      "receipt_sha256": "29164abfa4658c9915f4d4cd1da5249da51516214840916eb69006854dd1099b",
+      "returncode": 0,
+      "run_id": "N0-genetic-20260815T073311Z",
+      "status": "connector_gate_pass",
+      "stdout_tail": "NATIVE_GATE_PASS\n",
+      "subprocess_status": "engine_success",
+      "symbol": "OptimizeGeneticAlgorithm",
+      "tool": "genetic"
+    },
+    {
+      "config_sha256": "409442d26b9d28d8bdc50a82d5aa236015ebb9c7a912862254d80884cbc1afc3",
+      "module": "backtest.rolling_walk_forward_test",
+      "operational_unchanged": true,
+      "receipt_sha256": "2e0cb896dbd000eadbca023dad010eb3d13c9dd4f31ab0abfe89fe6ef3db11bd",
+      "returncode": 0,
+      "run_id": "N0-rolling_walk_forward-20260815T073311Z",
+      "status": "connector_gate_pass",
+      "stdout_tail": "NATIVE_GATE_PASS\n",
+      "subprocess_status": "engine_success",
+      "symbol": "RollingWalkForwardTest",
+      "tool": "rolling_walk_forward"
+    }
+  ],
+  "schema": "stom.native_research.gates.v1",
+  "total": 5,
+  "verdict": "NATIVE_GATES_PASS"
+}

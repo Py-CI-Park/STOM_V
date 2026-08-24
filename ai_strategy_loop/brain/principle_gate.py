@@ -40,6 +40,8 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Mapping, Optional
 
+from ai_strategy_loop.revision.window_contract import window_contract_from_mapping
+
 # liquidity_gate 의 검출 보조를 재사용(동일 의미 — 주석 제거 + 부등호 검출).
 from ai_strategy_loop.brain.filter_gate import time_window_bounds
 from ai_strategy_loop.brain.liquidity_gate import _COMPARISON_RE, _strip_comments
@@ -126,7 +128,11 @@ def _has_volume_condition(buy_code: str) -> bool:
     return False
 
 
-def _has_session_close_exit(sell_code: str) -> bool:
+def _has_session_close_exit(
+    sell_code: str,
+    window_lo: int = _TICK_WINDOW_LO,
+    window_hi: int = _TICK_WINDOW_HI,
+) -> bool:
     """tick 매도식에 유효한 강제 종료 분기(`시분초 >= X`, 90000 < X <= 93000)가 있는지 검사.
 
     임계값 X 가 93000(09:30)을 넘으면(예: 152000) 09:30 이후 보유를 허용하는
@@ -135,10 +141,10 @@ def _has_session_close_exit(sell_code: str) -> bool:
     """
     stripped = _strip_comments(sell_code)
     for m in _SELL_CLOSE_LEFT_RE.finditer(stripped):
-        if _TICK_WINDOW_LO < int(float(m.group(1))) <= _TICK_WINDOW_HI:
+        if window_lo < int(float(m.group(1))) <= window_hi:
             return True
     for m in _SELL_CLOSE_RIGHT_RE.finditer(stripped):
-        if _TICK_WINDOW_LO < int(float(m.group(1))) <= _TICK_WINDOW_HI:
+        if window_lo < int(float(m.group(1))) <= window_hi:
             return True
     return False
 
@@ -186,6 +192,7 @@ def _check_csc10(
     buy_code: Optional[str],
     sell_code: Optional[str],
     timeframe: Optional[str],
+    metadata: Optional[Mapping[str, Any]] = None,
 ) -> List[Violation]:
     """CSC-10 — tick 조건식 시간창 09:00~09:30 강제 (reject).
 
@@ -198,36 +205,80 @@ def _check_csc10(
     if timeframe != "tick":
         return []
     violations: List[Violation] = []
+    window_lo, window_hi = _TICK_WINDOW_LO, _TICK_WINDOW_HI
+    raw_contract = None if metadata is None else metadata.get("window_contract")
+    if raw_contract is not None:
+        if not isinstance(raw_contract, Mapping):
+            return [{
+                "rule_id": "WINDOW-CONTRACT",
+                "severity": SEVERITY_REJECT,
+                "message": "D3 window_contract 형식이 올바르지 않다.",
+            }]
+        try:
+            contract = window_contract_from_mapping(raw_contract)
+        except (TypeError, ValueError) as exc:
+            return [{
+                "rule_id": "WINDOW-CONTRACT",
+                "severity": SEVERITY_REJECT,
+                "message": f"D3 window_contract 검증 실패 — {exc}.",
+            }]
+        if contract.lane != "stock_tick":
+            return [{
+                "rule_id": "WINDOW-CONTRACT",
+                "severity": SEVERITY_REJECT,
+                "message": "tick 조건식은 stock_tick window_contract를 사용해야 한다.",
+            }]
+        window_lo, window_hi = contract.start, contract.end_exclusive
+    elif metadata is not None and metadata.get("research_program") == "D3":
+        return [{
+            "rule_id": "WINDOW-CONTRACT",
+            "severity": SEVERITY_REJECT,
+            "message": "D3 tick 조건식에 Census 기반 window_contract가 없다.",
+        }]
     if buy_code is not None and buy_code.strip():
         bounds = time_window_bounds(buy_code)
         lo, hi = bounds if bounds is not None else (None, None)
         out_of_window = (
             bounds is None
             or hi is None
-            or hi > _TICK_WINDOW_HI
-            or (lo is not None and lo < _TICK_WINDOW_LO)
+            or hi > window_hi
+            or (lo is not None and lo < window_lo)
         )
         if out_of_window:
-            violations.append({
-                "rule_id": "CSC-10",
-                "severity": SEVERITY_REJECT,
-                "message": (
+            if raw_contract is None:
+                message = (
                     "tick 매수식의 시간창이 09:00~09:30 밖이다 — "
                     "90000 <= 시분초 < 93000(또는 그 이내) 필터를 두고 "
                     "93000 초과 구간을 허용하지 마라."
-                ),
-            })
-    if sell_code is not None and sell_code.strip():
-        if not _has_session_close_exit(sell_code):
+                )
+            else:
+                message = (
+                    f"tick 매수식이 Census 시간계약 밖이다 — {window_lo} <= 시분초 "
+                    f"< {window_hi} 범위만 허용한다."
+                )
             violations.append({
                 "rule_id": "CSC-10",
                 "severity": SEVERITY_REJECT,
-                "message": (
+                "message": message,
+            })
+    if sell_code is not None and sell_code.strip():
+        if not _has_session_close_exit(sell_code, window_lo, window_hi):
+            if raw_contract is None:
+                message = (
                     "tick 매도식에 유효한 강제 종료 분기(시분초 >= X, "
                     "90000 < X <= 93000)가 없다 — 늦어도 09:30 도달 시 "
                     "잔여 포지션을 청산하는 분기를 두어라(93000 초과 임계값은 "
                     "09:30 이후 보유 허용이라 무효)."
-                ),
+                )
+            else:
+                message = (
+                    f"tick 매도식에 Census 시간계약 강제 종료가 없다 — "
+                    f"{window_lo} < X <= {window_hi} 범위의 시분초 >= X 분기가 필요하다."
+                )
+            violations.append({
+                "rule_id": "CSC-10",
+                "severity": SEVERITY_REJECT,
+                "message": message,
             })
     return violations
 
@@ -272,6 +323,6 @@ def check_principle_consistency(
     violations: List[Violation] = []
     violations.extend(_check_csc06(buy_code))
     violations.extend(_check_csc07(buy_code, sell_code))
-    violations.extend(_check_csc10(buy_code, sell_code, timeframe))
+    violations.extend(_check_csc10(buy_code, sell_code, timeframe, metadata))
     violations.extend(_check_meta(metadata))
     return violations

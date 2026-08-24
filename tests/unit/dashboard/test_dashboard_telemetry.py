@@ -232,6 +232,8 @@ def test_backtest_job_manager_emits_official_cli_telemetry(tmp_path: Path) -> No
     job_id = manager.submit(BacktestJobSpec(
         buy="테스트매수",
         sell="테스트매도",
+        buy_code="매수 = True",
+        sell_code="매도 = False",
         start=20250407,
         end=20250409,
         timeframe="min",
