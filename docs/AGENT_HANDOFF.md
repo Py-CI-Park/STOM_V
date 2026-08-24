@@ -1,12 +1,14 @@
 # AGENT HANDOFF — STOM AI 조건식 자율진화 (에이전트 무관·자기완결)
 
 > **[최신 정본 우선]** 이 문서는 역사 기록으로 보존된다. 현재 통합 지점과 재개 절차는
+> `docs/research/quant_scoring_pipeline/2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md`,
 > `docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_process_research_pipeline_재출발.md`,
 > 전체 UX/UI·파이프라인·백테스트 후 분석·연구 계획은
 > `docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md`
 > 를 먼저 읽어라. 기준 통합은
 > `loop/process-research-pipeline @ f75b80ebcb7fd72cd41c8933c4f6e63df8c2ae52`,
 > 재출발 브랜치는 `codex/process-research-pipeline-restart`다.
+> BOOT-01·PIPE-01은 완료되었으며, `<3000` 정정 집계는 지표 생성 2 / 정상 무거래 0 / 실행 오류 6 / timeout 2다. 다음 한 단위는 `SYS-01A Research Truth Contract`다.
 > 아래 본문의 날짜·HEAD·브랜치는 2026-06-03 기준 역사값이다.
 
 > **이 문서는 어떤 AI 에이전트(Claude·Codex·Gemini 등)든 이 작업을 콜드로 이어받기 위한 자기완결적 핸드오프다.** Claude 전용 메모리(`~/.claude/...`)에 의존하지 않는다. 상세는 `docs/update_log/`를 가리키되, 이 문서만으로 방향·제약·현황·다음 단계를 파악할 수 있다.

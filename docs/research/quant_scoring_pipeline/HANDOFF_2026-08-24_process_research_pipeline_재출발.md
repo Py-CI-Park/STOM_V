@@ -7,6 +7,8 @@
 > worktree: `C:\System_Trading\STOM\STOM_V.wt-process-research-restart`
 >
 > 시작 기준: `loop/process-research-pipeline` @ `f75b80ebcb7fd72cd41c8933c4f6e63df8c2ae52`
+>
+> **2026-08-25 최신 실행:** BOOT-01·PIPE-01 완료. `<3000` 10건을 원시 job 증거와 대조한 결과 기존 `no_trades 2`는 모두 전략 예외로 가려진 실행 오류였다. 정정 집계는 **지표 생성 2 / 정상 무거래 0 / 실행 오류 6 / watchdog timeout 2**다. 상세 정본은 `2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md`, 다음 한 단위는 **SYS-01A Research Truth Contract**다.
 
 ---
 
@@ -27,7 +29,7 @@
 | 범위 | 상태 |
 |---|---|
 | 플랫폼·Census·시드·공식엔진 연결 | 재사용 가능한 기반 있음 |
-| D3 1일 feasibility | 40건: metrics 2, no-trades 21, error 15, timeout 2 |
+| D3 1일 feasibility | 역사 screen raw label 40건: metrics 2, no-trades 21, error 15, timeout 2 — **전체 40건은 아직 증거 기반 재분류하지 않음** |
 | `<3000` 반복 연구 | 미완료 |
 | 나머지 3Band 반복 연구 | 미완료 |
 | 개선 세대 lineage | 없음 |
@@ -49,28 +51,27 @@
 
 ## 4. 다음 실제 착수 단위
 
-### PIPE-01 — `<3000` 10건 실행 실패 원장
+### PIPE-01 — `<3000` 10건 실행 실패 원장 — 완료
 
-이 작업이 다음 구현·연구의 첫 단위다.
+2026-08-25 읽기 전용으로 10/10 원장화를 완료했다. 아래 표의 `입력 상태`는 역사 screen의 원래 표기이며, 오른쪽은 원시 Evidence 정정이다.
 
-| 입력 상태 | 건수 | 해야 할 일 |
-|---|---:|---|
-| metrics | 2 | 결과 identity와 CSV/engine/source hash 대조 |
-| no-trades | 2 | 정상 무거래인지 조건식/기간/데이터 부재인지 분류 |
-| error | 4 | compile/runtime/worker/source/contract 범주로 분류 |
-| timeout | 2 | 계산량/heartbeat/queue/교착을 분리 |
+| 입력 상태 | 원래 수 | 증거 기반 상태 | 정정 수 |
+|---|---:|---|---:|
+| metrics | 2 | 지표 생성, 소표본 손실 | 2 |
+| no-trades | 2 | `engine_strategy_exception` / TypeError | 정상 무거래 0, 오류 2 |
+| error | 4 | `engine_data_response_timeout` | 오류 4 |
+| timeout | 2 | watchdog 회수, 내부 원인 `NOT_OBSERVED` | timeout 2 |
 
 완료 조건:
 
-- 10/10 job에 typed cause가 있다.
-- 재실행 가능 여부와 이유가 있다.
-- PnL을 보지 않고 교정 가능한 문제만 분리한다.
-- 과거 Evidence를 덮어쓰지 않는다.
-- 결과가 없어도 `UNKNOWN`이 아니라 `NOT_OBSERVED` 또는 구체적 실패 상태를 쓴다.
+- 10/10 job에 typed boundary cause와 재실행 정책을 기록했다.
+- PnL을 보고 조건식을 고치거나 과거 Evidence를 덮어쓰지 않았다.
+- job ID 중복을 발견해 provenance 복합 identity 요구사항으로 올렸다.
+- 지표 생성 2건도 거래 2/4건의 손실이므로 경제 판정은 `INCONCLUSIVE`다.
 
-### SYS-01 — Research Truth Contract
+### SYS-01A — Research Truth Contract — 다음 한 단위
 
-PIPE-01과 병렬 설계는 가능하지만 구현 병합은 실패 분류 용어를 확정한 뒤 한다.
+실행·경제·권위·행동을 분리한 strict type과 invariant validator를 먼저 구현한다. 아직 UI·연구 재실행으로 넘어가지 않는다.
 
 | 축 | 상태 |
 |---|---|
@@ -83,8 +84,8 @@ PIPE-01과 병렬 설계는 가능하지만 구현 병합은 실패 분류 용�
 
 | 순서 | 작업 |
 |---:|---|
-| 1 | PIPE-01 failure ledger |
-| 2 | SYS-01 typed Truth Contract |
+| 1 | PIPE-01 failure ledger — **완료** |
+| 2 | SYS-01 typed Truth Contract — **다음** |
 | 3 | UX-01 Global Truth Bar |
 | 4 | ANA-01 AnalysisBundle v2 |
 | 5 | UX-02 Result Overview |
@@ -137,14 +138,24 @@ git rev-parse loop/process-research-pipeline
 
 ## 9. 검증 명령
 
+### 9.1 현재 fresh worktree에서 안전한 검증
+
 ```powershell
-python -m pytest tests/unit/ -q
+python -m pytest tests/unit/test_d3_engine_screen.py tests/unit/test_d3_screen_decision.py -q -p no:cacheprovider
 python scripts/verify_nonrelease_sync.py
-python scripts/smoke_offline_gui.py --branch codex/process-research-pipeline-restart --version V2.79 --offline --log-dir .omx/logs/process-research-restart
-python scripts/verify_pyd_gui_contract.py --branch codex/process-research-pipeline-restart --version V2.79 --upstream-ref STOM_Version_2 --manifest .omx/logs/process-research-restart/verify_pyd_gui_contract.json --log-dir .omx/logs/process-research-restart
 python scripts/build_research_docs_index.py --check
 git diff --check
 git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json
+```
+
+### 9.2 명시적 provisioning 이후에만 실행할 검증
+
+현재 worktree에는 `node_modules`, `_database/strategy.db`, `loop_strategies.db`가 없다. 특히 일부 DB 결합 테스트는 누락 DB를 0-byte 파일로 만들 수 있으므로, 아래 명령은 BOOT preflight가 `NODE_RUNTIME_PROVISIONED`와 `DB_FIXTURE_PROVISIONED_READ_ONLY`를 모두 확인하기 전에는 실행하지 않는다.
+
+```powershell
+python -m pytest tests/unit/ -q
+python scripts/smoke_offline_gui.py --branch codex/process-research-pipeline-restart --version V2.79 --offline --log-dir .omx/logs/process-research-restart
+python scripts/verify_pyd_gui_contract.py --branch codex/process-research-pipeline-restart --version V2.79 --upstream-ref STOM_Version_2 --manifest .omx/logs/process-research-restart/verify_pyd_gui_contract.json --log-dir .omx/logs/process-research-restart
 ```
 
 ## 10. 중지 조건
@@ -172,4 +183,4 @@ git status --short -- _database _database_v3k_shadow _log backup *.db backtest/g
 | 권위 | feasibility/development/OOS/live |
 | 다음 행동 | 정확히 하나 |
 
-최초 다음 행동은 **`PIPE-01 — <3000 10건 실행 실패 원장`**이다.
+현재 다음 행동은 **`SYS-01A — Research Truth Contract의 pure type·validator·10개 회귀 fixture`**다.
