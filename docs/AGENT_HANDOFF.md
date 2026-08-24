@@ -1,6 +1,11 @@
 # AGENT HANDOFF — STOM AI 조건식 자율진화 (에이전트 무관·자기완결)
 
-> **[최신 정본 우선]** 이 문서는 역사 기록으로 보존된다. 조건식 루프의 현재 정본 방향·상태·다음 단계는 `docs/update_log/2026-07-11_ai_condition_loop_canonical_rebuild_handoff.md`(최신 핸드오프)와 `docs/research/condition_research/plans/2026-07-11_ai_condition_loop_canonical_rebuild_master_plan.md`(마스터 계획)를 먼저 읽어라. 아래 본문의 날짜·HEAD·브랜치는 2026-06-03 기준 역사값이다.
+> **[최신 정본 우선]** 이 문서는 역사 기록으로 보존된다. 시총별 조건식 반복 연구의
+> 현재 상태와 재개 절차는
+> `docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_v516_시총별_반복연구_재개.md`
+> 를 먼저 읽어라. 기준 정본은
+> `research/v516-d3-mcap-dev @ 8f39d0e7c048c8609c75f863031791560a6f81c0`이다.
+> 아래 본문의 날짜·HEAD·브랜치는 2026-06-03 기준 역사값이다.
 
 > **이 문서는 어떤 AI 에이전트(Claude·Codex·Gemini 등)든 이 작업을 콜드로 이어받기 위한 자기완결적 핸드오프다.** Claude 전용 메모리(`~/.claude/...`)에 의존하지 않는다. 상세는 `docs/update_log/`를 가리키되, 이 문서만으로 방향·제약·현황·다음 단계를 파악할 수 있다.
 >
