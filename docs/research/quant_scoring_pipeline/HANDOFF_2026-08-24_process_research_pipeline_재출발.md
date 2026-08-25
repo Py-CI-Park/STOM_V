@@ -8,7 +8,7 @@
 >
 > 시작 기준: `loop/process-research-pipeline` @ `f75b80ebcb7fd72cd41c8933c4f6e63df8c2ae52`
 >
-> **2026-08-25 최신 실행:** BOOT-01·PIPE-01과 SYS-01A pure Truth Contract를 완료했다. `<3000` 정정 집계 **지표 생성 2 / 정상 무거래 0 / 실행 오류 6 / watchdog timeout 2**를 10/10 fixture로 고정했고, raw 상태 보존·복합 identity·fail-closed validator를 검증했다. 상세 정본은 `2026-08-25_SYS-01A_Research_Truth_Contract_구현결과.md`, 다음 한 단위는 **SYS-01B read-only adapter/API**다.
+> **2026-08-26 최신 실행:** BOOT-01·PIPE-01·SYS-01A에 이어 SYS-01B legacy adapter/read-only API를 완료했다. 일반 `without metrics` 메시지의 무거래 오분류를 제거하고 exact engine receipt를 요구한다. PIPE-01 10건은 adapter 경로에서도 **지표 생성 2 / 정상 무거래 0 / 실행 오류 6 / watchdog timeout 2**로 유지됐다. 상세 정본은 `2026-08-26_SYS-01B_legacy_truth_adapter_API_구현결과.md`, 다음 한 단위는 **UX-01 Global Truth Bar**다.
 
 ---
 
@@ -80,9 +80,18 @@
 | 권위 | FEASIBILITY / DEVELOPMENT / FROZEN_OOS / SHADOW / LIVE |
 | 행동 | DEBUG / REPRODUCE / STRUCTURAL_REVISE / EXPAND / STOP / HOLDOUT |
 
-### SYS-01B — legacy adapter와 read-only API — 다음 한 단위
+### SYS-01B — legacy adapter와 read-only API — 완료
 
 과거 artifact를 수정하지 않고 typed view로 읽으며, 새 terminal 판정은 exception·timeout 증거를 일반 `without metrics` 메시지보다 우선한다. API와 WebSocket은 같은 schema를 사용하고 job ID 단독 조회를 허용하지 않는다.
+
+| 완료 계약 | 결과 |
+|---|---|
+| exact `total_report_no_trades` receipt | 새 정상 무거래 판정의 필수 조건 |
+| exception/data-timeout precedence | 새 job은 `error`, 과거 job은 additive Truth에서 `ERROR` |
+| REST/WS parity | 동일 builder·동일 Truth payload |
+| scope identity | configured manager/jobs-dir와 job/source identity 결합 |
+| persistence | `none`; 과거 JSON·DB 수정 없음 |
+| PIPE-01 adapter projection | `SUCCESS 2 / NO_TRADES 0 / ERROR 6 / TIMEOUT 2` |
 
 ## 5. 권장 구현 순서
 
@@ -90,8 +99,8 @@
 |---:|---|
 | 1 | PIPE-01 failure ledger — **완료** |
 | 2 | SYS-01A pure Truth Contract — **완료** |
-| 3 | SYS-01B adapter/read-only API — **다음** |
-| 4 | UX-01 Global Truth Bar |
+| 3 | SYS-01B adapter/read-only API — **완료** |
+| 4 | UX-01 Global Truth Bar — **다음** |
 | 5 | ANA-01 AnalysisBundle v2 |
 | 6 | UX-02 Result Overview |
 | 7 | RES-01 `<3000` 다기간 사전등록 |
@@ -188,4 +197,4 @@ python scripts/verify_pyd_gui_contract.py --branch codex/process-research-pipeli
 | 권위 | feasibility/development/OOS/live |
 | 다음 행동 | 정확히 하나 |
 
-현재 다음 행동은 **`SYS-01B — legacy artifact adapter·terminal precedence·read-only typed API`**다.
+현재 다음 행동은 **`UX-01 — V4 Global Truth Bar·다음 허용 행동·5상태 직접 사용성 검증`**이다.
