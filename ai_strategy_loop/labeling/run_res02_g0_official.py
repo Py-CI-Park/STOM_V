@@ -144,7 +144,9 @@ def _write_checkpoint(
     )
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
-    _ = temporary.write_text(payload.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    _ = temporary.write_text(
+        payload.model_dump_json(indent=2, by_alias=True) + "\n", encoding="utf-8"
+    )
     _ = temporary.replace(path)
 
 
