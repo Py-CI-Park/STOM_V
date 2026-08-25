@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-import argparse
 import hashlib
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import cast
 
+from ai_strategy_loop.labeling.res03_g1_cli import CliArgs, parse_args
 from ai_strategy_loop.labeling.run_res02_g0_official import SELL_SOURCE
 from ai_strategy_loop.revision.mcap_event_contract import (
     EventGateContractError,
@@ -28,6 +27,7 @@ from ai_strategy_loop.revision.mcap_g1_inputs import SealedG1Plan, load_sealed_g
 from ai_strategy_loop.revision.mcap_g1_official_contract import (
     G1BatchEvidence,
     G1Checkpoint,
+    ManagerRuntimeAuthority,
 )
 from ai_strategy_loop.revision.mcap_g1_report import build_g1_report
 from utility.sqlite_readonly import (
@@ -37,21 +37,6 @@ from utility.sqlite_readonly import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE = ROOT / "docs/research/quant_scoring_pipeline/evidence"
-DEFAULT_OUTPUT = EVIDENCE / "2026-08-26_res03_g1_official.json"
-DEFAULT_CHECKPOINT = ROOT / "ai_strategy_loop/state/res03_g1_official_checkpoint.json"
-
-
-@dataclass(frozen=True, slots=True)
-class CliArgs:
-    database: Path
-    g1: Path
-    event: Path
-    source_preregistration: Path
-    source_manifest: Path
-    output: Path
-    checkpoint: Path
-    base_urls: tuple[str, ...]
 
 
 def _git_value(*arguments: str) -> str:
@@ -68,8 +53,12 @@ def _assert_clean_tracked_worktree() -> None:
 
 
 def _validate_runtime(
-    plan: SealedG1Plan, database: Path, base_urls: tuple[str, ...]
-) -> SourceFingerprint:
+    plan: SealedG1Plan,
+    database: Path,
+    setting_database: Path,
+    strategy_database: Path,
+    base_urls: tuple[str, ...],
+) -> tuple[SourceFingerprint, tuple[ManagerRuntimeAuthority, ...]]:
     profile = plan.preregistration.official_execution
     if not base_urls or len(base_urls) > profile.manager_workers_max:
         raise EventGateContractError("manager URL count violates G1 preregistration")
@@ -83,11 +72,40 @@ def _validate_runtime(
         or fingerprint.sha256 != expected.sha256
     ):
         raise EventGateContractError("official G1 database identity mismatch")
+    authorities: list[ManagerRuntimeAuthority] = []
     for base_url in base_urls:
         health = DashboardClient(base_url).call("GET", "/health")
         if health.get("status") not in {"ok", "healthy"}:
             raise EventGateContractError(f"G1 dashboard manager is unhealthy: {base_url}")
-    return fingerprint
+        runtime = DashboardClient(base_url).call(
+            "GET", "/research-truth/runtime-authority"
+        )
+        values = {
+            key: runtime.get(key)
+            for key in ("jobs_dir", "setting_db", "strategy_db", "stock_tick_db")
+        }
+        if not all(isinstance(value, str) for value in values.values()):
+            raise EventGateContractError("G1 manager runtime authority is incomplete")
+        if runtime.get("setting_schema_ok") is not True:
+            raise EventGateContractError("G1 manager setting schema is unavailable")
+        authority = ManagerRuntimeAuthority(
+            base_url=base_url,
+            jobs_dir=cast(str, values["jobs_dir"]),
+            setting_db=cast(str, values["setting_db"]),
+            strategy_db=cast(str, values["strategy_db"]),
+            stock_tick_db=cast(str, values["stock_tick_db"]),
+            setting_schema_ok=True,
+        )
+        if (
+            Path(authority.setting_db).resolve() != setting_database.resolve()
+            or Path(authority.strategy_db).resolve() != strategy_database.resolve()
+            or Path(authority.stock_tick_db).resolve() != database.resolve()
+        ):
+            raise EventGateContractError("G1 manager runtime authority mismatch")
+        authorities.append(authority)
+    if len({row.jobs_dir for row in authorities}) != len(authorities):
+        raise EventGateContractError("G1 managers must use isolated jobs directories")
+    return fingerprint, tuple(authorities)
 
 
 def _load_checkpoint(path: Path, plan: SealedG1Plan) -> dict[str, G0JobEvidence]:
@@ -164,40 +182,22 @@ def run(args: CliArgs) -> G1BatchEvidence:
         args.g1, args.event, args.source_preregistration, args.source_manifest
     )
     before = sqlite_sidefile_snapshot(args.database)
-    database = _validate_runtime(plan, args.database, args.base_urls)
+    database, authorities = _validate_runtime(
+        plan, args.database, args.setting_database, args.strategy_database,
+        args.base_urls,
+    )
     jobs = _run_jobs(plan, args.base_urls, args.checkpoint)
     assert_sqlite_sidefiles_unchanged(args.database, before)
     return build_g1_report(
-        plan, database, args.base_urls, jobs,
+        plan, database, args.base_urls, authorities, jobs,
         generated_at=datetime.now(timezone.utc).isoformat(),
         implementation_branch=_git_value("branch", "--show-current"),
         implementation_head_sha=_git_value("rev-parse", "HEAD"),
     )
 
 
-def _parse_args() -> CliArgs:
-    parser = argparse.ArgumentParser()
-    _ = parser.add_argument("--database", type=Path, required=True)
-    _ = parser.add_argument("--g1", type=Path, default=EVIDENCE / "2026-08-26_res03_g1_preregistration.json")
-    _ = parser.add_argument("--event", type=Path, default=EVIDENCE / "2026-08-26_res02_event_gate.json")
-    _ = parser.add_argument("--source-preregistration", type=Path, default=EVIDENCE / "2026-08-26_res01_lt3000_prereg.json")
-    _ = parser.add_argument("--source-manifest", type=Path, default=EVIDENCE / "2026-08-15_d3_candidate_manifest.json")
-    _ = parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    _ = parser.add_argument("--checkpoint", type=Path, default=DEFAULT_CHECKPOINT)
-    _ = parser.add_argument("--base-urls", required=True)
-    namespace = parser.parse_args()
-    return CliArgs(
-        database=cast(Path, namespace.database).resolve(), g1=cast(Path, namespace.g1).resolve(),
-        event=cast(Path, namespace.event).resolve(),
-        source_preregistration=cast(Path, namespace.source_preregistration).resolve(),
-        source_manifest=cast(Path, namespace.source_manifest).resolve(),
-        output=cast(Path, namespace.output).resolve(), checkpoint=cast(Path, namespace.checkpoint).resolve(),
-        base_urls=tuple(value.strip().rstrip("/") for value in cast(str, namespace.base_urls).split(",") if value.strip()),
-    )
-
-
 def main() -> None:
-    args = _parse_args()
+    args = parse_args()
     if args.output.exists():
         raise EventGateContractError(f"append-only G1 output already exists: {args.output}")
     report = run(args)

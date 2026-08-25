@@ -7,13 +7,17 @@ from collections import Counter
 from ai_strategy_loop.revision.mcap_event_contract import SourceFingerprint
 from ai_strategy_loop.revision.mcap_g0_contract import G0BatchConfig, G0JobEvidence
 from ai_strategy_loop.revision.mcap_g1_inputs import SealedG1Plan
-from ai_strategy_loop.revision.mcap_g1_official_contract import G1BatchEvidence
+from ai_strategy_loop.revision.mcap_g1_official_contract import (
+    G1BatchEvidence,
+    ManagerRuntimeAuthority,
+)
 
 
 def build_g1_report(
     plan: SealedG1Plan,
     database: SourceFingerprint,
     base_urls: tuple[str, ...],
+    manager_runtime_authorities: tuple[ManagerRuntimeAuthority, ...],
     jobs: tuple[G0JobEvidence, ...],
     *,
     generated_at: str,
@@ -38,6 +42,7 @@ def build_g1_report(
         g1_preregistration_file_sha256=plan.preregistration_file_sha256,
         g0_batch_identity_sha256=plan.preregistration.g0_batch_identity_sha256,
         database=database,
+        manager_runtime_authorities=manager_runtime_authorities,
         config=G0BatchConfig(
             manager_base_urls=base_urls,
             manager_workers=len(base_urls),
