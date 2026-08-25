@@ -34,6 +34,7 @@ from ai_strategy_loop.dashboard._windows_process_job import (
     attach_process_job,
 )
 from ai_strategy_loop.dashboard.backtest_job_spec import BacktestJobSpec
+from ai_strategy_loop.dashboard.backtest_cli_json import parse_cli_json as _parse_cli_json
 from ai_strategy_loop.dashboard.backtest_terminal_classification import (
     is_verified_no_trades_payload,
 )
@@ -1106,47 +1107,6 @@ class BacktestJobManager:
         except OSError:
             return []
         return [ln.rstrip("\n") for ln in content[-lines:]]
-
-
-def _parse_cli_json(stdout: str) -> Dict[str, Any]:
-    """CLI --format json stdout 에서 결과 JSON 을 파싱한다(loop._parse_cli_json 동형)."""
-    text = stdout.strip()
-    if not text:
-        return {}
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        pass
-    without_protocol = "\n".join(
-        line for line in text.splitlines()
-        if not line.strip().startswith("[CLI_DIAG] ")
-    ).strip()
-    if without_protocol:
-        try:
-            parsed = json.loads(without_protocol)
-        except json.JSONDecodeError:
-            parsed = None
-        if isinstance(parsed, dict):
-            return parsed
-    # protocol JSONL이 결과 앞에 스트리밍될 수 있으므로 마지막 완전한 JSON 행을 우선한다.
-    for line in reversed(text.splitlines()):
-        candidate = line.strip()
-        if not candidate or candidate.startswith("[CLI_DIAG] "):
-            continue
-        try:
-            parsed = json.loads(candidate)
-        except json.JSONDecodeError:
-            continue
-        if isinstance(parsed, dict):
-            return parsed
-    start = text.find("{")
-    end = text.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        try:
-            return json.loads(text[start:end + 1])
-        except json.JSONDecodeError:
-            return {}
-    return {}
 
 
 def _protocol_summary(stdout: str) -> Optional[Dict[str, Any]]:
