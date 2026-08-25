@@ -8,7 +8,7 @@
 >
 > 시작 기준: `loop/process-research-pipeline` @ `f75b80ebcb7fd72cd41c8933c4f6e63df8c2ae52`
 >
-> **2026-08-26 최신 실행:** BOOT-01·PIPE-01·SYS-01A·SYS-01B에 이어 UX-01 V4 Global Truth Bar를 완료했다. 실제 취소 job과 명시적 5상태 fixture를 브라우저에서 직접 선택했고, 실패 기록도 분석 결과를 가장하지 않은 채 Truth만 확인하도록 교정했다. 상세 정본은 `2026-08-26_UX-01_V4_Global_Truth_Bar_구현결과.md`, 다음 한 단위는 **ANA-01 AnalysisBundle v2**다.
+> **2026-08-26 최신 실행:** BOOT-01·PIPE-01·SYS-01A·SYS-01B·UX-01에 이어 ANA-01 AnalysisBundle v2를 완료했다. strict/frozen schema, canonical hash, CSV identity, 교차 모순 차단, read-only job API를 구현했으며 실제 취소 job 반복 조회 hash와 원본 불변성을 확인했다. 상세 정본은 `2026-08-26_ANA-01_AnalysisBundle_v2_구현결과.md`, 다음 한 단위는 **UX-02 Result Overview**다.
 
 ---
 
@@ -106,6 +106,19 @@ V4 백테스트 최상단에 실행·경제·권위·다음 행동과 차단 사
 | read-only | `LEGACY_INCOMPLETE`, `persistence none`; 원본 수정 없음 |
 | frontend 품질 | production build·typecheck·V1~V7 harness·console error 0 |
 
+### ANA-01 — AnalysisBundle v2 — 완료
+
+공식 legacy job을 content-addressed read-only bundle로 투영한다. failure 상태는 경제 값을 합성하지 않으며, 아직 실행하지 않은 episode/counterfactual/robustness는 `NOT_RUN`으로 남긴다.
+
+| 완료 계약 | 결과 |
+|---|---|
+| deterministic content/hash | 동일 record+CSV 전체 payload와 SHA-256 동일 |
+| CSV identity | path/hash/size + terminal trade count 대조 |
+| cross-section invariant | execution/decision/authority/action/metrics/series 모순 거부 |
+| REST | `GET /analysis-bundle/job`, persistence `none` |
+| 실제 job | 취소 job hash 두 번 동일, 원본 JSON hash 불변 |
+| generation | source provenance 부족으로 미지원; 값 합성 금지 |
+
 ## 5. 권장 구현 순서
 
 | 순서 | 작업 |
@@ -114,8 +127,8 @@ V4 백테스트 최상단에 실행·경제·권위·다음 행동과 차단 사
 | 2 | SYS-01A pure Truth Contract — **완료** |
 | 3 | SYS-01B adapter/read-only API — **완료** |
 | 4 | UX-01 Global Truth Bar — **완료** |
-| 5 | ANA-01 AnalysisBundle v2 — **다음** |
-| 6 | UX-02 Result Overview |
+| 5 | ANA-01 AnalysisBundle v2 — **완료** |
+| 6 | UX-02 Result Overview — **다음** |
 | 7 | RES-01 `<3000` 다기간 사전등록 |
 | 8 | RES-02 G0 공식 실행 |
 | 9 | ANA-02 구조 부검 |
@@ -210,4 +223,4 @@ python scripts/verify_pyd_gui_contract.py --branch codex/process-research-pipeli
 | 권위 | feasibility/development/OOS/live |
 | 다음 행동 | 정확히 하나 |
 
-현재 다음 행동은 **`ANA-01 — 동일 입력에서 결정적으로 생성되는 AnalysisBundle v2 schema/builder`**다.
+현재 다음 행동은 **`UX-02 — Result Overview를 AnalysisBundle v2의 identity·완전성·권위·capability 우선으로 재배선`**이다.

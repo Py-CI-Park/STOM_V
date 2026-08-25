@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-25T16:12:11.490982+00:00",
-  "source_fingerprint": "f138a9d7d9d02438ada51b7ed6a168dfb41b1c719525ebe553322a794ff5d772",
-  "count": 1069,
+  "generated_at": "2026-08-25T16:28:40.062267+00:00",
+  "source_fingerprint": "fdab39481a3b6ff95c623aca5d8c65930957f6abd4b09d97edaedebd8ccf57bf",
+  "count": 1070,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7124,6 +7124,13 @@
       "size": 5030
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-26_ANA-01_AnalysisBundle_v2_구현결과.md",
+      "title": "ANA-01 — AnalysisBundle v2 schema/builder/read API 구현 결과",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-25T16:28:07.159689+00:00",
+      "size": 5959
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_SYS-01B_legacy_truth_adapter_API_구현결과.md",
       "title": "SYS-01B — Legacy Truth Adapter·터미널 우선순위·읽기 전용 API 구현 결과",
       "category": "quant_scoring_pipeline",
@@ -7232,8 +7239,8 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_process_research_pipeline_재출발.md",
       "title": "핸드오프 — Process Research Pipeline 재출발 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:10:57.518100+00:00",
-      "size": 7527
+      "updated_at": "2026-08-25T16:28:07.167278+00:00",
+      "size": 8182
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_v516_시총별_반복연구_재개.md",
@@ -7246,8 +7253,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:10:57.524714+00:00",
-      "size": 14376
+      "updated_at": "2026-08-25T16:28:07.171896+00:00",
+      "size": 14525
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
