@@ -50,6 +50,10 @@ def test_actual_g0_g1_analysis_is_deterministic_and_fail_closed() -> None:
     assert first == second
     assert first.candidate_count == 7
     assert first.fold_pair_count == 28
+    assert first.paired_pass_count == 3
+    assert first.development_rule_pass_count == 0
+    assert first.verdict == "STOP_AFTER_G1_NO_DEVELOPMENT_RULE_PASS"
+    assert first.next_gate == "STOP_NO_G2_NO_HOLDOUT"
     assert first.holdout_status == "SEALED_NOT_TOUCHED"
     assert first.can_adopt is False
     assert first.paired_pass_count == sum(
@@ -59,6 +63,9 @@ def test_actual_g0_g1_analysis_is_deterministic_and_fail_closed() -> None:
         row.development_rule_pass for row in first.candidates
     )
     assert all(len(row.folds) == 4 for row in first.candidates)
+    assert sum(row.g0_total_trades for row in first.candidates) == 1415
+    assert sum(row.g1_total_trades for row in first.candidates) == 819
+    assert sum(row.g1_positive_fold_count for row in first.candidates) == 4
     assert all(
         sum(exit_row.g0_count for exit_row in row.exits) == row.g0_total_trades
         for row in first.candidates
