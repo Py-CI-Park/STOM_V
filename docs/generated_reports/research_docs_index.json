@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-25T16:28:40.062267+00:00",
-  "source_fingerprint": "fdab39481a3b6ff95c623aca5d8c65930957f6abd4b09d97edaedebd8ccf57bf",
+  "generated_at": "2026-08-25T16:30:38.457200+00:00",
+  "source_fingerprint": "0772cdc9138a8d333a3c07f5fe5b981daa8d091a6e7e2a23e137afe3a69092a6",
   "count": 1070,
   "docs": [
     {
@@ -7127,7 +7127,7 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_ANA-01_AnalysisBundle_v2_구현결과.md",
       "title": "ANA-01 — AnalysisBundle v2 schema/builder/read API 구현 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:28:07.159689+00:00",
+      "updated_at": "2026-08-25T16:29:43.447609+00:00",
       "size": 5959
     },
     {
@@ -7239,7 +7239,7 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_process_research_pipeline_재출발.md",
       "title": "핸드오프 — Process Research Pipeline 재출발 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:28:07.167278+00:00",
+      "updated_at": "2026-08-25T16:29:43.452119+00:00",
       "size": 8182
     },
     {
@@ -7253,7 +7253,7 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:28:07.171896+00:00",
+      "updated_at": "2026-08-25T16:29:43.459009+00:00",
       "size": 14525
     },
     {
