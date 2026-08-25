@@ -8,7 +8,7 @@
 >
 > 시작 기준: `loop/process-research-pipeline` @ `f75b80ebcb7fd72cd41c8933c4f6e63df8c2ae52`
 >
-> **2026-08-26 최신 실행:** BOOT-01·PIPE-01·SYS-01A·SYS-01B·UX-01에 이어 ANA-01 AnalysisBundle v2를 완료했다. strict/frozen schema, canonical hash, CSV identity, 교차 모순 차단, read-only job API를 구현했으며 실제 취소 job 반복 조회 hash와 원본 불변성을 확인했다. 상세 정본은 `2026-08-26_ANA-01_AnalysisBundle_v2_구현결과.md`, 다음 한 단위는 **UX-02 Result Overview**다.
+> **2026-08-26 최신 실행:** BOOT-01·PIPE-01·SYS-01A·SYS-01B·UX-01·ANA-01에 이어 UX-02 Result Overview를 완료했다. AnalysisBundle v2의 정체성·완전성·4축 Truth·7개 분석 기능 가용성을 V4 결과 분석에 연결했고 실제 취소 job과 5상태 fixture를 직접 검증했다. 상세 정본은 `2026-08-26_UX-02_Result_Overview_구현결과.md`, 다음 한 단위는 **RES-01 `<3000` 다기간 연구 사전등록**이다.
 
 ---
 
@@ -119,6 +119,19 @@ V4 백테스트 최상단에 실행·경제·권위·다음 행동과 차단 사
 | 실제 job | 취소 job hash 두 번 동일, 원본 JSON hash 불변 |
 | generation | source provenance 부족으로 미지원; 값 합성 금지 |
 
+### UX-02 — Result Overview — 완료
+
+V4 결과 분석 화면이 차트보다 먼저 AnalysisBundle 정체성·실행 완전성·판단 권위·분석 가능성을 보여준다. 관측하지 않은 결과는 0으로 합성하지 않는다.
+
+| 완료 계약 | 결과 |
+|---|---|
+| 실제 job | 취소 기록 `CANCELLED / NOT_EVALUABLE / FEASIBILITY / REPRODUCE` |
+| 5상태 fixture | success/no-trades/error/timeout/partial 모두 PASS |
+| capability | 핵심 지표·시계열·분포·에피소드·기여 분석·반사실·강건성 상태 분리 |
+| 반응형 | 1280 4/7열·720 2/2열·560 1/1열, 가로 넘침 없음 |
+| 접근성 | landmark/live region/keyboard Enter/색 비의존 |
+| frontend 품질 | 47 tests·production build·typecheck·V1~V7 harness·console error 0 |
+
 ## 5. 권장 구현 순서
 
 | 순서 | 작업 |
@@ -128,8 +141,8 @@ V4 백테스트 최상단에 실행·경제·권위·다음 행동과 차단 사
 | 3 | SYS-01B adapter/read-only API — **완료** |
 | 4 | UX-01 Global Truth Bar — **완료** |
 | 5 | ANA-01 AnalysisBundle v2 — **완료** |
-| 6 | UX-02 Result Overview — **다음** |
-| 7 | RES-01 `<3000` 다기간 사전등록 |
+| 6 | UX-02 Result Overview — **완료** |
+| 7 | RES-01 `<3000` 다기간 사전등록 — **다음** |
 | 8 | RES-02 G0 공식 실행 |
 | 9 | ANA-02 구조 부검 |
 | 10 | RES-03 G1 구조 개선·동일 계약 재실행 |
@@ -223,4 +236,4 @@ python scripts/verify_pyd_gui_contract.py --branch codex/process-research-pipeli
 | 권위 | feasibility/development/OOS/live |
 | 다음 행동 | 정확히 하나 |
 
-현재 다음 행동은 **`UX-02 — Result Overview를 AnalysisBundle v2의 identity·완전성·권위·capability 우선으로 재배선`**이다.
+현재 다음 행동은 **`RES-01 — <3000 다기간 연구의 기간·후보·seed·identity·비용·실패 분류·분석 순서·중지 조건을 결과 조회 전에 사전등록 커밋으로 봉인`**이다.

@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-25T16:30:38.457200+00:00",
-  "source_fingerprint": "0772cdc9138a8d333a3c07f5fe5b981daa8d091a6e7e2a23e137afe3a69092a6",
-  "count": 1070,
+  "generated_at": "2026-08-25T16:47:46.775305+00:00",
+  "source_fingerprint": "b0932280bd60c447a4c9340fe9f69a5c18641251aae8a5acc84b58c59f290266",
+  "count": 1071,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7145,6 +7145,13 @@
       "size": 4977
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-26_UX-02_Result_Overview_구현결과.md",
+      "title": "UX-02 — Result Overview 구현·직접 사용성 검증 결과",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-25T16:46:50.769430+00:00",
+      "size": 4529
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
       "title": "핸드오프 — QSP7 매도식 연구 (2026-08-01)",
       "category": "quant_scoring_pipeline",
@@ -7239,8 +7246,8 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_process_research_pipeline_재출발.md",
       "title": "핸드오프 — Process Research Pipeline 재출발 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:29:43.452119+00:00",
-      "size": 8182
+      "updated_at": "2026-08-25T16:44:18.849742+00:00",
+      "size": 8712
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_v516_시총별_반복연구_재개.md",
@@ -7253,8 +7260,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:29:43.459009+00:00",
-      "size": 14525
+      "updated_at": "2026-08-25T16:44:18.856306+00:00",
+      "size": 14659
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
