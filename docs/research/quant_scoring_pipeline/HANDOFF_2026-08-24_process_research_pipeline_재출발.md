@@ -8,7 +8,7 @@
 >
 > 시작 기준: `loop/process-research-pipeline` @ `f75b80ebcb7fd72cd41c8933c4f6e63df8c2ae52`
 >
-> **2026-08-25 최신 실행:** BOOT-01·PIPE-01 완료. `<3000` 10건을 원시 job 증거와 대조한 결과 기존 `no_trades 2`는 모두 전략 예외로 가려진 실행 오류였다. 정정 집계는 **지표 생성 2 / 정상 무거래 0 / 실행 오류 6 / watchdog timeout 2**다. 상세 정본은 `2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md`, 다음 한 단위는 **SYS-01A Research Truth Contract**다.
+> **2026-08-25 최신 실행:** BOOT-01·PIPE-01과 SYS-01A pure Truth Contract를 완료했다. `<3000` 정정 집계 **지표 생성 2 / 정상 무거래 0 / 실행 오류 6 / watchdog timeout 2**를 10/10 fixture로 고정했고, raw 상태 보존·복합 identity·fail-closed validator를 검증했다. 상세 정본은 `2026-08-25_SYS-01A_Research_Truth_Contract_구현결과.md`, 다음 한 단위는 **SYS-01B read-only adapter/API**다.
 
 ---
 
@@ -69,9 +69,9 @@
 - job ID 중복을 발견해 provenance 복합 identity 요구사항으로 올렸다.
 - 지표 생성 2건도 거래 2/4건의 손실이므로 경제 판정은 `INCONCLUSIVE`다.
 
-### SYS-01A — Research Truth Contract — 다음 한 단위
+### SYS-01A — Research Truth Contract — 완료
 
-실행·경제·권위·행동을 분리한 strict type과 invariant validator를 먼저 구현한다. 아직 UI·연구 재실행으로 넘어가지 않는다.
+실행·경제·권위·행동을 분리한 strict type과 invariant validator를 구현하고 PIPE-01 10건을 회귀 fixture로 고정했다. 아직 UI·연구 재실행으로 넘어가지 않는다.
 
 | 축 | 상태 |
 |---|---|
@@ -80,20 +80,25 @@
 | 권위 | FEASIBILITY / DEVELOPMENT / FROZEN_OOS / SHADOW / LIVE |
 | 행동 | DEBUG / REPRODUCE / STRUCTURAL_REVISE / EXPAND / STOP / HOLDOUT |
 
+### SYS-01B — legacy adapter와 read-only API — 다음 한 단위
+
+과거 artifact를 수정하지 않고 typed view로 읽으며, 새 terminal 판정은 exception·timeout 증거를 일반 `without metrics` 메시지보다 우선한다. API와 WebSocket은 같은 schema를 사용하고 job ID 단독 조회를 허용하지 않는다.
+
 ## 5. 권장 구현 순서
 
 | 순서 | 작업 |
 |---:|---|
 | 1 | PIPE-01 failure ledger — **완료** |
-| 2 | SYS-01 typed Truth Contract — **다음** |
-| 3 | UX-01 Global Truth Bar |
-| 4 | ANA-01 AnalysisBundle v2 |
-| 5 | UX-02 Result Overview |
-| 6 | RES-01 `<3000` 다기간 사전등록 |
-| 7 | RES-02 G0 공식 실행 |
-| 8 | ANA-02 구조 부검 |
-| 9 | RES-03 G1 구조 개선·동일 계약 재실행 |
-| 10 | UX-03 실제 데이터 사용성 반복 |
+| 2 | SYS-01A pure Truth Contract — **완료** |
+| 3 | SYS-01B adapter/read-only API — **다음** |
+| 4 | UX-01 Global Truth Bar |
+| 5 | ANA-01 AnalysisBundle v2 |
+| 6 | UX-02 Result Overview |
+| 7 | RES-01 `<3000` 다기간 사전등록 |
+| 8 | RES-02 G0 공식 실행 |
+| 9 | ANA-02 구조 부검 |
+| 10 | RES-03 G1 구조 개선·동일 계약 재실행 |
+| 11 | UX-03 실제 데이터 사용성 반복 |
 
 ## 6. 연구 불변식
 
@@ -183,4 +188,4 @@ python scripts/verify_pyd_gui_contract.py --branch codex/process-research-pipeli
 | 권위 | feasibility/development/OOS/live |
 | 다음 행동 | 정확히 하나 |
 
-현재 다음 행동은 **`SYS-01A — Research Truth Contract의 pure type·validator·10개 회귀 fixture`**다.
+현재 다음 행동은 **`SYS-01B — legacy artifact adapter·terminal precedence·read-only typed API`**다.
