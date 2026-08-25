@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-25T16:47:46.775305+00:00",
-  "source_fingerprint": "b0932280bd60c447a4c9340fe9f69a5c18641251aae8a5acc84b58c59f290266",
+  "generated_at": "2026-08-25T16:50:25.708837+00:00",
+  "source_fingerprint": "f80b3b6c86a5ffac998e9234d12b3e351b1203419a9232e8ce50d5a5fd8aa321",
   "count": 1071,
   "docs": [
     {
@@ -7148,7 +7148,7 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_UX-02_Result_Overview_구현결과.md",
       "title": "UX-02 — Result Overview 구현·직접 사용성 검증 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:46:50.769430+00:00",
+      "updated_at": "2026-08-25T16:49:19.675145+00:00",
       "size": 4529
     },
     {
@@ -7246,7 +7246,7 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_process_research_pipeline_재출발.md",
       "title": "핸드오프 — Process Research Pipeline 재출발 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:44:18.849742+00:00",
+      "updated_at": "2026-08-25T16:49:19.714673+00:00",
       "size": 8712
     },
     {
@@ -7260,7 +7260,7 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:44:18.856306+00:00",
+      "updated_at": "2026-08-25T16:49:19.761514+00:00",
       "size": 14659
     },
     {
