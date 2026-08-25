@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-25T16:09:19.858053+00:00",
-  "source_fingerprint": "44689247af0c55677add15d5ac757a27a0ecf42da0da8d24bf7e1e4a37d770f1",
+  "generated_at": "2026-08-25T16:12:11.490982+00:00",
+  "source_fingerprint": "f138a9d7d9d02438ada51b7ed6a168dfb41b1c719525ebe553322a794ff5d772",
   "count": 1069,
   "docs": [
     {
@@ -7134,7 +7134,7 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_UX-01_V4_Global_Truth_Bar_구현결과.md",
       "title": "UX-01 — V4 Global Truth Bar 구현·직접 사용성 검증 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:08:06.614599+00:00",
+      "updated_at": "2026-08-25T16:10:57.512096+00:00",
       "size": 4977
     },
     {
@@ -7232,7 +7232,7 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_process_research_pipeline_재출발.md",
       "title": "핸드오프 — Process Research Pipeline 재출발 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:08:06.631070+00:00",
+      "updated_at": "2026-08-25T16:10:57.518100+00:00",
       "size": 7527
     },
     {
@@ -7246,7 +7246,7 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:08:06.639503+00:00",
+      "updated_at": "2026-08-25T16:10:57.524714+00:00",
       "size": 14376
     },
     {
