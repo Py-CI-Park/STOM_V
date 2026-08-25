@@ -6,7 +6,6 @@ from ai_strategy_loop.revision.execution_contract import (
     evaluate_execution_contract,
 )
 
-
 OLD_G2 = """\
 매수 = True
 if not (현재가 < VI아래5호가):
@@ -59,6 +58,22 @@ def test_execution_contract_rejects_work_over_budget():
     assert "estimated_work_exceeded" in result.reasons
 
 
+@pytest.mark.parametrize(
+    ("function_name", "call"),
+    (("연속상승", "연속상승(3)"), ("호가상승압력", "호가상승압력(30, 0.7)")),
+)
+def test_runtime_contract_accepts_engine_supported_confirmation_functions(
+    function_name: str, call: str
+) -> None:
+    source = f"매수 = True\nif not ({call}):\n    매수 = False\n"
+    result = evaluate_execution_contract(
+        source,
+        allowed_functions=(function_name,),
+    )
+    assert result.ok is True
+    assert result.runtime_symbols.undefined == ()
+
+
 def test_runtime_symbol_check_rejects_assignment_after_use():
     source = "매수 = 조건\n조건 = True\n"
     result = check_runtime_symbols(source, allowed_symbols=())
@@ -68,4 +83,4 @@ def test_runtime_symbol_check_rejects_assignment_after_use():
 
 def test_runtime_symbol_check_rejects_invalid_python():
     with pytest.raises(SyntaxError):
-        check_runtime_symbols("if 조건\n    pass")
+        _ = check_runtime_symbols("if 조건\n    pass")

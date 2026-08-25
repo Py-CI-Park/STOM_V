@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import ast
 import hashlib
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from ai_strategy_loop.revision.condition_ast import static_check_condition_source
 
@@ -37,7 +37,7 @@ STOCK_TICK_RUNTIME_SYMBOLS = frozenset({
     "현재가N", "등락율N", "변동성", "구간저가대비현재가등락율",
     "구간고가대비현재가등락율", "거래대금평균대비비율", "체결강도평균대비비율",
     "구간호가총잔량비율", "고가미갱신지속틱수", "저가미갱신지속틱수",
-    "변동성급증",
+    "변동성급증", "연속상승", "호가상승압력",
 })
 
 
@@ -103,7 +103,7 @@ def evaluate_execution_contract(
     source: str,
     *,
     max_clauses: int = 64,
-    max_lookback: int | float = 600,
+    max_lookback: float = 600,
     max_unknown_lines: int = 0,
     max_estimated_work: float = 256,
     allowed_functions: Iterable[str] = ("self.Buy",),
