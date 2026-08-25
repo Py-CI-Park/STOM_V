@@ -9,7 +9,15 @@ from ai_strategy_loop.revision.mcap_event_contract import (
     PreregisteredEventGate,
 )
 from ai_strategy_loop.revision.mcap_event_scan import scan_event_gate
-from utility.sqlite_readonly import sqlite_sidefile_snapshot
+from ai_strategy_loop.revision.mcap_event_source import (
+    iter_sql_rows,
+    load_source_scope,
+    query_code_rows,
+)
+from utility.sqlite_readonly import (
+    connect_existing_db_readonly,
+    sqlite_sidefile_snapshot,
+)
 
 
 def _candidate() -> EventCandidate:
@@ -102,3 +110,43 @@ def test_readonly_scan_counts_only_triggered_engine_rows(tmp_path: Path) -> None
     assert result.stats.tick_rows == 75
     assert result.stats.base_eligible_tick_rows == 15
     assert sqlite_sidefile_snapshot(path) == before
+
+
+def test_source_query_projects_only_used_tick_columns(tmp_path: Path) -> None:
+    path = tmp_path / "source.db"
+    _source_db(path)
+    connection = connect_existing_db_readonly(path)
+    try:
+        folds = (DevelopmentFold(id="DEV", start=20220401, end=20220430),)
+        scope = load_source_scope(connection, folds, 90000, 93000)
+        rows = tuple(
+            iter_sql_rows(
+                query_code_rows(
+                    connection,
+                    "000001",
+                    {20220401},
+                    90000,
+                    93000,
+                    scope.tick_projection,
+                )
+            )
+        )
+    finally:
+        connection.close()
+
+    assert scope.tick_projection.columns == (
+        "index",
+        "c1",
+        "c5",
+        "c7",
+        "c14",
+        "c15",
+        "c17",
+        "c18",
+        "c19",
+        "c50",
+        "c51",
+        "c53",
+    )
+    assert len(rows) == 75
+    assert {len(row) for row in rows} == {12}

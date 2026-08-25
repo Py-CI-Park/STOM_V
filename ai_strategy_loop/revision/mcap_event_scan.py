@@ -134,6 +134,7 @@ def scan_event_gate(
                     code_days[code],
                     window_start,
                     window_end_exclusive,
+                    scope.tick_projection,
                 )
             ):
                 row_timestamp = timestamp(row[0])

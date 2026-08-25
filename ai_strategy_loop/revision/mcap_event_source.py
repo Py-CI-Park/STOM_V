@@ -19,6 +19,18 @@ from ai_strategy_loop.revision.mcap_event_logic import TickDay
 SqlScalar = int | float | str | bytes | None
 SqlRow = tuple[SqlScalar, ...]
 _CODE = re.compile(r"^\d{6}$")
+_TICK_COLUMN_POSITIONS = (0, 1, 5, 7, 14, 15, 17, 18, 19, 50, 51, 53)
+
+
+@dataclass(frozen=True, slots=True)
+class TickProjection:
+    columns: tuple[str, ...]
+
+    @property
+    def select_list(self) -> str:
+        return ", ".join(
+            f'"{column.replace(chr(34), chr(34) * 2)}"' for column in self.columns
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,6 +39,7 @@ class EventSourceScope:
     day_to_fold: dict[int, str]
     moneytop_rows: int
     available_tables: set[str]
+    tick_projection: TickProjection
 
 
 def number(value: SqlScalar) -> float:
@@ -48,10 +61,8 @@ def timestamp(value: SqlScalar) -> int:
 
 
 def tick_day(rows: list[SqlRow]) -> TickDay:
-    if not rows or any(len(row) < 54 for row in rows):
-        raise EventGateContractError(
-            "stock tick row must contain the official 54 base columns"
-        )
+    if not rows or any(len(row) != len(_TICK_COLUMN_POSITIONS) for row in rows):
+        raise EventGateContractError("stock tick projection must contain 12 columns")
 
     def floats(position: int) -> np.ndarray:
         values = np.asarray([number(row[position]) for row in rows], dtype=np.float64)
@@ -60,16 +71,16 @@ def tick_day(rows: list[SqlRow]) -> TickDay:
     return TickDay(
         timestamp=np.asarray([timestamp(row[0]) for row in rows], dtype=np.int64),
         price=floats(1),
-        rate=floats(5),
-        strength=floats(7),
-        market_cap=floats(14),
-        round_figure=floats(15),
-        vi_price=floats(17),
-        vi_unit=floats(18),
-        second_money=floats(19),
-        ask_total=floats(50),
-        bid_total=floats(51),
-        interest=floats(53),
+        rate=floats(2),
+        strength=floats(3),
+        market_cap=floats(4),
+        round_figure=floats(5),
+        vi_price=floats(6),
+        vi_unit=floats(7),
+        second_money=floats(8),
+        ask_total=floats(9),
+        bid_total=floats(10),
+        interest=floats(11),
     )
 
 
@@ -103,6 +114,23 @@ def iter_sql_rows(cursor: sqlite3.Cursor) -> Iterator[SqlRow]:
         yield row
 
 
+def _load_tick_projection(
+    connection: sqlite3.Connection, available_tables: set[str]
+) -> TickProjection:
+    if not available_tables:
+        raise EventGateContractError("stock tick database has no six-digit tables")
+    sample_table = min(available_tables)
+    schema = tuple(
+        iter_sql_rows(connection.execute(f'PRAGMA table_info("{sample_table}")'))
+    )
+    if len(schema) < 54 or any(len(row) < 2 or row[1] is None for row in schema):
+        raise EventGateContractError("stock tick table must expose 54 base columns")
+    names = tuple(str(schema[position][1]) for position in _TICK_COLUMN_POSITIONS)
+    if len(set(names)) != len(names):
+        raise EventGateContractError("stock tick projection columns must be unique")
+    return TickProjection(columns=names)
+
+
 def load_source_scope(
     connection: sqlite3.Connection,
     folds: tuple[DevelopmentFold, ...],
@@ -134,7 +162,14 @@ def load_source_scope(
                 if _CODE.fullmatch(code):
                     code_days.setdefault(code, set()).add(day)
             row_count += 1
-    return EventSourceScope(code_days, day_to_fold, row_count, _table_names(connection))
+    available_tables = _table_names(connection)
+    return EventSourceScope(
+        code_days,
+        day_to_fold,
+        row_count,
+        available_tables,
+        _load_tick_projection(connection, available_tables),
+    )
 
 
 def query_code_rows(
@@ -143,6 +178,7 @@ def query_code_rows(
     days: set[int],
     window_start: int,
     window_end_exclusive: int,
+    projection: TickProjection,
 ) -> sqlite3.Cursor:
     if not _CODE.fullmatch(code):
         raise EventGateContractError(f"unsafe symbol table name: {code!r}")
@@ -157,5 +193,6 @@ def query_code_rows(
             )
         )
     return connection.execute(
-        f'SELECT * FROM "{code}" WHERE {" OR ".join(clauses)}', parameters
+        f'SELECT {projection.select_list} FROM "{code}" WHERE {" OR ".join(clauses)}',
+        parameters,
     )
