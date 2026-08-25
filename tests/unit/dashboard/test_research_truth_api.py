@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -130,3 +131,34 @@ def test_missing_source_identity_fails_closed(
     assert payload["truth_available"] is False
     assert payload["reason"] == "source_identity_missing"
     assert payload["terminal"] is True
+
+
+def test_runtime_authority_reports_setting_schema_and_exact_paths(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    setting = tmp_path / "setting.db"
+    strategy = tmp_path / "strategy.db"
+    stock_tick = tmp_path / "stock_tick_back.db"
+    connection = sqlite3.connect(setting)
+    required_tables = (
+        "main", "stock", "coin", "sacc", "cacc", "telegram",
+        "stockbuyorder", "stocksellorder", "coinbuyorder", "coinsellorder",
+        "etc", "back",
+    )
+    for table in required_tables:
+        _ = connection.execute(f'CREATE TABLE "{table}" (value INTEGER)')
+    connection.close()
+    strategy.touch()
+    stock_tick.touch()
+    monkeypatch.setenv("STOM_CLI_DB_SETTING", str(setting))
+    monkeypatch.setenv("STOM_WEBBT_JOB_STRATEGY_DB", str(strategy))
+    monkeypatch.setenv("STOM_CLI_DB_STOCK_BACK_TICK", str(stock_tick))
+
+    payload = client.get("/research-truth/runtime-authority").json()
+
+    assert payload["setting_schema_ok"] is True
+    assert Path(payload["setting_db"]) == setting
+    assert Path(payload["strategy_db"]) == strategy
+    assert Path(payload["stock_tick_db"]) == stock_tick

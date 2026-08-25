@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import os
 import re
+import sqlite3
 from pathlib import Path
-from typing import Final
+from typing import Final, cast
 
 import anyio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
@@ -32,6 +33,11 @@ _JSON_OBJECT = TypeAdapter(
     config=ConfigDict(strict=True),
 )
 _WS_INTERVAL_SECONDS: Final = 1.0
+_SETTING_TABLES: Final = frozenset({
+    "main", "stock", "coin", "sacc", "cacc", "telegram",
+    "stockbuyorder", "stocksellorder", "coinbuyorder", "coinsellorder",
+    "etc", "back",
+})
 
 
 def configured_jobs_dir() -> Path:
@@ -39,6 +45,46 @@ def configured_jobs_dir() -> Path:
     if override:
         return Path(override)
     return Path(__file__).resolve().parent.parent / "state" / "webbt_jobs"
+
+
+def _runtime_path(environment_name: str, default_name: str) -> Path:
+    value = os.environ.get(environment_name)
+    return Path(value) if value else Path(__file__).resolve().parents[2] / "_database" / default_name
+
+
+def _setting_schema_ok(path: Path) -> bool:
+    try:
+        connection = sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True)
+        try:
+            rows = cast(
+                list[tuple[str]],
+                connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                ).fetchall(),
+            )
+            tables = {row[0] for row in rows}
+        finally:
+            connection.close()
+    except (OSError, sqlite3.Error):
+        return False
+    return _SETTING_TABLES.issubset(tables)
+
+
+@research_truth_router.get("/runtime-authority")
+def research_runtime_authority() -> dict[str, JsonValue]:
+    setting = _runtime_path("STOM_CLI_DB_SETTING", "setting.db").resolve()
+    return {
+        "schema": "stom.research_runtime_authority.v1",
+        "jobs_dir": configured_jobs_dir().resolve().as_posix(),
+        "setting_db": setting.as_posix(),
+        "strategy_db": _runtime_path(
+            "STOM_WEBBT_JOB_STRATEGY_DB", "strategy.db"
+        ).resolve().as_posix(),
+        "stock_tick_db": _runtime_path(
+            "STOM_CLI_DB_STOCK_BACK_TICK", "stock_tick_back.db"
+        ).resolve().as_posix(),
+        "setting_schema_ok": _setting_schema_ok(setting),
+    }
 
 
 def _base_response(job_id: str) -> dict[str, JsonValue]:
