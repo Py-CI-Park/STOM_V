@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from ai_strategy_loop.revision.execution_contract import evaluate_execution_contract
 from ai_strategy_loop.revision.mcap_controls import (
     control_receipt,
     direction_inversion_control,
@@ -10,10 +11,15 @@ from ai_strategy_loop.revision.mcap_controls import (
     symbol_shuffle_control,
     timestamp_shuffle_control,
 )
-from ai_strategy_loop.revision.mcap_event_estimator import block_sparse_candidates, estimate_candidate_events
-from ai_strategy_loop.revision.mcap_state_machine import FAMILIES, build_candidate
-from ai_strategy_loop.revision.mcap_state_machine import D3_ALLOWED_FUNCTIONS
-from ai_strategy_loop.revision.execution_contract import evaluate_execution_contract
+from ai_strategy_loop.revision.mcap_event_estimator import (
+    block_sparse_candidates,
+    estimate_candidate_events,
+)
+from ai_strategy_loop.revision.mcap_state_machine import (
+    D3_ALLOWED_FUNCTIONS,
+    FAMILIES,
+    build_candidate,
+)
 from ai_strategy_loop.revision.window_contract import ResearchWindowContract
 
 
@@ -83,6 +89,10 @@ def test_every_family_default_source_passes_static_runtime_contract():
                 max_clauses=32, max_lookback=240, max_estimated_work=256,
             )
             assert result.ok, (family.family_id, band_id, result.reasons)
+
+
+def test_direct_source_contract_allows_preregistered_g1_confirmation_functions():
+    assert {"연속상승", "호가상승압력"}.issubset(D3_ALLOWED_FUNCTIONS)
 
 
 def test_event_estimator_blocks_sparse_candidate_without_reading_pnl():

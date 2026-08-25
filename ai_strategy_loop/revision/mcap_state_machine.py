@@ -2,15 +2,16 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import hashlib
 import json
 import math
-from typing import Any, Mapping
+from collections.abc import Mapping
+from dataclasses import asdict, dataclass
+from typing import Any
 
+from ai_strategy_loop.revision.execution_contract import evaluate_execution_contract
 from ai_strategy_loop.revision.mcap_bands import MCAP_BANDS
 from ai_strategy_loop.revision.window_contract import ResearchWindowContract
-from ai_strategy_loop.revision.execution_contract import evaluate_execution_contract
 
 AUTHORITY = "existing_db_development_no_oos_no_adoption"
 STEPS = ("STATE_ENTER", "STATE_PERSIST", "EVENT", "CONFIRM", "ENTER")
@@ -19,7 +20,7 @@ D3_ALLOWED_FUNCTIONS = (
     "체결강도평균대비비율", "구간고가대비현재가등락율",
     "고가미갱신지속틱수", "거래대금평균대비비율", "변동성",
     "최고현재가", "최저현재가", "현재가N", "등락율N", "저가미갱신지속틱수",
-    "변동성급증",
+    "변동성급증", "연속상승", "호가상승압력",
 )
 
 
