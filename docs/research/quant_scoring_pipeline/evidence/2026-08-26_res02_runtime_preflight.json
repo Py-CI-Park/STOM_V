@@ -1,0 +1,114 @@
+{
+  "schema": "stom.res02.runtime_preflight.v1",
+  "authority": "existing_db_development_no_oos_no_adoption",
+  "can_adopt": false,
+  "economic_result": "NOT_EVALUATED",
+  "holdout_status": "SEALED_NOT_TOUCHED",
+  "implementation": {
+    "base_sha": "396c7477346b9ae90d0358df10f62ddcb80852ff",
+    "fix_sha": "33c86fd09615b076ce4277583e320ab5df71eb72",
+    "merge_sha": "735c9f94abfd245985d6cdb7acf3b39276a16bdc",
+    "branch": "codex/process-research-res-02-g0-preflight-event"
+  },
+  "market_data": {
+    "path": "C:/System_Trading/STOM/STOM_V.wt-dev/_database/stock_tick_back.db",
+    "size_bytes": 29727162368,
+    "modified_utc": "2026-03-18T04:21:17.0562195Z",
+    "sampled_v1_sha256": "a944f7c2bf2d22188688c768e3b202406734c4a38ba19bf81dbde6616eb03a48",
+    "sqlite_table_count": 2427,
+    "read_mode": "immutable_readonly",
+    "source_sidecars_created": false
+  },
+  "excluded_local_assets": {
+    "worktree_stock_tick_back_db_size_bytes": 0,
+    "worktree_setting_db_size_bytes": 0,
+    "reason": "zero_byte_placeholder_not_authoritative"
+  },
+  "fold_coverage": [
+    {
+      "fold_id": "DEV_2022_Q2_MONTH1",
+      "moneytop_distinct_days": 21
+    },
+    {
+      "fold_id": "DEV_2023_Q3_MONTH1",
+      "moneytop_distinct_days": 21
+    },
+    {
+      "fold_id": "DEV_2024_Q4_MONTH1",
+      "moneytop_distinct_days": 20
+    },
+    {
+      "fold_id": "DEV_2025_Q1_MONTH1",
+      "moneytop_distinct_days": 18
+    }
+  ],
+  "counterexample_runs": [
+    {
+      "candidate_id": "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_cc12f7a023",
+      "manifest_source_sha256": "35f8d350c98649d56314445da341ed2757e5099cc50056c961d9b5fc39995dc5",
+      "legacy_failure": {
+        "code": "006740",
+        "index": 20231114091855,
+        "error": "TypeError: list indices must be integers or slices, not str"
+      },
+      "verified_run": {
+        "job_id": "20260826_022616_D3FAILEDBREAKOUTRETURNMC_76638",
+        "status": "no_trades",
+        "returncode": 2,
+        "source_snapshot_match": true,
+        "event_count": 204,
+        "last_checkpoint": "total_report_no_trades",
+        "engine_checkpoint": "engine_backtest_completed",
+        "tick_count": 138524,
+        "code_count": 87,
+        "job_record_sha256": "6460407c58964128ca73dc1d72b873edadc917afd662c0662cb1339cf165c651",
+        "job_log_sha256": "1d60da8201cd31a4d25078519db56f793f8d1b046e103e22c2e7c6825c581fb9"
+      }
+    },
+    {
+      "candidate_id": "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_8432eb62ad",
+      "manifest_source_sha256": "d67263bc6c5c4e4a3a220ecf5dd75d171ce4e90477a37ba95007d9e76ccf263b",
+      "legacy_failure": {
+        "code": "006740",
+        "index": 20231114091311,
+        "error": "TypeError: list indices must be integers or slices, not str"
+      },
+      "verified_run": {
+        "job_id": "20260826_022741_D3FAILEDBREAKOUTRETURNMC_61724",
+        "status": "no_trades",
+        "returncode": 2,
+        "source_snapshot_match": true,
+        "event_count": 204,
+        "last_checkpoint": "total_report_no_trades",
+        "engine_checkpoint": "engine_backtest_completed",
+        "tick_count": 138524,
+        "code_count": 87,
+        "job_record_sha256": "2028adaa85a0bf2fbaf183d879e1a1194cdefb3ab18cd937d2d84fe5c281964a",
+        "job_log_sha256": "2a7cbc3770f2958a5f106fbc9d5b9fc55b43cbf541e51c0ab8d6c1e0e727b3ac"
+      }
+    }
+  ],
+  "parser_counterexample": {
+    "job_id": "20260826_021906_D3FAILEDBREAKOUTRETURNMC_46366",
+    "before_status": "error",
+    "before_message": "non-success: exit=2 status=None",
+    "actual_receipt": "total_report_no_trades",
+    "after_reparse_status": "no_trades",
+    "job_record_sha256": "30932c49d445c1f62aca507905180b1731631da6ff140f474e5c9822df44cbda",
+    "job_log_sha256": "eb93804cdd93b3c104466767ceb23d4827dca5e05648ef137ff168539f88a10d"
+  },
+  "verification": {
+    "focused_red": [
+      "2 failed in 90.09s",
+      "1 failed in 2.44s"
+    ],
+    "focused_green": "8 passed in 2.55s",
+    "related_suite": "338 passed in 71.75s",
+    "nonrelease_sync": "PASS",
+    "new_parser_no_excuse": "PASS",
+    "new_parser_ruff": "PASS",
+    "new_parser_basedpyright": "0 errors, 0 warnings"
+  },
+  "verdict": "RUNTIME_PREFLIGHT_GO",
+  "next_gate": "RES02_EVENT_ELIGIBILITY_ESTIMATION"
+}
