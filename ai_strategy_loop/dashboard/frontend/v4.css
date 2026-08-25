@@ -327,6 +327,78 @@
   .research-truth-axes { grid-template-columns: minmax(0, 1fr); }
   .research-truth-head, .research-truth-empty { align-items: stretch; flex-direction: column; }
 }
+.analysis-bundle-overview {
+  min-width: 0;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  background: var(--bg-1);
+  overflow: hidden;
+}
+.analysis-overview-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border-bottom: 1px solid var(--line-1);
+}
+.analysis-overview-head h3 { margin: 3px 0; color: var(--ink-0); font-size: 16px; overflow-wrap: anywhere; }
+.analysis-overview-head p { margin: 0; color: var(--ink-3); font-size: 10px; overflow-wrap: anywhere; }
+.analysis-overview-kicker { color: var(--blue); font: 700 9.5px/1.2 var(--mono); letter-spacing: .14em; }
+.analysis-overview-axes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  background: var(--line-1);
+}
+.analysis-overview-axis { min-width: 0; padding: 10px 12px; background: var(--bg-0); }
+.analysis-overview-axis dt { margin-bottom: 4px; color: var(--ink-3); font: 10px/1.2 var(--mono); }
+.analysis-overview-axis dd { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; margin: 0; }
+.analysis-overview-axis strong { color: var(--ink-0); font-size: 13px; }
+.analysis-overview-axis code { color: var(--ink-2); font-size: 9.5px; }
+.analysis-completeness {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 9px 14px;
+  border-top: 1px solid var(--line-1);
+  border-bottom: 1px solid var(--line-1);
+  color: var(--ink-2);
+  font-size: 10px;
+}
+.analysis-completeness b { color: var(--ink-0); }
+.analysis-capability-wrap { padding: 12px 14px 14px; }
+.analysis-capability-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.analysis-capability-title b { color: var(--ink-1); font-size: 12px; }
+.analysis-capability-title span { color: var(--ink-3); font-size: 10.5px; }
+.analysis-capability-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.analysis-capability { min-width: 0; padding: 8px; border: 1px solid var(--line-1); border-radius: 6px; background: var(--bg-0); }
+.analysis-capability > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px; }
+.analysis-capability b { color: var(--ink-2); font-size: 10.5px; }
+.analysis-capability code { color: var(--ink-3); font-size: 8.5px; }
+.analysis-capability > strong { display: block; margin-top: 5px; color: var(--ink-1); font-size: 11px; }
+.analysis-capability small { display: block; margin-top: 4px; color: var(--ink-3); font-size: 9.5px; line-height: 1.35; }
+.analysis-capability.status-observed { border-color: rgba(76, 214, 179, .35); }
+.analysis-capability.status-observed > strong { color: var(--teal); }
+.analysis-capability.status-not_evaluable { border-color: rgba(255, 107, 107, .28); }
+.analysis-capability.status-not_evaluable > strong { color: var(--red); }
+.analysis-capability.status-not_run > strong { color: var(--amber); }
+.analysis-overview-evidence { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 9px 14px; border-top: 1px solid var(--line-1); color: var(--ink-3); font-size: 9.5px; overflow-wrap: anywhere; }
+.analysis-bundle-overview.unavailable { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px; }
+.analysis-bundle-overview.unavailable h3 { margin: 3px 0; color: var(--ink-1); font-size: 14px; }
+.analysis-bundle-overview.unavailable p { margin: 0; color: var(--ink-2); font-size: 11px; }
+@media (max-width: 1200px) {
+  .analysis-capability-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .analysis-overview-axes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analysis-capability-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .analysis-overview-head, .analysis-capability-title, .analysis-bundle-overview.unavailable { flex-direction: column; }
+  .analysis-overview-axes, .analysis-capability-grid { grid-template-columns: minmax(0, 1fr); }
+}
 .v4-replay { min-width: 0; }
 .v4-replay .chart-wrap { min-height: 360px; }
 .v4-lab, .v4-workbench, .v4-history { display: flex; flex-direction: column; gap: 14px; min-width: 0; }

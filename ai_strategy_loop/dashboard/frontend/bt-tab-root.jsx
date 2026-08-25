@@ -13,6 +13,7 @@ import { BtRunPanel, BtResultLibrary } from "./bt-tab-run.jsx";
 import { BtModeResultPanel } from "./bt-tab-mode-results.jsx";
 import { BtOverlayPanel, BtCollapsible, BtEvoSelector, BtPortfolioPanel, BtBackFinderPreflightPanel } from "./bt-tab-analysis.jsx";
 import { ResearchTruthBar } from "./research-truth-bar.jsx";
+import { AnalysisBundleOverview } from "./analysis-bundle-overview.jsx";
 
 // 비교 키 → 쿼리 파라미터. 잡은 job_id 하나, 진화 세대는 "run_id/gen_no" 를 쪼갠다.
 function _btCompareParams(key, side) {
@@ -298,6 +299,9 @@ function BacktestTab({ baseUrl, wsStatus, showTruthBar = false }) {
               </div>
             )}
           </div>
+          {showTruthBar && truthJobId && !evoSource && (
+            <AnalysisBundleOverview baseUrl={baseUrl} isDemo={isDemo} jobId={truthJobId} />
+          )}
           <div style={{ minWidth: 0, position: "relative" }}>
             {isModeResult ? (
               <BtModeResultPanel baseUrl={baseUrl} isDemo={isDemo} jobId={resultJobId} mode={selectedJobMode} />
