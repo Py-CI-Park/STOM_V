@@ -5,10 +5,6 @@ from __future__ import annotations
 import hashlib
 import urllib.parse
 
-from pydantic import ValidationError
-
-from ai_strategy_loop.controller.research_truth_models import ResearchTruth
-from ai_strategy_loop.dashboard.analysis_bundle_models import AnalysisBundleV2
 from ai_strategy_loop.dashboard.backtest_terminal_classification import JsonValue
 from ai_strategy_loop.revision.mcap_event_contract import EventGateContractError
 from ai_strategy_loop.revision.mcap_g0_client import TERMINAL
@@ -16,6 +12,11 @@ from ai_strategy_loop.revision.mcap_g0_contract import (
     G0Attempt,
     G0Task,
     OfficialExecutionProfile,
+)
+from ai_strategy_loop.revision.mcap_g0_evidence_parser import (
+    parse_bundle_payload,
+    parse_truth_payload,
+    unavailable_reason,
 )
 from ai_strategy_loop.revision.mcap_g0_http import DashboardClient
 
@@ -53,29 +54,6 @@ def _timestamp(row: dict[str, JsonValue], key: str) -> float:
     return float(value) if isinstance(value, (int, float)) else 0.0
 
 
-def _parse_truth(payload: dict[str, JsonValue]) -> ResearchTruth | None:
-    if payload.get("truth_available") is not True:
-        return None
-    try:
-        return ResearchTruth.model_validate(payload.get("truth"))
-    except ValidationError:
-        return None
-
-
-def _parse_bundle(payload: dict[str, JsonValue]) -> AnalysisBundleV2 | None:
-    if payload.get("bundle_available") is not True:
-        return None
-    try:
-        return AnalysisBundleV2.model_validate(payload.get("bundle"))
-    except ValidationError:
-        return None
-
-
-def _reason(payload: dict[str, JsonValue]) -> str | None:
-    value = payload.get("reason")
-    return value if isinstance(value, str) else None
-
-
 def _recover_row(
     client: DashboardClient,
     row: dict[str, JsonValue],
@@ -103,10 +81,10 @@ def _recover_row(
         transport_error=False,
         elapsed_seconds=max(0.0, _timestamp(row, "finished_at") - _timestamp(row, "started_at")),
         source_snapshot_match=True,
-        truth=_parse_truth(truth_payload),
-        truth_unavailable_reason=_reason(truth_payload),
-        analysis_bundle=_parse_bundle(bundle_payload),
-        bundle_unavailable_reason=_reason(bundle_payload),
+        truth=parse_truth_payload(truth_payload),
+        truth_unavailable_reason=unavailable_reason(truth_payload),
+        analysis_bundle=parse_bundle_payload(bundle_payload),
+        bundle_unavailable_reason=unavailable_reason(bundle_payload),
         metrics=metrics,
         submission_error=None,
     )

@@ -21,6 +21,7 @@ from ai_strategy_loop.revision.mcap_g0_contract import (
     G0Task,
     OfficialExecutionProfile,
 )
+from ai_strategy_loop.revision.mcap_g0_evidence_parser import parse_truth_payload
 from ai_strategy_loop.revision.mcap_g0_inputs import load_sealed_g0_plan
 from ai_strategy_loop.revision.mcap_g0_retry import should_retry
 
@@ -105,6 +106,15 @@ def test_retry_allows_only_preregistered_infrastructure_failures() -> None:
         update={"transport_error": True}
     )
     assert should_retry(transport)
+
+
+def test_truth_api_json_enums_cross_strict_model_boundary() -> None:
+    truth = _truth(FailureCause.ENGINE_DATA_RESPONSE_TIMEOUT)
+    parsed = parse_truth_payload(
+        {"truth_available": True, "truth": truth.model_dump(mode="json")}
+    )
+
+    assert parsed == truth
 
 
 def test_execute_task_resumes_at_second_infrastructure_attempt(

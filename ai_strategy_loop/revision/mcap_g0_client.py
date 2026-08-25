@@ -9,8 +9,6 @@ from typing import Final
 
 from pydantic import ValidationError
 
-from ai_strategy_loop.controller.research_truth_models import ResearchTruth
-from ai_strategy_loop.dashboard.analysis_bundle_models import AnalysisBundleV2
 from ai_strategy_loop.dashboard.backtest_terminal_classification import JsonValue
 from ai_strategy_loop.revision.mcap_event_contract import EventGateContractError
 from ai_strategy_loop.revision.mcap_g0_contract import (
@@ -18,6 +16,11 @@ from ai_strategy_loop.revision.mcap_g0_contract import (
     G0JobEvidence,
     G0Task,
     OfficialExecutionProfile,
+)
+from ai_strategy_loop.revision.mcap_g0_evidence_parser import (
+    parse_bundle_payload,
+    parse_truth_payload,
+    unavailable_reason,
 )
 from ai_strategy_loop.revision.mcap_g0_http import DashboardClient
 from ai_strategy_loop.revision.mcap_g0_retry import should_retry
@@ -27,11 +30,6 @@ TERMINAL: Final = frozenset(
 )
 def _object(value: JsonValue | None) -> dict[str, JsonValue]:
     return value if isinstance(value, dict) else {}
-
-
-def _reason(payload: dict[str, JsonValue]) -> str | None:
-    value = payload.get("reason")
-    return value if isinstance(value, str) else None
 
 
 def _job_row(client: DashboardClient, job_id: str) -> dict[str, JsonValue]:
@@ -56,26 +54,6 @@ def _source_matches(row: dict[str, JsonValue], task: G0Task, sell_source: str) -
         and hashes.get("sell")
         == hashlib.sha256(sell_source.encode("utf-8")).hexdigest()
     )
-
-
-def _parse_truth(payload: dict[str, JsonValue]) -> ResearchTruth | None:
-    if payload.get("truth_available") is not True:
-        return None
-    value = payload.get("truth")
-    try:
-        return ResearchTruth.model_validate(value)
-    except ValidationError:
-        return None
-
-
-def _parse_bundle(payload: dict[str, JsonValue]) -> AnalysisBundleV2 | None:
-    if payload.get("bundle_available") is not True:
-        return None
-    value = payload.get("bundle")
-    try:
-        return AnalysisBundleV2.model_validate(value)
-    except ValidationError:
-        return None
 
 
 def _submission_body(
@@ -174,10 +152,10 @@ def execute_attempt(
         transport_error=False,
         elapsed_seconds=round(time.monotonic() - started, 3),
         source_snapshot_match=_source_matches(row, task, sell_source),
-        truth=_parse_truth(truth_payload),
-        truth_unavailable_reason=_reason(truth_payload),
-        analysis_bundle=_parse_bundle(bundle_payload),
-        bundle_unavailable_reason=_reason(bundle_payload),
+        truth=parse_truth_payload(truth_payload),
+        truth_unavailable_reason=unavailable_reason(truth_payload),
+        analysis_bundle=parse_bundle_payload(bundle_payload),
+        bundle_unavailable_reason=unavailable_reason(bundle_payload),
         metrics=metrics,
         submission_error=None,
     )
