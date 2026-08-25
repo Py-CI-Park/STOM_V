@@ -50,6 +50,7 @@ class CliArgs:
     manifest: Path
     prereg: Path
     output: Path
+    workers: int
 
 
 def _sha256(path: Path) -> str:
@@ -93,6 +94,7 @@ def run(
     database: Path,
     manifest_path: Path,
     prereg_path: Path,
+    workers: int = 1,
 ) -> EventGateEvidence:
     manifest = CandidateManifest.model_validate_json(
         manifest_path.read_text(encoding="utf-8")
@@ -112,6 +114,7 @@ def run(
         gate=prereg.event_gate,
         window_start=prereg.source.window_start,
         window_end_exclusive=prereg.source.window_end_exclusive,
+        workers=workers,
         progress=_progress,
     )
     selected_by_family = select_event_eligible(
@@ -178,6 +181,7 @@ def run(
             min_distinct_symbols=prereg.event_gate.min_distinct_symbols,
         ),
         scan=ScanStatistics(
+            worker_processes=outcome.stats.worker_processes,
             moneytop_rows=outcome.stats.moneytop_rows,
             scheduled_symbols=outcome.stats.scheduled_symbols,
             missing_symbol_tables=outcome.stats.missing_symbol_tables,
@@ -204,12 +208,14 @@ def _parse_args() -> CliArgs:
     _ = parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     _ = parser.add_argument("--prereg", type=Path, default=DEFAULT_PREREG)
     _ = parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    _ = parser.add_argument("--workers", type=int, default=4)
     namespace = parser.parse_args()
     return CliArgs(
         database=cast(Path, namespace.database),
         manifest=cast(Path, namespace.manifest),
         prereg=cast(Path, namespace.prereg),
         output=cast(Path, namespace.output),
+        workers=cast(int, namespace.workers),
     )
 
 
@@ -224,6 +230,7 @@ def main() -> None:
         database=args.database.resolve(),
         manifest_path=args.manifest.resolve(),
         prereg_path=args.prereg.resolve(),
+        workers=args.workers,
     )
     output.parent.mkdir(parents=True, exist_ok=True)
     _ = output.write_text(

@@ -150,3 +150,35 @@ def test_source_query_projects_only_used_tick_columns(tmp_path: Path) -> None:
     )
     assert len(rows) == 75
     assert {len(row) for row in rows} == {12}
+
+
+def test_parallel_scan_matches_single_process(tmp_path: Path) -> None:
+    path = tmp_path / "source.db"
+    _source_db(path)
+    connection = sqlite3.connect(path)
+    connection.execute('CREATE TABLE "000002" AS SELECT * FROM "000001"')
+    connection.execute("UPDATE moneytop SET membership = ?", ("000001;000002",))
+    connection.commit()
+    connection.close()
+    arguments = {
+        "candidates": (_candidate(),),
+        "folds": (DevelopmentFold(id="DEV", start=20220401, end=20220430),),
+        "gate": PreregisteredEventGate(
+            observations_may_include=("candidate_id", "fold_id", "triggered"),
+            forbidden_fields=("profit", "future_price"),
+            min_total_events=1,
+            min_events_per_fold=1,
+            min_distinct_days=1,
+            min_distinct_symbols=1,
+        ),
+        "window_start": 90000,
+        "window_end_exclusive": 93000,
+    }
+
+    sequential = scan_event_gate(path, **arguments, workers=1)
+    parallel = scan_event_gate(path, **arguments, workers=2)
+
+    assert parallel.estimates == sequential.estimates
+    assert parallel.stats.worker_processes == 2
+    assert parallel.stats.tick_rows == sequential.stats.tick_rows == 150
+    assert parallel.stats.scanned_code_days == sequential.stats.scanned_code_days == 2

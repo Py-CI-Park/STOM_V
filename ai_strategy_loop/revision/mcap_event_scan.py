@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
+from multiprocessing import get_context
 from pathlib import Path
-from typing import ClassVar
 
-import numpy as np
-
-from ai_strategy_loop.revision.mcap_event_candidate_eval import triggered_positions
 from ai_strategy_loop.revision.mcap_event_contract import (
     DevelopmentFold,
     EventCandidate,
@@ -21,14 +19,13 @@ from ai_strategy_loop.revision.mcap_event_estimator import (
     EventEstimate,
     estimate_event_counts,
 )
-from ai_strategy_loop.revision.mcap_event_logic import DayFactorCache
 from ai_strategy_loop.revision.mcap_event_source import (
-    SqlRow,
-    iter_sql_rows,
     load_source_scope,
-    query_code_rows,
-    tick_day,
-    timestamp,
+)
+from ai_strategy_loop.revision.mcap_event_worker import (
+    EventChunkResult,
+    EventChunkTask,
+    scan_event_chunk,
 )
 from utility.sqlite_readonly import (
     assert_sqlite_sidefiles_unchanged,
@@ -41,6 +38,7 @@ ProgressCallback = Callable[[int, int, str], None]
 
 @dataclass(frozen=True, slots=True)
 class EventScanStats:
+    worker_processes: int
     moneytop_rows: int
     scheduled_symbols: int
     missing_symbol_tables: int
@@ -57,37 +55,20 @@ class EventScanOutcome:
     stats: EventScanStats
 
 
-class _Tally:
-    __slots__: ClassVar[tuple[str, ...]] = ("days", "fold_counts", "symbols", "total")
-    fold_counts: dict[str, int]
-    total: int
-
-    def __init__(self, fold_counts: dict[str, int]) -> None:
-        self.fold_counts = fold_counts
-        self.total = 0
-        self.days: set[int] = set()
-        self.symbols: set[str] = set()
+def _partition_codes(scheduled: list[str], workers: int) -> tuple[tuple[str, ...], ...]:
+    chunk_count = min(len(scheduled), workers * 4)
+    return tuple(tuple(scheduled[index::chunk_count]) for index in range(chunk_count))
 
 
-def _apply_day(
-    rows: list[SqlRow],
-    *,
-    code: str,
-    day: int,
-    fold_id: str,
-    candidates: tuple[EventCandidate, ...],
-    tallies: dict[str, _Tally],
-) -> int:
-    cache = DayFactorCache(tick_day(rows))
-    for candidate in candidates:
-        count = len(triggered_positions(cache, candidate))
-        if count:
-            tally = tallies[candidate.candidate_id]
-            tally.total += count
-            tally.fold_counts[fold_id] += count
-            tally.days.add(day)
-            tally.symbols.add(code)
-    return int(np.count_nonzero(cache.base_mask(60)))
+def _scan_chunks(
+    tasks: tuple[EventChunkTask, ...], workers: int
+) -> tuple[EventChunkResult, ...]:
+    if workers == 1:
+        return tuple(scan_event_chunk(task) for task in tasks)
+    with ProcessPoolExecutor(
+        max_workers=workers, mp_context=get_context("spawn")
+    ) as executor:
+        return tuple(executor.map(scan_event_chunk, tasks))
 
 
 def scan_event_gate(
@@ -98,6 +79,7 @@ def scan_event_gate(
     gate: PreregisteredEventGate,
     window_start: int,
     window_end_exclusive: int,
+    workers: int = 1,
     progress: ProgressCallback | None = None,
 ) -> EventScanOutcome:
     """Scan only current/past tick factors and return aggregated signal counts."""
@@ -105,6 +87,8 @@ def scan_event_gate(
         candidates
     ):
         raise EventGateContractError("event candidates must be non-empty and unique")
+    if workers < 1:
+        raise EventGateContractError("event scan workers must be positive")
     before = sqlite_sidefile_snapshot(database)
     started = time.monotonic()
     connection = connect_existing_db_readonly(database)
@@ -115,90 +99,81 @@ def scan_event_gate(
             window_start,
             window_end_exclusive,
         )
-        code_days, day_to_fold = scope.code_days, scope.day_to_fold
+        code_days = scope.code_days
         available = scope.available_tables
         scheduled = sorted(set(code_days) & available)
-        tallies = {
-            row.candidate_id: _Tally({fold.id: 0 for fold in folds})
-            for row in candidates
-        }
-        scanned_days = tick_rows = base_rows = 0
-        for code_index, code in enumerate(scheduled, start=1):
-            current_day = -1
-            day_rows: list[SqlRow] = []
-            last_timestamp = -1
-            for row in iter_sql_rows(
-                query_code_rows(
-                    connection,
-                    code,
-                    code_days[code],
-                    window_start,
-                    window_end_exclusive,
-                    scope.tick_projection,
-                )
-            ):
-                row_timestamp = timestamp(row[0])
-                if row_timestamp < last_timestamp:
-                    raise EventGateContractError(
-                        f"non-monotonic source row order: {code}"
-                    )
-                day = row_timestamp // 1_000_000
-                if current_day != -1 and day != current_day:
-                    base_rows += _apply_day(
-                        day_rows,
-                        code=code,
-                        day=current_day,
-                        fold_id=day_to_fold[current_day],
-                        candidates=candidates,
-                        tallies=tallies,
-                    )
-                    scanned_days += 1
-                    tick_rows += len(day_rows)
-                    day_rows = []
-                current_day, last_timestamp = day, row_timestamp
-                day_rows.append(row)
-            if day_rows:
-                base_rows += _apply_day(
-                    day_rows,
-                    code=code,
-                    day=current_day,
-                    fold_id=day_to_fold[current_day],
-                    candidates=candidates,
-                    tallies=tallies,
-                )
-                scanned_days += 1
-                tick_rows += len(day_rows)
-            if progress is not None and (
-                code_index % 25 == 0 or code_index == len(scheduled)
-            ):
-                progress(code_index, len(scheduled), code)
     finally:
         connection.close()
+    worker_count = min(workers, max(1, len(scheduled)))
+    chunks = _partition_codes(scheduled, worker_count)
+    fold_ids = tuple(fold.id for fold in folds)
+    fold_index = {fold_id: index for index, fold_id in enumerate(fold_ids)}
+    tasks = tuple(
+        EventChunkTask(
+            database=str(Path(database).resolve()),
+            code_days=tuple((code, tuple(sorted(code_days[code]))) for code in chunk),
+            day_to_fold_index={
+                day: fold_index[scope.day_to_fold[day]]
+                for code in chunk
+                for day in code_days[code]
+            },
+            candidates=candidates,
+            fold_count=len(folds),
+            window_start=window_start,
+            window_end_exclusive=window_end_exclusive,
+            projection=scope.tick_projection,
+        )
+        for chunk in chunks
+    )
+    results = _scan_chunks(tasks, worker_count)
     assert_sqlite_sidefiles_unchanged(database, before)
+    totals = [0] * len(candidates)
+    fold_counts = [[0] * len(folds) for _ in candidates]
+    days = [set[int]() for _ in candidates]
+    symbols = [0] * len(candidates)
+    completed_symbols = 0
+    for result in results:
+        completed_symbols += result.symbol_count
+        for candidate_index in range(len(candidates)):
+            totals[candidate_index] += result.totals[candidate_index]
+            symbols[candidate_index] += result.distinct_symbols[candidate_index]
+            days[candidate_index].update(result.distinct_days[candidate_index])
+            for index in range(len(folds)):
+                fold_counts[candidate_index][index] += result.fold_counts[
+                    candidate_index
+                ][index]
+        if progress is not None:
+            progress(completed_symbols, len(scheduled), "chunk-complete")
     estimates = tuple(
         estimate_event_counts(
             candidate.candidate_id,
-            total_events=tallies[candidate.candidate_id].total,
-            fold_counts=tallies[candidate.candidate_id].fold_counts,
-            distinct_days=len(tallies[candidate.candidate_id].days),
-            distinct_symbols=len(tallies[candidate.candidate_id].symbols),
+            total_events=totals[candidate_index],
+            fold_counts={
+                fold_id: fold_counts[candidate_index][index]
+                for index, fold_id in enumerate(fold_ids)
+            },
+            distinct_days=len(days[candidate_index]),
+            distinct_symbols=symbols[candidate_index],
             min_total=gate.min_total_events,
             min_per_fold=gate.min_events_per_fold,
             min_distinct_days=gate.min_distinct_days,
             min_distinct_symbols=gate.min_distinct_symbols,
         )
-        for candidate in candidates
+        for candidate_index, candidate in enumerate(candidates)
     )
     stats = EventScanStats(
+        worker_processes=worker_count,
         moneytop_rows=scope.moneytop_rows,
         scheduled_symbols=len(code_days),
         missing_symbol_tables=len(set(code_days) - available),
         code_days=sum(
             len(days) for code, days in code_days.items() if code in available
         ),
-        scanned_code_days=scanned_days,
-        tick_rows=tick_rows,
-        base_eligible_tick_rows=base_rows,
+        scanned_code_days=sum(result.scanned_code_days for result in results),
+        tick_rows=sum(result.tick_rows for result in results),
+        base_eligible_tick_rows=sum(
+            result.base_eligible_tick_rows for result in results
+        ),
         elapsed_seconds=round(time.monotonic() - started, 3),
     )
     return EventScanOutcome(estimates=estimates, stats=stats)

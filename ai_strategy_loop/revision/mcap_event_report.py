@@ -52,6 +52,7 @@ class EventThresholds(BaseModel):
 class ScanStatistics(BaseModel):
     model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
 
+    worker_processes: int
     moneytop_rows: int
     scheduled_symbols: int
     missing_symbol_tables: int
