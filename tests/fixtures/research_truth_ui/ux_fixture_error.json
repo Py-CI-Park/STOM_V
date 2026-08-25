@@ -1,0 +1,19 @@
+{
+  "job_id": "UX_FIXTURE_ERROR",
+  "spec": {"buy": "UX_ERROR_BUY", "sell": "UX_SELL"},
+  "status": "error",
+  "returncode": 2,
+  "metrics": null,
+  "process_diagnostics": {
+    "event_count": 2,
+    "last_checkpoint": "engine_strategy_exception",
+    "last_by_source": {"BackTest": "engine_strategy_exception"},
+    "last_detail_by_source": {
+      "BackTest": "TypeError: list indices must be integers or slices, not str"
+    }
+  },
+  "message": "UX-01 browser fixture: classified strategy exception",
+  "strategy_db_snapshot_hashes": {
+    "buy": "3333333333333333333333333333333333333333333333333333333333333333"
+  }
+}

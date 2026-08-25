@@ -390,8 +390,8 @@
         var index2 = -1, length = entries == null ? 0 : entries.length;
         this.clear();
         while (++index2 < length) {
-          var entry = entries[index2];
-          this.set(entry[0], entry[1]);
+          var entry2 = entries[index2];
+          this.set(entry2[0], entry2[1]);
         }
       }
       ListCache.prototype.clear = listCacheClear;
@@ -764,8 +764,8 @@
         var index2 = -1, length = entries == null ? 0 : entries.length;
         this.clear();
         while (++index2 < length) {
-          var entry = entries[index2];
-          this.set(entry[0], entry[1]);
+          var entry2 = entries[index2];
+          this.set(entry2[0], entry2[1]);
         }
       }
       Hash.prototype.clear = hashClear;
@@ -879,8 +879,8 @@
         var index2 = -1, length = entries == null ? 0 : entries.length;
         this.clear();
         while (++index2 < length) {
-          var entry = entries[index2];
-          this.set(entry[0], entry[1]);
+          var entry2 = entries[index2];
+          this.set(entry2[0], entry2[1]);
         }
       }
       MapCache.prototype.clear = mapCacheClear;
@@ -4222,14 +4222,14 @@
       }
       function read(json) {
         var g = new Graph(json.options).setGraph(json.value);
-        _.each(json.nodes, function(entry) {
-          g.setNode(entry.v, entry.value);
-          if (entry.parent) {
-            g.setParent(entry.v, entry.parent);
+        _.each(json.nodes, function(entry2) {
+          g.setNode(entry2.v, entry2.value);
+          if (entry2.parent) {
+            g.setParent(entry2.v, entry2.parent);
           }
         });
-        _.each(json.edges, function(entry) {
-          g.setEdge({ v: entry.v, w: entry.w, name: entry.name }, entry.value);
+        _.each(json.edges, function(entry2) {
+          g.setEdge({ v: entry2.v, w: entry2.w, name: entry2.name }, entry2.value);
         });
         return g;
       }
@@ -4444,7 +4444,7 @@
         var visited = {};
         var results = [];
         function dfs(v) {
-          var entry = visited[v] = {
+          var entry2 = visited[v] = {
             onStack: true,
             lowlink: index2,
             index: index2++
@@ -4453,12 +4453,12 @@
           g.successors(v).forEach(function(w2) {
             if (!_.has(visited, w2)) {
               dfs(w2);
-              entry.lowlink = Math.min(entry.lowlink, visited[w2].lowlink);
+              entry2.lowlink = Math.min(entry2.lowlink, visited[w2].lowlink);
             } else if (visited[w2].onStack) {
-              entry.lowlink = Math.min(entry.lowlink, visited[w2].index);
+              entry2.lowlink = Math.min(entry2.lowlink, visited[w2].index);
             }
           });
-          if (entry.lowlink === entry.index) {
+          if (entry2.lowlink === entry2.index) {
             var cmpt = [];
             var w;
             do {
@@ -5682,21 +5682,21 @@
       }
       List.prototype.dequeue = function() {
         var sentinel = this._sentinel;
-        var entry = sentinel._prev;
-        if (entry !== sentinel) {
-          unlink(entry);
-          return entry;
+        var entry2 = sentinel._prev;
+        if (entry2 !== sentinel) {
+          unlink(entry2);
+          return entry2;
         }
       };
-      List.prototype.enqueue = function(entry) {
+      List.prototype.enqueue = function(entry2) {
         var sentinel = this._sentinel;
-        if (entry._prev && entry._next) {
-          unlink(entry);
+        if (entry2._prev && entry2._next) {
+          unlink(entry2);
         }
-        entry._next = sentinel._next;
-        sentinel._next._prev = entry;
-        sentinel._next = entry;
-        entry._prev = sentinel;
+        entry2._next = sentinel._next;
+        sentinel._next._prev = entry2;
+        sentinel._next = entry2;
+        entry2._prev = sentinel;
       };
       List.prototype.toString = function() {
         var strs = [];
@@ -5708,11 +5708,11 @@
         }
         return "[" + strs.join(", ") + "]";
       };
-      function unlink(entry) {
-        entry._prev._next = entry._next;
-        entry._next._prev = entry._prev;
-        delete entry._next;
-        delete entry._prev;
+      function unlink(entry2) {
+        entry2._prev._next = entry2._next;
+        entry2._next._prev = entry2._prev;
+        delete entry2._next;
+        delete entry2._prev;
       }
       function filterOutLinks(k, v) {
         if (k !== "_next" && k !== "_prev") {
@@ -5744,19 +5744,19 @@
         var results = [];
         var sources = buckets[buckets.length - 1];
         var sinks = buckets[0];
-        var entry;
+        var entry2;
         while (g.nodeCount()) {
-          while (entry = sinks.dequeue()) {
-            removeNode(g, buckets, zeroIdx, entry);
+          while (entry2 = sinks.dequeue()) {
+            removeNode(g, buckets, zeroIdx, entry2);
           }
-          while (entry = sources.dequeue()) {
-            removeNode(g, buckets, zeroIdx, entry);
+          while (entry2 = sources.dequeue()) {
+            removeNode(g, buckets, zeroIdx, entry2);
           }
           if (g.nodeCount()) {
             for (var i = buckets.length - 2; i > 0; --i) {
-              entry = buckets[i].dequeue();
-              if (entry) {
-                results = results.concat(removeNode(g, buckets, zeroIdx, entry, true));
+              entry2 = buckets[i].dequeue();
+              if (entry2) {
+                results = results.concat(removeNode(g, buckets, zeroIdx, entry2, true));
                 break;
               }
             }
@@ -5764,9 +5764,9 @@
         }
         return results;
       }
-      function removeNode(g, buckets, zeroIdx, entry, collectPredecessors) {
+      function removeNode(g, buckets, zeroIdx, entry2, collectPredecessors) {
         var results = collectPredecessors ? [] : void 0;
-        _.forEach(g.inEdges(entry.v), function(edge) {
+        _.forEach(g.inEdges(entry2.v), function(edge) {
           var weight = g.edge(edge);
           var uEntry = g.node(edge.v);
           if (collectPredecessors) {
@@ -5775,14 +5775,14 @@
           uEntry.out -= weight;
           assignBucket(buckets, zeroIdx, uEntry);
         });
-        _.forEach(g.outEdges(entry.v), function(edge) {
+        _.forEach(g.outEdges(entry2.v), function(edge) {
           var weight = g.edge(edge);
           var w = edge.w;
           var wEntry = g.node(w);
           wEntry["in"] -= weight;
           assignBucket(buckets, zeroIdx, wEntry);
         });
-        g.removeNode(entry.v);
+        g.removeNode(entry2.v);
         return results;
       }
       function buildState(g, weightFn) {
@@ -5809,13 +5809,13 @@
         });
         return { graph: fasGraph, buckets, zeroIdx };
       }
-      function assignBucket(buckets, zeroIdx, entry) {
-        if (!entry.out) {
-          buckets[0].enqueue(entry);
-        } else if (!entry["in"]) {
-          buckets[buckets.length - 1].enqueue(entry);
+      function assignBucket(buckets, zeroIdx, entry2) {
+        if (!entry2.out) {
+          buckets[0].enqueue(entry2);
+        } else if (!entry2["in"]) {
+          buckets[buckets.length - 1].enqueue(entry2);
         } else {
-          buckets[entry.out - entry["in"] + zeroIdx].enqueue(entry);
+          buckets[entry2.out - entry2["in"] + zeroIdx].enqueue(entry2);
         }
       }
     }
@@ -6766,18 +6766,18 @@
           return 0;
         });
         var cc2 = 0;
-        _.forEach(southEntries.forEach(function(entry) {
-          var index2 = entry.pos + firstIndex;
-          tree[index2] += entry.weight;
+        _.forEach(southEntries.forEach(function(entry2) {
+          var index2 = entry2.pos + firstIndex;
+          tree[index2] += entry2.weight;
           var weightSum = 0;
           while (index2 > 0) {
             if (index2 % 2) {
               weightSum += tree[index2 + 1];
             }
             index2 = index2 - 1 >> 1;
-            tree[index2] += entry.weight;
+            tree[index2] += entry2.weight;
           }
-          cc2 += entry.weight * weightSum;
+          cc2 += entry2.weight * weightSum;
         }));
         return cc2;
       }
@@ -6821,17 +6821,17 @@
       module.exports = resolveConflicts;
       function resolveConflicts(entries, cg) {
         var mappedEntries = {};
-        _.forEach(entries, function(entry, i) {
-          var tmp = mappedEntries[entry.v] = {
+        _.forEach(entries, function(entry2, i) {
+          var tmp = mappedEntries[entry2.v] = {
             indegree: 0,
             "in": [],
             out: [],
-            vs: [entry.v],
+            vs: [entry2.v],
             i
           };
-          if (!_.isUndefined(entry.barycenter)) {
-            tmp.barycenter = entry.barycenter;
-            tmp.weight = entry.weight;
+          if (!_.isUndefined(entry2.barycenter)) {
+            tmp.barycenter = entry2.barycenter;
+            tmp.weight = entry2.weight;
           }
         });
         _.forEach(cg.edges(), function(e) {
@@ -6842,8 +6842,8 @@
             entryV.out.push(mappedEntries[e.w]);
           }
         });
-        var sourceSet = _.filter(mappedEntries, function(entry) {
-          return !entry.indegree;
+        var sourceSet = _.filter(mappedEntries, function(entry2) {
+          return !entry2.indegree;
         });
         return doResolveConflicts(sourceSet);
       }
@@ -6868,17 +6868,17 @@
           };
         }
         while (sourceSet.length) {
-          var entry = sourceSet.pop();
-          entries.push(entry);
-          _.forEach(entry["in"].reverse(), handleIn(entry));
-          _.forEach(entry.out, handleOut(entry));
+          var entry2 = sourceSet.pop();
+          entries.push(entry2);
+          _.forEach(entry2["in"].reverse(), handleIn(entry2));
+          _.forEach(entry2.out, handleOut(entry2));
         }
         return _.map(
-          _.filter(entries, function(entry2) {
-            return !entry2.merged;
+          _.filter(entries, function(entry3) {
+            return !entry3.merged;
           }),
-          function(entry2) {
-            return _.pick(entry2, ["vs", "i", "barycenter", "weight"]);
+          function(entry3) {
+            return _.pick(entry3, ["vs", "i", "barycenter", "weight"]);
           }
         );
       }
@@ -6909,19 +6909,19 @@
       var util = require_util();
       module.exports = sort;
       function sort(entries, biasRight) {
-        var parts = util.partition(entries, function(entry) {
-          return _.has(entry, "barycenter");
+        var parts = util.partition(entries, function(entry2) {
+          return _.has(entry2, "barycenter");
         });
-        var sortable = parts.lhs, unsortable = _.sortBy(parts.rhs, function(entry) {
-          return -entry.i;
+        var sortable = parts.lhs, unsortable = _.sortBy(parts.rhs, function(entry2) {
+          return -entry2.i;
         }), vs = [], sum = 0, weight = 0, vsIndex = 0;
         sortable.sort(compareWithBias(!!biasRight));
         vsIndex = consumeUnsortable(vs, unsortable, vsIndex);
-        _.forEach(sortable, function(entry) {
-          vsIndex += entry.vs.length;
-          vs.push(entry.vs);
-          sum += entry.barycenter * entry.weight;
-          weight += entry.weight;
+        _.forEach(sortable, function(entry2) {
+          vsIndex += entry2.vs.length;
+          vs.push(entry2.vs);
+          sum += entry2.barycenter * entry2.weight;
+          weight += entry2.weight;
           vsIndex = consumeUnsortable(vs, unsortable, vsIndex);
         });
         var result = { vs: _.flatten(vs, true) };
@@ -6973,12 +6973,12 @@
           });
         }
         var barycenters = barycenter(g, movable);
-        _.forEach(barycenters, function(entry) {
-          if (g.children(entry.v).length) {
-            var subgraphResult = sortSubgraph(g, entry.v, cg, biasRight);
-            subgraphs[entry.v] = subgraphResult;
+        _.forEach(barycenters, function(entry2) {
+          if (g.children(entry2.v).length) {
+            var subgraphResult = sortSubgraph(g, entry2.v, cg, biasRight);
+            subgraphs[entry2.v] = subgraphResult;
             if (_.has(subgraphResult, "barycenter")) {
-              mergeBarycenters(entry, subgraphResult);
+              mergeBarycenters(entry2, subgraphResult);
             }
           }
         });
@@ -7000,8 +7000,8 @@
         return result;
       }
       function expandSubgraphs(entries, subgraphs) {
-        _.forEach(entries, function(entry) {
-          entry.vs = _.flatten(entry.vs.map(function(v) {
+        _.forEach(entries, function(entry2) {
+          entry2.vs = _.flatten(entry2.vs.map(function(v) {
             if (subgraphs[v]) {
               return subgraphs[v].vs;
             }
@@ -8081,9 +8081,9 @@ def signal_sell(pos, bar, ind):
   var DEFAULT_BASE2 = typeof window !== "undefined" && window.location && window.location.origin && window.location.origin.startsWith("http") ? window.location.origin : "http://127.0.0.1:8770";
   var _WS_DIAG_MAX = 200;
   var _wsDiag = [];
-  function _recordWsDiag(entry) {
+  function _recordWsDiag(entry2) {
     try {
-      const rec = Object.assign({ t: Date.now() }, entry);
+      const rec = Object.assign({ t: Date.now() }, entry2);
       _wsDiag.push(rec);
       if (_wsDiag.length > _WS_DIAG_MAX) _wsDiag.splice(0, _wsDiag.length - _WS_DIAG_MAX);
       if (typeof window !== "undefined") window.__stomWsDiag = _wsDiag;
@@ -9264,10 +9264,10 @@ def signal_sell(pos, bar, ind):
     const key = baseUrl || "";
     if (o.force) _runsCache.delete(key);
     const now2 = Date.now();
-    const entry = _runsCache.get(key);
-    if (entry) {
-      if (entry.promise) return entry.promise.then(_cloneRuns);
-      if (entry.data && now2 - entry.ts < _RUNS_TTL_MS) return Promise.resolve(_cloneRuns(entry.data));
+    const entry2 = _runsCache.get(key);
+    if (entry2) {
+      if (entry2.promise) return entry2.promise.then(_cloneRuns);
+      if (entry2.data && now2 - entry2.ts < _RUNS_TTL_MS) return Promise.resolve(_cloneRuns(entry2.data));
     }
     const promise = fetch(key + "/runs?fields=slim", { signal: AbortSignal.timeout(_RUNS_TRANSPORT_TIMEOUT_MS) }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))).then((j) => {
       _runsCache.set(key, { ts: Date.now(), promise: null, data: j });
@@ -9277,7 +9277,7 @@ def signal_sell(pos, bar, ind):
       if (cur && cur.promise === promise) _runsCache.delete(key);
       throw err;
     });
-    _runsCache.set(key, { ts: now2, promise, data: entry ? entry.data : null });
+    _runsCache.set(key, { ts: now2, promise, data: entry2 ? entry2.data : null });
     return promise.then(_cloneRuns);
   }
   Object.assign(window, { fetchRunsShared });
@@ -18992,11 +18992,11 @@ ${sellCode}` : code);
       }
       return new ResizeObserver((entries) => {
         const updates = /* @__PURE__ */ new Map();
-        entries.forEach((entry) => {
-          const id2 = entry.target.getAttribute("data-id");
+        entries.forEach((entry2) => {
+          const id2 = entry2.target.getAttribute("data-id");
           updates.set(id2, {
             id: id2,
-            nodeElement: entry.target,
+            nodeElement: entry2.target,
             force: true
           });
         });
@@ -28700,7 +28700,9 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     isDemo,
     jobs,
     onResult,
+    onInspectTruth,
     selectedJobId,
+    selectedTruthJobId,
     onReload,
     compareA,
     onSetCompareA,
@@ -28828,7 +28830,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
       const b = _BT_JOB_BADGE[statusKind] || _BT_JOB_BADGE[j.status] || _BT_JOB_BADGE.pending;
       const actions = Array.isArray(j.open_actions) ? j.open_actions : [];
       const clickable = _btJobOpenable(j);
-      const active = j.job_id === selectedJobId;
+      const active = j.job_id === (selectedTruthJobId || selectedJobId);
       const canCompare = clickable && compareA && onCompareB && j.job_id !== compareA;
       const isEditing = editing === j.job_id;
       return /* @__PURE__ */ React.createElement(
@@ -28864,9 +28866,8 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
         ), /* @__PURE__ */ React.createElement(
           "button",
           {
-            onClick: () => clickable && onResult(j.job_id),
-            disabled: !clickable,
-            title: clickable ? "\uACB0\uACFC \uC0C1\uC138 \uC5F4\uAE30" : j.artifact_state || j.message || "\uC5F4 \uC218 \uC788\uB294 \uACB0\uACFC \uC544\uD2F0\uD329\uD2B8\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4",
+            onClick: () => clickable ? onResult(j.job_id) : onInspectTruth(j.job_id),
+            title: clickable ? "\uACB0\uACFC \uC0C1\uC138\uC640 Truth \uC5F4\uAE30" : "\uACB0\uACFC \uC0B0\uCD9C\uBB3C \uC5C6\uC774 \uC2E4\uD589 Truth\uB9CC \uD655\uC778",
             style: {
               display: "flex",
               alignItems: "center",
@@ -28877,7 +28878,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
               border: 0,
               padding: 0,
               textAlign: "left",
-              cursor: clickable ? "pointer" : "default"
+              cursor: "pointer"
             }
           },
           /* @__PURE__ */ React.createElement("span", { className: b.cls, style: { flexShrink: 0 } }, b.txt),
@@ -29632,6 +29633,163 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: ok ? "var(--teal)" : "var(--amber)" } }), "\uBC31\uD30C\uC778\uB354 \uC0AC\uC804 \uC810\uAC80", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginLeft: 6 } }, "self.tickcols \xB7 self.tickdata")), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: load, disabled: isDemo || busy || !buyName }, busy ? "\uC810\uAC80\u2026" : "\u21BB \uC810\uAC80")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd", style: { display: "flex", flexDirection: "column", gap: 8 } }, !buyName ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uB9E4\uC218 \uC870\uAC74\uC2DD\uC744 \uC120\uD0DD\uD558\uBA74 \uBC31\uD30C\uC778\uB354 \uC0AC\uC804 \uC870\uAC74\uC744 \uC810\uAC80\uD569\uB2C8\uB2E4.") : err ? /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, "\uC810\uAC80 \uC2E4\uD328: ", err) : !data ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uBC31\uD30C\uC778\uB354 \uC0AC\uC804 \uC810\uAC80 \uB300\uAE30 \uC911\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { className: ok ? "badge done" : "badge warn" }, ok ? "\uC870\uAC74 \uD1B5\uACFC" : "\uC870\uAC74 \uBBF8\uCDA9\uC871"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: data.has_tickcols ? "var(--teal)" : "var(--red)" } }, "self.tickcols ", data.has_tickcols ? "\uC788\uC74C" : "\uC5C6\uC74C", " \xB7 ", data.cols_count == null ? "?" : data.cols_count), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: data.has_tickdata ? "var(--teal)" : "var(--red)" } }, "self.tickdata ", data.has_tickdata ? "\uC788\uC74C" : "\uC5C6\uC74C", " \xB7 ", data.data_count == null ? "?" : data.data_count), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)" } }, "run_enabled=", String(!!data.run_enabled))), /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: ok ? "var(--teal)" : "var(--ink-2)", lineHeight: 1.5 } }, data.message), /* @__PURE__ */ React.createElement("div", { className: "readability-note" }, "\uD604\uC7AC \uC6F9 \uB300\uC2DC\uBCF4\uB4DC\uB294 \uC6D0\uBCF8 GUI BackFinder \uC2E4\uD589\uC744 \uC5F0\uACB0\uD558\uC9C0 \uC54A\uACE0, \uC548\uC804\uD55C preflight/staging\uB9CC \uC81C\uACF5\uD569\uB2C8\uB2E4."))));
   }
 
+  // ai_strategy_loop/dashboard/frontend/research-truth-model.mjs
+  var EXECUTION = Object.freeze({
+    SUCCESS: { code: "SUCCESS", label: "\uC815\uC0C1 \uC644\uB8CC", tone: "ok", detail: "\uC9C0\uD45C \uC0DD\uC131 \uC644\uB8CC" },
+    NO_TRADES: { code: "NO_TRADES", label: "\uC815\uC0C1 \uBB34\uAC70\uB798", tone: "warn", detail: "\uC2E4\uD589\uC740 \uC644\uB8CC\uB410\uC9C0\uB9CC \uACBD\uC81C \uD45C\uBCF8 \uC5C6\uC74C" },
+    ERROR: { code: "ERROR", label: "\uC2E4\uD589 \uC624\uB958", tone: "bad", detail: "\uC5D4\uC9C4 \uB610\uB294 \uC804\uB7B5 \uC624\uB958" },
+    TIMEOUT: { code: "TIMEOUT", label: "\uC2DC\uAC04 \uCD08\uACFC", tone: "bad", detail: "\uC885\uB8CC \uC6D0\uC778 \uD655\uC778 \uD544\uC694" },
+    CANCELLED: { code: "CANCELLED", label: "\uC2E4\uD589 \uCDE8\uC18C", tone: "off", detail: "\uC644\uB8CC \uC99D\uAC70 \uC544\uB2D8" },
+    PARTIAL: { code: "PARTIAL", label: "\uBD80\uBD84 \uC99D\uAC70", tone: "warn", detail: "\uC885\uB8CC \uACC4\uC57D\uC774 \uBD88\uC644\uC804\uD568" }
+  });
+  var ECONOMIC = Object.freeze({
+    POSITIVE: { code: "POSITIVE", label: "\uC591\uC218 \uAD00\uCE21" },
+    NEGATIVE: { code: "NEGATIVE", label: "\uC74C\uC218 \uAD00\uCE21" },
+    INCONCLUSIVE: { code: "INCONCLUSIVE", label: "\uD310\uC815 \uC720\uBCF4" },
+    NOT_EVALUABLE: { code: "NOT_EVALUABLE", label: "\uD3C9\uAC00 \uBD88\uAC00" }
+  });
+  var AUTHORITY = Object.freeze({
+    FEASIBILITY: { code: "FEASIBILITY", label: "\uC2E4\uD589 \uAC00\uB2A5\uC131" },
+    DEVELOPMENT: { code: "DEVELOPMENT", label: "\uAC1C\uBC1C \uC5F0\uAD6C" },
+    FROZEN_OOS: { code: "FROZEN_OOS", label: "\uB3D9\uACB0 OOS" },
+    SHADOW: { code: "SHADOW", label: "\uC100\uB3C4 \uAD00\uCE21" },
+    LIVE: { code: "LIVE", label: "\uC2E4\uC804" }
+  });
+  var ACTION = Object.freeze({
+    DEBUG: { code: "DEBUG", label: "\uC2E4\uD589 \uC9C4\uB2E8", detail: "\uC6D0\uC778\uACFC \uC7AC\uC2DC\uB3C4 \uC870\uAC74\uC744 \uBA3C\uC800 \uD655\uC778" },
+    REPRODUCE: { code: "REPRODUCE", label: "\uB3D9\uC77C \uC870\uAC74 \uC7AC\uD604", detail: "identity\uB97C \uACE0\uC815\uD558\uACE0 \uB2E4\uC2DC \uD655\uC778" },
+    STRUCTURAL_REVISE: { code: "STRUCTURAL_REVISE", label: "\uAD6C\uC870 \uAC00\uC124 \uC791\uC131", detail: "threshold\uAC00 \uC544\uB2CC \uC5ED\uD560\xB7\uC0C1\uD0DC \uAD6C\uC870\uB97C \uAC80\uD1A0" },
+    EXPAND: { code: "EXPAND", label: "\uAC80\uC99D \uBC94\uC704 \uD655\uC7A5", detail: "\uC0AC\uC804\uB4F1\uB85D \uBC94\uC704 \uC548\uC5D0\uC11C \uC99D\uAC70 \uCD94\uAC00" },
+    STOP: { code: "STOP", label: "\uC5F0\uAD6C \uC911\uC9C0 \uAE30\uB85D", detail: "\uC911\uC9C0 \uADFC\uAC70\uB97C \uC6D0\uC7A5\uC5D0 \uB0A8\uAE40" },
+    HOLDOUT: { code: "HOLDOUT", label: "Holdout \uC900\uBE44", detail: "\uC778\uAC04 \uC2B9\uC778 \uC804 \uB3D9\uACB0 \uC0C1\uD0DC \uD655\uC778" }
+  });
+  function entry(table, code, fallbackLabel) {
+    const found = table[String(code || "")];
+    return found || { code: String(code || "UNKNOWN"), label: fallbackLabel, tone: "off", detail: "\uACC4\uC57D\uC5D0 \uC5C6\uB294 \uC0C1\uD0DC" };
+  }
+  function blockerFor(truth) {
+    switch (truth.execution) {
+      case "ERROR":
+        return "\uC2E4\uD589 \uC2E4\uD328\uB97C \uD574\uACB0\uD558\uAE30 \uC804\uC5D0\uB294 \uACBD\uC81C KPI\uB97C \uD574\uC11D\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.";
+      case "TIMEOUT":
+        return "\uC6D0\uC778 \uBD84\uB958 \uC804\uC5D0\uB294 \uC7AC\uC2E4\uD589\uACFC \uACBD\uC81C KPI \uD574\uC11D\uC744 \uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.";
+      case "NO_TRADES":
+        return "\uACBD\uC81C \uD45C\uBCF8\uC774 \uC5C6\uC5B4 \uC218\uC775\uC131 \uD310\uB2E8\uACFC \uC2B9\uACA9\uC744 \uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.";
+      case "PARTIAL":
+      case "CANCELLED":
+        return "\uC644\uB8CC \uC99D\uAC70\uAC00 \uC544\uB2C8\uBBC0\uB85C KPI\uC640 \uC2B9\uACA9 \uD310\uB2E8\uC744 \uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.";
+      case "SUCCESS":
+        if (truth.economic === "INCONCLUSIVE") {
+          return "\uC18C\uD45C\uBCF8\xB7\uAC15\uAC74\uC131 \uC99D\uAC70 \uC804\uC5D0\uB294 \uC131\uACFC \uD655\uC7A5\uACFC \uC2B9\uACA9\uC744 \uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.";
+        }
+        if (truth.authority === "FEASIBILITY") {
+          return "\uC591\uC218 \uAD00\uCE21\uC774\uC5B4\uB3C4 \uC7AC\uD604\xB7\uC0AC\uC804\uB4F1\uB85D \uC804\uC5D0\uB294 \uC2B9\uACA9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.";
+        }
+        return "\uD604\uC7AC \uAD8C\uC704\uC640 \uC2B9\uC778 \uAC8C\uC774\uD2B8\uB97C \uB118\uB294 \uD589\uB3D9\uC740 \uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.";
+      default:
+        return "\uC0C1\uD0DC \uACC4\uC57D\uC744 \uD655\uC778\uD558\uAE30 \uC804\uC5D0\uB294 \uB2E4\uC74C \uB2E8\uACC4\uB85C \uC9C4\uD589\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.";
+    }
+  }
+  function shortHash(value) {
+    const text = String(value || "");
+    return text.length >= 12 ? text.slice(0, 12) : "\uBBF8\uAE30\uB85D";
+  }
+  function truthPresentation(truth) {
+    const safe = truth && typeof truth === "object" ? truth : {};
+    const identity4 = safe.identity && typeof safe.identity === "object" ? safe.identity : {};
+    return {
+      execution: entry(EXECUTION, safe.execution, "\uC2E4\uD589 \uC0C1\uD0DC \uBBF8\uD655\uC778"),
+      economic: entry(ECONOMIC, safe.economic, "\uACBD\uC81C \uC0C1\uD0DC \uBBF8\uD655\uC778"),
+      authority: entry(AUTHORITY, safe.authority, "\uAD8C\uC704 \uBBF8\uD655\uC778"),
+      action: entry(ACTION, safe.next_action, "\uC99D\uAC70 \uC7AC\uC870\uD68C"),
+      blocker: blockerFor(safe),
+      candidate: String(identity4.candidate_id || "\uD6C4\uBCF4 \uBBF8\uAE30\uB85D"),
+      identityStatus: String(identity4.identity_status || "UNKNOWN"),
+      evidenceHash: shortHash(safe.legacy_input_sha256),
+      rawStatus: String(safe.legacy_raw_status || "\uBBF8\uAE30\uB85D"),
+      failureCause: String(safe.failure_cause || "NONE"),
+      corrected: safe.correction_applied === true,
+      correctionReason: String(safe.correction_reason || "")
+    };
+  }
+
+  // ai_strategy_loop/dashboard/frontend/research-truth-bar.jsx
+  var REASON_LABEL = {
+    source_not_selected: "\uC644\uB8CC\uB41C job\uC744 \uC120\uD0DD\uD558\uBA74 \uC2E4\uD589 \uC9C4\uC2E4\uC744 \uD45C\uC2DC\uD569\uB2C8\uB2E4.",
+    evolution_not_supported: "\uC9C4\uD654 \uC138\uB300 Truth \uC5F0\uACB0\uC740 ANA-01 \uC774\uD6C4 \uC81C\uACF5\uB429\uB2C8\uB2E4.",
+    demo_mode: "\uB370\uBAA8 \uAC12\uC740 \uC2E4\uC81C Evidence\uAC00 \uC544\uB2C8\uBBC0\uB85C Truth\uB97C \uB9CC\uB4E4\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    job_not_found: "\uC120\uD0DD\uD55C job\uC758 \uC6D0\uBCF8 \uAE30\uB85D\uC744 \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    job_not_terminal: "\uC2E4\uD589\uC774 \uB05D\uB09C \uB4A4 \uCD5C\uC885 Truth\uB97C \uD45C\uC2DC\uD569\uB2C8\uB2E4.",
+    source_identity_missing: "source hash\uAC00 \uC5C6\uC5B4 Truth\uB97C \uC0DD\uC131\uD558\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.",
+    legacy_job_invalid: "\uACFC\uAC70 job \uD615\uC2DD\uC774 \uACC4\uC57D\uACFC \uB9DE\uC9C0 \uC54A\uC544 \uD574\uC11D\uC744 \uC911\uC9C0\uD588\uC2B5\uB2C8\uB2E4."
+  };
+  function _TruthUnavailable({ reason, loading, onReload }) {
+    const message = REASON_LABEL[reason] || "Truth\uB97C \uC548\uC804\uD558\uAC8C \uD574\uC11D\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.";
+    return /* @__PURE__ */ React.createElement("section", { className: "research-truth-bar unavailable", "aria-label": "\uC5F0\uAD6C \uC9C4\uC2E4 \uBC14", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "research-truth-kicker" }, "RESEARCH TRUTH \xB7 READ ONLY"), /* @__PURE__ */ React.createElement("div", { className: "research-truth-empty" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, loading ? "Truth \uAC31\uC2E0 \uC911" : "\uD604\uC7AC Truth \uC5C6\uC74C"), /* @__PURE__ */ React.createElement("span", null, message)), onReload && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onReload, disabled: loading }, loading ? "\uAC31\uC2E0 \uC911\u2026" : "\uB2E4\uC2DC \uC870\uD68C")));
+  }
+  function _TruthAxis({ label, item }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "research-truth-axis" }, /* @__PURE__ */ React.createElement("dt", null, label), /* @__PURE__ */ React.createElement("dd", null, /* @__PURE__ */ React.createElement("strong", null, item.label), /* @__PURE__ */ React.createElement("code", null, item.code)), item.detail && /* @__PURE__ */ React.createElement("small", null, item.detail));
+  }
+  function ResearchTruthBar({ baseUrl, isDemo, jobId, evoSource }) {
+    const [payload, setPayload] = useState_bt(null);
+    const [loading, setLoading] = useState_bt(false);
+    const [error, setError] = useState_bt("");
+    const [observedAt, setObservedAt] = useState_bt("");
+    const load = useCallback_bt(() => {
+      if (isDemo || !baseUrl || !jobId) return void 0;
+      const controller = new AbortController();
+      setLoading(true);
+      setError("");
+      _btFetchJson(
+        baseUrl + "/research-truth/job?job_id=" + encodeURIComponent(jobId),
+        5e3,
+        controller.signal
+      ).then((next) => {
+        setPayload(next || null);
+        setObservedAt((/* @__PURE__ */ new Date()).toLocaleTimeString());
+      }).catch((nextError) => {
+        if (!controller.signal.aborted) setError(String(nextError));
+      }).finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+      return () => controller.abort();
+    }, [baseUrl, isDemo, jobId]);
+    useEffect_bt(() => load(), [load]);
+    if (isDemo) return /* @__PURE__ */ React.createElement(_TruthUnavailable, { reason: "demo_mode", loading: false });
+    if (!jobId && evoSource) {
+      return /* @__PURE__ */ React.createElement(_TruthUnavailable, { reason: "evolution_not_supported", loading: false });
+    }
+    if (!jobId) return /* @__PURE__ */ React.createElement(_TruthUnavailable, { reason: "source_not_selected", loading: false });
+    if (error && !(payload && payload.job_id === jobId)) {
+      return /* @__PURE__ */ React.createElement(_TruthUnavailable, { reason: "request_failed", loading, onReload: load });
+    }
+    if (!(payload && payload.job_id === jobId && payload.truth_available && payload.truth)) {
+      return /* @__PURE__ */ React.createElement(
+        _TruthUnavailable,
+        {
+          reason: payload && payload.job_id === jobId && payload.reason || "job_not_terminal",
+          loading,
+          onReload: load
+        }
+      );
+    }
+    const view = truthPresentation(payload.truth);
+    return /* @__PURE__ */ React.createElement(
+      "section",
+      {
+        className: "research-truth-bar tone-" + view.execution.tone,
+        "aria-label": "\uC5F0\uAD6C \uC9C4\uC2E4 \uBC14",
+        "aria-live": "polite",
+        "data-execution": view.execution.code
+      },
+      /* @__PURE__ */ React.createElement("header", { className: "research-truth-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "research-truth-kicker" }, "RESEARCH TRUTH \xB7 READ ONLY"), /* @__PURE__ */ React.createElement("h3", null, view.candidate), /* @__PURE__ */ React.createElement("p", null, "job ", jobId, " \xB7 \uD654\uBA74 \uC870\uD68C ", observedAt || "\uBBF8\uD655\uC778", " \xB7 persistence ", payload.persistence || "unknown")), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: load, disabled: loading }, loading ? "\uAC31\uC2E0 \uC911\u2026" : "Truth \uC0C8\uB85C\uACE0\uCE68")),
+      /* @__PURE__ */ React.createElement("dl", { className: "research-truth-axes" }, /* @__PURE__ */ React.createElement(_TruthAxis, { label: "\uC2E4\uD589", item: view.execution }), /* @__PURE__ */ React.createElement(_TruthAxis, { label: "\uACBD\uC81C", item: view.economic }), /* @__PURE__ */ React.createElement(_TruthAxis, { label: "\uAD8C\uC704", item: view.authority }), /* @__PURE__ */ React.createElement(_TruthAxis, { label: "\uB2E4\uC74C \uD5C8\uC6A9 \uD589\uB3D9", item: view.action })),
+      /* @__PURE__ */ React.createElement("div", { className: "research-truth-decision" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "\uCC28\uB2E8 \uC0AC\uC720"), /* @__PURE__ */ React.createElement("strong", null, view.blocker)), /* @__PURE__ */ React.createElement("div", { className: "research-truth-evidence mono" }, "identity ", view.identityStatus, " \xB7 input ", view.evidenceHash, " \xB7 \uC6D0\uC2DC \uC0C1\uD0DC ", view.rawStatus)),
+      (view.corrected || view.failureCause !== "NONE") && /* @__PURE__ */ React.createElement("div", { className: "research-truth-correction", role: "status" }, /* @__PURE__ */ React.createElement("b", null, view.corrected ? "\uC6D0\uC2DC \uC0C1\uD0DC \uC815\uC815" : "\uC2E4\uD328 \uC6D0\uC778"), /* @__PURE__ */ React.createElement("code", null, view.failureCause), view.correctionReason && /* @__PURE__ */ React.createElement("span", null, view.correctionReason))
+    );
+  }
+  Object.assign(window, { ResearchTruthBar });
+
   // ai_strategy_loop/dashboard/frontend/bt-tab-root.jsx
   function _btCompareParams(key, side) {
     const raw = String(key || "");
@@ -29642,11 +29800,12 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     }
     return "job_" + side + "=" + encodeURIComponent(raw);
   }
-  function BacktestTab({ baseUrl, wsStatus }) {
+  function BacktestTab({ baseUrl, wsStatus, showTruthBar = false }) {
     const isDemo = typeof window.isDemoSource === "function" ? window.isDemoSource(wsStatus) : wsStatus === "demo";
     const [health, setHealth] = useState_bt(null);
     const [reloadKey, setReloadKey] = useState_bt(0);
     const [resultJobId, setResultJobId] = useState_bt("");
+    const [truthJobId, setTruthJobId] = useState_bt("");
     const [libNames, setLibNames] = useState_bt({ buy: [], sell: [] });
     const [buyName, setBuyName] = useState_bt("");
     const [sellName, setSellName] = useState_bt("");
@@ -29673,6 +29832,15 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     }, []);
     const onPickJobResult = useCallback_bt((jobId) => {
       setResultJobId(jobId);
+      setTruthJobId(jobId);
+      if (jobId) {
+        setEvoSource(null);
+        selectSubTab("result");
+      }
+    }, [selectSubTab]);
+    const onInspectJobTruth = useCallback_bt((jobId) => {
+      setResultJobId("");
+      setTruthJobId(jobId);
       if (jobId) {
         setEvoSource(null);
         selectSubTab("result");
@@ -29681,6 +29849,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     const onPickGen = useCallback_bt((runId, genNo) => {
       setEvoSource({ run_id: runId, gen_no: genNo });
       setResultJobId("");
+      setTruthJobId("");
       selectSubTab("result");
     }, [selectSubTab]);
     useEffect_bt(() => {
@@ -29778,7 +29947,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
       borderRadius: 8,
       fontSize: 11.5,
       color: "var(--amber)"
-    } }, /* @__PURE__ */ React.createElement("span", { className: "badge warn", style: { flexShrink: 0 } }, "\uB370\uBAA8 \uBAA8\uB4DC"), "\uBC31\uC5D4\uB4DC \uBBF8\uC5F0\uACB0 \u2014 \uD45C\uC2DC\uB418\uB294 \uACB0\uACFC\uB294 \uC608\uC2DC\uC774\uBA70 \uC2E4\uC81C \uB370\uC774\uD130\uAC00 \uC544\uB2D9\uB2C8\uB2E4. \uC11C\uBC84\uC5D0 \uC5F0\uACB0\uD558\uBA74 \uC2E4\uAC70\uB798 \uBC31\uD14C\uC2A4\uD2B8\uAC00 \uD65C\uC131\uD654\uB429\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement(
+    } }, /* @__PURE__ */ React.createElement("span", { className: "badge warn", style: { flexShrink: 0 } }, "\uB370\uBAA8 \uBAA8\uB4DC"), "\uBC31\uC5D4\uB4DC \uBBF8\uC5F0\uACB0 \u2014 \uD45C\uC2DC\uB418\uB294 \uACB0\uACFC\uB294 \uC608\uC2DC\uC774\uBA70 \uC2E4\uC81C \uB370\uC774\uD130\uAC00 \uC544\uB2D9\uB2C8\uB2E4. \uC11C\uBC84\uC5D0 \uC5F0\uACB0\uD558\uBA74 \uC2E4\uAC70\uB798 \uBC31\uD14C\uC2A4\uD2B8\uAC00 \uD65C\uC131\uD654\uB429\uB2C8\uB2E4."), showTruthBar && /* @__PURE__ */ React.createElement(ResearchTruthBar, { baseUrl, isDemo, jobId: truthJobId, evoSource }), /* @__PURE__ */ React.createElement(
       BtRunPanel,
       {
         baseUrl,
@@ -29909,7 +30078,9 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
         isDemo,
         jobs: jobsList,
         onResult: onPickJobResult,
+        onInspectTruth: onInspectJobTruth,
         selectedJobId: resultJobId,
+        selectedTruthJobId: truthJobId,
         onReload: reloadJobs,
         compareA,
         onSetCompareA,
@@ -40550,7 +40721,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
         "aria-label": "\uBC31\uD14C\uC2A4\uD2B8 \uC120\uD0DD, \uC2E4\uD589, \uCDE8\uC18C \uBC0F \uACB0\uACFC",
         onClickCapture: _confirmBacktestDanger
       },
-      /* @__PURE__ */ React.createElement(BacktestTab, { baseUrl, wsStatus })
+      /* @__PURE__ */ React.createElement(BacktestTab, { baseUrl, wsStatus, showTruthBar: true })
     ), /* @__PURE__ */ React.createElement(BtTradePathTab, { baseUrl, onNavigate }));
   }
   Object.assign(window, { V4Backtest });
@@ -41065,9 +41236,9 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       ["\uCD1D \uAC70\uB798", reportSummaryResolve(report, runMeta, ["trade_count", "trades"]), "\uAC74", "trade_count"]
     ];
     const digitsFor = (key) => key === "trade_count" || key === "max_hold_count" ? 0 : 2;
-    const visualMetrics = metrics.slice(0, 3).filter(([, entry]) => entry.value != null);
-    const runLinked = metrics.some(([, entry]) => entry.origin === "run" || entry.origin === "derived");
-    return /* @__PURE__ */ React.createElement("section", { className: "v4-report-summary-board", "aria-labelledby": "v4-report-summary-title" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { id: "v4-report-summary-title", className: "stom-section-label" }, "\uACB0\uACFC Summary \xB7 \uC6B4\uC601 \uC131\uACFC \uBCF4\uB4DC"), /* @__PURE__ */ React.createElement("p", null, "\uBCF4\uACE0\uC11C \uBA54\uD0C0\uB370\uC774\uD130\uB97C \uBA3C\uC800 \uC4F0\uACE0, \uC5C6\uC73C\uBA74 \uAC19\uC740 run \uC758 \uC5F0\uAD6C \uAE30\uB85D\uC5D0\uC11C \uC774\uBBF8 \uBC1C\uD589\uB41C \uAC12\uC744 \uAC00\uC838\uC635\uB2C8\uB2E4. \uC5B4\uB290 \uCABD\uC5D0\uB3C4 \uC5C6\uC73C\uBA74 \uCD94\uC815\uD558\uC9C0 \uC54A\uACE0 ", /* @__PURE__ */ React.createElement("b", null, "\uBBF8\uBC1C\uD589"), "\uC73C\uB85C \uB461\uB2C8\uB2E4. \uAC12\uB9C8\uB2E4 \uCD9C\uCC98\uB97C \uD568\uAED8 \uD45C\uC2DC\uD569\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("span", { className: "v4-report-summary-source mono" }, report.research_id || report.run_id || report.title || "\uC120\uD0DD \uBCF4\uACE0\uC11C")), runLinked && /* @__PURE__ */ React.createElement("p", { className: "v4-report-summary-note mono", role: "note" }, "\uC774 \uBCF4\uACE0\uC11C\uC758 \uC77C\uBD80 \uC9C0\uD45C\uB294 run ", /* @__PURE__ */ React.createElement("b", null, report.run_id), " \uC758 \uC5F0\uAD6C \uAE30\uB85D\uC5D0\uC11C \uC5F0\uACB0\uD588\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4-report-summary-kpis" }, metrics.map(([label, entry, suffix, key]) => /* @__PURE__ */ React.createElement("article", { key, className: entry.value == null ? "missing" : "origin-" + entry.origin }, /* @__PURE__ */ React.createElement("span", null, label), /* @__PURE__ */ React.createElement("b", null, _reportSummaryValue(entry.value, suffix, digitsFor(key))), /* @__PURE__ */ React.createElement("small", null, entry.origin ? `${key} \xB7 ${_RS_SOURCE_LABEL[entry.origin]}` : key)))), /* @__PURE__ */ React.createElement("div", { className: "v4-report-summary-visual", "aria-label": "\uD575\uC2EC \uC131\uACFC \uC0C1\uB300 \uB9C9\uB300" }, visualMetrics.length ? visualMetrics.map(([label, entry, suffix, key]) => /* @__PURE__ */ React.createElement("div", { key, className: key === "mdd_pct" ? "risk" : entry.value < 0 ? "negative" : "positive" }, /* @__PURE__ */ React.createElement("span", null, label), /* @__PURE__ */ React.createElement("i", null, /* @__PURE__ */ React.createElement("b", { style: { width: `${Math.max(3, Math.min(100, Math.abs(entry.value)))}%` } })), /* @__PURE__ */ React.createElement("strong", null, _reportSummaryValue(entry.value, suffix, 2)))) : /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC2DC\uAC01\uD654 \uAC00\uB2A5\uD55C \uC131\uACFC \uC9C0\uD45C\uAC00 \uC544\uC9C1 \uBC1C\uD589\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "v4-report-summary-table-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "data-table" }, /* @__PURE__ */ React.createElement("caption", null, "\uBCF4\uACE0\uC11C \uACB0\uACFC Summary \uC9C0\uD45C"), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uC9C0\uD45C"), /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uAC12"), /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uC6D0\uCC9C \uD544\uB4DC"), /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uCD9C\uCC98"))), /* @__PURE__ */ React.createElement("tbody", null, metrics.map(([label, entry, suffix, key]) => /* @__PURE__ */ React.createElement("tr", { key }, /* @__PURE__ */ React.createElement("th", { scope: "row" }, label), /* @__PURE__ */ React.createElement("td", null, _reportSummaryValue(entry.value, suffix, digitsFor(key))), /* @__PURE__ */ React.createElement("td", { className: "mono" }, key), /* @__PURE__ */ React.createElement("td", { className: "mono" }, entry.origin ? _RS_SOURCE_LABEL[entry.origin] : "\u2014")))))));
+    const visualMetrics = metrics.slice(0, 3).filter(([, entry2]) => entry2.value != null);
+    const runLinked = metrics.some(([, entry2]) => entry2.origin === "run" || entry2.origin === "derived");
+    return /* @__PURE__ */ React.createElement("section", { className: "v4-report-summary-board", "aria-labelledby": "v4-report-summary-title" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { id: "v4-report-summary-title", className: "stom-section-label" }, "\uACB0\uACFC Summary \xB7 \uC6B4\uC601 \uC131\uACFC \uBCF4\uB4DC"), /* @__PURE__ */ React.createElement("p", null, "\uBCF4\uACE0\uC11C \uBA54\uD0C0\uB370\uC774\uD130\uB97C \uBA3C\uC800 \uC4F0\uACE0, \uC5C6\uC73C\uBA74 \uAC19\uC740 run \uC758 \uC5F0\uAD6C \uAE30\uB85D\uC5D0\uC11C \uC774\uBBF8 \uBC1C\uD589\uB41C \uAC12\uC744 \uAC00\uC838\uC635\uB2C8\uB2E4. \uC5B4\uB290 \uCABD\uC5D0\uB3C4 \uC5C6\uC73C\uBA74 \uCD94\uC815\uD558\uC9C0 \uC54A\uACE0 ", /* @__PURE__ */ React.createElement("b", null, "\uBBF8\uBC1C\uD589"), "\uC73C\uB85C \uB461\uB2C8\uB2E4. \uAC12\uB9C8\uB2E4 \uCD9C\uCC98\uB97C \uD568\uAED8 \uD45C\uC2DC\uD569\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("span", { className: "v4-report-summary-source mono" }, report.research_id || report.run_id || report.title || "\uC120\uD0DD \uBCF4\uACE0\uC11C")), runLinked && /* @__PURE__ */ React.createElement("p", { className: "v4-report-summary-note mono", role: "note" }, "\uC774 \uBCF4\uACE0\uC11C\uC758 \uC77C\uBD80 \uC9C0\uD45C\uB294 run ", /* @__PURE__ */ React.createElement("b", null, report.run_id), " \uC758 \uC5F0\uAD6C \uAE30\uB85D\uC5D0\uC11C \uC5F0\uACB0\uD588\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "v4-report-summary-kpis" }, metrics.map(([label, entry2, suffix, key]) => /* @__PURE__ */ React.createElement("article", { key, className: entry2.value == null ? "missing" : "origin-" + entry2.origin }, /* @__PURE__ */ React.createElement("span", null, label), /* @__PURE__ */ React.createElement("b", null, _reportSummaryValue(entry2.value, suffix, digitsFor(key))), /* @__PURE__ */ React.createElement("small", null, entry2.origin ? `${key} \xB7 ${_RS_SOURCE_LABEL[entry2.origin]}` : key)))), /* @__PURE__ */ React.createElement("div", { className: "v4-report-summary-visual", "aria-label": "\uD575\uC2EC \uC131\uACFC \uC0C1\uB300 \uB9C9\uB300" }, visualMetrics.length ? visualMetrics.map(([label, entry2, suffix, key]) => /* @__PURE__ */ React.createElement("div", { key, className: key === "mdd_pct" ? "risk" : entry2.value < 0 ? "negative" : "positive" }, /* @__PURE__ */ React.createElement("span", null, label), /* @__PURE__ */ React.createElement("i", null, /* @__PURE__ */ React.createElement("b", { style: { width: `${Math.max(3, Math.min(100, Math.abs(entry2.value)))}%` } })), /* @__PURE__ */ React.createElement("strong", null, _reportSummaryValue(entry2.value, suffix, 2)))) : /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC2DC\uAC01\uD654 \uAC00\uB2A5\uD55C \uC131\uACFC \uC9C0\uD45C\uAC00 \uC544\uC9C1 \uBC1C\uD589\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "v4-report-summary-table-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "data-table" }, /* @__PURE__ */ React.createElement("caption", null, "\uBCF4\uACE0\uC11C \uACB0\uACFC Summary \uC9C0\uD45C"), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uC9C0\uD45C"), /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uAC12"), /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uC6D0\uCC9C \uD544\uB4DC"), /* @__PURE__ */ React.createElement("th", { scope: "col" }, "\uCD9C\uCC98"))), /* @__PURE__ */ React.createElement("tbody", null, metrics.map(([label, entry2, suffix, key]) => /* @__PURE__ */ React.createElement("tr", { key }, /* @__PURE__ */ React.createElement("th", { scope: "row" }, label), /* @__PURE__ */ React.createElement("td", null, _reportSummaryValue(entry2.value, suffix, digitsFor(key))), /* @__PURE__ */ React.createElement("td", { className: "mono" }, key), /* @__PURE__ */ React.createElement("td", { className: "mono" }, entry2.origin ? _RS_SOURCE_LABEL[entry2.origin] : "\u2014")))))));
   }
   Object.assign(window, { ReportSummaryBoard, reportSummaryResolve });
 
@@ -42067,8 +42238,8 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const buf = Array.isArray(window.__stomFeLog) ? window.__stomFeLog : [];
     while (buf.length > capacity) buf.shift();
     for (let i = 0; i < buf.length; i += 1) {
-      const entry = buf[i] || {};
-      buf[i] = { ts: Number(entry.ts) || Date.now() / 1e3, level: redact(entry.level || "ERROR"), msg: redact(entry.msg) };
+      const entry2 = buf[i] || {};
+      buf[i] = { ts: Number(entry2.ts) || Date.now() / 1e3, level: redact(entry2.level || "ERROR"), msg: redact(entry2.msg) };
     }
     const push = (level, msg) => {
       try {

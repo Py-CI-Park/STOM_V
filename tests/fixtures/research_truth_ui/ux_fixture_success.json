@@ -1,0 +1,11 @@
+{
+  "job_id": "UX_FIXTURE_SUCCESS",
+  "spec": {"buy": "UX_SUCCESS_BUY", "sell": "UX_SELL"},
+  "status": "success",
+  "returncode": 0,
+  "metrics": {"trade_count": 3, "total_profit_pct": 1.25},
+  "message": "UX-01 browser fixture: completed with metrics",
+  "strategy_db_snapshot_hashes": {
+    "buy": "1111111111111111111111111111111111111111111111111111111111111111"
+  }
+}

@@ -12,6 +12,7 @@ import { BtDualEditor, BtLibraryPanel } from "./bt-tab-library.jsx";
 import { BtRunPanel, BtResultLibrary } from "./bt-tab-run.jsx";
 import { BtModeResultPanel } from "./bt-tab-mode-results.jsx";
 import { BtOverlayPanel, BtCollapsible, BtEvoSelector, BtPortfolioPanel, BtBackFinderPreflightPanel } from "./bt-tab-analysis.jsx";
+import { ResearchTruthBar } from "./research-truth-bar.jsx";
 
 // 비교 키 → 쿼리 파라미터. 잡은 job_id 하나, 진화 세대는 "run_id/gen_no" 를 쪼갠다.
 function _btCompareParams(key, side) {
@@ -30,13 +31,14 @@ function _btCompareParams(key, side) {
 //   결과·분석 영역(BtResultArea + 메트릭 카드 + 차트 + 기여/인사이트)은
 //   backtest-charts.jsx 에 있으며 window 전역으로 공유된다(이 파일보다 먼저 로드).
 // ===========================================================================
-function BacktestTab({ baseUrl, wsStatus }) {
+function BacktestTab({ baseUrl, wsStatus, showTruthBar = false }) {
   const isDemo = typeof window.isDemoSource === "function"
     ? window.isDemoSource(wsStatus) : (wsStatus === "demo");
 
   const [health, setHealth] = useState_bt(null);
   const [reloadKey, setReloadKey] = useState_bt(0);     // 라이브러리 재로드 트리거(저장/삭제 후).
   const [resultJobId, setResultJobId] = useState_bt("");
+  const [truthJobId, setTruthJobId] = useState_bt("");
   const [libNames, setLibNames] = useState_bt({ buy: [], sell: [] });
   // 실행 셀렉터 = 듀얼 에디터 소스. 매수/매도 선택을 탭 루트로 끌어올려 공유한다.
   const [buyName, setBuyName] = useState_bt("");
@@ -69,12 +71,20 @@ function BacktestTab({ baseUrl, wsStatus }) {
   // 잡 선택 → 잡 결과 모드(진화 세대 소스 해제) + 결과 분석 탭으로 자동 전환.
   const onPickJobResult = useCallback_bt((jobId) => {
     setResultJobId(jobId);
+    setTruthJobId(jobId);
+    if (jobId) { setEvoSource(null); selectSubTab("result"); }
+  }, [selectSubTab]);
+  // 산출물이 없는 종료 기록은 결과 뷰를 열지 않고 Truth만 확인한다.
+  const onInspectJobTruth = useCallback_bt((jobId) => {
+    setResultJobId("");
+    setTruthJobId(jobId);
     if (jobId) { setEvoSource(null); selectSubTab("result"); }
   }, [selectSubTab]);
   // 진화 세대 선택 → 세대 결과 모드(잡 결과 해제) + 결과 분석 탭으로 자동 전환.
   const onPickGen = useCallback_bt((runId, genNo) => {
     setEvoSource({ run_id: runId, gen_no: genNo });
     setResultJobId("");
+    setTruthJobId("");
     selectSubTab("result");
   }, [selectSubTab]);
 
@@ -188,6 +198,10 @@ function BacktestTab({ baseUrl, wsStatus }) {
         </div>
       )}
 
+      {showTruthBar && (
+        <ResearchTruthBar baseUrl={baseUrl} isDemo={isDemo} jobId={truthJobId} evoSource={evoSource} />
+      )}
+
       {/* 상단 고정 전폭 실행 패널 — 항상 노출(매수/매도·기간·모드·대형 실행 버튼·활성 잡 카드) */}
       <BtRunPanel baseUrl={baseUrl} isDemo={isDemo} libNames={libNames} onResult={onPickJobResult}
                   compareA={compareA} onCompareB={runCompare} onJobs={setJobsList}
@@ -278,7 +292,8 @@ function BacktestTab({ baseUrl, wsStatus }) {
             {(sourceView === "all" || sourceView === "human") && (
               <div style={{ minWidth: 0 }}>
                 <BtResultLibrary baseUrl={baseUrl} isDemo={isDemo} jobs={jobsList} onResult={onPickJobResult}
-                                 selectedJobId={resultJobId} onReload={reloadJobs}
+                                 onInspectTruth={onInspectJobTruth} selectedJobId={resultJobId}
+                                 selectedTruthJobId={truthJobId} onReload={reloadJobs}
                                  compareA={compareA} onSetCompareA={onSetCompareA} onCompareB={runCompare} />
               </div>
             )}

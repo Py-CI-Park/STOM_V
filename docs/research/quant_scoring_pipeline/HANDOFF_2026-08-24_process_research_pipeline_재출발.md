@@ -8,7 +8,7 @@
 >
 > 시작 기준: `loop/process-research-pipeline` @ `f75b80ebcb7fd72cd41c8933c4f6e63df8c2ae52`
 >
-> **2026-08-26 최신 실행:** BOOT-01·PIPE-01·SYS-01A에 이어 SYS-01B legacy adapter/read-only API를 완료했다. 일반 `without metrics` 메시지의 무거래 오분류를 제거하고 exact engine receipt를 요구한다. PIPE-01 10건은 adapter 경로에서도 **지표 생성 2 / 정상 무거래 0 / 실행 오류 6 / watchdog timeout 2**로 유지됐다. 상세 정본은 `2026-08-26_SYS-01B_legacy_truth_adapter_API_구현결과.md`, 다음 한 단위는 **UX-01 Global Truth Bar**다.
+> **2026-08-26 최신 실행:** BOOT-01·PIPE-01·SYS-01A·SYS-01B에 이어 UX-01 V4 Global Truth Bar를 완료했다. 실제 취소 job과 명시적 5상태 fixture를 브라우저에서 직접 선택했고, 실패 기록도 분석 결과를 가장하지 않은 채 Truth만 확인하도록 교정했다. 상세 정본은 `2026-08-26_UX-01_V4_Global_Truth_Bar_구현결과.md`, 다음 한 단위는 **ANA-01 AnalysisBundle v2**다.
 
 ---
 
@@ -93,6 +93,19 @@
 | persistence | `none`; 과거 JSON·DB 수정 없음 |
 | PIPE-01 adapter projection | `SUCCESS 2 / NO_TRADES 0 / ERROR 6 / TIMEOUT 2` |
 
+### UX-01 — V4 Global Truth Bar — 완료
+
+V4 백테스트 최상단에 실행·경제·권위·다음 행동과 차단 사유를 배치했다. 산출물이 없는 취소·오류·시간초과 기록도 선택할 수 있지만 결과 화면은 열지 않는다.
+
+| 완료 계약 | 결과 |
+|---|---|
+| 5상태 browser fixture | success/no-trades/error/timeout/partial 모두 PASS |
+| 실제 job | 취소 기록 `CANCELLED / NOT_EVALUABLE / FEASIBILITY / REPRODUCE` 확인 |
+| 반응형 | 1280 4축·720 2열·560 1열, 가로 넘침 없음 |
+| 접근성 | landmark/live region/keyboard focus/색 비의존 |
+| read-only | `LEGACY_INCOMPLETE`, `persistence none`; 원본 수정 없음 |
+| frontend 품질 | production build·typecheck·V1~V7 harness·console error 0 |
+
 ## 5. 권장 구현 순서
 
 | 순서 | 작업 |
@@ -100,8 +113,8 @@
 | 1 | PIPE-01 failure ledger — **완료** |
 | 2 | SYS-01A pure Truth Contract — **완료** |
 | 3 | SYS-01B adapter/read-only API — **완료** |
-| 4 | UX-01 Global Truth Bar — **다음** |
-| 5 | ANA-01 AnalysisBundle v2 |
+| 4 | UX-01 Global Truth Bar — **완료** |
+| 5 | ANA-01 AnalysisBundle v2 — **다음** |
 | 6 | UX-02 Result Overview |
 | 7 | RES-01 `<3000` 다기간 사전등록 |
 | 8 | RES-02 G0 공식 실행 |
@@ -197,4 +210,4 @@ python scripts/verify_pyd_gui_contract.py --branch codex/process-research-pipeli
 | 권위 | feasibility/development/OOS/live |
 | 다음 행동 | 정확히 하나 |
 
-현재 다음 행동은 **`UX-01 — V4 Global Truth Bar·다음 허용 행동·5상태 직접 사용성 검증`**이다.
+현재 다음 행동은 **`ANA-01 — 동일 입력에서 결정적으로 생성되는 AnalysisBundle v2 schema/builder`**다.

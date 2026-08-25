@@ -30,7 +30,7 @@ function V4Backtest({ baseUrl, wsStatus, onNavigate }) {
       </p>
       <div className="v4-backtest-workspace" role="region" aria-label="백테스트 선택, 실행, 취소 및 결과"
            onClickCapture={_confirmBacktestDanger}>
-        <BacktestTab baseUrl={baseUrl} wsStatus={wsStatus} />
+        <BacktestTab baseUrl={baseUrl} wsStatus={wsStatus} showTruthBar />
       </div>
       <BtTradePathTab baseUrl={baseUrl} onNavigate={onNavigate} />
     </section>
