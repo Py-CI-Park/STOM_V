@@ -17,6 +17,7 @@ from ai_strategy_loop.revision.mcap_event_contract import (
 )
 from ai_strategy_loop.revision.mcap_g0_client import execute_task
 from ai_strategy_loop.revision.mcap_g0_contract import (
+    G0Attempt,
     G0BatchEvidence,
     G0Checkpoint,
     G0JobEvidence,
@@ -24,6 +25,7 @@ from ai_strategy_loop.revision.mcap_g0_contract import (
 )
 from ai_strategy_loop.revision.mcap_g0_http import DashboardClient
 from ai_strategy_loop.revision.mcap_g0_inputs import SealedG0Plan, load_sealed_g0_plan
+from ai_strategy_loop.revision.mcap_g0_recovery import recover_terminal_attempts
 from ai_strategy_loop.revision.mcap_g0_report import build_g0_report
 from utility.sqlite_readonly import (
     assert_sqlite_sidefiles_unchanged,
@@ -142,7 +144,9 @@ def _write_checkpoint(
     )
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
-    _ = temporary.write_text(payload.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    _ = temporary.write_text(
+        payload.model_dump_json(indent=2, by_alias=True) + "\n", encoding="utf-8"
+    )
     _ = temporary.replace(path)
 
 
@@ -156,6 +160,18 @@ def _run_jobs(
     pending = tuple(task for task in plan.tasks if task.task_id not in completed)
     profile = plan.preregistration.official_execution
 
+    recovered: dict[str, tuple[G0Attempt, ...]] = {}
+    for task in pending:
+        index = task_index[task.task_id] % len(base_urls)
+        recovered[task.task_id] = recover_terminal_attempts(
+            task=task,
+            profile=profile,
+            sell_source=SELL_SOURCE,
+            base_url=base_urls[index],
+            manager_id=f"res02-g0-manager-{index + 1}",
+            max_attempts=profile.infrastructure_retry_max + 1,
+        )
+
     def execute(task: G0Task) -> G0JobEvidence:
         index = task_index[task.task_id] % len(base_urls)
         return execute_task(
@@ -164,6 +180,7 @@ def _run_jobs(
             sell_source=SELL_SOURCE,
             base_url=base_urls[index],
             manager_id=f"res02-g0-manager-{index + 1}",
+            prior_attempts=recovered[task.task_id],
         )
 
     with ThreadPoolExecutor(max_workers=len(base_urls)) as executor:
