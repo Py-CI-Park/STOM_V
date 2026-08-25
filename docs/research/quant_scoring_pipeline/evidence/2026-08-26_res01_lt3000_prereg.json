@@ -1,0 +1,225 @@
+{
+  "schema": "stom.res01_lt3000_prereg.v1",
+  "contract_id": "RES01_LT3000_G0_G1_20260826",
+  "authority": "existing_db_development_no_oos_no_adoption",
+  "can_adopt": false,
+  "band": {
+    "id": "MCAP_A_LT3000",
+    "lower_inclusive_eok": null,
+    "upper_exclusive_eok": 3000
+  },
+  "source": {
+    "lane": "stock_tick",
+    "database_access": "immutable_read_only",
+    "database_expected_bytes": 29727162368,
+    "database_fingerprint_mode": "sampled_v1",
+    "database_fingerprint_sha256": "a944f7c2bf2d22188688c768e3b202406734c4a38ba19bf81dbde6616eb03a48",
+    "census_path": "docs/research/quant_scoring_pipeline/evidence/2026-08-15_mcap_census.json",
+    "census_file_sha256": "416ab2821b975929d52a0a1d2778ffecf9a593519f6c597bf74bbb0512381ed5",
+    "window_start": 90000,
+    "window_end_exclusive": 93000,
+    "window_contract_sha256": "69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b"
+  },
+  "candidate_universe": {
+    "generation": "G0",
+    "manifest_path": "docs/research/quant_scoring_pipeline/evidence/2026-08-15_d3_candidate_manifest.json",
+    "manifest_file_sha256": "251a37edb2b34539fe343a7ae533262fb41d02af7272fc1167076055136e94dc",
+    "manifest_canonical_sha256": "39a6d3fd8b4cce65979a530375cdd228fda542ef03dd5963968f7d1ddf326fc0",
+    "seed": 20260815,
+    "family_count": 5,
+    "candidates_per_family": 32,
+    "raw_candidate_count": 160,
+    "families": [
+      "ABSORPTION_REVERSAL",
+      "FAILED_BREAKOUT_RETURN",
+      "COMPRESSION_CONFIRMED_BREAKOUT",
+      "FLOW_PRICE_DIVERGENCE",
+      "OPENING_OVERREACTION_MEAN_REVERT"
+    ],
+    "candidate_selection_may_read_pnl": false
+  },
+  "development_folds": [
+    {
+      "id": "DEV_2022_Q2_MONTH1",
+      "start": 20220401,
+      "end": 20220430
+    },
+    {
+      "id": "DEV_2023_Q3_MONTH1",
+      "start": 20230701,
+      "end": 20230731
+    },
+    {
+      "id": "DEV_2024_Q4_MONTH1",
+      "start": 20241001,
+      "end": 20241031
+    },
+    {
+      "id": "DEV_2025_Q1_MONTH1",
+      "start": 20250101,
+      "end": 20250131
+    }
+  ],
+  "frozen_holdout": {
+    "start": 20260101,
+    "end": 20260227,
+    "status": "SEALED_NOT_AUTHORIZED",
+    "allowed_in_res02_or_res03": false
+  },
+  "preflight": {
+    "required": [
+      "database_identity_match",
+      "candidate_manifest_identity_match",
+      "source_sha256_match_for_all_160",
+      "static_syntax_and_allowed_variable_pass_for_all_160",
+      "state_parameter_contradiction_ledger_complete",
+      "failed_breakout_runtime_counterexample_red_green_receipt",
+      "official_engine_and_config_identity_captured",
+      "separate_jobs_directory_per_manager",
+      "protected_path_write_guard_clean"
+    ],
+    "failed_breakout_counterexamples": [
+      "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_cc12f7a023",
+      "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_8432eb62ad"
+    ],
+    "counterexample_day": 20231114,
+    "counterexample_symbol": "006740",
+    "historical_failure": "ENGINE_STRATEGY_EXCEPTION.TYPE_ERROR_LIST_STRING_INDEX",
+    "official_execution_before_preflight_pass": false
+  },
+  "event_gate": {
+    "observations_may_include": [
+      "candidate_id",
+      "fold_id",
+      "day",
+      "symbol",
+      "timestamp",
+      "triggered"
+    ],
+    "forbidden_fields": [
+      "profit",
+      "return",
+      "mdd",
+      "win_rate",
+      "future_price",
+      "exit_result"
+    ],
+    "min_total_events": 200,
+    "min_events_per_fold": 20,
+    "min_distinct_days": 20,
+    "min_distinct_symbols": 10,
+    "missing_fold_count": 0,
+    "selection": {
+      "max_per_family": 2,
+      "max_total": 10,
+      "method": "performance_blind_maximin_within_event_eligible_family",
+      "event_count_usage": "gate_only_not_rank",
+      "tie_break": "canonical_sha256_desc"
+    }
+  },
+  "official_execution": {
+    "source_authority": "research_direct_source",
+    "timeframe": "tick",
+    "start_time": 90000,
+    "end_time": 93000,
+    "sell_strategy_id": "D3_BASELINE_RISK_TIME_EXIT",
+    "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+    "engines_per_job": 4,
+    "manager_workers_max": 2,
+    "job_timeout_seconds": 3600,
+    "poll_timeout_seconds": 3660,
+    "infrastructure_retry_max": 1,
+    "retry_may_change_research_inputs": false,
+    "max_jobs_per_generation": 40,
+    "artifact_policy": "append_only_new_batch_no_historical_overwrite"
+  },
+  "cost": {
+    "primary": {
+      "model": "official_engine_builtin_kiwoom",
+      "buy_fee_pct": 0.015,
+      "sell_fee_pct": 0.015,
+      "sell_tax_pct": 0.18,
+      "round_trip_pct_approx": 0.21
+    },
+    "sensitivity": {
+      "authority": "advisory_until_official_replay",
+      "adverse_fill_ticks": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "extra_fee_bps": [
+        0,
+        5
+      ],
+      "robust_gate_profile": "tick2_total_profit_positive"
+    }
+  },
+  "development_rule": {
+    "all_fold_source_match": true,
+    "all_fold_execution_success": true,
+    "min_trades_each_fold": 20,
+    "min_positive_total_profit_folds": 3,
+    "combined_total_profit_pct_gt": 0,
+    "combined_avg_profit_pct_gt": 0,
+    "max_mdd_pct_each_fold": 15,
+    "economic_failure_is_not_execution_failure": true
+  },
+  "generation_contract": {
+    "generations": [
+      "G0",
+      "G1"
+    ],
+    "g2_allowed": false,
+    "g1_parent_policy": "every_valid_g0_parent_no_positive_only_filter",
+    "g1_threshold_only_change_allowed": false,
+    "allowed_structural_changes": [
+      "state_order_change",
+      "logical_role_add_or_remove",
+      "entry_exit_responsibility_split",
+      "pnl_blind_execution_work_reduction"
+    ],
+    "paired_comparison": {
+      "same_folds": true,
+      "same_cost": true,
+      "same_engine_identity": true,
+      "improved_if": "median_fold_avg_profit_delta_gt_0_and_worst_fold_total_profit_delta_gte_0",
+      "improvement_is_not_robustness_or_oos": true
+    }
+  },
+  "robustness_gate": {
+    "stage": "RES04_ONLY_AFTER_DEVELOPMENT_RULE_PASS",
+    "controls": [
+      "timestamp_shuffle",
+      "symbol_shuffle",
+      "direction_inversion",
+      "event_offset_random_entry",
+      "parameter_random_baseline"
+    ],
+    "bh_fdr_q_max": 0.1,
+    "posterior_probability_positive_min": 0.95,
+    "tick2_total_profit_positive": true,
+    "bo_requires_all": true
+  },
+  "stop_rules": [
+    "STOP_SOURCE_OR_MANIFEST_IDENTITY_MISMATCH",
+    "STOP_FAILED_BREAKOUT_RUNTIME_PARITY_UNRESOLVED",
+    "STOP_NO_EVENT_QUALIFIED_G0_CANDIDATE",
+    "STOP_VALID_EXECUTION_RATE_BELOW_0_8_AFTER_ONE_INFRA_RETRY",
+    "STOP_AFTER_G1_NO_DEVELOPMENT_RULE_PASS",
+    "STOP_CONTROLS_FDR_OR_POSTERIOR_FAIL",
+    "STOP_PROTECTED_PATH_WRITE_DETECTED"
+  ],
+  "forbidden": [
+    "move_market_cap_boundary_after_results",
+    "change_fold_dates_after_results",
+    "rank_event_eligible_candidates_by_pnl",
+    "select_only_positive_parent_for_g1",
+    "micro_tune_threshold_around_winner_or_failure",
+    "open_frozen_holdout_before_candidate_and_code_seal",
+    "claim_oos_live_or_adoption_from_development",
+    "write_strategy_or_protected_database"
+  ],
+  "seal_rule": "this_manifest_and_the_companion_prereg_document_must_be_committed_before_any_res02_measurement_or_execution"
+}

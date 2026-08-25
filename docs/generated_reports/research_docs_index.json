@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-25T16:50:25.708837+00:00",
-  "source_fingerprint": "f80b3b6c86a5ffac998e9234d12b3e351b1203419a9232e8ce50d5a5fd8aa321",
-  "count": 1071,
+  "generated_at": "2026-08-25T17:00:06.956530+00:00",
+  "source_fingerprint": "d8ce852f286efb140d31d6d35d9706e28df6b3df787f0e426ed2f205c98761e7",
+  "count": 1072,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7131,6 +7131,13 @@
       "size": 5959
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-26_RES-01_LT3000_다기간_G0_G1_사전등록.md",
+      "title": "RES-01 — `<3000` 다기간 G0/G1 개발 연구 사전등록",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-25T16:59:21.368153+00:00",
+      "size": 7720
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_SYS-01B_legacy_truth_adapter_API_구현결과.md",
       "title": "SYS-01B — Legacy Truth Adapter·터미널 우선순위·읽기 전용 API 구현 결과",
       "category": "quant_scoring_pipeline",
@@ -7246,8 +7253,8 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_process_research_pipeline_재출발.md",
       "title": "핸드오프 — Process Research Pipeline 재출발 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:49:19.714673+00:00",
-      "size": 8712
+      "updated_at": "2026-08-25T16:59:21.376842+00:00",
+      "size": 9265
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_v516_시총별_반복연구_재개.md",
@@ -7260,8 +7267,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:49:19.761514+00:00",
-      "size": 14659
+      "updated_at": "2026-08-25T16:59:21.382766+00:00",
+      "size": 14782
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",

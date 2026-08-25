@@ -9,14 +9,15 @@
 
 | 순서 | 문서 | 내용 |
 |---:|---|---|
-| **최신 1** | **`2026-08-26_UX-02_Result_Overview_구현결과.md`** | **★ 최신 구현 정본** — AnalysisBundle 결과 개요·7개 기능 가용성·실제 job/5상태 브라우저 QA·다음 RES-01 |
-| **최신 2** | **`2026-08-26_ANA-01_AnalysisBundle_v2_구현결과.md`** | **분석 정본** — strict bundle schema·canonical hash·CSV identity·job read API |
-| **최신 3** | **`2026-08-26_UX-01_V4_Global_Truth_Bar_구현결과.md`** | **V4 판단 UX 정본** — 4축 Truth Bar·실패 기록 Truth-only 선택·5상태 실제 브라우저 QA |
-| **최신 4** | **`2026-08-26_SYS-01B_legacy_truth_adapter_API_구현결과.md`** | **Truth API 정본** — exact terminal receipt·legacy adapter·REST/WS parity·PIPE-01 adapter 집계 2/0/6/2 |
-| **최신 5** | **`2026-08-25_SYS-01A_Research_Truth_Contract_구현결과.md`** | **Truth 계약 정본** — strict 4축 계약·PIPE-01 10/10 fixture·복합 identity·fail-closed validator |
-| **최신 6** | **`2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md`** | **증거 정본** — BOOT-01 환경 GO/NO-GO·`<3000` 10/10 원시 증거 대조·정상 무거래 0/실행 실패 8 정정 |
-| **최신 7** | **`HANDOFF_2026-08-24_process_research_pipeline_재출발.md`** | **최신 실행 핸드오프** — PIPE-01/SYS-01A/SYS-01B/UX-01/ANA-01/UX-02 완료·RES-01 재개 지점 |
-| **최신 8** | **`2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md`** | **최신 계획 정본** — 페이지별 UX/UI·AnalysisBundle v2·제품/연구 분리·G0→부검→G1 종단 슬라이스·성숙도 Gate |
+| **최신 1** | **`2026-08-26_RES-01_LT3000_다기간_G0_G1_사전등록.md`** | **★ 최신 연구 계약 정본** — 4개 development Fold·160개 G0·Event gate·G1·중지 규칙 봉인·다음 RES-02 |
+| **최신 2** | **`2026-08-26_UX-02_Result_Overview_구현결과.md`** | **결과 UX 정본** — AnalysisBundle 결과 개요·7개 기능 가용성·실제 job/5상태 브라우저 QA |
+| **최신 3** | **`2026-08-26_ANA-01_AnalysisBundle_v2_구현결과.md`** | **분석 정본** — strict bundle schema·canonical hash·CSV identity·job read API |
+| **최신 4** | **`2026-08-26_UX-01_V4_Global_Truth_Bar_구현결과.md`** | **V4 판단 UX 정본** — 4축 Truth Bar·실패 기록 Truth-only 선택·5상태 실제 브라우저 QA |
+| **최신 5** | **`2026-08-26_SYS-01B_legacy_truth_adapter_API_구현결과.md`** | **Truth API 정본** — exact terminal receipt·legacy adapter·REST/WS parity·PIPE-01 adapter 집계 2/0/6/2 |
+| **최신 6** | **`2026-08-25_SYS-01A_Research_Truth_Contract_구현결과.md`** | **Truth 계약 정본** — strict 4축 계약·PIPE-01 10/10 fixture·복합 identity·fail-closed validator |
+| **최신 7** | **`2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md`** | **증거 정본** — BOOT-01 환경 GO/NO-GO·`<3000` 10/10 원시 증거 대조·정상 무거래 0/실행 실패 8 정정 |
+| **최신 8** | **`HANDOFF_2026-08-24_process_research_pipeline_재출발.md`** | **최신 실행 핸드오프** — 시스템·UX/분석 기반과 RES-01 완료·RES-02 preflight 재개 지점 |
+| **최신 9** | **`2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md`** | **최신 계획 정본** — 페이지별 UX/UI·AnalysisBundle v2·제품/연구 분리·G0→부검→G1 종단 슬라이스·성숙도 Gate |
 | **0** | **`2026-08-13_연구종결과_확률적발견체계_마스터플랜_v4.md`** | **기초 계획 정본 — 최신 1·2가 실행 순서를 대체** · 챔피언 `SHADOW_BASELINE` 강등·E2 중지·E0 관측성·UX 정확성·Bayesian/Monte Carlo·조건부 denoising |
 | **0.0000000000001** | **`2026-08-14_v4_중간검토와_잔여단계_실행게이트.md`** | **현행 실행 게이트** — 원격 백업·E0 실제 대조·B0 순차 판정·F0 AST·Q0 QMC/Pareto·D0 음성대조·부모 PR 순서 |
 | **0.0000000000002** | **`2026-08-14_E0_엔진관측성_고정fixture_사전등록.md`** | **E0 실행 전 봉인** — 5거래일·챔피언/G2 고정·각 3회·240초·진단 checkpoint 판정 |
