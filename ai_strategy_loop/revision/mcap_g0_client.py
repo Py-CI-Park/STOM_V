@@ -9,12 +9,10 @@ from typing import Final
 
 from pydantic import ValidationError
 
-from ai_strategy_loop.controller.research_truth_models import (
-    FailureCause,
-    ResearchTruth,
-)
+from ai_strategy_loop.controller.research_truth_models import ResearchTruth
 from ai_strategy_loop.dashboard.analysis_bundle_models import AnalysisBundleV2
 from ai_strategy_loop.dashboard.backtest_terminal_classification import JsonValue
+from ai_strategy_loop.revision.mcap_event_contract import EventGateContractError
 from ai_strategy_loop.revision.mcap_g0_contract import (
     G0Attempt,
     G0JobEvidence,
@@ -22,18 +20,11 @@ from ai_strategy_loop.revision.mcap_g0_contract import (
     OfficialExecutionProfile,
 )
 from ai_strategy_loop.revision.mcap_g0_http import DashboardClient
+from ai_strategy_loop.revision.mcap_g0_retry import should_retry
 
 TERMINAL: Final = frozenset(
     {"success", "no_trades", "error", "failed", "timeout", "cancelled", "canceled"}
 )
-INFRASTRUCTURE_FAILURES: Final = frozenset(
-    {
-        FailureCause.ENGINE_DATA_RESPONSE_TIMEOUT,
-        FailureCause.WATCHDOG_HARD_TIMEOUT_NO_PROTOCOL_TELEMETRY,
-    }
-)
-
-
 def _object(value: JsonValue | None) -> dict[str, JsonValue]:
     return value if isinstance(value, dict) else {}
 
@@ -192,15 +183,6 @@ def execute_attempt(
     )
 
 
-def should_retry(attempt: G0Attempt) -> bool:
-    if attempt.runner_poll_timeout or attempt.transport_error:
-        return True
-    return (
-        attempt.truth is not None
-        and attempt.truth.failure_cause in INFRASTRUCTURE_FAILURES
-    )
-
-
 def execute_task(
     *,
     task: G0Task,
@@ -208,9 +190,20 @@ def execute_task(
     sell_source: str,
     base_url: str,
     manager_id: str,
+    prior_attempts: tuple[G0Attempt, ...] = (),
 ) -> G0JobEvidence:
-    attempts: list[G0Attempt] = []
-    for attempt_number in range(1, profile.infrastructure_retry_max + 2):
+    max_attempts = profile.infrastructure_retry_max + 1
+    expected_numbers = tuple(range(1, len(prior_attempts) + 1))
+    if (
+        len(prior_attempts) > max_attempts
+        or tuple(attempt.attempt for attempt in prior_attempts) != expected_numbers
+    ):
+        raise EventGateContractError("invalid recovered G0 attempt sequence")
+    attempts = list(prior_attempts)
+    may_execute = not attempts or should_retry(attempts[-1])
+    for attempt_number in range(len(attempts) + 1, max_attempts + 1):
+        if not may_execute:
+            break
         started = time.monotonic()
         try:
             attempt = execute_attempt(
