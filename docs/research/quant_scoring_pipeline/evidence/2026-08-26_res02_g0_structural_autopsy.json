@@ -1,0 +1,720 @@
+{
+  "schema": "stom.res02.g0_structural_autopsy.v1",
+  "generated_at": "2026-08-25T21:41:01.776201+00:00",
+  "authority": "DEVELOPMENT_DIAGNOSTIC_NO_ADOPTION",
+  "source_file": "C:/System_Trading/STOM/STOM_V.wt-process-research-restart/docs/research/quant_scoring_pipeline/evidence/2026-08-26_res02_g0_official.json",
+  "source_file_sha256": "2e3ee95c5272dc3132a0fea8b64cd14cf0f442cfb180521c8542d7d17b509a6e",
+  "batch_identity_sha256": "7e788a5f1692ce7c36cc1faf51c8f31c85a28c46fc1eebc909a594f21ae5440d",
+  "candidate_count": 7,
+  "family_count": 5,
+  "fold_count": 28,
+  "positive_fold_count": 2,
+  "g0_development_rule_pass_count": 0,
+  "candidates": [
+    {
+      "candidate_id": "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee",
+      "family_id": "ABSORPTION_REVERSAL",
+      "folds": [
+        {
+          "fold_id": "DEV_2022_Q2_MONTH1",
+          "execution_valid": true,
+          "trade_count": 23,
+          "win_rate": 30.43,
+          "avg_profit_pct": -0.34,
+          "total_profit_pct": -7.89,
+          "total_profit_krw": -78924.0,
+          "mdd_pct": 12.39,
+          "profit_factor": 0.7371206645593863
+        },
+        {
+          "fold_id": "DEV_2023_Q3_MONTH1",
+          "execution_valid": true,
+          "trade_count": 26,
+          "win_rate": 42.31,
+          "avg_profit_pct": -0.15,
+          "total_profit_pct": -3.89,
+          "total_profit_krw": -38945.0,
+          "mdd_pct": 11.15,
+          "profit_factor": 0.887662650463397
+        },
+        {
+          "fold_id": "DEV_2024_Q4_MONTH1",
+          "execution_valid": true,
+          "trade_count": 31,
+          "win_rate": 35.48,
+          "avg_profit_pct": -0.44,
+          "total_profit_pct": -6.84,
+          "total_profit_krw": -136663.0,
+          "mdd_pct": 13.31,
+          "profit_factor": 0.704648453793172
+        },
+        {
+          "fold_id": "DEV_2025_Q1_MONTH1",
+          "execution_valid": true,
+          "trade_count": 29,
+          "win_rate": 20.69,
+          "avg_profit_pct": -1.06,
+          "total_profit_pct": -30.67,
+          "total_profit_krw": -306757.0,
+          "mdd_pct": 36.1,
+          "profit_factor": 0.3609335677738704
+        }
+      ],
+      "total_trades": 109,
+      "positive_fold_count": 0,
+      "sum_fold_total_profit_pct": -49.29,
+      "weighted_trade_avg_profit_pct": -0.514679,
+      "worst_fold_total_profit_pct": -30.67,
+      "max_fold_mdd_pct": 36.1,
+      "exits": {
+        "stop_loss_count": 70,
+        "take_profit_count": 34,
+        "time_exit_count": 5,
+        "session_exit_count": 0,
+        "other_count": 0,
+        "total_count": 109,
+        "stop_loss_pnl_krw": -1573811.0,
+        "take_profit_pnl_krw": 1006623.0,
+        "time_exit_pnl_krw": 5899.0,
+        "session_exit_pnl_krw": 0.0,
+        "other_pnl_krw": 0.0
+      },
+      "rule_failures": [
+        "MIN_POSITIVE_TOTAL_PROFIT_FOLDS",
+        "COMBINED_TOTAL_PROFIT",
+        "COMBINED_AVG_PROFIT",
+        "MAX_MDD_EACH_FOLD"
+      ],
+      "development_rule_pass": false
+    },
+    {
+      "candidate_id": "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_639515aa1e",
+      "family_id": "ABSORPTION_REVERSAL",
+      "folds": [
+        {
+          "fold_id": "DEV_2022_Q2_MONTH1",
+          "execution_valid": true,
+          "trade_count": 14,
+          "win_rate": 28.57,
+          "avg_profit_pct": -0.69,
+          "total_profit_pct": -9.48,
+          "total_profit_krw": -94931.0,
+          "mdd_pct": 10.63,
+          "profit_factor": 0.5007205368788656
+        },
+        {
+          "fold_id": "DEV_2023_Q3_MONTH1",
+          "execution_valid": true,
+          "trade_count": 9,
+          "win_rate": 22.22,
+          "avg_profit_pct": -1.26,
+          "total_profit_pct": -11.28,
+          "total_profit_krw": -112798.0,
+          "mdd_pct": 10.15,
+          "profit_factor": 0.23472821514830797
+        },
+        {
+          "fold_id": "DEV_2024_Q4_MONTH1",
+          "execution_valid": true,
+          "trade_count": 2,
+          "win_rate": 0.0,
+          "avg_profit_pct": -2.12,
+          "total_profit_pct": -4.24,
+          "total_profit_krw": -42352.0,
+          "mdd_pct": 2.14,
+          "profit_factor": 0.0
+        },
+        {
+          "fold_id": "DEV_2025_Q1_MONTH1",
+          "execution_valid": true,
+          "trade_count": 6,
+          "win_rate": 33.33,
+          "avg_profit_pct": -0.45,
+          "total_profit_pct": -2.69,
+          "total_profit_krw": -26915.0,
+          "mdd_pct": 5.61,
+          "profit_factor": 0.5944520620187744
+        }
+      ],
+      "total_trades": 31,
+      "positive_fold_count": 0,
+      "sum_fold_total_profit_pct": -27.69,
+      "weighted_trade_avg_profit_pct": -0.90129,
+      "worst_fold_total_profit_pct": -11.28,
+      "max_fold_mdd_pct": 10.63,
+      "exits": {
+        "stop_loss_count": 17,
+        "take_profit_count": 4,
+        "time_exit_count": 10,
+        "session_exit_count": 0,
+        "other_count": 0,
+        "total_count": 31,
+        "stop_loss_pnl_krw": -395144.0,
+        "take_profit_pnl_krw": 123596.0,
+        "time_exit_pnl_krw": -5448.0,
+        "session_exit_pnl_krw": 0.0,
+        "other_pnl_krw": 0.0
+      },
+      "rule_failures": [
+        "MIN_TRADES_EACH_FOLD",
+        "MIN_POSITIVE_TOTAL_PROFIT_FOLDS",
+        "COMBINED_TOTAL_PROFIT",
+        "COMBINED_AVG_PROFIT"
+      ],
+      "development_rule_pass": false
+    },
+    {
+      "candidate_id": "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_55b6c25f13",
+      "family_id": "FAILED_BREAKOUT_RETURN",
+      "folds": [
+        {
+          "fold_id": "DEV_2022_Q2_MONTH1",
+          "execution_valid": true,
+          "trade_count": 108,
+          "win_rate": 29.63,
+          "avg_profit_pct": -0.68,
+          "total_profit_pct": -24.52,
+          "total_profit_krw": -735380.0,
+          "mdd_pct": 25.09,
+          "profit_factor": 0.49692805820852537
+        },
+        {
+          "fold_id": "DEV_2023_Q3_MONTH1",
+          "execution_valid": true,
+          "trade_count": 82,
+          "win_rate": 26.83,
+          "avg_profit_pct": -0.76,
+          "total_profit_pct": -20.94,
+          "total_profit_krw": -626309.0,
+          "mdd_pct": 21.61,
+          "profit_factor": 0.49603180031462357
+        },
+        {
+          "fold_id": "DEV_2024_Q4_MONTH1",
+          "execution_valid": true,
+          "trade_count": 100,
+          "win_rate": 28.0,
+          "avg_profit_pct": -0.87,
+          "total_profit_pct": -29.23,
+          "total_profit_krw": -875208.0,
+          "mdd_pct": 29.45,
+          "profit_factor": 0.38333193588458153
+        },
+        {
+          "fold_id": "DEV_2025_Q1_MONTH1",
+          "execution_valid": true,
+          "trade_count": 82,
+          "win_rate": 32.93,
+          "avg_profit_pct": -0.52,
+          "total_profit_pct": -10.57,
+          "total_profit_krw": -422591.0,
+          "mdd_pct": 10.12,
+          "profit_factor": 0.612448677702852
+        }
+      ],
+      "total_trades": 372,
+      "positive_fold_count": 0,
+      "sum_fold_total_profit_pct": -85.26,
+      "weighted_trade_avg_profit_pct": -0.713441,
+      "worst_fold_total_profit_pct": -29.23,
+      "max_fold_mdd_pct": 29.45,
+      "exits": {
+        "stop_loss_count": 204,
+        "take_profit_count": 79,
+        "time_exit_count": 81,
+        "session_exit_count": 8,
+        "other_count": 0,
+        "total_count": 372,
+        "stop_loss_pnl_krw": -4703988.0,
+        "take_profit_pnl_krw": 2324759.0,
+        "time_exit_pnl_krw": -313542.0,
+        "session_exit_pnl_krw": 33283.0,
+        "other_pnl_krw": 0.0
+      },
+      "rule_failures": [
+        "MIN_POSITIVE_TOTAL_PROFIT_FOLDS",
+        "COMBINED_TOTAL_PROFIT",
+        "COMBINED_AVG_PROFIT",
+        "MAX_MDD_EACH_FOLD"
+      ],
+      "development_rule_pass": false
+    },
+    {
+      "candidate_id": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_ad1fb159a2",
+      "family_id": "COMPRESSION_CONFIRMED_BREAKOUT",
+      "folds": [
+        {
+          "fold_id": "DEV_2022_Q2_MONTH1",
+          "execution_valid": true,
+          "trade_count": 177,
+          "win_rate": 38.42,
+          "avg_profit_pct": -0.18,
+          "total_profit_pct": -6.2,
+          "total_profit_krw": -308642.0,
+          "mdd_pct": 14.22,
+          "profit_factor": 0.8319990158637537
+        },
+        {
+          "fold_id": "DEV_2023_Q3_MONTH1",
+          "execution_valid": true,
+          "trade_count": 97,
+          "win_rate": 39.18,
+          "avg_profit_pct": -0.26,
+          "total_profit_pct": -8.38,
+          "total_profit_krw": -250513.0,
+          "mdd_pct": 13.1,
+          "profit_factor": 0.7780655049301453
+        },
+        {
+          "fold_id": "DEV_2024_Q4_MONTH1",
+          "execution_valid": true,
+          "trade_count": 106,
+          "win_rate": 35.85,
+          "avg_profit_pct": -0.46,
+          "total_profit_pct": -12.22,
+          "total_profit_krw": -486257.0,
+          "mdd_pct": 11.77,
+          "profit_factor": 0.6210711783678982
+        },
+        {
+          "fold_id": "DEV_2025_Q1_MONTH1",
+          "execution_valid": true,
+          "trade_count": 90,
+          "win_rate": 31.11,
+          "avg_profit_pct": -0.55,
+          "total_profit_pct": -16.56,
+          "total_profit_krw": -496013.0,
+          "mdd_pct": 17.64,
+          "profit_factor": 0.5602702139637143
+        }
+      ],
+      "total_trades": 470,
+      "positive_fold_count": 0,
+      "sum_fold_total_profit_pct": -43.36,
+      "weighted_trade_avg_profit_pct": -0.330511,
+      "worst_fold_total_profit_pct": -16.56,
+      "max_fold_mdd_pct": 17.64,
+      "exits": {
+        "stop_loss_count": 191,
+        "take_profit_count": 114,
+        "time_exit_count": 150,
+        "session_exit_count": 15,
+        "other_count": 0,
+        "total_count": 470,
+        "stop_loss_pnl_krw": -4418996.0,
+        "take_profit_pnl_krw": 3340862.0,
+        "time_exit_pnl_krw": -399994.0,
+        "session_exit_pnl_krw": -63297.0,
+        "other_pnl_krw": 0.0
+      },
+      "rule_failures": [
+        "MIN_POSITIVE_TOTAL_PROFIT_FOLDS",
+        "COMBINED_TOTAL_PROFIT",
+        "COMBINED_AVG_PROFIT",
+        "MAX_MDD_EACH_FOLD"
+      ],
+      "development_rule_pass": false
+    },
+    {
+      "candidate_id": "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_c5850a62eb",
+      "family_id": "FLOW_PRICE_DIVERGENCE",
+      "folds": [
+        {
+          "fold_id": "DEV_2022_Q2_MONTH1",
+          "execution_valid": true,
+          "trade_count": 45,
+          "win_rate": 13.33,
+          "avg_profit_pct": -0.84,
+          "total_profit_pct": -9.5,
+          "total_profit_krw": -377756.0,
+          "mdd_pct": 9.24,
+          "profit_factor": 0.1666571071824082
+        },
+        {
+          "fold_id": "DEV_2023_Q3_MONTH1",
+          "execution_valid": true,
+          "trade_count": 16,
+          "win_rate": 37.5,
+          "avg_profit_pct": -0.33,
+          "total_profit_pct": -2.7,
+          "total_profit_krw": -53353.0,
+          "mdd_pct": 3.68,
+          "profit_factor": 0.7069546972493189
+        },
+        {
+          "fold_id": "DEV_2024_Q4_MONTH1",
+          "execution_valid": true,
+          "trade_count": 15,
+          "win_rate": 53.33,
+          "avg_profit_pct": 0.38,
+          "total_profit_pct": 2.92,
+          "total_profit_krw": 57917.0,
+          "mdd_pct": 3.42,
+          "profit_factor": 1.563148427244883
+        },
+        {
+          "fold_id": "DEV_2025_Q1_MONTH1",
+          "execution_valid": true,
+          "trade_count": 17,
+          "win_rate": 35.29,
+          "avg_profit_pct": -0.78,
+          "total_profit_pct": -6.65,
+          "total_profit_krw": -131729.0,
+          "mdd_pct": 7.98,
+          "profit_factor": 0.4005533535683569
+        }
+      ],
+      "total_trades": 93,
+      "positive_fold_count": 1,
+      "sum_fold_total_profit_pct": -15.93,
+      "weighted_trade_avg_profit_pct": -0.544516,
+      "worst_fold_total_profit_pct": -9.5,
+      "max_fold_mdd_pct": 9.24,
+      "exits": {
+        "stop_loss_count": 26,
+        "take_profit_count": 12,
+        "time_exit_count": 39,
+        "session_exit_count": 16,
+        "other_count": 0,
+        "total_count": 93,
+        "stop_loss_pnl_krw": -570679.0,
+        "take_profit_pnl_krw": 342366.0,
+        "time_exit_pnl_krw": -153469.0,
+        "session_exit_pnl_krw": -123139.0,
+        "other_pnl_krw": 0.0
+      },
+      "rule_failures": [
+        "MIN_TRADES_EACH_FOLD",
+        "MIN_POSITIVE_TOTAL_PROFIT_FOLDS",
+        "COMBINED_TOTAL_PROFIT",
+        "COMBINED_AVG_PROFIT"
+      ],
+      "development_rule_pass": false
+    },
+    {
+      "candidate_id": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_3205e5b871",
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "folds": [
+        {
+          "fold_id": "DEV_2022_Q2_MONTH1",
+          "execution_valid": true,
+          "trade_count": 93,
+          "win_rate": 18.28,
+          "avg_profit_pct": -0.76,
+          "total_profit_pct": -23.54,
+          "total_profit_krw": -705101.0,
+          "mdd_pct": 26.4,
+          "profit_factor": 0.31888250908992555
+        },
+        {
+          "fold_id": "DEV_2023_Q3_MONTH1",
+          "execution_valid": true,
+          "trade_count": 62,
+          "win_rate": 43.55,
+          "avg_profit_pct": -0.29,
+          "total_profit_pct": -8.91,
+          "total_profit_krw": -178221.0,
+          "mdd_pct": 14.67,
+          "profit_factor": 0.7227383748969337
+        },
+        {
+          "fold_id": "DEV_2024_Q4_MONTH1",
+          "execution_valid": true,
+          "trade_count": 61,
+          "win_rate": 36.07,
+          "avg_profit_pct": -0.23,
+          "total_profit_pct": -4.72,
+          "total_profit_krw": -141206.0,
+          "mdd_pct": 8.89,
+          "profit_factor": 0.7341674448025542
+        },
+        {
+          "fold_id": "DEV_2025_Q1_MONTH1",
+          "execution_valid": true,
+          "trade_count": 66,
+          "win_rate": 30.3,
+          "avg_profit_pct": -0.51,
+          "total_profit_pct": -16.94,
+          "total_profit_krw": -338835.0,
+          "mdd_pct": 16.59,
+          "profit_factor": 0.5242631614417774
+        }
+      ],
+      "total_trades": 282,
+      "positive_fold_count": 0,
+      "sum_fold_total_profit_pct": -54.11,
+      "weighted_trade_avg_profit_pct": -0.483511,
+      "worst_fold_total_profit_pct": -23.54,
+      "max_fold_mdd_pct": 26.4,
+      "exits": {
+        "stop_loss_count": 99,
+        "take_profit_count": 43,
+        "time_exit_count": 108,
+        "session_exit_count": 31,
+        "other_count": 1,
+        "total_count": 282,
+        "stop_loss_pnl_krw": -2191250.0,
+        "take_profit_pnl_krw": 1231902.0,
+        "time_exit_pnl_krw": -280605.0,
+        "session_exit_pnl_krw": -136076.0,
+        "other_pnl_krw": 12666.0
+      },
+      "rule_failures": [
+        "MIN_POSITIVE_TOTAL_PROFIT_FOLDS",
+        "COMBINED_TOTAL_PROFIT",
+        "COMBINED_AVG_PROFIT",
+        "MAX_MDD_EACH_FOLD"
+      ],
+      "development_rule_pass": false
+    },
+    {
+      "candidate_id": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_89a4f88e5a",
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "folds": [
+        {
+          "fold_id": "DEV_2022_Q2_MONTH1",
+          "execution_valid": true,
+          "trade_count": 17,
+          "win_rate": 11.76,
+          "avg_profit_pct": -1.26,
+          "total_profit_pct": -21.3,
+          "total_profit_krw": -213169.0,
+          "mdd_pct": 22.61,
+          "profit_factor": 0.21851709284208598
+        },
+        {
+          "fold_id": "DEV_2023_Q3_MONTH1",
+          "execution_valid": true,
+          "trade_count": 15,
+          "win_rate": 26.67,
+          "avg_profit_pct": -1.06,
+          "total_profit_pct": -15.92,
+          "total_profit_krw": -159208.0,
+          "mdd_pct": 21.5,
+          "profit_factor": 0.3196152087419924
+        },
+        {
+          "fold_id": "DEV_2024_Q4_MONTH1",
+          "execution_valid": true,
+          "trade_count": 13,
+          "win_rate": 61.54,
+          "avg_profit_pct": 0.91,
+          "total_profit_pct": 11.75,
+          "total_profit_krw": 117519.0,
+          "mdd_pct": 3.03,
+          "profit_factor": 3.3775795095897063
+        },
+        {
+          "fold_id": "DEV_2025_Q1_MONTH1",
+          "execution_valid": true,
+          "trade_count": 13,
+          "win_rate": 30.77,
+          "avg_profit_pct": -0.61,
+          "total_profit_pct": -7.91,
+          "total_profit_krw": -79150.0,
+          "mdd_pct": 12.68,
+          "profit_factor": 0.5979212809623473
+        }
+      ],
+      "total_trades": 58,
+      "positive_fold_count": 1,
+      "sum_fold_total_profit_pct": -33.38,
+      "weighted_trade_avg_profit_pct": -0.576207,
+      "worst_fold_total_profit_pct": -21.3,
+      "max_fold_mdd_pct": 22.61,
+      "exits": {
+        "stop_loss_count": 30,
+        "take_profit_count": 13,
+        "time_exit_count": 12,
+        "session_exit_count": 2,
+        "other_count": 1,
+        "total_count": 58,
+        "stop_loss_pnl_krw": -678518.0,
+        "take_profit_pnl_krw": 382240.0,
+        "time_exit_pnl_krw": -41231.0,
+        "session_exit_pnl_krw": -7205.0,
+        "other_pnl_krw": 10706.0
+      },
+      "rule_failures": [
+        "MIN_TRADES_EACH_FOLD",
+        "MIN_POSITIVE_TOTAL_PROFIT_FOLDS",
+        "COMBINED_TOTAL_PROFIT",
+        "COMBINED_AVG_PROFIT",
+        "MAX_MDD_EACH_FOLD"
+      ],
+      "development_rule_pass": false
+    }
+  ],
+  "families": [
+    {
+      "family_id": "ABSORPTION_REVERSAL",
+      "candidate_ids": [
+        "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee",
+        "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_639515aa1e"
+      ],
+      "fold_count": 8,
+      "total_trades": 140,
+      "positive_fold_count": 0,
+      "sum_fold_total_profit_pct": -76.98,
+      "exits": {
+        "stop_loss_count": 87,
+        "take_profit_count": 38,
+        "time_exit_count": 15,
+        "session_exit_count": 0,
+        "other_count": 0,
+        "total_count": 140,
+        "stop_loss_pnl_krw": -1968955.0,
+        "take_profit_pnl_krw": 1130219.0,
+        "time_exit_pnl_krw": 451.0,
+        "session_exit_pnl_krw": 0.0,
+        "other_pnl_krw": 0.0
+      },
+      "hypothesis_id": "HYP_ABSORPTION_RECOVERY_PERSISTENCE",
+      "observed_problem": "positive_folds=0/8; rule_pass_candidates=0/2",
+      "proposed_structural_role": "RECOVERY_PERSISTENCE_CONFIRMATION",
+      "transformation_class": "LOGIC_ROLE_ADDITION",
+      "threshold_retuning_allowed": false,
+      "parent_inclusion": "ALL_VALID_G0_PARENTS",
+      "paired_falsification_rule": "MEDIAN_FOLD_AVG_PROFIT_DELTA_GT_0_AND_WORST_FOLD_TOTAL_PROFIT_DELTA_GE_0"
+    },
+    {
+      "family_id": "FAILED_BREAKOUT_RETURN",
+      "candidate_ids": [
+        "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_55b6c25f13"
+      ],
+      "fold_count": 4,
+      "total_trades": 372,
+      "positive_fold_count": 0,
+      "sum_fold_total_profit_pct": -85.26,
+      "exits": {
+        "stop_loss_count": 204,
+        "take_profit_count": 79,
+        "time_exit_count": 81,
+        "session_exit_count": 8,
+        "other_count": 0,
+        "total_count": 372,
+        "stop_loss_pnl_krw": -4703988.0,
+        "take_profit_pnl_krw": 2324759.0,
+        "time_exit_pnl_krw": -313542.0,
+        "session_exit_pnl_krw": 33283.0,
+        "other_pnl_krw": 0.0
+      },
+      "hypothesis_id": "HYP_FAILED_BREAKOUT_RETURN_CONFIRMATION",
+      "observed_problem": "positive_folds=0/4; rule_pass_candidates=0/1",
+      "proposed_structural_role": "RETURN_SEQUENCE_CONFIRMATION",
+      "transformation_class": "LOGIC_ROLE_ADDITION",
+      "threshold_retuning_allowed": false,
+      "parent_inclusion": "ALL_VALID_G0_PARENTS",
+      "paired_falsification_rule": "MEDIAN_FOLD_AVG_PROFIT_DELTA_GT_0_AND_WORST_FOLD_TOTAL_PROFIT_DELTA_GE_0"
+    },
+    {
+      "family_id": "COMPRESSION_CONFIRMED_BREAKOUT",
+      "candidate_ids": [
+        "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_ad1fb159a2"
+      ],
+      "fold_count": 4,
+      "total_trades": 470,
+      "positive_fold_count": 0,
+      "sum_fold_total_profit_pct": -43.36,
+      "exits": {
+        "stop_loss_count": 191,
+        "take_profit_count": 114,
+        "time_exit_count": 150,
+        "session_exit_count": 15,
+        "other_count": 0,
+        "total_count": 470,
+        "stop_loss_pnl_krw": -4418996.0,
+        "take_profit_pnl_krw": 3340862.0,
+        "time_exit_pnl_krw": -399994.0,
+        "session_exit_pnl_krw": -63297.0,
+        "other_pnl_krw": 0.0
+      },
+      "hypothesis_id": "HYP_COMPRESSION_FOLLOW_THROUGH",
+      "observed_problem": "positive_folds=0/4; rule_pass_candidates=0/1",
+      "proposed_structural_role": "BREAKOUT_FOLLOW_THROUGH_CONFIRMATION",
+      "transformation_class": "LOGIC_ROLE_ADDITION",
+      "threshold_retuning_allowed": false,
+      "parent_inclusion": "ALL_VALID_G0_PARENTS",
+      "paired_falsification_rule": "MEDIAN_FOLD_AVG_PROFIT_DELTA_GT_0_AND_WORST_FOLD_TOTAL_PROFIT_DELTA_GE_0"
+    },
+    {
+      "family_id": "FLOW_PRICE_DIVERGENCE",
+      "candidate_ids": [
+        "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_c5850a62eb"
+      ],
+      "fold_count": 4,
+      "total_trades": 93,
+      "positive_fold_count": 1,
+      "sum_fold_total_profit_pct": -15.93,
+      "exits": {
+        "stop_loss_count": 26,
+        "take_profit_count": 12,
+        "time_exit_count": 39,
+        "session_exit_count": 16,
+        "other_count": 0,
+        "total_count": 93,
+        "stop_loss_pnl_krw": -570679.0,
+        "take_profit_pnl_krw": 342366.0,
+        "time_exit_pnl_krw": -153469.0,
+        "session_exit_pnl_krw": -123139.0,
+        "other_pnl_krw": 0.0
+      },
+      "hypothesis_id": "HYP_FLOW_BOOK_CONFIRMATION",
+      "observed_problem": "positive_folds=1/4; rule_pass_candidates=0/1",
+      "proposed_structural_role": "ORDERBOOK_DIRECTION_CONFIRMATION",
+      "transformation_class": "LOGIC_ROLE_ADDITION",
+      "threshold_retuning_allowed": false,
+      "parent_inclusion": "ALL_VALID_G0_PARENTS",
+      "paired_falsification_rule": "MEDIAN_FOLD_AVG_PROFIT_DELTA_GT_0_AND_WORST_FOLD_TOTAL_PROFIT_DELTA_GE_0"
+    },
+    {
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "candidate_ids": [
+        "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_3205e5b871",
+        "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_89a4f88e5a"
+      ],
+      "fold_count": 8,
+      "total_trades": 340,
+      "positive_fold_count": 1,
+      "sum_fold_total_profit_pct": -87.49,
+      "exits": {
+        "stop_loss_count": 129,
+        "take_profit_count": 56,
+        "time_exit_count": 120,
+        "session_exit_count": 33,
+        "other_count": 2,
+        "total_count": 340,
+        "stop_loss_pnl_krw": -2869768.0,
+        "take_profit_pnl_krw": 1614142.0,
+        "time_exit_pnl_krw": -321836.0,
+        "session_exit_pnl_krw": -143281.0,
+        "other_pnl_krw": 23372.0
+      },
+      "hypothesis_id": "HYP_OPENING_REVERSAL_PERSISTENCE",
+      "observed_problem": "positive_folds=1/8; rule_pass_candidates=0/2",
+      "proposed_structural_role": "REVERSAL_PERSISTENCE_CONFIRMATION",
+      "transformation_class": "LOGIC_ROLE_ADDITION",
+      "threshold_retuning_allowed": false,
+      "parent_inclusion": "ALL_VALID_G0_PARENTS",
+      "paired_falsification_rule": "MEDIAN_FOLD_AVG_PROFIT_DELTA_GT_0_AND_WORST_FOLD_TOTAL_PROFIT_DELTA_GE_0"
+    }
+  ],
+  "g1_parent_ids": [
+    "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee",
+    "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_639515aa1e",
+    "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_55b6c25f13",
+    "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_ad1fb159a2",
+    "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_c5850a62eb",
+    "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_3205e5b871",
+    "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_89a4f88e5a"
+  ],
+  "prohibited_adaptations": [
+    "THRESHOLD_FINE_TUNING",
+    "POSITIVE_PARENT_ONLY_SELECTION",
+    "FOLD_OR_BAND_CHANGE",
+    "HOLDOUT_ACCESS"
+  ],
+  "verdict": "G0_NO_RULE_PASS_PROCEED_PREREGISTERED_G1",
+  "next_gate": "RES03_G1_STRUCTURE_GENERATION",
+  "holdout_status": "SEALED_NOT_TOUCHED"
+}

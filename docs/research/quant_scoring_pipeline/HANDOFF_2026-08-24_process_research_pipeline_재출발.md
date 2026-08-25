@@ -2,13 +2,13 @@
 
 > **최신 실행 핸드오프**
 >
-> 현재 통합 브랜치: `codex/process-research-res-02-g0-preflight-event`
+> 현재 통합 브랜치: `codex/process-research-res-02-g0-official`
 >
 > worktree: `C:\System_Trading\STOM\STOM_V.wt-process-research-restart`
 >
 > 시작 기준: `loop/process-research-pipeline` @ `f75b80ebcb7fd72cd41c8933c4f6e63df8c2ae52`
 >
-> **2026-08-26 최신 실행:** BOOT-01·PIPE-01·SYS-01A/B·UX-01·ANA-01·UX-02·RES-01을 완료했다. RES-02에서는 과거 `FAILED_BREAKOUT` TypeError를 실제 반례로 복구하고, 29.7GB 실제 DB의 4개 development Fold에서 성과 비사용 Event Gate를 실행했다. 160개 중 24개가 하한을 통과했고 사전등록 maximin 규칙으로 7개를 공식 G0 대상으로 봉인했다. 다음 한 단위는 **7후보 × 4Fold = 28개 공식 G0 job 실행**이다. 경제성은 `NOT_EVALUATED`, holdout은 `SEALED_NOT_TOUCHED`다.
+> **2026-08-26 최신 실행:** RES-02 공식 G0 28/28 job이 `SUCCESS + exact source + Analysis Bundle`로 끝났다. 최초 병렬 2건의 공유메모리 이름 충돌은 attempt 1 인프라 실패로 보존하고 같은 입력의 허용된 1회 재시도로 복구했다. ANA-02 결과는 전체 1,415거래, 양수 fold 2/28, G0 Development Rule-pass 0/7이다. 다음 한 단위는 **7개 parent 전부의 Family별 논리 역할을 봉인하는 RES-03 G1 manifest**다. holdout은 `SEALED_NOT_TOUCHED`다.
 
 ---
 
@@ -156,8 +156,8 @@ V4 결과 분석 화면이 차트보다 먼저 AnalysisBundle 정체성·실행 
 | 5 | ANA-01 AnalysisBundle v2 — **완료** |
 | 6 | UX-02 Result Overview — **완료** |
 | 7 | RES-01 `<3000` 다기간 사전등록 — **완료** |
-| 8 | RES-02 G0 preflight·Event estimator — **완료**, 공식 28 jobs — **다음** |
-| 9 | ANA-02 구조 부검 |
+| 8 | RES-02 G0 preflight·Event estimator·공식 28 jobs — **완료** |
+| 9 | ANA-02 구조 부검 — **완료** |
 | 10 | RES-03 G1 구조 개선·동일 계약 재실행 |
 | 11 | UX-03 실제 데이터 사용성 반복 |
 
@@ -249,4 +249,4 @@ python scripts/verify_pyd_gui_contract.py --branch codex/process-research-pipeli
 | 권위 | feasibility/development/OOS/live |
 | 다음 행동 | 정확히 하나 |
 
-현재 다음 행동은 **`RES-02 — 봉인된 7개 후보를 동일한 4개 development Fold·비용·exit·engine 계약으로 28개 공식 job 실행`**이다.
+현재 다음 행동은 **`RES-03 — 7개 G0 parent 전부에 Family별 구조 역할 1개를 추가한 G1 child manifest를 실행 전에 봉인`**이다.
