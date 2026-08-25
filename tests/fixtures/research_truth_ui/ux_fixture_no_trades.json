@@ -1,0 +1,17 @@
+{
+  "job_id": "UX_FIXTURE_NO_TRADES",
+  "spec": {"buy": "UX_NO_TRADES_BUY", "sell": "UX_SELL"},
+  "status": "no_trades",
+  "returncode": 2,
+  "metrics": null,
+  "process_diagnostics": {
+    "event_count": 1,
+    "last_checkpoint": "total_report_no_trades",
+    "last_by_source": {"BackTest": "total_report_no_trades"},
+    "last_detail_by_source": {}
+  },
+  "message": "UX-01 browser fixture: verified no trades",
+  "strategy_db_snapshot_hashes": {
+    "buy": "2222222222222222222222222222222222222222222222222222222222222222"
+  }
+}

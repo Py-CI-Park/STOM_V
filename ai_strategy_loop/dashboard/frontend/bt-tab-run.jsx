@@ -686,7 +686,8 @@ function _btJobOpenable(job) {
     || (!hasActionTaxonomy && (job.status === "success" || job.status === "no_trades"));
 }
 
-function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onReload,
+function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, onInspectTruth, selectedJobId,
+                           selectedTruthJobId, onReload,
                            compareA, onSetCompareA, onCompareB }) {
   const [query, setQuery] = useState_bt("");
   const [favOnly, setFavOnly] = useState_bt(false);
@@ -840,7 +841,7 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
                   const b = _BT_JOB_BADGE[statusKind] || _BT_JOB_BADGE[j.status] || _BT_JOB_BADGE.pending;
                   const actions = Array.isArray(j.open_actions) ? j.open_actions : [];
                   const clickable = _btJobOpenable(j);
-                  const active = j.job_id === selectedJobId;
+                  const active = j.job_id === (selectedTruthJobId || selectedJobId);
                   const canCompare = clickable && compareA && onCompareB && j.job_id !== compareA;
                   const isEditing = editing === j.job_id;
                   return (
@@ -857,12 +858,12 @@ function BtResultLibrary({ baseUrl, isDemo, jobs, onResult, selectedJobId, onRel
                                    color: j.favorite ? "var(--amber)" : "var(--ink-3)" }}>
                           {j.favorite ? "★" : "☆"}
                         </button>
-                        <button onClick={() => clickable && onResult(j.job_id)} disabled={!clickable}
-                          title={clickable ? "결과 상세 열기" : (j.artifact_state || j.message || "열 수 있는 결과 아티팩트가 없습니다")}
+                        <button onClick={() => clickable ? onResult(j.job_id) : onInspectTruth(j.job_id)}
+                          title={clickable ? "결과 상세와 Truth 열기" : "결과 산출물 없이 실행 Truth만 확인"}
                           style={{
                             display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0,
                             background: "transparent", border: 0, padding: 0, textAlign: "left",
-                            cursor: clickable ? "pointer" : "default",
+                            cursor: "pointer",
                           }}>
                           <span className={b.cls} style={{ flexShrink: 0 }}>{b.txt}</span>
                           <span className="mono" style={{ fontSize: 10, color: "var(--ink-2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>

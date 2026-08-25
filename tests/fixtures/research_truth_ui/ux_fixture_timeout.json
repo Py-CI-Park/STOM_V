@@ -1,0 +1,11 @@
+{
+  "job_id": "UX_FIXTURE_TIMEOUT",
+  "spec": {"buy": "UX_TIMEOUT_BUY", "sell": "UX_SELL"},
+  "status": "timeout",
+  "returncode": 1,
+  "metrics": null,
+  "message": "UX-01 browser fixture: timeout without terminal telemetry",
+  "strategy_db_snapshot_hashes": {
+    "buy": "4444444444444444444444444444444444444444444444444444444444444444"
+  }
+}
