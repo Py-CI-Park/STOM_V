@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-25T18:26:46.989297+00:00",
-  "source_fingerprint": "d88e7a002136bb1d7f3915f538a6de796311caf1d24af9ca956a571f6e305a96",
+  "generated_at": "2026-08-25T18:28:58.596861+00:00",
+  "source_fingerprint": "e528bc7758261142144d698ba784e56f8d2a1bd34f76485cb6688687e5b2fcde",
   "count": 1074,
   "docs": [
     {
@@ -7106,8 +7106,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md",
       "title": "Process Research Pipeline 재출발 · 대시보드/연구 성숙화 마스터플랜 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-24T14:29:09.639794+00:00",
-      "size": 23807
+      "updated_at": "2026-08-25T18:28:35.269480+00:00",
+      "size": 24073
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md",
@@ -7141,7 +7141,7 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_RES-02_Event_Gate_결과.md",
       "title": "RES-02 성과 비사용 Event Gate 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T18:26:17.589280+00:00",
+      "updated_at": "2026-08-25T18:27:37.117716+00:00",
       "size": 4415
     },
     {
@@ -7267,8 +7267,8 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_process_research_pipeline_재출발.md",
       "title": "핸드오프 — Process Research Pipeline 재출발 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T17:01:05.835426+00:00",
-      "size": 9265
+      "updated_at": "2026-08-25T18:28:35.272424+00:00",
+      "size": 9294
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_v516_시총별_반복연구_재개.md",
@@ -7281,8 +7281,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T17:01:05.841930+00:00",
-      "size": 14782
+      "updated_at": "2026-08-25T18:28:35.278429+00:00",
+      "size": 15030
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",

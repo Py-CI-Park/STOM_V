@@ -10,6 +10,8 @@
 >
 > 문서 성격: 이 문서는 개발 성공, 연구 성공, OOS 성공, 운영 승격을 서로 다른 상태로 관리한다.
 
+> **2026-08-26 실행 갱신:** BOOT-01부터 RES-01까지 완료했고, RES-02 런타임 사전점검과 성과 비사용 Event Gate도 통과했다. 160개 중 Event 하한 통과 24개, 사전등록 maximin 선택 7개를 봉인했다. 현재 다음 단위는 별도 브랜치의 **7후보 × 4Fold = 28개 공식 G0 job 실행**이다. 경제성은 아직 `NOT_EVALUATED`, holdout은 `SEALED_NOT_TOUCHED`다.
+
 ---
 
 ## 0. 결론부터
@@ -412,7 +414,7 @@
 | 4 | ANA-01 | 분석 | AnalysisBundle v2 schema/builder 초안 | 중간 | 동일 입력 deterministic bundle |
 | 5 | UX-02 | UX | Result Overview를 bundle 기반으로 재배선 | 중간 | identity/권위/완전성 우선 |
 | 6 | RES-01 | 연구 | `<3000` 다기간 개발 사전등록 | 작음 | 실행 전 commit |
-| 7 | RES-02 | 연구 | G0 Event estimator + 공식 fold 실행 | 큼 | job/bundle/evidence |
+| 7 | RES-02 | 연구 | G0 Event estimator + 공식 fold 실행 | 진행 | Event Gate 완료, 7후보·28 jobs 봉인 |
 | 8 | ANA-02 | 분석 | G0 구조 부검 패킷 | 중간 | Family별 falsification 가설 |
 | 9 | RES-03 | 연구 | G1 구조 후보 생성·동일 계약 재실행 | 큼 | parent-child lineage |
 | 10 | UX-03 | UX | 실제 G0/G1 데이터로 결과 분석 사용성 반복 | 중간 | 관찰 기록·수정 전후 QA |
