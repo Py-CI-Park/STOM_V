@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-25T18:28:58.596861+00:00",
-  "source_fingerprint": "e528bc7758261142144d698ba784e56f8d2a1bd34f76485cb6688687e5b2fcde",
-  "count": 1074,
+  "generated_at": "2026-08-25T21:45:41.916780+00:00",
+  "source_fingerprint": "87193b3e8431dd5ae306ce9d7d2f5a90eb3ad185937ec44b4b8e8b03ee81a0e8",
+  "count": 1075,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7106,8 +7106,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md",
       "title": "Process Research Pipeline 재출발 · 대시보드/연구 성숙화 마스터플랜 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T18:28:35.269480+00:00",
-      "size": 24073
+      "updated_at": "2026-08-25T21:44:39.175875+00:00",
+      "size": 24081
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md",
@@ -7143,6 +7143,13 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-08-25T18:27:37.117716+00:00",
       "size": 4415
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-26_RES-02_G0_ANA-02_공식결과.md",
+      "title": "RES-02 공식 G0 · ANA-02 구조 부검 결과",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-25T21:43:43.600401+00:00",
+      "size": 4726
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_RES-02_런타임_정합성_복구결과.md",
@@ -7267,8 +7274,8 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_process_research_pipeline_재출발.md",
       "title": "핸드오프 — Process Research Pipeline 재출발 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T18:28:35.272424+00:00",
-      "size": 9294
+      "updated_at": "2026-08-25T21:44:39.179882+00:00",
+      "size": 9261
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_v516_시총별_반복연구_재개.md",
@@ -7281,8 +7288,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T18:28:35.278429+00:00",
-      "size": 15030
+      "updated_at": "2026-08-25T21:44:16.407109+00:00",
+      "size": 15159
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
