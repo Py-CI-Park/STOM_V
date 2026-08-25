@@ -8,7 +8,7 @@
 >
 > 시작 기준: `loop/process-research-pipeline` @ `f75b80ebcb7fd72cd41c8933c4f6e63df8c2ae52`
 >
-> **2026-08-26 최신 실행:** BOOT-01·PIPE-01·SYS-01A·SYS-01B·UX-01·ANA-01에 이어 UX-02 Result Overview를 완료했다. AnalysisBundle v2의 정체성·완전성·4축 Truth·7개 분석 기능 가용성을 V4 결과 분석에 연결했고 실제 취소 job과 5상태 fixture를 직접 검증했다. 상세 정본은 `2026-08-26_UX-02_Result_Overview_구현결과.md`, 다음 한 단위는 **RES-01 `<3000` 다기간 연구 사전등록**이다.
+> **2026-08-26 최신 실행:** BOOT-01·PIPE-01·SYS-01A·SYS-01B·UX-01·ANA-01·UX-02를 완료하고 RES-01 `<3000` 다기간 G0/G1 연구 계약을 실행 전에 봉인했다. 4개 development Fold·160개 G0 우주·성과 비사용 Event gate·공식 비용/실행·G1 구조 개선·중지 규칙을 고정했다. 상세 정본은 `2026-08-26_RES-01_LT3000_다기간_G0_G1_사전등록.md`, 다음 한 단위는 **RES-02 preflight·Event estimator·조건부 공식 실행**이다.
 
 ---
 
@@ -132,6 +132,19 @@ V4 결과 분석 화면이 차트보다 먼저 AnalysisBundle 정체성·실행 
 | 접근성 | landmark/live region/keyboard Enter/색 비의존 |
 | frontend 품질 | 47 tests·production build·typecheck·V1~V7 harness·console error 0 |
 
+### RES-01 — `<3000` 다기간 G0/G1 사전등록 — 완료
+
+| 봉인 계약 | 값 |
+|---|---|
+| 후보 우주 | 기존 5Family×QMC32 = 160, seed `20260815` |
+| 개발 Fold | 2022-04·2023-07·2024-10·2025-01 |
+| Holdout | 2026-01-01~02-27 봉인, RES-02/03 접근 금지 |
+| Event gate | 전체 200·Fold별 20·20일·10종목, PnL 비사용 |
+| 공식 후보 | Family당 maximin 최대 2, 전체 최대 10 |
+| 세대 | G0+G1만, G2 금지 |
+| preflight blocker | DB identity와 과거 FAILED_BREAKOUT TypeError red→green 필수 |
+| 권위 | development only, OOS/live/adoption 없음 |
+
 ## 5. 권장 구현 순서
 
 | 순서 | 작업 |
@@ -142,8 +155,8 @@ V4 결과 분석 화면이 차트보다 먼저 AnalysisBundle 정체성·실행 
 | 4 | UX-01 Global Truth Bar — **완료** |
 | 5 | ANA-01 AnalysisBundle v2 — **완료** |
 | 6 | UX-02 Result Overview — **완료** |
-| 7 | RES-01 `<3000` 다기간 사전등록 — **다음** |
-| 8 | RES-02 G0 공식 실행 |
+| 7 | RES-01 `<3000` 다기간 사전등록 — **완료** |
+| 8 | RES-02 G0 preflight·Event estimator·조건부 공식 실행 — **다음** |
 | 9 | ANA-02 구조 부검 |
 | 10 | RES-03 G1 구조 개선·동일 계약 재실행 |
 | 11 | UX-03 실제 데이터 사용성 반복 |
@@ -236,4 +249,4 @@ python scripts/verify_pyd_gui_contract.py --branch codex/process-research-pipeli
 | 권위 | feasibility/development/OOS/live |
 | 다음 행동 | 정확히 하나 |
 
-현재 다음 행동은 **`RES-01 — <3000 다기간 연구의 기간·후보·seed·identity·비용·실패 분류·분석 순서·중지 조건을 결과 조회 전에 사전등록 커밋으로 봉인`**이다.
+현재 다음 행동은 **`RES-02 — DB/manifest identity와 FAILED_BREAKOUT runtime 반례를 먼저 검증하고, 통과한 경우에만 PnL 비사용 Event estimator와 공식 fold 실행으로 진행`**이다.
