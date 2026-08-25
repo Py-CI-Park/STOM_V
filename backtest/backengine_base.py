@@ -21,6 +21,7 @@ from utility.setting_base import DB_STOCK_TICK_BACK, BACK_TEMP, ui_num, DB_STOCK
 from utility.static import pickle_read, pickle_write, dt_ymdhms, dt_ymdhm, get_angle_cf, get_ema_list, \
     add_rolling_data, set_builtin_print, get_profile_text
 from utility.sqlite_readonly import connect_existing_db_readonly
+from utility.backtest_shared_memory import create_backtest_shared_memory_name
 
 
 def _emit_engine_protocol_checkpoint(queue, engine_id, checkpoint, detail=None):
@@ -418,7 +419,7 @@ class BackEngineBase(BaseStrategy):
         con.close()
 
         if self.dict_set['백테일괄로딩'] and all_data:
-            name = f'backdata_{self.gubun}'
+            name = create_backtest_shared_memory_name(self.gubun)
             total_size = sum(item['size'] for item in all_data)
             shm = shared_memory.SharedMemory(name=name, create=True, size=total_size)
 
