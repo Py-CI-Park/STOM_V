@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-27T21:48:55.917786+00:00",
-  "source_fingerprint": "d18b706ff008f892c58f0496b9178c159ce5ed86c0285dec8f12cac3503e507b",
+  "generated_at": "2026-08-27T22:37:09.069845+00:00",
+  "source_fingerprint": "22beef927e9e3ac4d39101ae23091defba8682415058e005dbc2d7c4ab6ec139",
   "count": 1078,
   "docs": [
     {
@@ -7106,8 +7106,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md",
       "title": "Process Research Pipeline 재출발 · 대시보드/연구 성숙화 마스터플랜 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-27T21:46:54.329711+00:00",
-      "size": 24242
+      "updated_at": "2026-08-27T22:36:02.414693+00:00",
+      "size": 24427
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md",
@@ -7302,8 +7302,8 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-26_UX-03_중간점검.md",
       "title": "핸드오프 — UX-03 중간점검과 재개 지점 (2026-08-26)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-27T21:46:54.369044+00:00",
-      "size": 10205
+      "updated_at": "2026-08-27T22:36:43.179084+00:00",
+      "size": 11131
     },
     {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
