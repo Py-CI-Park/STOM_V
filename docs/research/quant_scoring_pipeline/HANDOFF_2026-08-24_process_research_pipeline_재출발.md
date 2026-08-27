@@ -1,6 +1,6 @@
 # 핸드오프 — Process Research Pipeline 재출발 (2026-08-24)
 
-> **최신 실행 핸드오프**
+ > **직전 실행 핸드오프 — 재개 지점은 `HANDOFF_2026-08-26_UX-03_중간점검.md`가 대체한다.**
 >
 > 현재 통합 브랜치: `codex/process-research-res-02-g0-official`
 >
@@ -8,7 +8,7 @@
 >
 > 시작 기준: `loop/process-research-pipeline` @ `f75b80ebcb7fd72cd41c8933c4f6e63df8c2ae52`
 >
-> **2026-08-26 최신 실행:** RES-02 공식 G0 28/28 job이 `SUCCESS + exact source + Analysis Bundle`로 끝났다. 최초 병렬 2건의 공유메모리 이름 충돌은 attempt 1 인프라 실패로 보존하고 같은 입력의 허용된 1회 재시도로 복구했다. ANA-02 결과는 전체 1,415거래, 양수 fold 2/28, G0 Development Rule-pass 0/7이다. 다음 한 단위는 **7개 parent 전부의 Family별 논리 역할을 봉인하는 RES-03 G1 manifest**다. holdout은 `SEALED_NOT_TOUCHED`다.
+ > **2026-08-28 후속:** RES-03 G1 28/28 플랫폼 PASS, ANA-03 짝비교 3/7·개발 규칙 0/7·`STOP_NO_G2_NO_HOLDOUT` 봉인(`16c501df`). UX-03 게이트보드는 `0b1e6e09`로 완료했고 7테스트·1280/620 브라우저 QA를 통과했다. 재개 정본은 `HANDOFF_2026-08-26_UX-03_중간점검.md`다. holdout은 `SEALED_NOT_TOUCHED`다.
 
 ---
 
