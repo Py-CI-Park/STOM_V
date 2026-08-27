@@ -29,6 +29,7 @@ import { PhaseDetailPanel, phaseIndex } from "./phase-detail.jsx";
 import { V4HeroChart } from "./v4-charts.jsx";
 import { BtResultArea } from "./backtest-charts.jsx";
 import { V516ResearchProgramOverview } from "./v4-research-program.jsx";
+import { V516ResearchResultGateboard } from "./v4-research-result.jsx";
 import { V516FamilyFoldExplorer } from "./v4-research-family.jsx";
 import { V516FailureEvidence } from "./v4-research-evidence.jsx";
 import { V516MarketCapNativeLab } from "./v4-research-mcap.jsx";
@@ -450,6 +451,7 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
       <h2 id="v4-research-heading" className="panel-hd-title">Research · 조건식 연구 관찰</h2>
       <ExportStatusBanner reply={lastReply} />
       <V516ResearchProgramOverview baseUrl={baseUrl} />
+      <V516ResearchResultGateboard baseUrl={baseUrl} />
       <V516FamilyFoldExplorer baseUrl={baseUrl} />
       <V516FailureEvidence baseUrl={baseUrl} />
       <V516MarketCapNativeLab baseUrl={baseUrl} />
