@@ -1,14 +1,14 @@
 # 핸드오프 — Process Research Pipeline 재출발 (2026-08-24)
 
-> **최신 실행 핸드오프**
+ > **직전 실행 핸드오프 — 재개 지점은 `HANDOFF_2026-08-26_UX-03_중간점검.md`가 대체한다.**
 >
-> 브랜치: `codex/process-research-pipeline-restart`
+> 현재 통합 브랜치: `codex/process-research-res-02-g0-official`
 >
 > worktree: `C:\System_Trading\STOM\STOM_V.wt-process-research-restart`
 >
 > 시작 기준: `loop/process-research-pipeline` @ `f75b80ebcb7fd72cd41c8933c4f6e63df8c2ae52`
 >
-> **2026-08-26 최신 실행:** BOOT-01·PIPE-01·SYS-01A·SYS-01B·UX-01·ANA-01·UX-02를 완료하고 RES-01 `<3000` 다기간 G0/G1 연구 계약을 실행 전에 봉인했다. 4개 development Fold·160개 G0 우주·성과 비사용 Event gate·공식 비용/실행·G1 구조 개선·중지 규칙을 고정했다. 상세 정본은 `2026-08-26_RES-01_LT3000_다기간_G0_G1_사전등록.md`, 다음 한 단위는 **RES-02 preflight·Event estimator·조건부 공식 실행**이다.
+ > **2026-08-28 후속:** RES-03 G1 28/28 플랫폼 PASS, ANA-03 짝비교 3/7·개발 규칙 0/7·`STOP_NO_G2_NO_HOLDOUT` 봉인(`16c501df`). UX-03 게이트보드는 `0b1e6e09`로 완료했고 7테스트·1280/620 브라우저 QA를 통과했다. 재개 정본은 `HANDOFF_2026-08-26_UX-03_중간점검.md`다. holdout은 `SEALED_NOT_TOUCHED`다.
 
 ---
 
@@ -156,8 +156,8 @@ V4 결과 분석 화면이 차트보다 먼저 AnalysisBundle 정체성·실행 
 | 5 | ANA-01 AnalysisBundle v2 — **완료** |
 | 6 | UX-02 Result Overview — **완료** |
 | 7 | RES-01 `<3000` 다기간 사전등록 — **완료** |
-| 8 | RES-02 G0 preflight·Event estimator·조건부 공식 실행 — **다음** |
-| 9 | ANA-02 구조 부검 |
+| 8 | RES-02 G0 preflight·Event estimator·공식 28 jobs — **완료** |
+| 9 | ANA-02 구조 부검 — **완료** |
 | 10 | RES-03 G1 구조 개선·동일 계약 재실행 |
 | 11 | UX-03 실제 데이터 사용성 반복 |
 
@@ -249,4 +249,4 @@ python scripts/verify_pyd_gui_contract.py --branch codex/process-research-pipeli
 | 권위 | feasibility/development/OOS/live |
 | 다음 행동 | 정확히 하나 |
 
-현재 다음 행동은 **`RES-02 — DB/manifest identity와 FAILED_BREAKOUT runtime 반례를 먼저 검증하고, 통과한 경우에만 PnL 비사용 Event estimator와 공식 fold 실행으로 진행`**이다.
+현재 다음 행동은 **`RES-03 — 7개 G0 parent 전부에 Family별 구조 역할 1개를 추가한 G1 child manifest를 실행 전에 봉인`**이다.

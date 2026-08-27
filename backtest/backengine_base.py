@@ -21,6 +21,7 @@ from utility.setting_base import DB_STOCK_TICK_BACK, BACK_TEMP, ui_num, DB_STOCK
 from utility.static import pickle_read, pickle_write, dt_ymdhms, dt_ymdhm, get_angle_cf, get_ema_list, \
     add_rolling_data, set_builtin_print, get_profile_text
 from utility.sqlite_readonly import connect_existing_db_readonly
+from utility.backtest_shared_memory import create_backtest_shared_memory_name
 
 
 def _emit_engine_protocol_checkpoint(queue, engine_id, checkpoint, detail=None):
@@ -418,7 +419,7 @@ class BackEngineBase(BaseStrategy):
         con.close()
 
         if self.dict_set['백테일괄로딩'] and all_data:
-            name = f'backdata_{self.gubun}'
+            name = create_backtest_shared_memory_name(self.gubun)
             total_size = sum(item['size'] for item in all_data)
             shm = shared_memory.SharedMemory(name=name, create=True, size=total_size)
 
@@ -609,7 +610,7 @@ class BackEngineBase(BaseStrategy):
             if self.gubun == 0: self.wq.put((ui_num[self.ui_num_txt], '백테스트 엔진 전략연산 오류, 자동 중지 중 ...'))
 
     def InitTradeInfo(self):
-        self.high_low = []
+        self.high_low = {}
         self.tick_count = 0
         self.dict_cond_indexn = {}
         if self.dict_set['시장미시구조분석']:
@@ -868,25 +869,25 @@ class BackEngineBase(BaseStrategy):
 
     def UpdateHighLow(self, 현재가또는분봉고가=None, 분봉저가=None):
         if 분봉저가 is None:
-            if self.high_low:
-                if 현재가또는분봉고가 >= self.high_low[0]:
-                    self.high_low[0] = 현재가또는분봉고가
-                    self.high_low[1] = self.indexn
-                if 현재가또는분봉고가 <= self.high_low[2]:
-                    self.high_low[2] = 현재가또는분봉고가
-                    self.high_low[3] = self.indexn
+            if high_low := self.high_low.get(self.code):
+                if 현재가또는분봉고가 >= high_low[0]:
+                    high_low[0] = 현재가또는분봉고가
+                    high_low[1] = self.indexn
+                if 현재가또는분봉고가 <= high_low[2]:
+                    high_low[2] = 현재가또는분봉고가
+                    high_low[3] = self.indexn
             else:
-                self.high_low = [현재가또는분봉고가, self.indexn, 현재가또는분봉고가, self.indexn]
+                self.high_low[self.code] = [현재가또는분봉고가, self.indexn, 현재가또는분봉고가, self.indexn]
         else:
-            if self.high_low:
-                if 현재가또는분봉고가 >= self.high_low[0]:
-                    self.high_low[0] = 현재가또는분봉고가
-                    self.high_low[1] = self.indexn
-                if 분봉저가 <= self.high_low[2]:
-                    self.high_low[2] = 분봉저가
-                    self.high_low[3] = self.indexn
+            if high_low := self.high_low.get(self.code):
+                if 현재가또는분봉고가 >= high_low[0]:
+                    high_low[0] = 현재가또는분봉고가
+                    high_low[1] = self.indexn
+                if 분봉저가 <= high_low[2]:
+                    high_low[2] = 분봉저가
+                    high_low[3] = self.indexn
             else:
-                self.high_low = [현재가또는분봉고가, self.indexn, 분봉저가, self.indexn]
+                self.high_low[self.code] = [현재가또는분봉고가, self.indexn, 분봉저가, self.indexn]
 
     def Buy(self, buy_long=False):
         self.SetBuyCount()
