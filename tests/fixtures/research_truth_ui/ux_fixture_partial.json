@@ -1,0 +1,11 @@
+{
+  "job_id": "UX_FIXTURE_PARTIAL",
+  "spec": {"buy": "UX_PARTIAL_BUY", "sell": "UX_SELL"},
+  "status": "success",
+  "returncode": 2,
+  "metrics": {"trade_count": 2, "total_profit_pct": 0.7},
+  "message": "UX-01 browser fixture: success label conflicts with return code",
+  "strategy_db_snapshot_hashes": {
+    "buy": "5555555555555555555555555555555555555555555555555555555555555555"
+  }
+}

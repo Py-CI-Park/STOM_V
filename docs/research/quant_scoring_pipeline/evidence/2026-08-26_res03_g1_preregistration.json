@@ -1,0 +1,371 @@
+{
+  "schema": "stom.res03.g1_preregistration.v1",
+  "generated_at": "2026-08-25T21:56:10.861812+00:00",
+  "authority": "DEVELOPMENT_PREREGISTRATION_NO_ADOPTION",
+  "can_adopt": false,
+  "g0_autopsy_file": "C:/System_Trading/STOM/STOM_V.wt-process-research-restart/docs/research/quant_scoring_pipeline/evidence/2026-08-26_res02_g0_structural_autopsy.json",
+  "g0_autopsy_file_sha256": "cf5e497d1e523234ed1c3fb5149b014c3b2695516d03f3ccdb2075cc21d7ba73",
+  "g0_batch_identity_sha256": "7e788a5f1692ce7c36cc1faf51c8f31c85a28c46fc1eebc909a594f21ae5440d",
+  "source_preregistration_file_sha256": "923e6bc8ad060bcdb027d84ae9a8fe826d2ffd38ed29fa28304518c02d5f0895",
+  "source_manifest_file_sha256": "251a37edb2b34539fe343a7ae533262fb41d02af7272fc1167076055136e94dc",
+  "strategy_reference_file_sha256": "44daa79cde5e1fb8f6c7e416622695eff62ff74ee034998ab41f59512d445753",
+  "rules_reference_file_sha256": "11983746c69bd22d1ba5c65b21105b422d6d9561e4cdd221e6f2109ecd6e7e45",
+  "development_folds": [
+    {
+      "id": "DEV_2022_Q2_MONTH1",
+      "start": 20220401,
+      "end": 20220430
+    },
+    {
+      "id": "DEV_2023_Q3_MONTH1",
+      "start": 20230701,
+      "end": 20230731
+    },
+    {
+      "id": "DEV_2024_Q4_MONTH1",
+      "start": 20241001,
+      "end": 20241031
+    },
+    {
+      "id": "DEV_2025_Q1_MONTH1",
+      "start": 20250101,
+      "end": 20250131
+    }
+  ],
+  "official_execution": {
+    "source_authority": "research_direct_source",
+    "timeframe": "tick",
+    "start_time": 90000,
+    "end_time": 93000,
+    "sell_strategy_id": "D3_BASELINE_RISK_TIME_EXIT",
+    "sell_source_sha256": "1775aed9e498b4ab8e2b9eba290942674bb874356af3dedc7cdbd76d312711e4",
+    "engines_per_job": 4,
+    "manager_workers_max": 2,
+    "job_timeout_seconds": 3600,
+    "poll_timeout_seconds": 3660,
+    "infrastructure_retry_max": 1,
+    "retry_may_change_research_inputs": false,
+    "max_jobs_per_generation": 40,
+    "artifact_policy": "append_only_new_batch_no_historical_overwrite"
+  },
+  "cost": {
+    "primary": {
+      "model": "official_engine_builtin_kiwoom",
+      "buy_fee_pct": 0.015,
+      "sell_fee_pct": 0.015,
+      "sell_tax_pct": 0.18,
+      "round_trip_pct_approx": 0.21
+    },
+    "sensitivity": {
+      "authority": "advisory_until_official_replay",
+      "adverse_fill_ticks": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "extra_fee_bps": [
+        0,
+        5
+      ],
+      "robust_gate_profile": "tick2_total_profit_positive"
+    }
+  },
+  "development_rule": {
+    "all_fold_source_match": true,
+    "all_fold_execution_success": true,
+    "min_trades_each_fold": 20,
+    "min_positive_total_profit_folds": 3,
+    "combined_total_profit_pct_gt": 0.0,
+    "combined_avg_profit_pct_gt": 0.0,
+    "max_mdd_pct_each_fold": 15.0,
+    "economic_failure_is_not_execution_failure": true
+  },
+  "paired_falsification_rule": {
+    "pairing": "SAME_PARENT_SAME_FOLD",
+    "fold_metric": "avg_profit_pct",
+    "median_fold_delta_gt": 0.0,
+    "guard_metric": "total_profit_pct",
+    "worst_fold_delta_gte": 0.0,
+    "both_conditions_required": true,
+    "development_rule_evaluated_separately": true
+  },
+  "candidates": [
+    {
+      "candidate_id": "G1_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee_00b43092e7",
+      "parent_candidate_id": "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee",
+      "family_id": "ABSORPTION_REVERSAL",
+      "band_id": "MCAP_A_LT3000",
+      "hypothesis_id": "HYP_ABSORPTION_RECOVERY_PERSISTENCE",
+      "structural_role": "RECOVERY_PERSISTENCE_CONFIRMATION",
+      "transformation_class": "LOGIC_ROLE_ADDITION",
+      "parameter_origin": "SEALED_REFERENCE_DEFAULT_NO_OUTCOME_TUNING",
+      "parameters": {
+        "book_window": 58,
+        "flow_ratio": 1.1492376231220987,
+        "flow_window": 22,
+        "price_window": 5,
+        "prior_book_max": 0.19845404039379866,
+        "recovery_rate": 1.1772276519147074
+      },
+      "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(58, 58) <= 0.1985 and 구간저가대비현재가등락율(5) >= 1.1772 and 체결강도평균대비비율(22) >= 1.1492):\n    매수 = False\nelif not (연속상승(3)):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "source_sha256": "00b43092e7610504030ea8ec653093797a311c06189688b9c29f8e2cce61c3cf",
+      "canonical_sha256": "4912b3e237bdb13a4628f7f915eeafdd898286c4b9731e087a66ef3725e0a3e0",
+      "ast_role_diff": {
+        "parent_source_sha256": "91a666673ceb5488c64bc8647855ec62700a722093bb4b373c4cddb466f93277",
+        "parent_canonical_sha256": "cb7275dfee87e71e6445424f0722477c3267647852dbc31888764109cfa8a475",
+        "child_source_sha256": "00b43092e7610504030ea8ec653093797a311c06189688b9c29f8e2cce61c3cf",
+        "child_canonical_sha256": "4912b3e237bdb13a4628f7f915eeafdd898286c4b9731e087a66ef3725e0a3e0",
+        "added_guard_source": "elif not (연속상승(3)):\n    매수 = False",
+        "added_function": "연속상승",
+        "parent_clause_count": 8,
+        "child_clause_count": 9,
+        "added_clause_count": 1,
+        "parent_source_exactly_recovered": true,
+        "parent_parameters_unchanged": true,
+        "parameter_payload_sha256": "b219d8ad39095621a86f5cbfc470cb5b6751479723d8fdc8b312f1cce7c0ff04"
+      },
+      "preflight_ok": true,
+      "execution_contract_ok": true,
+      "authority": "existing_db_development_no_oos_no_adoption"
+    },
+    {
+      "candidate_id": "G1_ABSORPTION_REVERSAL_MCAP_A_LT3000_639515aa1e_06c3524fa7",
+      "parent_candidate_id": "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_639515aa1e",
+      "family_id": "ABSORPTION_REVERSAL",
+      "band_id": "MCAP_A_LT3000",
+      "hypothesis_id": "HYP_ABSORPTION_RECOVERY_PERSISTENCE",
+      "structural_role": "RECOVERY_PERSISTENCE_CONFIRMATION",
+      "transformation_class": "LOGIC_ROLE_ADDITION",
+      "parameter_origin": "SEALED_REFERENCE_DEFAULT_NO_OUTCOME_TUNING",
+      "parameters": {
+        "book_window": 22,
+        "flow_ratio": 1.7534979781516846,
+        "flow_window": 58,
+        "price_window": 45,
+        "prior_book_max": 0.4062318181715764,
+        "recovery_rate": 1.058860304975932
+      },
+      "source": "# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간호가총잔량비율(22, 22) <= 0.4062 and 구간저가대비현재가등락율(45) >= 1.0589 and 체결강도평균대비비율(58) >= 1.7535):\n    매수 = False\nelif not (연속상승(3)):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "source_sha256": "06c3524fa7bae608e9f2df927fe407a8ff2b862575b9ef13f2c7c97361bc8c51",
+      "canonical_sha256": "3918f07de654171f234024d5374a6b3fabbf39c0574653e0f0c8cb1fe644f391",
+      "ast_role_diff": {
+        "parent_source_sha256": "caabefb8d6d4a89c375b46aea0940ccf4633ac5b90779967473fc30e0f4659cc",
+        "parent_canonical_sha256": "639515aa1eecf32372c15432df10144e3207708887144995d90e90ba7ad7e85f",
+        "child_source_sha256": "06c3524fa7bae608e9f2df927fe407a8ff2b862575b9ef13f2c7c97361bc8c51",
+        "child_canonical_sha256": "3918f07de654171f234024d5374a6b3fabbf39c0574653e0f0c8cb1fe644f391",
+        "added_guard_source": "elif not (연속상승(3)):\n    매수 = False",
+        "added_function": "연속상승",
+        "parent_clause_count": 8,
+        "child_clause_count": 9,
+        "added_clause_count": 1,
+        "parent_source_exactly_recovered": true,
+        "parent_parameters_unchanged": true,
+        "parameter_payload_sha256": "f9ece8e697daf63c96c5f71eb6955750cdab9ef2fd236577f06632c7374e757e"
+      },
+      "preflight_ok": true,
+      "execution_contract_ok": true,
+      "authority": "existing_db_development_no_oos_no_adoption"
+    },
+    {
+      "candidate_id": "G1_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_55b6c25f13_ecf9962d42",
+      "parent_candidate_id": "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_55b6c25f13",
+      "family_id": "FAILED_BREAKOUT_RETURN",
+      "band_id": "MCAP_A_LT3000",
+      "hypothesis_id": "HYP_FAILED_BREAKOUT_RETURN_CONFIRMATION",
+      "structural_role": "RETURN_SEQUENCE_CONFIRMATION",
+      "transformation_class": "LOGIC_ROLE_ADDITION",
+      "parameter_origin": "SEALED_REFERENCE_DEFAULT_NO_OUTCOME_TUNING",
+      "parameters": {
+        "breakout_window": 16,
+        "confirmation": 1.0719495705408872,
+        "flow_window": 42,
+        "persistence": 2,
+        "return_rate": 0.6756248426468131,
+        "turnover_ratio": 1.4395465746375713
+      },
+      "source": "# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (구간고가대비현재가등락율(16) <= -0.6756 and 2 <= 고가미갱신지속틱수() <= 16 and 체결강도평균대비비율(42) >= 1.0719 and 거래대금평균대비비율(42) >= 1.4395):\n    매수 = False\nelif not (연속상승(3)):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "source_sha256": "ecf9962d42a8854d58b211572aa03122e22279617cf3d72b520e883b2a13b9be",
+      "canonical_sha256": "c705855f115b73a6a7b210da90ea9dbfbe56de15315dd6ce86f76ed88d14d83d",
+      "ast_role_diff": {
+        "parent_source_sha256": "2638634dde9bb9ad00f57954af9650122a1f81b2eb69995fa56ab8b6175ca83c",
+        "parent_canonical_sha256": "55b6c25f1332b09de1898724e14d3ff3c22b89715a9d4debd5c7a63105da4947",
+        "child_source_sha256": "ecf9962d42a8854d58b211572aa03122e22279617cf3d72b520e883b2a13b9be",
+        "child_canonical_sha256": "c705855f115b73a6a7b210da90ea9dbfbe56de15315dd6ce86f76ed88d14d83d",
+        "added_guard_source": "elif not (연속상승(3)):\n    매수 = False",
+        "added_function": "연속상승",
+        "parent_clause_count": 8,
+        "child_clause_count": 9,
+        "added_clause_count": 1,
+        "parent_source_exactly_recovered": true,
+        "parent_parameters_unchanged": true,
+        "parameter_payload_sha256": "cd13032d61a7a9953c2e12ba08d16f11d5d3e8e0c9ac85f91cc7168090db0e0d"
+      },
+      "preflight_ok": true,
+      "execution_contract_ok": true,
+      "authority": "existing_db_development_no_oos_no_adoption"
+    },
+    {
+      "candidate_id": "G1_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_ad1fb159a2_07a94b6780",
+      "parent_candidate_id": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_ad1fb159a2",
+      "family_id": "COMPRESSION_CONFIRMED_BREAKOUT",
+      "band_id": "MCAP_A_LT3000",
+      "hypothesis_id": "HYP_COMPRESSION_FOLLOW_THROUGH",
+      "structural_role": "BREAKOUT_FOLLOW_THROUGH_CONFIRMATION",
+      "transformation_class": "LOGIC_ROLE_ADDITION",
+      "parameter_origin": "SEALED_REFERENCE_DEFAULT_NO_OUTCOME_TUNING",
+      "parameters": {
+        "compression": 0.4373772646984772,
+        "expansion": 3.123245110789917,
+        "flow_window": 23,
+        "price_window": 52,
+        "strength_ratio": 1.0739634217568494,
+        "vol_window": 27
+      },
+      "source": "# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (변동성(27, 27) > 0 and 변동성(27, 27) <= 0.4374 and 변동성급증(27, 3.1232) and 현재가 > 최고현재가(52, 1) and 체결강도평균대비비율(23) >= 1.0740):\n    매수 = False\nelif not (연속상승(3)):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "source_sha256": "07a94b6780ac6de9a78809c2b5df3eae35d66c4c23b233a906f627b94229f4f7",
+      "canonical_sha256": "66f08922b4b9ff8f62beb7eafe673bf447865c645f8120c74119daa99376d6c3",
+      "ast_role_diff": {
+        "parent_source_sha256": "ee9f6023a08c76803125786d1901e2114d07495083c486968d23207da7a7dd7b",
+        "parent_canonical_sha256": "ad1fb159a23640d1f479d7c8b831835497f48eaa23cf5d59957755250663211c",
+        "child_source_sha256": "07a94b6780ac6de9a78809c2b5df3eae35d66c4c23b233a906f627b94229f4f7",
+        "child_canonical_sha256": "66f08922b4b9ff8f62beb7eafe673bf447865c645f8120c74119daa99376d6c3",
+        "added_guard_source": "elif not (연속상승(3)):\n    매수 = False",
+        "added_function": "연속상승",
+        "parent_clause_count": 8,
+        "child_clause_count": 9,
+        "added_clause_count": 1,
+        "parent_source_exactly_recovered": true,
+        "parent_parameters_unchanged": true,
+        "parameter_payload_sha256": "f826cc55e1f218f182b36ee5a72740a883b98a659e4c8168ccdd73aab1606a51"
+      },
+      "preflight_ok": true,
+      "execution_contract_ok": true,
+      "authority": "existing_db_development_no_oos_no_adoption"
+    },
+    {
+      "candidate_id": "G1_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_c5850a62eb_2443505c73",
+      "parent_candidate_id": "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_c5850a62eb",
+      "family_id": "FLOW_PRICE_DIVERGENCE",
+      "band_id": "MCAP_A_LT3000",
+      "hypothesis_id": "HYP_FLOW_BOOK_CONFIRMATION",
+      "structural_role": "ORDERBOOK_DIRECTION_CONFIRMATION",
+      "transformation_class": "LOGIC_ROLE_ADDITION",
+      "parameter_origin": "SEALED_REFERENCE_DEFAULT_NO_OUTCOME_TUNING",
+      "parameters": {
+        "current_flow": 1.0410087638889904,
+        "flow_window": 42,
+        "price_window": 46,
+        "prior_flow": 1.3901000404437154,
+        "reaction_ceiling": 1.3237722654165813,
+        "recovery_rate": 0.6913282171686034
+      },
+      "source": "# D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (체결강도평균대비비율(42, 42) >= 1.3901 and 현재가N(46) <= 최저현재가(46, 46) * 1.013238 and 체결강도평균대비비율(42) >= 1.0410 and 구간저가대비현재가등락율(46) >= 0.6913):\n    매수 = False\nelif not (호가상승압력(30, 0.7)):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "source_sha256": "2443505c73e2185f0f3eef0ae1450b2193816768c1a51ffe4acaedad5bfc3fa5",
+      "canonical_sha256": "0510d28091d23c6126eb1eca413ec3e84558046d95bf20484d8f8e46a5acb8a0",
+      "ast_role_diff": {
+        "parent_source_sha256": "a258d694b5a1f66b15737caa90fa4bb624a1b45455ddb72625674ade88245bea",
+        "parent_canonical_sha256": "c5850a62ebf87f5b289c6b214111f5c9d1900e11cc4aa38150406916ca44f1bf",
+        "child_source_sha256": "2443505c73e2185f0f3eef0ae1450b2193816768c1a51ffe4acaedad5bfc3fa5",
+        "child_canonical_sha256": "0510d28091d23c6126eb1eca413ec3e84558046d95bf20484d8f8e46a5acb8a0",
+        "added_guard_source": "elif not (호가상승압력(30, 0.7)):\n    매수 = False",
+        "added_function": "호가상승압력",
+        "parent_clause_count": 8,
+        "child_clause_count": 9,
+        "added_clause_count": 1,
+        "parent_source_exactly_recovered": true,
+        "parent_parameters_unchanged": true,
+        "parameter_payload_sha256": "9a2cef9b3319c2ec8c1e3eb536834f3c5e8104941cf3d8aed47000dc7c74f49c"
+      },
+      "preflight_ok": true,
+      "execution_contract_ok": true,
+      "authority": "existing_db_development_no_oos_no_adoption"
+    },
+    {
+      "candidate_id": "G1_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_3205e5b871_17ba3c80cb",
+      "parent_candidate_id": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_3205e5b871",
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "band_id": "MCAP_A_LT3000",
+      "hypothesis_id": "HYP_OPENING_REVERSAL_PERSISTENCE",
+      "structural_role": "REVERSAL_PERSISTENCE_CONFIRMATION",
+      "transformation_class": "LOGIC_ROLE_ADDITION",
+      "parameter_origin": "SEALED_REFERENCE_DEFAULT_NO_OUTCOME_TUNING",
+      "parameters": {
+        "cooldown": 1.0272245282754775,
+        "flow_window": 43,
+        "overreaction": -0.7963555291116329,
+        "persistence": 2,
+        "price_window": 32,
+        "rebound": 0.8810738469599441
+      },
+      "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(32) <= -0.7964 and 저가미갱신지속틱수() >= 2 and 구간저가대비현재가등락율(32) >= 0.8811 and 거래대금평균대비비율(43) <= 1.0272):\n    매수 = False\nelif not (연속상승(3)):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "source_sha256": "17ba3c80cba8b72bb268f76fd0fb87ff3733cdbc40200e01c5d25f9eefdb6db9",
+      "canonical_sha256": "3d3c21b13b4865fb8b78d0990bc3b81ac05c499672370b63b63e4c9ee5830183",
+      "ast_role_diff": {
+        "parent_source_sha256": "4e19c4dc89866d473e70364474a03f13ba1aa85be8a259013c7806e50cc110fe",
+        "parent_canonical_sha256": "3205e5b8719e814c5b9f6a8c91bfe91c4b095208afea15f62c821e67dad4e212",
+        "child_source_sha256": "17ba3c80cba8b72bb268f76fd0fb87ff3733cdbc40200e01c5d25f9eefdb6db9",
+        "child_canonical_sha256": "3d3c21b13b4865fb8b78d0990bc3b81ac05c499672370b63b63e4c9ee5830183",
+        "added_guard_source": "elif not (연속상승(3)):\n    매수 = False",
+        "added_function": "연속상승",
+        "parent_clause_count": 8,
+        "child_clause_count": 9,
+        "added_clause_count": 1,
+        "parent_source_exactly_recovered": true,
+        "parent_parameters_unchanged": true,
+        "parameter_payload_sha256": "7f4d36e61ac6807cb975cf63f5a8ef57561ff4f9d5b13bdc80e1fb1c198644d3"
+      },
+      "preflight_ok": true,
+      "execution_contract_ok": true,
+      "authority": "existing_db_development_no_oos_no_adoption"
+    },
+    {
+      "candidate_id": "G1_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_89a4f88e5a_208ebd96a4",
+      "parent_candidate_id": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_89a4f88e5a",
+      "family_id": "OPENING_OVERREACTION_MEAN_REVERT",
+      "band_id": "MCAP_A_LT3000",
+      "hypothesis_id": "HYP_OPENING_REVERSAL_PERSISTENCE",
+      "structural_role": "REVERSAL_PERSISTENCE_CONFIRMATION",
+      "transformation_class": "LOGIC_ROLE_ADDITION",
+      "parameter_origin": "SEALED_REFERENCE_DEFAULT_NO_OUTCOME_TUNING",
+      "parameters": {
+        "cooldown": 0.51953222058317,
+        "flow_window": 10,
+        "overreaction": -2.0296888624449663,
+        "persistence": 25,
+        "price_window": 53,
+        "rebound": 0.32393098981708707
+      },
+      "source": "# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_A_LT3000\n# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b\n# existing DB development only · OOS/자동채택/실전 권한 없음\nVI아래5호가 = VI가격 - VI호가단위 * 5\n매수 = True\n\nif not (관심종목 == 1):\n    매수 = False\nelif not (1000 < 현재가 < 50000):\n    매수 = False\nelif not (현재가 < VI아래5호가):\n    매수 = False\nelif 라운드피겨위5호가이내:\n    매수 = False\nelif not (시가총액 < 3000):\n    매수 = False\nelif not (90000 <= 시분초 < 93000):\n    매수 = False\nelif not (등락율N(53) <= -2.0297 and 저가미갱신지속틱수() >= 25 and 구간저가대비현재가등락율(53) >= 0.3239 and 거래대금평균대비비율(10) <= 0.5195):\n    매수 = False\nelif not (연속상승(3)):\n    매수 = False\n\nif 매수:\n    self.Buy()\n",
+      "source_sha256": "208ebd96a436a620d317e58084693e744967d34ddb7300c1a89d39f6536029d3",
+      "canonical_sha256": "5c4e0c4d5456c4ceef1598972e926d90035d5ecff18c32198ab5a66065180048",
+      "ast_role_diff": {
+        "parent_source_sha256": "db08ca021866bbb7d6660fda3c6f0973a7badb957f2682f914cf5c09516e8300",
+        "parent_canonical_sha256": "89a4f88e5aed272b5bb1e64cff63d313280472392aa630823749c88ec21342e3",
+        "child_source_sha256": "208ebd96a436a620d317e58084693e744967d34ddb7300c1a89d39f6536029d3",
+        "child_canonical_sha256": "5c4e0c4d5456c4ceef1598972e926d90035d5ecff18c32198ab5a66065180048",
+        "added_guard_source": "elif not (연속상승(3)):\n    매수 = False",
+        "added_function": "연속상승",
+        "parent_clause_count": 8,
+        "child_clause_count": 9,
+        "added_clause_count": 1,
+        "parent_source_exactly_recovered": true,
+        "parent_parameters_unchanged": true,
+        "parameter_payload_sha256": "eead19194dbdba094226fdaff484c0b24ecb088b277c1d7c66289f37e8b37813"
+      },
+      "preflight_ok": true,
+      "execution_contract_ok": true,
+      "authority": "existing_db_development_no_oos_no_adoption"
+    }
+  ],
+  "candidate_count": 7,
+  "task_count": 28,
+  "prohibited_adaptations": [
+    "THRESHOLD_FINE_TUNING",
+    "POSITIVE_PARENT_ONLY_SELECTION",
+    "FOLD_OR_BAND_CHANGE",
+    "HOLDOUT_ACCESS"
+  ],
+  "next_gate": "RES03_G1_OFFICIAL_FOLD_EXECUTION",
+  "holdout_status": "SEALED_NOT_TOUCHED"
+}

@@ -1,18 +1,21 @@
 from __future__ import annotations
 
-import json
 import os
 import sqlite3
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from ai_strategy_loop.dashboard import backtest_api  # noqa: E402
-from ai_strategy_loop.dashboard.backtest_jobs import BacktestJobManager, BacktestJobSpec  # noqa: E402
+from ai_strategy_loop.dashboard import backtest_api
+from ai_strategy_loop.dashboard.backtest_jobs import (
+    BacktestJobManager,
+    BacktestJobSpec,
+)
 
 
 def _strategy_db(path: Path) -> None:
@@ -38,9 +41,45 @@ def _success_command(csv_path: str):
     return builder
 
 
-def _no_trades_command():
-    def builder(spec):
-        return [sys.executable, '-c', "import json; print(json.dumps({'status':'error','message':'backtest completed without metrics'})); raise SystemExit(2)"]
+def _no_trades_command() -> Callable[[BacktestJobSpec], list[str]]:
+    payload = {
+        "status": "error",
+        "message": "backtest completed without metrics",
+        "metrics": None,
+        "backtest_process_diagnostics": {
+            "event_count": 2,
+            "last_checkpoint": "total_report_no_trades",
+            "last_by_source": {"BackTest": "total_report_no_trades"},
+        },
+    }
+
+    def builder(_spec: BacktestJobSpec) -> list[str]:
+        code = f"import json; print(json.dumps({payload!r})); raise SystemExit(2)"
+        return [sys.executable, '-c', code]
+
+    return builder
+
+
+def _masked_exception_command() -> Callable[[BacktestJobSpec], list[str]]:
+    payload = {
+        "status": "error",
+        "message": "backtest completed without metrics",
+        "metrics": None,
+        "backtest_process_diagnostics": {
+            "event_count": 3,
+            "last_checkpoint": "backtest_child_mq_first_received",
+            "last_by_source": {"BackEngine:0": "engine_strategy_exception"},
+            "last_detail_by_source": {
+                "BackEngine:0": {
+                    "error": "TypeError: list indices must be integers or slices, not str"
+                }
+            },
+        },
+    }
+
+    def builder(_spec: BacktestJobSpec) -> list[str]:
+        code = f"import json; print(json.dumps({payload!r})); raise SystemExit(2)"
+        return [sys.executable, "-c", code]
 
     return builder
 
@@ -155,6 +194,30 @@ def test_no_trades_is_openable_and_auto_detail_contract(monkeypatch, tmp_path: P
     assert 'hasActionTaxonomy' in frontend
     assert 'successAutoOpen' in frontend
     assert 'hasActionTaxonomy && successAutoOpen && canOpenByTaxonomy' in frontend
+
+
+def test_masked_strategy_exception_is_persisted_as_error(tmp_path: Path) -> None:
+    manager = BacktestJobManager(
+        jobs_dir=tmp_path / "jobs",
+        command_builder=_masked_exception_command(),
+        strategy_db=tmp_path / "missing_strategy.db",
+    )
+    job_id = manager.submit(BacktestJobSpec(
+        buy="매수A",
+        sell="매도A",
+        start=20250101,
+        end=20250102,
+        buy_code="if A:\n    매수 = True\n",
+        sell_code="if B:\n    매도 = True\n",
+    ))["job_id"]
+
+    job = _wait_status(manager, job_id, {"error", "timeout"})
+
+    assert job["status"] == "error"
+    assert job["returncode"] == 2
+    assert job["process_diagnostics"]["last_by_source"]["BackEngine:0"] == (
+        "engine_strategy_exception"
+    )
 
 
 def test_missing_artifact_exposes_recover_and_rerun_actions(tmp_path: Path):

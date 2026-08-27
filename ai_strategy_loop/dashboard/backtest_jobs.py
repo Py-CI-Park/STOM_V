@@ -34,6 +34,10 @@ from ai_strategy_loop.dashboard._windows_process_job import (
     attach_process_job,
 )
 from ai_strategy_loop.dashboard.backtest_job_spec import BacktestJobSpec
+from ai_strategy_loop.dashboard.backtest_cli_json import parse_cli_json as _parse_cli_json
+from ai_strategy_loop.dashboard.backtest_terminal_classification import (
+    is_verified_no_trades_payload,
+)
 from ai_strategy_loop.controller.telemetry import dashboard_telemetry
 
 # 패키지 루트(.../ai_strategy_loop) 기준 경로. CWD 무관.
@@ -1105,47 +1109,6 @@ class BacktestJobManager:
         return [ln.rstrip("\n") for ln in content[-lines:]]
 
 
-def _parse_cli_json(stdout: str) -> Dict[str, Any]:
-    """CLI --format json stdout 에서 결과 JSON 을 파싱한다(loop._parse_cli_json 동형)."""
-    text = stdout.strip()
-    if not text:
-        return {}
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        pass
-    without_protocol = "\n".join(
-        line for line in text.splitlines()
-        if not line.strip().startswith("[CLI_DIAG] ")
-    ).strip()
-    if without_protocol:
-        try:
-            parsed = json.loads(without_protocol)
-        except json.JSONDecodeError:
-            parsed = None
-        if isinstance(parsed, dict):
-            return parsed
-    # protocol JSONL이 결과 앞에 스트리밍될 수 있으므로 마지막 완전한 JSON 행을 우선한다.
-    for line in reversed(text.splitlines()):
-        candidate = line.strip()
-        if not candidate or candidate.startswith("[CLI_DIAG] "):
-            continue
-        try:
-            parsed = json.loads(candidate)
-        except json.JSONDecodeError:
-            continue
-        if isinstance(parsed, dict):
-            return parsed
-    start = text.find("{")
-    end = text.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        try:
-            return json.loads(text[start:end + 1])
-        except json.JSONDecodeError:
-            return {}
-    return {}
-
-
 def _protocol_summary(stdout: str) -> Optional[Dict[str, Any]]:
     events: List[Dict[str, Any]] = []
     prefix = "[CLI_DIAG] "
@@ -1184,20 +1147,8 @@ def _protocol_summary(stdout: str) -> Optional[Dict[str, Any]]:
 
 
 def _is_no_trades(returncode: int, payload: Dict[str, Any]) -> bool:
-    """CLI 가 '거래 없음 정상 종결'을 보고했는지 판별한다.
-
-    backtest.py Report() 는 list_tsg 가 비면 SysExit(True) → exit=2 로 끝나며,
-    CLI 는 message 에 'backtest completed without metrics' 를 포함해 종료한다.
-    두 패턴을 함께 확인해야 오탐을 막는다(exit=2 단독은 다른 오류일 수 있음).
-    """
-    msg = (payload.get("message") or "").lower()
-    # CLI 명시 메시지: "backtest completed without metrics"
-    if "without metrics" in msg:
-        return True
-    # exit=2 + CLI 가 status="error" + message 에 metrics/trade 관련 키워드
-    if returncode == 2 and "metric" in msg:
-        return True
-    return False
+    """Delegate to the fail-closed exact-receipt classifier."""
+    return is_verified_no_trades_payload(returncode, payload)
 
 
 # 모듈 레벨 싱글톤 — API 라우트가 공유한다(app.py 추가 수정 없이 import 만으로 연결).

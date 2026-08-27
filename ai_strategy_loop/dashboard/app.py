@@ -92,6 +92,9 @@ from ai_strategy_loop.dashboard.condition_diff_api import condition_diff_router 
 from ai_strategy_loop.dashboard.trade_pairs_api import trade_pairs_router  # noqa: E402
 from ai_strategy_loop.dashboard.research_tools_api import research_tools_router  # noqa: E402
 from ai_strategy_loop.dashboard.research_program_api import research_program_router  # noqa: E402
+from ai_strategy_loop.dashboard.research_truth_api import research_truth_router  # noqa: E402
+from ai_strategy_loop.dashboard.analysis_bundle_api import analysis_bundle_router  # noqa: E402
+from ai_strategy_loop.dashboard.research_result_api import research_result_router  # noqa: E402
 from ai_strategy_loop.fitness.research_criteria import normalize_research_oos_mode, research_mode_payload  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
@@ -3566,6 +3569,9 @@ def create_app(
     app.include_router(trade_pairs_router)
     app.include_router(research_tools_router)
     app.include_router(research_program_router)
+    app.include_router(research_truth_router)
+    app.include_router(analysis_bundle_router)
+    app.include_router(research_result_router)
 
     @app.get("/", response_class=HTMLResponse)
     def root(request: Request) -> HTMLResponse:

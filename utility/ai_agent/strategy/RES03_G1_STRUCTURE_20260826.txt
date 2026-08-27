@@ -1,0 +1,212 @@
+# RES-03 G1 구조 확인 후보 · existing DB development only · no adoption
+# generated_at=2026-08-25T21:56:10.861812+00:00
+
+===== G1_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee_00b43092e7 =====
+# parent=D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee
+# hypothesis=HYP_ABSORPTION_RECOVERY_PERSISTENCE
+# role=RECOVERY_PERSISTENCE_CONFIRMATION
+# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_A_LT3000
+# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
+# existing DB development only · OOS/자동채택/실전 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 3000):
+    매수 = False
+elif not (90000 <= 시분초 < 93000):
+    매수 = False
+elif not (구간호가총잔량비율(58, 58) <= 0.1985 and 구간저가대비현재가등락율(5) >= 1.1772 and 체결강도평균대비비율(22) >= 1.1492):
+    매수 = False
+elif not (연속상승(3)):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+===== G1_ABSORPTION_REVERSAL_MCAP_A_LT3000_639515aa1e_06c3524fa7 =====
+# parent=D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_639515aa1e
+# hypothesis=HYP_ABSORPTION_RECOVERY_PERSISTENCE
+# role=RECOVERY_PERSISTENCE_CONFIRMATION
+# D3 Opening State Machine · ABSORPTION_REVERSAL · MCAP_A_LT3000
+# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
+# existing DB development only · OOS/자동채택/실전 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 3000):
+    매수 = False
+elif not (90000 <= 시분초 < 93000):
+    매수 = False
+elif not (구간호가총잔량비율(22, 22) <= 0.4062 and 구간저가대비현재가등락율(45) >= 1.0589 and 체결강도평균대비비율(58) >= 1.7535):
+    매수 = False
+elif not (연속상승(3)):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+===== G1_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_55b6c25f13_ecf9962d42 =====
+# parent=D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_55b6c25f13
+# hypothesis=HYP_FAILED_BREAKOUT_RETURN_CONFIRMATION
+# role=RETURN_SEQUENCE_CONFIRMATION
+# D3 Opening State Machine · FAILED_BREAKOUT_RETURN · MCAP_A_LT3000
+# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
+# existing DB development only · OOS/자동채택/실전 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 3000):
+    매수 = False
+elif not (90000 <= 시분초 < 93000):
+    매수 = False
+elif not (구간고가대비현재가등락율(16) <= -0.6756 and 2 <= 고가미갱신지속틱수() <= 16 and 체결강도평균대비비율(42) >= 1.0719 and 거래대금평균대비비율(42) >= 1.4395):
+    매수 = False
+elif not (연속상승(3)):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+===== G1_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_ad1fb159a2_07a94b6780 =====
+# parent=D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_ad1fb159a2
+# hypothesis=HYP_COMPRESSION_FOLLOW_THROUGH
+# role=BREAKOUT_FOLLOW_THROUGH_CONFIRMATION
+# D3 Opening State Machine · COMPRESSION_CONFIRMED_BREAKOUT · MCAP_A_LT3000
+# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
+# existing DB development only · OOS/자동채택/실전 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 3000):
+    매수 = False
+elif not (90000 <= 시분초 < 93000):
+    매수 = False
+elif not (변동성(27, 27) > 0 and 변동성(27, 27) <= 0.4374 and 변동성급증(27, 3.1232) and 현재가 > 최고현재가(52, 1) and 체결강도평균대비비율(23) >= 1.0740):
+    매수 = False
+elif not (연속상승(3)):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+===== G1_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_c5850a62eb_2443505c73 =====
+# parent=D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_c5850a62eb
+# hypothesis=HYP_FLOW_BOOK_CONFIRMATION
+# role=ORDERBOOK_DIRECTION_CONFIRMATION
+# D3 Opening State Machine · FLOW_PRICE_DIVERGENCE · MCAP_A_LT3000
+# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
+# existing DB development only · OOS/자동채택/실전 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 3000):
+    매수 = False
+elif not (90000 <= 시분초 < 93000):
+    매수 = False
+elif not (체결강도평균대비비율(42, 42) >= 1.3901 and 현재가N(46) <= 최저현재가(46, 46) * 1.013238 and 체결강도평균대비비율(42) >= 1.0410 and 구간저가대비현재가등락율(46) >= 0.6913):
+    매수 = False
+elif not (호가상승압력(30, 0.7)):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+===== G1_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_3205e5b871_17ba3c80cb =====
+# parent=D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_3205e5b871
+# hypothesis=HYP_OPENING_REVERSAL_PERSISTENCE
+# role=REVERSAL_PERSISTENCE_CONFIRMATION
+# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_A_LT3000
+# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
+# existing DB development only · OOS/자동채택/실전 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 3000):
+    매수 = False
+elif not (90000 <= 시분초 < 93000):
+    매수 = False
+elif not (등락율N(32) <= -0.7964 and 저가미갱신지속틱수() >= 2 and 구간저가대비현재가등락율(32) >= 0.8811 and 거래대금평균대비비율(43) <= 1.0272):
+    매수 = False
+elif not (연속상승(3)):
+    매수 = False
+
+if 매수:
+    self.Buy()
+
+===== G1_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_89a4f88e5a_208ebd96a4 =====
+# parent=D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_89a4f88e5a
+# hypothesis=HYP_OPENING_REVERSAL_PERSISTENCE
+# role=REVERSAL_PERSISTENCE_CONFIRMATION
+# D3 Opening State Machine · OPENING_OVERREACTION_MEAN_REVERT · MCAP_A_LT3000
+# window_contract_sha256=69b2d05c2fd682cdf3f61f78ef33fb0f18f6a3b962fe7e68973662760db9c97b
+# existing DB development only · OOS/자동채택/실전 권한 없음
+VI아래5호가 = VI가격 - VI호가단위 * 5
+매수 = True
+
+if not (관심종목 == 1):
+    매수 = False
+elif not (1000 < 현재가 < 50000):
+    매수 = False
+elif not (현재가 < VI아래5호가):
+    매수 = False
+elif 라운드피겨위5호가이내:
+    매수 = False
+elif not (시가총액 < 3000):
+    매수 = False
+elif not (90000 <= 시분초 < 93000):
+    매수 = False
+elif not (등락율N(53) <= -2.0297 and 저가미갱신지속틱수() >= 25 and 구간저가대비현재가등락율(53) >= 0.3239 and 거래대금평균대비비율(10) <= 0.5195):
+    매수 = False
+elif not (연속상승(3)):
+    매수 = False
+
+if 매수:
+    self.Buy()
