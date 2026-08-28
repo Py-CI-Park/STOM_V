@@ -2509,6 +2509,46 @@
 .rr3-heading span { color: var(--amber); font-size: 9px; font-weight: 700; letter-spacing: .14em; }
 .rr3-heading h2 { margin: 3px 0 0; font-size: clamp(18px, 1.4vw, 25px); letter-spacing: -.03em; }
 .rr3-heading > strong { padding: 5px 8px; border: 1px dashed var(--amber); color: var(--amber); font-size: 9px; }
+/* UX-04 · first-screen mission control and progressive disclosure */
+.rr4-mission { display: grid; gap: 11px; }
+.rr4-heading { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+.rr4-heading span { color: var(--teal); font-size: 9px; font-weight: 700; letter-spacing: .14em; }
+.rr4-heading h2 { margin: 3px 0 0; font-size: clamp(20px, 1.65vw, 29px); letter-spacing: -.035em; }
+.rr4-heading > strong { padding: 6px 9px; border: 1px solid var(--red); color: var(--red); font: 700 10px/1 var(--mono); letter-spacing: .08em; }
+.rr4-lede { max-width: 860px; margin: -3px 0 0; color: var(--ink-2); font-size: 11px; line-height: 1.6; }
+.rr4-status-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.rr4-status-grid article { position: relative; min-width: 0; padding: 11px 12px 10px 15px; border: 1px solid var(--line-1); background: var(--surface-1); }
+.rr4-status-grid article::before { position: absolute; inset: 0 auto 0 0; width: 4px; content: ""; background: var(--ink-3); }
+.rr4-status-grid article.complete::before { background: var(--teal); }
+.rr4-status-grid article.stopped::before { background: var(--red); }
+.rr4-status-grid article.allowed::before { background: var(--blue); }
+.rr4-status-grid span { color: var(--ink-3); font-size: 8px; font-weight: 700; letter-spacing: .1em; }
+.rr4-status-grid strong { display: block; margin: 4px 0; overflow-wrap: anywhere; color: var(--ink-1); font-size: clamp(13px, 1.15vw, 18px); }
+.rr4-status-grid article.stopped strong { color: var(--red); }
+.rr4-status-grid p { margin: 0; color: var(--ink-3); font-size: 8.5px; line-height: 1.45; }
+.rr4-roadmap { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; margin: 0; padding: 0; list-style: none; }
+.rr4-roadmap li { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 2px 6px; min-width: 0; padding: 8px; border: 1px solid var(--line-1); background: color-mix(in srgb, var(--surface-1) 78%, transparent); }
+.rr4-roadmap li span { grid-row: 1 / 3; color: var(--ink-3); font: 700 8px/1 var(--mono); }
+.rr4-roadmap li b { overflow-wrap: anywhere; font-size: 9px; }
+.rr4-roadmap li small { color: var(--ink-3); font-size: 8px; }
+.rr4-roadmap li.done { border-top-color: var(--teal); }
+.rr4-roadmap li.signal { border-top-color: var(--amber); }
+.rr4-roadmap li.stop { border-top-color: var(--red); }
+.rr4-roadmap li.locked { border-style: dashed; opacity: .74; }
+.rr4-policy { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 9px 10px; border: 1px solid color-mix(in srgb, var(--red) 50%, var(--line-1)); background: color-mix(in srgb, var(--red) 6%, transparent); }
+.rr4-policy p { display: grid; gap: 3px; margin: 0; }
+.rr4-policy b { color: var(--red); font-size: 10px; }
+.rr4-policy span { color: var(--ink-3); font: 8px/1.3 var(--mono); }
+.rr4-policy button { flex: 0 0 auto; }
+.rr4-prereg { margin: -4px 0 0; color: var(--ink-3); font-size: 8.5px; }
+.rr4-evidence { margin-top: 10px; border-top: 1px solid var(--line-1); }
+.rr4-evidence > summary { display: flex; justify-content: space-between; gap: 10px; padding: 9px 2px 2px; cursor: pointer; color: var(--ink-2); font-size: 9px; list-style: none; }
+.rr4-evidence > summary::-webkit-details-marker { display: none; }
+.rr4-evidence > summary::before { content: "▸"; color: var(--teal); }
+.rr4-evidence[open] > summary::before { content: "▾"; }
+.rr4-evidence > summary strong { margin-left: auto; color: var(--teal); font-size: 8px; }
+.rr4-evidence > summary:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+.rr4-evidence > .rr3-heading { margin-top: 12px; }
 .rr3-rails { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.25fr) minmax(180px, .7fr); gap: 7px; margin-top: 13px; }
 .rr3-rail { position: relative; min-width: 0; padding: 12px 12px 10px 16px; border: 1px solid var(--line-1); background: var(--surface-1); }
 .rr3-rail::before { position: absolute; inset: 0 auto 0 0; width: 5px; content: ""; background: var(--ink-3); }
@@ -2570,8 +2610,11 @@
 .rr3-rule-grid p span.pass { border-color: var(--teal); color: var(--teal); }
 .rr3-exits { margin-top: 7px; }
 .rr3-exits table { width: 100%; min-width: 510px; border-collapse: collapse; font-size: 8.5px; }
-.rr3-gateboard > footer { margin-top: 8px; color: var(--ink-3); font-size: 8px; text-align: right; }
+.rr3-gateboard > footer, .rr4-evidence > footer { margin-top: 8px; color: var(--ink-3); font-size: 8px; text-align: right; }
 @media (max-width: 980px) {
+  .rr4-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rr4-status-grid article.allowed { grid-column: 1 / -1; }
+  .rr4-roadmap { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .rr3-rails { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rr3-rail.signal { grid-column: 1 / -1; }
   .rr3-body { grid-template-columns: 1fr; }
@@ -2581,6 +2624,11 @@
 }
 @media (max-width: 620px) {
   .rr3-gateboard { padding: 12px 9px; }
+  .rr4-status-grid, .rr4-roadmap { grid-template-columns: 1fr; }
+  .rr4-status-grid article.allowed { grid-column: auto; }
+  .rr4-policy { display: grid; }
+  .rr4-policy button { width: 100%; }
+  .rr4-evidence > summary { align-items: center; }
   .rr3-rails, .rr3-candidates, .rr3-rule-grid { grid-template-columns: 1fr; }
   .rr3-rail.signal, .rr3-candidates h3 { grid-column: auto; }
   .rr3-lock { display: grid; }

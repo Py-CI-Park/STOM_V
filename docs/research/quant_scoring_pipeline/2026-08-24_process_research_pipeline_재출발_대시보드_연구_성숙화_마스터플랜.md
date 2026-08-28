@@ -2,7 +2,7 @@
 
 > 상태: **재출발 계획 정본**
 >
-> 통합 기준: `loop/process-research-pipeline` @ `f75b80ebcb7fd72cd41c8933c4f6e63df8c2ae52`
+> 현재 통합 기준: `loop/process-research-pipeline` @ `16c3e789` (문서 색인 검증 `56d4ab6f`)
 >
 > 연구 브랜치: `codex/process-research-pipeline-restart`
 >
@@ -10,7 +10,7 @@
 >
 > 문서 성격: 이 문서는 개발 성공, 연구 성공, OOS 성공, 운영 승격을 서로 다른 상태로 관리한다.
 
- > **2026-08-28 실행 갱신:** RES-02 G0 28/28과 RES-03 G1 28/28 플랫폼 PASS, ANA-03 짝비교 3/7·개발 규칙 0/7·`STOP_AFTER_G1_NO_DEVELOPMENT_RULE_PASS`. UX-03은 커밋 `0b1e6e09`로 완료했고 7테스트·1280/620 브라우저 QA를 통과했다. 다음은 문서 통합 후 UX-04/ANA-04 제품 슬라이스이며 G2/Holdout은 금지다. holdout은 `SEALED_NOT_TOUCHED`다.
+ > **2026-08-28 실행 갱신:** RES-02 G0 28/28과 RES-03 G1 28/28 플랫폼 PASS, ANA-03 짝비교 3/7·개발 규칙 0/7·`STOP_AFTER_G1_NO_DEVELOPMENT_RULE_PASS`. UX-03 `0b1e6e09`에 이어 UX-04 Mission Control `9f27ed24`를 완료했고 집중 15테스트·typecheck·1280/620 브라우저 QA를 통과했다. 다음은 ANA-04 읽기 전용 실패 부검이며 G2/Holdout은 금지다. Holdout은 `SEALED_NOT_TOUCHED`다.
 
 ---
 
@@ -21,7 +21,7 @@
 | 직접 사용하면서 하나씩 고치는 것이 좋은가 | **예. 단, 임의 페이지 순회가 아니라 작은 종단 슬라이스로 진행한다.** | 화면만 고치면 실제 연구 흐름이 검증되지 않고, 연구만 돌리면 실패 원인이 다시 흩어진다. 한 번에 `실행 → 결과 번들 → 분석 → 다음 행동`을 완성해야 한다. |
 | 현재 프로젝트는 실패한 것인가 | **경제적 연구는 아직 성공하지 못했다. 플랫폼은 상당 부분 구현됐지만 반복 연구는 미완료다.** | Robust 후보 0개, OOS 미검증, 자동채택 금지다. 동시에 Census·시드·공식엔진 연결·분석 자산은 재사용 가능하다. |
 | 백테스트 후 결과 분석을 더 고도화할 수 있는가 | **가능성이 높다.** | 이미 다수 분석 API와 화면이 존재한다. 새로 처음 만드는 것보다 흩어진 분석을 하나의 불변 결과 번들과 결정 화면으로 묶는 일이 핵심이다. |
- | 지금 가장 먼저 할 일 | **UX-03 문서 커밋과 `loop/process-research-pipeline` 통합을 닫은 뒤, UX-04 Mission Control 또는 ANA-04 읽기 전용 실패 부검 중 하나만 시작한다.** | G0/G1 연구는 STOP이고 새 연구는 사전등록 전까지 금지다. |
+ | 지금 가장 먼저 할 일 | **UX-04를 정본에 통합한 뒤 새 브랜치에서 ANA-04 읽기 전용 실패 부검만 진행한다.** | Mission Control은 완료됐고 G0/G1 연구는 STOP이며 새 연구는 사전등록 전까지 금지다. |
 | D4/BO를 바로 시작할 수 있는가 | **아니다.** | 실제 Controls, 다기간 fold, posterior를 통과한 `BO_ELIGIBLE` Cell이 0개다. |
 | 대시보드 리디자인부터 크게 할 것인가 | **아니다.** | 첫 종단 슬라이스에서 실제 데이터로 사용성 문제를 확인한 뒤 정보구조를 단계적으로 바꾼다. |
 
@@ -51,6 +51,9 @@
 | 통합한 연구 | `research/v516-d3-mcap-dev` @ `97a59ad` | 원격 파이프라인보다 47커밋 앞섬 |
 | 통합 커밋 | `f75b80eb` | 부모: `1add7f85` + `97a59ad` |
 | 재출발 브랜치 | `codex/process-research-pipeline-restart` | `f75b80eb`에서 생성 |
+| UX-03 재출발 정본 병합 | `06625f22` | G0/G1 연구·분석·게이트보드 포함 |
+| 현재 파이프라인 병합 | `16c3e789` | 첫 G0→G1 종단 슬라이스를 `loop/process-research-pipeline`에 통합 |
+| 문서 색인 검증 | `56d4ab6f` | 1,078개 문서 fingerprint 갱신 |
 | 원 작업 폴더 | `STOM_V.wt-dev` | 기존 삭제·미추적 파일을 건드리지 않음 |
 | 재출발 worktree | `C:\System_Trading\STOM\STOM_V.wt-process-research-restart` | 연구 재개 전용 |
 
@@ -419,6 +422,8 @@
  | 9 | RES-03 | 연구 | G1 구조 후보 생성·동일 계약 재실행 | **완료** | 28/28 플랫폼 PASS, 경제 0/7 |
  | 9b | ANA-03 | 분석 | G0-G1 짝비교·개발 중단 판정 | **완료** | paired 3/7, `16c501df` |
  | 10 | UX-03 | UX | 실제 G0/G1 데이터로 결과 분석 사용성 반복 | **완료** | `0b1e6e09`, 7테스트·1280/620 QA |
+ | 10b | UX-04 | UX | 정상 중단 Mission Control·상세 progressive disclosure | **완료** | `9f27ed24`, 15테스트·1280/620 QA |
+ | 10c | ANA-04 | 분석 | G0/G1 공통 실패 읽기 전용 부검 카드 | **다음** | Fold·MDD·Exit·Family 근거 |
 | 11 | RES-04 | 연구 | Controls/FDR/posterior 또는 정상 중지 | 큼 | typed gate |
 | 12 | SCALE-01 | 연구 | 나머지 Band 순차 확장 | 큼 | Band별 독립 lineage |
 

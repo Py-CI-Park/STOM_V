@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-27T21:42:21.838711+00:00",
-  "source_fingerprint": "e548f39d3dbfe40e392f4da6e206735eaa94da0821f174f4c32615501a282ca8",
-  "count": 1078,
+  "generated_at": "2026-08-28T15:01:53.533666+00:00",
+  "source_fingerprint": "240137f7a463f6c7cd579e896269cca94485ae9705a8f46bf6d6427cdd06bce2",
+  "count": 1080,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7106,92 +7106,99 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md",
       "title": "Process Research Pipeline 재출발 · 대시보드/연구 성숙화 마스터플랜 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-27T21:41:16.502970+00:00",
-      "size": 24242
+      "updated_at": "2026-08-28T14:54:12.375176+00:00",
+      "size": 24624
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md",
       "title": "BOOT-01·PIPE-01 — 재출발 환경 사전점검과 `<3000` 10건 실행 실패 원장",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-24T21:59:47.373554+00:00",
+      "updated_at": "2026-08-27T21:46:54.332230+00:00",
       "size": 17238
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-25_SYS-01A_Research_Truth_Contract_구현결과.md",
       "title": "SYS-01A — Research Truth Contract 구현 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T15:16:36.456128+00:00",
+      "updated_at": "2026-08-27T21:46:54.334225+00:00",
       "size": 5030
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_ANA-01_AnalysisBundle_v2_구현결과.md",
       "title": "ANA-01 — AnalysisBundle v2 schema/builder/read API 구현 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:29:43.447609+00:00",
+      "updated_at": "2026-08-27T21:46:54.336730+00:00",
       "size": 5959
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_RES-01_LT3000_다기간_G0_G1_사전등록.md",
       "title": "RES-01 — `<3000` 다기간 G0/G1 개발 연구 사전등록",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T17:01:05.831239+00:00",
+      "updated_at": "2026-08-27T21:46:54.340246+00:00",
       "size": 7720
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_RES-02_Event_Gate_결과.md",
       "title": "RES-02 성과 비사용 Event Gate 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T18:27:37.117716+00:00",
+      "updated_at": "2026-08-27T21:46:54.342247+00:00",
       "size": 4415
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_RES-02_G0_ANA-02_공식결과.md",
       "title": "RES-02 공식 G0 · ANA-02 구조 부검 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T21:46:53.083432+00:00",
+      "updated_at": "2026-08-27T21:46:54.343957+00:00",
       "size": 4726
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_RES-02_런타임_정합성_복구결과.md",
       "title": "RES-02 런타임 정합성 복구 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T17:35:39.426317+00:00",
+      "updated_at": "2026-08-27T21:46:54.346964+00:00",
       "size": 2762
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_RES-03_G1_구조후보_사전등록.md",
       "title": "RES-03 G1 구조 후보 사전등록",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T21:57:35.425286+00:00",
+      "updated_at": "2026-08-27T21:46:54.348983+00:00",
       "size": 2280
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_SYS-01B_legacy_truth_adapter_API_구현결과.md",
       "title": "SYS-01B — Legacy Truth Adapter·터미널 우선순위·읽기 전용 API 구현 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T15:44:57.814345+00:00",
+      "updated_at": "2026-08-27T21:46:54.352996+00:00",
       "size": 4846
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_UX-01_V4_Global_Truth_Bar_구현결과.md",
       "title": "UX-01 — V4 Global Truth Bar 구현·직접 사용성 검증 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:10:57.512096+00:00",
+      "updated_at": "2026-08-27T21:46:54.357995+00:00",
       "size": 4977
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-26_UX-02_Result_Overview_구현결과.md",
       "title": "UX-02 — Result Overview 구현·직접 사용성 검증 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-25T16:49:19.675145+00:00",
+      "updated_at": "2026-08-27T21:46:54.361015+00:00",
       "size": 4529
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-28_UX-03_G0_G1_Decision_Gateboard_구현결과.md",
       "title": "UX-03 G0→G1 Decision Gateboard 구현 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-27T21:40:25.775918+00:00",
+      "updated_at": "2026-08-27T21:46:54.363015+00:00",
       "size": 5110
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-28_UX-04_Mission_Control_구현결과.md",
+      "title": "UX-04 Research Mission Control 구현 결과",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-28T14:54:12.083918+00:00",
+      "size": 4226
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
@@ -7288,7 +7295,7 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-24_process_research_pipeline_재출발.md",
       "title": "핸드오프 — Process Research Pipeline 재출발 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-27T21:41:44.620931+00:00",
+      "updated_at": "2026-08-27T21:46:54.365529+00:00",
       "size": 9224
     },
     {
@@ -7302,15 +7309,22 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-26_UX-03_중간점검.md",
       "title": "핸드오프 — UX-03 중간점검과 재개 지점 (2026-08-26)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-27T21:41:44.618929+00:00",
-      "size": 10171
+      "updated_at": "2026-08-28T14:54:12.434524+00:00",
+      "size": 11193
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-28_UX-04_완료.md",
+      "title": "핸드오프 — UX-04 Mission Control 완료와 ANA-04 재개 지점",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-28T14:54:12.189298+00:00",
+      "size": 3941
     },
     {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-27T21:41:16.483948+00:00",
-      "size": 15546
+      "updated_at": "2026-08-28T14:54:12.313151+00:00",
+      "size": 15748
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
