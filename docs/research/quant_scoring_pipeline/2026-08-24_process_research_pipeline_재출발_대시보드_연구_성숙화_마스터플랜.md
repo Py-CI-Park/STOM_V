@@ -2,7 +2,7 @@
 
 > 상태: **재출발 계획 정본**
 >
-> 현재 통합 기준: `loop/process-research-pipeline` @ `16c3e789` (문서 색인 검증 `56d4ab6f`)
+> 현재 통합 기준: `loop/process-research-pipeline` @ `11c9d2fd` (UX-04 Mission Control 통합)
 >
 > 연구 브랜치: `codex/process-research-pipeline-restart`
 >
@@ -54,6 +54,8 @@
 | UX-03 재출발 정본 병합 | `06625f22` | G0/G1 연구·분석·게이트보드 포함 |
 | 현재 파이프라인 병합 | `16c3e789` | 첫 G0→G1 종단 슬라이스를 `loop/process-research-pipeline`에 통합 |
 | 문서 색인 검증 | `56d4ab6f` | 1,078개 문서 fingerprint 갱신 |
+| UX-04 재출발 병합 | `78b4e54a` | Mission Control·상세 접힘·검증 문서 통합 |
+| UX-04 파이프라인 병합 | `11c9d2fd` | `loop/process-research-pipeline` 정본 통합 |
 | 원 작업 폴더 | `STOM_V.wt-dev` | 기존 삭제·미추적 파일을 건드리지 않음 |
 | 재출발 worktree | `C:\System_Trading\STOM\STOM_V.wt-process-research-restart` | 연구 재개 전용 |
 

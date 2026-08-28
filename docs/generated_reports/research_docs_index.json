@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-28T15:01:53.533666+00:00",
-  "source_fingerprint": "240137f7a463f6c7cd579e896269cca94485ae9705a8f46bf6d6427cdd06bce2",
+  "generated_at": "2026-08-28T15:21:15.131493+00:00",
+  "source_fingerprint": "c12b6189104466c84f0da50e2bccaf74ac06c1ae352dc2f4c9baa875c6157b1e",
   "count": 1080,
   "docs": [
     {
@@ -7106,8 +7106,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md",
       "title": "Process Research Pipeline 재출발 · 대시보드/연구 성숙화 마스터플랜 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-28T14:54:12.375176+00:00",
-      "size": 24624
+      "updated_at": "2026-08-28T15:15:09.567301+00:00",
+      "size": 24765
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md",
@@ -7197,7 +7197,7 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-28_UX-04_Mission_Control_구현결과.md",
       "title": "UX-04 Research Mission Control 구현 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-28T14:54:12.083918+00:00",
+      "updated_at": "2026-08-28T15:13:40.188909+00:00",
       "size": 4226
     },
     {
@@ -7309,21 +7309,21 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-26_UX-03_중간점검.md",
       "title": "핸드오프 — UX-03 중간점검과 재개 지점 (2026-08-26)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-28T14:54:12.434524+00:00",
+      "updated_at": "2026-08-28T15:13:40.247753+00:00",
       "size": 11193
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-28_UX-04_완료.md",
       "title": "핸드오프 — UX-04 Mission Control 완료와 ANA-04 재개 지점",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-28T14:54:12.189298+00:00",
-      "size": 3941
+      "updated_at": "2026-08-28T15:15:09.523161+00:00",
+      "size": 4043
     },
     {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-28T14:54:12.313151+00:00",
+      "updated_at": "2026-08-28T15:13:40.371138+00:00",
       "size": 15748
     },
     {
