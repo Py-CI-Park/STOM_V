@@ -450,8 +450,8 @@ function V4ResearchLive({ baseUrl, state, wsStatus, send, lastReply, onViewCode,
     <section className={"v4-research v6-live v6-live-density-" + liveStageDensity} aria-labelledby="v4-research-heading">
       <h2 id="v4-research-heading" className="panel-hd-title">Research · 조건식 연구 관찰</h2>
       <ExportStatusBanner reply={lastReply} />
-      <V516ResearchProgramOverview baseUrl={baseUrl} />
       <V516ResearchResultGateboard baseUrl={baseUrl} />
+      <V516ResearchProgramOverview baseUrl={baseUrl} />
       <V516FamilyFoldExplorer baseUrl={baseUrl} />
       <V516FailureEvidence baseUrl={baseUrl} />
       <V516MarketCapNativeLab baseUrl={baseUrl} />

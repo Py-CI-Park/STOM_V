@@ -1,4 +1,4 @@
-/* v4-research-result.jsx — UX-03 sealed G0/G1 decision gateboard. */
+/* v4-research-result.jsx — UX-04 mission control over the sealed UX-03 gateboard. */
 const { useCallback: useCallback_rr3, useEffect: useEffect_rr3, useState: useState_rr3 } = React;
 
 const _RR3_FAILURES = Object.freeze({
@@ -29,6 +29,38 @@ function _rr3CandidateLabel(row) {
 
 function _Rr3Rail({ label, value, detail, tone }) {
   return <article className={`rr3-rail ${tone}`}><span>{label}</span><strong>{value}</strong><p>{detail}</p></article>;
+}
+
+function _Rr4MissionControl({ platform, decision, detailOpen, onToggleDetail }) {
+  const candidateCount = decision.candidate_count || 0;
+  const developmentPassCount = decision.development_pass_count || 0;
+  const pairedPassCount = decision.paired_pass_count || 0;
+  return (
+    <section className="rr4-mission" aria-labelledby="rr4-title">
+      <header className="rr4-heading">
+        <div><span>UX-04 · MISSION CONTROL</span><h2 id="rr4-title">Research Mission Control</h2></div>
+        <strong>정상 중단</strong>
+      </header>
+      <p className="rr4-lede">공식 실행은 완료됐지만 경제 기준을 통과한 후보가 없어 연구가 안전하게 멈췄습니다.</p>
+      <div className="rr4-status-grid" role="list" aria-label="현재 연구 판단 요약">
+        <article className="complete" role="listitem"><span>실행 상태</span><strong>G1 {platform.valid_jobs || 0}/{platform.total_jobs || 0} VALID</strong><p>실행·원본·분석 번들 확인 완료</p></article>
+        <article className="stopped" role="listitem"><span>왜 멈췄나</span><strong>Development Rule {developmentPassCount}/{candidateCount}</strong><p>짝신호 {pairedPassCount}/{candidateCount}는 승격 근거가 아닙니다.</p></article>
+        <article className="allowed" role="listitem"><span>지금 허용된 행동</span><strong>읽기 전용 실패 부검</strong><p>결과를 바꾸지 않고 Fold·Exit·계보만 검토</p></article>
+      </div>
+      <ol className="rr4-roadmap" aria-label="G0에서 현재 중단까지의 연구 흐름">
+        <li className="done"><span>01</span><b>G0 실행</b><small>28 jobs</small></li>
+        <li className="done"><span>02</span><b>G1 실행</b><small>{platform.valid_jobs || 0}/{platform.total_jobs || 0}</small></li>
+        <li className="signal"><span>03</span><b>짝비교</b><small>{pairedPassCount}/{candidateCount}</small></li>
+        <li className="stop"><span>04</span><b>경제 Gate</b><small>{developmentPassCount}/{candidateCount}</small></li>
+        <li className="locked"><span>05</span><b>G2/Holdout</b><small>차단</small></li>
+      </ol>
+      <div className="rr4-policy">
+        <p><b>G2 · Holdout · 자동채택 차단</b><span>{decision.next_gate || "STOP_NO_G2_NO_HOLDOUT"}</span></p>
+        <button type="button" className="btn ghost sm" aria-expanded={detailOpen} aria-controls="rr4-evidence-detail" onClick={onToggleDetail}>{detailOpen ? "판정 근거 접기" : "판정 근거 펼치기"}</button>
+      </div>
+      <p className="rr4-prereg">새 연구는 별도 사전등록 후 새 프로그램에서만 시작할 수 있습니다.</p>
+    </section>
+  );
 }
 
 function _Rr3FoldMatrix({ candidate }) {
@@ -93,6 +125,7 @@ function _Rr3CandidateDetail({ candidate }) {
 function V516ResearchResultGateboard({ baseUrl }) {
   const [view, setView] = useState_rr3({ status: "loading", data: null, error: "" });
   const [selectedId, setSelectedId] = useState_rr3("");
+  const [detailOpen, setDetailOpen] = useState_rr3(false);
   const load = useCallback_rr3(() => {
     const controller = new AbortController();
     setView(current => ({ ...current, status: "loading", error: "" }));
@@ -112,20 +145,24 @@ function V516ResearchResultGateboard({ baseUrl }) {
   const decision = data.decision || {};
   const selected = candidates.find(row => row.candidate_id === selectedId) || candidates[0];
   return (
-    <section className="rr3-gateboard" aria-labelledby="rr3-title">
-      <header className="rr3-heading"><div><span>UX-03 · SEALED DECISION / READ ONLY</span><h2 id="rr3-title">G0 → G1 연구 게이트보드</h2></div><strong>{decision.holdout_status || "UNKNOWN"}</strong></header>
-      <div className="rr3-rails">
-        <_Rr3Rail label="PLATFORM GATE" value={`${platform.valid_jobs || 0}/${platform.total_jobs || 0} VALID`} detail={`SUCCESS ${platform.success_jobs || 0} · NO_TRADES ${platform.no_trades_jobs || 0} · source/bundle ${platform.source_match_jobs || 0}/${platform.analysis_bundle_jobs || 0}`} tone="valid" />
-        <_Rr3Rail label="ECONOMIC GATE" value={`${decision.development_pass_count || 0}/${decision.candidate_count || 0} · STOP`} detail="실행은 성공했지만 절대 개발 기준을 통과한 전략은 없습니다." tone="stop" />
-        <_Rr3Rail label="PAIRED SIGNAL" value={`${decision.paired_pass_count || 0}/${decision.candidate_count || 0}`} detail="부모 대비 구조 신호일 뿐 승격·수익성 증거가 아닙니다." tone="signal" />
-      </div>
-      <div className="rr3-lock" role="status"><b>NEXT · {decision.next_gate || "STOP"}</b><span>G2 금지 · Holdout 미개봉 · 자동채택 불가 · DEVELOPMENT ONLY</span></div>
-      <div className="rr3-body">
-        <nav className="rr3-candidates" aria-label="G1 후보 선택"><h3>7 candidates</h3>{candidates.map(row => <button type="button" key={row.candidate_id} aria-pressed={row.candidate_id === selectedId} onClick={() => setSelectedId(row.candidate_id)}><span>{_rr3CandidateLabel(row)}</span><b>{row.g1_total_trades} trades</b><em>{row.paired_falsification_pass ? "PAIR SIGNAL" : "PAIR STOP"} · DEV STOP</em></button>)}</nav>
-        {selected && <_Rr3CandidateDetail candidate={selected} />}
-      </div>
-      <footer>Evidence {String(data.evidence && data.evidence[1] && data.evidence[1].sha256 || "unavailable").slice(0, 16)}… · persistence none · 경제 실패를 실행 실패로 바꾸지 않습니다.</footer>
-    </section>
+    <div className="rr3-gateboard rr4-shell">
+      <_Rr4MissionControl platform={platform} decision={decision} detailOpen={detailOpen} onToggleDetail={() => setDetailOpen(open => !open)} />
+      <details className="rr4-evidence" id="rr4-evidence-detail" open={detailOpen} onToggle={event => setDetailOpen(event.currentTarget.open)}>
+        <summary><span>UX-03 봉인 판정 근거</span><strong>{detailOpen ? "판정 근거 접기" : "판정 근거 펼치기"}</strong></summary>
+        <header className="rr3-heading"><div><span>UX-03 · SEALED DECISION / READ ONLY</span><h2 id="rr3-title">G0 → G1 연구 게이트보드</h2></div><strong>{decision.holdout_status || "UNKNOWN"}</strong></header>
+        <div className="rr3-rails">
+          <_Rr3Rail label="PLATFORM GATE" value={`${platform.valid_jobs || 0}/${platform.total_jobs || 0} VALID`} detail={`SUCCESS ${platform.success_jobs || 0} · NO_TRADES ${platform.no_trades_jobs || 0} · source/bundle ${platform.source_match_jobs || 0}/${platform.analysis_bundle_jobs || 0}`} tone="valid" />
+          <_Rr3Rail label="ECONOMIC GATE" value={`${decision.development_pass_count || 0}/${decision.candidate_count || 0} · STOP`} detail="실행은 성공했지만 절대 개발 기준을 통과한 전략은 없습니다." tone="stop" />
+          <_Rr3Rail label="PAIRED SIGNAL" value={`${decision.paired_pass_count || 0}/${decision.candidate_count || 0}`} detail="부모 대비 구조 신호일 뿐 승격·수익성 증거가 아닙니다." tone="signal" />
+        </div>
+        <div className="rr3-lock" role="status"><b>NEXT · {decision.next_gate || "STOP"}</b><span>G2 금지 · Holdout 미개봉 · 자동채택 불가 · DEVELOPMENT ONLY</span></div>
+        <div className="rr3-body">
+          <nav className="rr3-candidates" aria-label="G1 후보 선택"><h3>7 candidates</h3>{candidates.map(row => <button type="button" key={row.candidate_id} aria-pressed={row.candidate_id === selectedId} onClick={() => setSelectedId(row.candidate_id)}><span>{_rr3CandidateLabel(row)}</span><b>{row.g1_total_trades} trades</b><em>{row.paired_falsification_pass ? "PAIR SIGNAL" : "PAIR STOP"} · DEV STOP</em></button>)}</nav>
+          {selected && <_Rr3CandidateDetail candidate={selected} />}
+        </div>
+        <footer>Evidence {String(data.evidence && data.evidence[1] && data.evidence[1].sha256 || "unavailable").slice(0, 16)}… · persistence none · 경제 실패를 실행 실패로 바꾸지 않습니다.</footer>
+      </details>
+    </div>
   );
 }
 
