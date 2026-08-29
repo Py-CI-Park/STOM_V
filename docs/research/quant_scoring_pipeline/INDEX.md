@@ -9,6 +9,8 @@
 
 | 순서 | 문서 | 내용 |
 |---:|---|---|
+| **최신 START** | **`2026-08-29_전체완료단계_남은단계_필수성_연구상태_종합검토.md`** | **★ Compact 이후 상태 정본** — 완료 단계·페이지·남은 단계·필수성·연구 여부·목표별 경로 |
+| **최신 HANDOFF** | **`HANDOFF_2026-08-29_COMPACT_이후_합리적_권장순서.md`** | **★ Compact 이후 실행 정본** — SYS-04→새 가설→RES-04의 합리적 순서·명령·프롬프트 |
 | **최신 0** | **`2026-08-29_SYS-03_Trade_Path_Ordering_구현결과.md`** | **★ 시스템 최신 정본** — ledger 확정 후 success·barrier red→green·API 9 PASS |
 | **최신 0.1** | **`HANDOFF_2026-08-29_SYS-03_완료.md`** | **★ 재개 정본** — SYS-03 구현 SHA·SYS-04 suite 성능 분리·금지 경계 |
 | **최신 0.2** | **`2026-08-29_SYS-02_Test_Isolation_구현결과.md`** | **SYS-02 정본** — seed DB read-only·full unit 7,946 PASS |

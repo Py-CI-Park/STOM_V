@@ -2,7 +2,7 @@
 
 > 상태: **재출발 계획 정본**
 >
-> 현재 통합 기준: `loop/process-research-pipeline` @ `ac5a96d3` (SYS-03 Trade-path Ordering 통합)
+> 현재 통합 기준: `loop/process-research-pipeline` @ `c6c2a50e` (SYS-03 최종 핸드오프 포함)
 >
 > 연구 브랜치: `codex/process-research-pipeline-restart`
 >
@@ -11,6 +11,8 @@
 > 문서 성격: 이 문서는 개발 성공, 연구 성공, OOS 성공, 운영 승격을 서로 다른 상태로 관리한다.
 
  > **2026-08-29 실행 갱신:** G1 플랫폼 28/28 PASS와 Development 0/7 STOP을 유지한다. SYS-02 이후 SYS-03 Trade-path Ordering `b63fc885`을 완료했다. ledger 확정 전 success 공개를 barrier 테스트로 제거했다. 다음은 SYS-04 full-suite 성능 분리이고 G2/Holdout은 금지다.
+
+ > **Compact 재개 정본:** `HANDOFF_2026-08-29_COMPACT_이후_합리적_권장순서.md`. 이후는 SYS-04 성능 분리 → 새 구조 가설 검토 → RES-04 사전등록 순서로 진행한다.
 
 ---
 
