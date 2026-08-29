@@ -2,7 +2,7 @@
 
 > 상태: **재출발 계획 정본**
 >
-> 현재 통합 기준: `loop/process-research-pipeline` @ `d975d226` (ANA-04 Failure Autopsy 통합)
+> 현재 통합 기준: `loop/process-research-pipeline` @ `04202038` (UX-05 Current vs Historical 통합)
 >
 > 연구 브랜치: `codex/process-research-pipeline-restart`
 >
@@ -58,6 +58,8 @@
 | UX-04 파이프라인 병합 | `11c9d2fd` | `loop/process-research-pipeline` 정본 통합 |
 | ANA-04 재출발 병합 | `19e3e3cc` | 7후보 공통 실패·Family/Fold/Exit 근거 통합 |
 | ANA-04 파이프라인 병합 | `d975d226` | `loop/process-research-pipeline` 정본 통합 |
+| UX-05 재출발 병합 | `5672a344` | 기록·성과 Current/Historical 권위 경계 통합 |
+| UX-05 파이프라인 병합 | `04202038` | `loop/process-research-pipeline` 정본 통합 |
 | 원 작업 폴더 | `STOM_V.wt-dev` | 기존 삭제·미추적 파일을 건드리지 않음 |
 | 재출발 worktree | `C:\System_Trading\STOM\STOM_V.wt-process-research-restart` | 연구 재개 전용 |
 
