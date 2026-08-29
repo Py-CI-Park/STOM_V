@@ -10,18 +10,16 @@ import os
 import sys
 
 import numpy as np
-import pytest
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from tests.unit._strategy_db_precondition import requires_strategy_row  # noqa: E402
-from alpha_lab.btrack import ext_judge, ext_parse, ext_select, judge_b  # noqa: E402
-from alpha_lab.btrack.branches import BRANCH_902_NUMS, BRANCH_905_NUMS  # noqa: E402
+from alpha_lab.btrack import ext_judge, ext_parse, ext_select, judge_b
+from alpha_lab.btrack.branches import BRANCH_902_NUMS, BRANCH_905_NUMS
+from tests.unit._strategy_db_precondition import requires_strategy_row
 
 _DB = os.path.join(PROJECT_ROOT, "_database", "strategy.db")
-_has_db = pytest.mark.skipif(not os.path.exists(_DB), reason="strategy.db 부재")
 
 
 # --------------------------------------------------------------------------
@@ -124,7 +122,7 @@ def test_uhold_window_function():
 # 4. 기계 선정.
 # --------------------------------------------------------------------------
 
-@_has_db
+@requires_strategy_row(_DB, "stockbuy", ext_select.CORE_7[0])
 def test_mechanized_selection():
     r = ext_select.select(_DB)
     # 코어 7 전부 선정.

@@ -10,6 +10,16 @@ from __future__ import annotations
 
 import pytest
 
+from tests.unit.slow_suite_manifest import is_slow_suite
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Apply the measured slow marker without editing large contract files."""
+    slow_marker = pytest.mark.slow_suite
+    for item in items:
+        if is_slow_suite(item.nodeid):
+            item.add_marker(slow_marker)
+
 
 @pytest.fixture(autouse=True)
 def _isolate_live_state(monkeypatch, tmp_path):
