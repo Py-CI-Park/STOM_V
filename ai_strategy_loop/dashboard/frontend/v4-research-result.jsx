@@ -1,4 +1,6 @@
 /* v4-research-result.jsx — UX-04 mission control over the sealed UX-03 gateboard. */
+import { V516ResearchFailureAutopsy } from "./v4-research-failure-autopsy.jsx";
+
 const { useCallback: useCallback_rr3, useEffect: useEffect_rr3, useState: useState_rr3 } = React;
 
 const _RR3_FAILURES = Object.freeze({
@@ -147,6 +149,7 @@ function V516ResearchResultGateboard({ baseUrl }) {
   return (
     <div className="rr3-gateboard rr4-shell">
       <_Rr4MissionControl platform={platform} decision={decision} detailOpen={detailOpen} onToggleDetail={() => setDetailOpen(open => !open)} />
+      <V516ResearchFailureAutopsy analysis={data.analysis} onInspectCandidate={candidateId => { setSelectedId(candidateId); setDetailOpen(true); }} />
       <details className="rr4-evidence" id="rr4-evidence-detail" open={detailOpen} onToggle={event => setDetailOpen(event.currentTarget.open)}>
         <summary><span>UX-03 봉인 판정 근거</span><strong>{detailOpen ? "판정 근거 접기" : "판정 근거 펼치기"}</strong></summary>
         <header className="rr3-heading"><div><span>UX-03 · SEALED DECISION / READ ONLY</span><h2 id="rr3-title">G0 → G1 연구 게이트보드</h2></div><strong>{decision.holdout_status || "UNKNOWN"}</strong></header>
