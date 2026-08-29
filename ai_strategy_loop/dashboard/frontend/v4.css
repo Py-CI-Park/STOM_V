@@ -2549,6 +2549,55 @@
 .rr4-evidence > summary strong { margin-left: auto; color: var(--teal); font-size: 8px; }
 .rr4-evidence > summary:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
 .rr4-evidence > .rr3-heading { margin-top: 12px; }
+/* ANA-04 · sealed failure synthesis, no mutation controls */
+.ra4-autopsy { display: grid; gap: 10px; margin-top: 10px; padding: 12px; border: 1px solid color-mix(in srgb, var(--red) 28%, var(--line-1)); background: color-mix(in srgb, var(--surface-2) 82%, transparent); }
+.ra4-heading { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+.ra4-heading span { color: var(--amber); font-size: 8px; font-weight: 700; letter-spacing: .13em; }
+.ra4-heading h2 { margin: 3px 0 0; font-size: clamp(15px, 1.3vw, 21px); }
+.ra4-heading > strong { padding: 5px 7px; border: 1px solid var(--red); color: var(--red); font: 700 9px/1 var(--mono); }
+.ra4-lede { max-width: 940px; margin: -3px 0 0; color: var(--ink-2); font-size: 9px; line-height: 1.55; }
+.ra4-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.ra4-kpis article { min-width: 0; padding: 9px; border-top: 2px solid var(--red); background: var(--surface-1); }
+.ra4-kpis span { color: var(--ink-3); font-size: 7.5px; }
+.ra4-kpis b { display: block; margin: 3px 0; overflow-wrap: anywhere; font-size: 14px; }
+.ra4-kpis p { margin: 0; color: var(--ink-3); font-size: 8px; }
+.ra4-blockers { padding: 9px; border: 1px solid var(--line-1); background: var(--surface-1); }
+.ra4-blockers h3, .ra4-detail-grid h3 { margin: 0 0 6px; font-size: 9px; }
+.ra4-blocker-list { display: grid; gap: 5px; }
+.ra4-blocker-list > div { display: grid; grid-template-columns: minmax(130px, .8fr) minmax(120px, 2fr) 34px; gap: 7px; align-items: center; }
+.ra4-blocker-list span { overflow-wrap: anywhere; color: var(--ink-2); font-size: 8px; }
+.ra4-blocker-list i { height: 6px; overflow: hidden; background: var(--bg-2); }
+.ra4-blocker-list i b { display: block; height: 100%; background: linear-gradient(90deg, var(--amber), var(--red)); }
+.ra4-blocker-list strong { color: var(--red); font: 700 8px/1 var(--mono); text-align: right; }
+.ra4-interpretation { display: grid; grid-template-columns: auto 1fr; gap: 9px; padding: 8px 9px; border-left: 3px solid var(--amber); background: color-mix(in srgb, var(--amber) 6%, transparent); }
+.ra4-interpretation b { color: var(--amber); font-size: 8.5px; }
+.ra4-interpretation span { color: var(--ink-2); font-size: 8.5px; line-height: 1.5; }
+.ra4-details { min-width: 0; max-width: 100%; border-top: 1px solid var(--line-1); }
+.ra4-details > summary { display: flex; justify-content: space-between; gap: 10px; padding: 8px 2px 0; cursor: pointer; color: var(--ink-2); font-size: 9px; list-style: none; }
+.ra4-details > summary::-webkit-details-marker { display: none; }
+.ra4-details > summary::before { content: "▸"; color: var(--amber); }
+.ra4-details[open] > summary::before { content: "▾"; }
+.ra4-details > summary strong { margin-left: auto; color: var(--amber); font-size: 8px; }
+.ra4-details > summary:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+.ra4-table-scroll { width: 100%; min-width: 0; max-width: 100%; margin-top: 8px; overflow: auto; border: 1px solid var(--line-1); }
+.ra4-table-scroll:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.ra4-table-scroll table { width: 100%; min-width: 660px; border-collapse: collapse; font-size: 8px; }
+.ra4-family-table { font-variant-numeric: tabular-nums; }
+.ra4-table-scroll caption { padding: 6px; color: var(--ink-3); text-align: left; }
+.ra4-table-scroll th, .ra4-table-scroll td { padding: 5px; border-top: 1px solid var(--line-1); text-align: right; }
+.ra4-table-scroll th:first-child { text-align: left; }
+.ra4-table-scroll .positive { color: var(--teal); }
+.ra4-table-scroll .negative { color: var(--red); }
+.ra4-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, .75fr); gap: 8px; margin-top: 8px; }
+.ra4-detail-grid > section { min-width: 0; padding: 9px; border: 1px solid var(--line-1); background: var(--surface-1); }
+.ra4-exit-note { margin: 0; color: var(--ink-3); font-size: 8px; }
+.ra4-candidates { display: grid; gap: 4px; }
+.ra4-candidates button { display: grid; gap: 2px; padding: 6px 7px; border: 1px solid var(--line-1); border-left: 3px solid var(--red); text-align: left; background: var(--surface-2); }
+.ra4-candidates button:hover, .ra4-candidates button:focus-visible { border-left-color: var(--teal); }
+.ra4-candidates span { overflow: hidden; color: var(--ink-2); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.ra4-candidates b { font-size: 8.5px; }
+.ra4-candidates em { color: var(--amber); font-size: 7.5px; font-style: normal; }
+.ra4-autopsy > footer { color: var(--ink-3); font-size: 7.5px; text-align: right; }
 .rr3-rails { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.25fr) minmax(180px, .7fr); gap: 7px; margin-top: 13px; }
 .rr3-rail { position: relative; min-width: 0; padding: 12px 12px 10px 16px; border: 1px solid var(--line-1); background: var(--surface-1); }
 .rr3-rail::before { position: absolute; inset: 0 auto 0 0; width: 5px; content: ""; background: var(--ink-3); }
@@ -2612,6 +2661,8 @@
 .rr3-exits table { width: 100%; min-width: 510px; border-collapse: collapse; font-size: 8.5px; }
 .rr3-gateboard > footer, .rr4-evidence > footer { margin-top: 8px; color: var(--ink-3); font-size: 8px; text-align: right; }
 @media (max-width: 980px) {
+  .ra4-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ra4-detail-grid { grid-template-columns: 1fr; }
   .rr4-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rr4-status-grid article.allowed { grid-column: 1 / -1; }
   .rr4-roadmap { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -2624,6 +2675,11 @@
 }
 @media (max-width: 620px) {
   .rr3-gateboard { padding: 12px 9px; }
+  .ra4-autopsy { padding: 9px 7px; }
+  .ra4-kpis { grid-template-columns: 1fr; }
+  .ra4-blocker-list > div { grid-template-columns: 1fr 42px; }
+  .ra4-blocker-list i { grid-column: 1 / -1; grid-row: 2; }
+  .ra4-interpretation { grid-template-columns: 1fr; }
   .rr4-status-grid, .rr4-roadmap { grid-template-columns: 1fr; }
   .rr4-status-grid article.allowed { grid-column: auto; }
   .rr4-policy { display: grid; }
