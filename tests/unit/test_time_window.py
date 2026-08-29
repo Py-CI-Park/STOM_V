@@ -33,6 +33,7 @@ from ai_strategy_loop.brain.filter_gate import (  # noqa: E402
 )
 from ai_strategy_loop.brain.generator import generate_strategy  # noqa: E402
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
+from tests.seed_db_guard import open_seed_database  # noqa: E402
 
 # 실제 시드 매수 코드(좁은 902 창 — 다년강건 골드)를 담은 루프 DB(읽기 전용).
 _SEED_DB = os.path.join(PROJECT_ROOT, "ai_strategy_loop", "state", "loop_strategies.db")
@@ -165,14 +166,11 @@ def test_noop_mid_window_is_NOT_noop():
 
 def test_noop_real_seed_buy_is_NOT_noop():
     # 실측: 실제 인간 시드(좁은 902/905 창)는 no-op이 아니다(좁은-good 보호).
-    assert os.path.exists(_SEED_DB), f"seed DB 없음: {_SEED_DB}"
-    con = sqlite3.connect(_SEED_DB)
-    try:
-        cur = con.cursor()
-        cur.execute('SELECT "전략코드" FROM stockbuy WHERE "index" = ?', (_SEED_BUY_INDEX,))
-        row = cur.fetchone()
-    finally:
-        con.close()
+    with open_seed_database(_SEED_DB, required_tables=("stockbuy",)) as con:
+        row = con.execute(
+            'SELECT "전략코드" FROM stockbuy WHERE "index" = ?',
+            (_SEED_BUY_INDEX,),
+        ).fetchone()
     assert row is not None, f"시드 매수 전략 없음: {_SEED_BUY_INDEX}"
     seed_code = row[0]
     assert is_noop_time_window(seed_code) is False, (

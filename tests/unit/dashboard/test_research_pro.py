@@ -202,6 +202,23 @@ def test_strategy_code_run_gen_keys(client, tmp_path):
         assert key in j
 
 
+def test_strategy_code_read_does_not_create_missing_loop_db(
+    client, monkeypatch, tmp_path
+):
+    from ai_strategy_loop import bootstrap
+
+    _seed_run(tmp_path)
+    missing = tmp_path / "loop_strategies.db"
+    monkeypatch.setattr(bootstrap, "LOOP_DB_STRATEGY", missing)
+
+    response = client.get("/strategy_code", params={"run": "runP", "gen": 0})
+
+    assert response.status_code == 200
+    assert response.json()["buy_code"] == ""
+    assert response.json()["sell_code"] == ""
+    assert missing.exists() is False
+
+
 def test_strategy_code_missing_run_is_empty_no_raise(client):
     r = client.get("/strategy_code", params={"run": "", "gen": -1})
     assert r.status_code == 200
