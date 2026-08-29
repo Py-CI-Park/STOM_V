@@ -9,7 +9,8 @@
 
 | 순서 | 문서 | 내용 |
 |---:|---|---|
-| **최신 START** | **`2026-08-30_SYS-04_Fast_Slow_Unit_Gate_구현결과.md`** | **★ SYS-04 정본** — 실측 slow 24건·fast 7,928 PASS·23m22s·보호 DB 주의 |
+| **최신 START** | **`2026-08-30_RES-04_새구조가설_검토.md`** | **★ 가설 검토 정본** — E1/R1/X1/C1 비교·직접 G0 NO-GO·outcome-free feasibility 사전등록 조건부 GO |
+| **직전 START** | **`2026-08-30_SYS-04_Fast_Slow_Unit_Gate_구현결과.md`** | **SYS-04 정본** — 실측 slow 24건·fast 7,928 PASS·23m22s·보호 DB 주의 |
 | **최신 HANDOFF** | **`HANDOFF_2026-08-30_SYS-04_완료_새구조가설_RESTART.md`** | **★ 다음 실행 정본** — zero-byte 확인→새 구조 가설 검토→RES-04 순서·프롬프트 |
 | **직전 START** | **`2026-08-29_전체완료단계_남은단계_필수성_연구상태_종합검토.md`** | **Compact 이후 상태 정본** — 완료 단계·페이지·남은 단계·필수성·연구 여부·목표별 경로 |
 | **직전 HANDOFF** | **`HANDOFF_2026-08-29_COMPACT_이후_합리적_권장순서.md`** | **SYS-04 이전 실행 정본** — 최신 SYS-04 핸드오프가 대체 |

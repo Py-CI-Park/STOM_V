@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-29T16:06:47.507774+00:00",
-  "source_fingerprint": "b26e7c3f56bac0ac543243906351e3379c4a9e7a2433286d0ce5f393aeac1e40",
-  "count": 1094,
+  "generated_at": "2026-08-29T23:28:35.828006+00:00",
+  "source_fingerprint": "cf949a2226a0961e31cc25caa532231356c9a3fe94d47254c505761ef831ac01",
+  "count": 1095,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7106,8 +7106,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md",
       "title": "Process Research Pipeline 재출발 · 대시보드/연구 성숙화 마스터플랜 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T16:06:05.111919+00:00",
-      "size": 26415
+      "updated_at": "2026-08-29T23:27:09.346479+00:00",
+      "size": 26704
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md",
@@ -7241,6 +7241,13 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-08-29T16:05:07.656280+00:00",
       "size": 5492
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-30_RES-04_새구조가설_검토.md",
+      "title": "RES-04 새 구조 가설 검토",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-29T23:27:52.504273+00:00",
+      "size": 14450
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-30_SYS-04_Fast_Slow_Unit_Gate_구현결과.md",
@@ -7421,8 +7428,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T16:05:35.810392+00:00",
-      "size": 17249
+      "updated_at": "2026-08-29T23:27:09.341973+00:00",
+      "size": 17385
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
