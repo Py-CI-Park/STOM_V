@@ -2,7 +2,7 @@
 
 > 상태: **재출발 계획 정본**
 >
-> 현재 통합 기준: `loop/process-research-pipeline` @ `387648c6` (S9 Chrome Keyboard Accessibility 통합)
+> 현재 통합 기준: `loop/process-research-pipeline` @ `8946c2ea` (SYS-02 Test Isolation 통합)
 >
 > 연구 브랜치: `codex/process-research-pipeline-restart`
 >
@@ -62,6 +62,8 @@
 | UX-05 파이프라인 병합 | `04202038` | `loop/process-research-pipeline` 정본 통합 |
 | S9 재출발 병합 | `f66e2d75` | Chrome 실제 키보드 검증 receipt 통합 |
 | S9 파이프라인 병합 | `387648c6` | `loop/process-research-pipeline` 정본 통합 |
+| SYS-02 재출발 병합 | `f19e2b73` | seed DB read-only·검증 격리 통합 |
+| SYS-02 파이프라인 병합 | `8946c2ea` | `loop/process-research-pipeline` 정본 통합 |
 | 원 작업 폴더 | `STOM_V.wt-dev` | 기존 삭제·미추적 파일을 건드리지 않음 |
 | 재출발 worktree | `C:\System_Trading\STOM\STOM_V.wt-process-research-restart` | 연구 재개 전용 |
 
