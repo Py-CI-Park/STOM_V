@@ -41123,6 +41123,33 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V4Replay });
 
+  // ai_strategy_loop/dashboard/frontend/v4-current-history-authority.jsx
+  var { useCallback: useCallback_ch5, useEffect: useEffect_ch5, useState: useState_ch5 } = React;
+  function _ch5VerifiedDate(value) {
+    const parsed = new Date(String(value || ""));
+    return Number.isNaN(parsed.valueOf()) ? "\uBBF8\uAE30\uB85D" : parsed.toISOString().slice(0, 10);
+  }
+  function CurrentHistoryAuthority({ baseUrl, onNavigate, surface }) {
+    const [view, setView] = useState_ch5({ status: "loading", data: null, error: "" });
+    const load = useCallback_ch5(() => {
+      const controller = new AbortController();
+      setView((current) => ({ ...current, status: "loading", error: "" }));
+      fetch(String(baseUrl || "").replace(/\/$/, "") + "/research-result/current", { signal: controller.signal }).then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))).then((data2) => setView({ status: "ready", data: data2, error: "" })).catch((error) => {
+        if (error && error.name !== "AbortError") setView({ status: "error", data: null, error: String(error.message || error) });
+      });
+      return () => controller.abort();
+    }, [baseUrl]);
+    useEffect_ch5(() => load(), [load]);
+    if (view.status === "loading" && !view.data) return /* @__PURE__ */ React.createElement("section", { className: "ch5-boundary pending", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("h2", null, "\uD604\uC7AC \uD310\uC815 \uAD8C\uC704\uB97C \uD655\uC778\uD558\uB294 \uC911\uC785\uB2C8\uB2E4"), /* @__PURE__ */ React.createElement("p", null, "\uBD09\uC778\uB41C \uCD5C\uC2E0 \uACB0\uACFC\uB97C \uAC80\uC99D\uD55C \uB4A4 \uACFC\uAC70 \uAE30\uB85D\uC744 \uD45C\uC2DC\uD569\uB2C8\uB2E4."));
+    if (view.status === "error") return /* @__PURE__ */ React.createElement("section", { className: "ch5-boundary danger", role: "alert" }, /* @__PURE__ */ React.createElement("h2", null, "\uD604\uC7AC \uD310\uC815 \uD655\uC778 \uBD88\uAC00"), /* @__PURE__ */ React.createElement("p", null, "\uACFC\uAC70 \uACB0\uACFC\uB97C \uD604\uC7AC \uD310\uC815\uC73C\uB85C \uC0AC\uC6A9\uD558\uC9C0 \uB9C8\uC138\uC694 \xB7 ", view.error), /* @__PURE__ */ React.createElement("button", { type: "button", className: "btn ghost sm", onClick: load }, "\uB2E4\uC2DC \uD655\uC778"));
+    const data = view.data || {};
+    const decision = data.decision || {};
+    const analysis = data.analysis || {};
+    const pageLabel = surface === "workbench" ? "\uC131\uACFC\xB7\uBA85\uC608\uC758 \uC804\uB2F9" : "\uAE30\uB85D\xB7\uC544\uCE74\uC774\uBE0C";
+    return /* @__PURE__ */ React.createElement("section", { className: "ch5-boundary", "aria-label": "\uD604\uC7AC \uD310\uC815\uACFC \uACFC\uAC70 \uAE30\uB85D \uAD8C\uC704 \uACBD\uACC4" }, /* @__PURE__ */ React.createElement("header", { className: "ch5-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "UX-05 \xB7 AUTHORITY BOUNDARY"), /* @__PURE__ */ React.createElement("h2", null, pageLabel, " \uAD8C\uC704 \uD655\uC778")), /* @__PURE__ */ React.createElement("strong", null, "CURRENT FIRST")), /* @__PURE__ */ React.createElement("div", { className: "ch5-grid" }, /* @__PURE__ */ React.createElement("article", { className: "ch5-current" }, /* @__PURE__ */ React.createElement("span", null, "CURRENT CANONICAL"), /* @__PURE__ */ React.createElement("h3", null, "Development Rule ", decision.development_pass_count || 0, "/", decision.candidate_count || 0, " \xB7 STOP"), /* @__PURE__ */ React.createElement("p", null, "\uC2E4\uD589\uC740 \uC644\uB8CC\uB410\uC9C0\uB9CC \uD604\uC7AC \uC2B9\uACA9 \uAC00\uB2A5\uD55C \uACBD\uC81C \uD6C4\uBCF4\uB294 \uC5C6\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("dl", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "authority"), /* @__PURE__ */ React.createElement("dd", null, data.authority || "UNKNOWN")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "verified-at"), /* @__PURE__ */ React.createElement("dd", null, _ch5VerifiedDate(analysis.generated_at))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "holdout"), /* @__PURE__ */ React.createElement("dd", null, decision.holdout_status || "UNKNOWN"))), /* @__PURE__ */ React.createElement("button", { type: "button", className: "btn primary sm", onClick: () => onNavigate("research") }, "\uCD5C\uC2E0 Mission Control \uC5F4\uAE30")), /* @__PURE__ */ React.createElement("article", { className: "ch5-historical" }, /* @__PURE__ */ React.createElement("div", { className: "ch5-watermark" }, "HISTORICAL ONLY"), /* @__PURE__ */ React.createElement("span", null, "ARCHIVE AUTHORITY"), /* @__PURE__ */ React.createElement("h3", null, surface === "workbench" ? "\uC544\uB798 \uBA85\uC608\uC758 \uC804\uB2F9\uC740 \uACFC\uAC70 \uBE44\uAD50 \uAE30\uB85D" : "\uC544\uB798 run\xB7\uC138\uB300\uB294 \uACFC\uAC70 \uC2E4\uD589 \uAE30\uB85D"), /* @__PURE__ */ React.createElement("p", null, "\uACFC\uAC70 \uAE30\uB85D\uC740 \uD604\uC7AC \uC2B9\uACA9 \uADFC\uAC70\uAC00 \uC544\uB2D9\uB2C8\uB2E4. \uACFC\uAC70 \uC218\uC775\xB7\uC810\uC218\xB7winner\uB294 \uB2F9\uC2DC \uAE30\uAC04\uACFC \uAD8C\uC704 \uC548\uC5D0\uC11C\uB9CC \uD574\uC11D\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("ul", null, /* @__PURE__ */ React.createElement("li", null, "\uD604\uC7AC STOP\uC744 \uB36E\uC9C0 \uC54A\uC74C"), /* @__PURE__ */ React.createElement("li", null, "OOS\xB7\uC2E4\uC804 \uC99D\uAC70\uB85C \uC790\uB3D9 \uBCC0\uD658\uD558\uC9C0 \uC54A\uC74C"), /* @__PURE__ */ React.createElement("li", null, "\uC790\uB3D9\uCC44\uD0DD\xB7Export \uAD8C\uD55C \uC5C6\uC74C")))), /* @__PURE__ */ React.createElement("footer", null, "\uD604\uC7AC \uD310\uC815 \u2192 \uACFC\uAC70 \uD0D0\uC0C9 \uC21C\uC11C \xB7 read only \xB7 persistence none"));
+  }
+  Object.assign(window, { CurrentHistoryAuthority });
+
   // ai_strategy_loop/dashboard/frontend/bt-trade-path-history.jsx
   var { useState: useState_tph, useEffect: useEffect_tph } = React;
   function BtTradePathHistory({ baseUrl, active }) {
@@ -41530,6 +41557,15 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     );
   }
   Object.assign(window, { V4Workbench });
+
+  // ai_strategy_loop/dashboard/frontend/v4-authority-pages.jsx
+  function V4HistoryWithAuthority({ baseUrl, wsStatus, onNavigate }) {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(CurrentHistoryAuthority, { baseUrl, onNavigate, surface: "history" }), /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate }));
+  }
+  function V4WorkbenchWithAuthority({ baseUrl, wsStatus, runId, onNavigate }) {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(CurrentHistoryAuthority, { baseUrl, onNavigate, surface: "workbench" }), /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }));
+  }
+  Object.assign(window, { V4HistoryWithAuthority, V4WorkbenchWithAuthority });
 
   // ai_strategy_loop/dashboard/frontend/report-order.mjs
   function reportTimestamp(report) {
@@ -43155,7 +43191,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
           mddCap,
           minDailyTrades
         }
-      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4History, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4Workbench, { baseUrl, wsStatus, runId }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "catalog" ? /* @__PURE__ */ React.createElement(V4Catalog, { baseUrl, wsStatus }) : activeTab === "settings" ? /* @__PURE__ */ React.createElement(V4SettingsTab, { baseUrl, dashVersion: V4_DASH_VERSION }) : activeTab === "glossary" ? /* @__PURE__ */ React.createElement(V4GlossaryTab, null) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC54C \uC218 \uC5C6\uB294 \uBDF0")))
+      ) : activeTab === "backtest" ? /* @__PURE__ */ React.createElement(V4Backtest, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "history" ? /* @__PURE__ */ React.createElement(V4HistoryWithAuthority, { baseUrl, wsStatus, onNavigate: selectTab }) : activeTab === "workbench" ? /* @__PURE__ */ React.createElement(V4WorkbenchWithAuthority, { baseUrl, wsStatus, runId, onNavigate: selectTab }) : activeTab === "reports" ? /* @__PURE__ */ React.createElement(V4Reports, { baseUrl }) : activeTab === "catalog" ? /* @__PURE__ */ React.createElement(V4Catalog, { baseUrl, wsStatus }) : activeTab === "settings" ? /* @__PURE__ */ React.createElement(V4SettingsTab, { baseUrl, dashVersion: V4_DASH_VERSION }) : activeTab === "glossary" ? /* @__PURE__ */ React.createElement(V4GlossaryTab, null) : /* @__PURE__ */ React.createElement("div", { className: "v4-placeholder" }, /* @__PURE__ */ React.createElement("p", { className: "mono" }, "\uC54C \uC218 \uC5C6\uB294 \uBDF0")))
     ))), /* @__PURE__ */ React.createElement(
       SettingsModal,
       {

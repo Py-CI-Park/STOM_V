@@ -18,8 +18,7 @@ import { V4RunControls } from "./v4-run-controls.jsx";
 import { V4ResearchLive } from "./v4-research.jsx";
 import { V4Backtest } from "./v4-backtest.jsx";
 import { V4Replay } from "./v4-replay.jsx";
-import { V4History } from "./v4-history.jsx";
-import { V4Workbench } from "./v4-workbench.jsx";
+import { V4HistoryWithAuthority, V4WorkbenchWithAuthority } from "./v4-authority-pages.jsx";
 import { V4Reports } from "./v4-reports.jsx";
 import { V4Catalog } from "./v4-catalog.jsx";
 import { V4SettingsTab } from "./v4-settings.jsx";
@@ -622,9 +621,9 @@ function DashboardV4Shell({ baseUrl: baseUrlProp }) {
               ) : activeTab === "backtest" ? (
                 <V4Backtest baseUrl={baseUrl} wsStatus={wsStatus} onNavigate={selectTab} />
               ) : activeTab === "history" ? (
-                <V4History baseUrl={baseUrl} wsStatus={wsStatus} onNavigate={selectTab} />
+                <V4HistoryWithAuthority baseUrl={baseUrl} wsStatus={wsStatus} onNavigate={selectTab} />
               ) : activeTab === "workbench" ? (
-                <V4Workbench baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} />
+                <V4WorkbenchWithAuthority baseUrl={baseUrl} wsStatus={wsStatus} runId={runId} onNavigate={selectTab} />
               ) : activeTab === "reports" ? (
                 <V4Reports baseUrl={baseUrl} />
               ) : activeTab === "catalog" ? (
