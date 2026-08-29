@@ -28998,9 +28998,9 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
       groups[key][val].push(metric);
     };
     if (mode === "wfo") {
-      (result && result.rounds || []).forEach((round) => {
-        const params = round && round.best_params;
-        const metric = _btModeMetric(round && round.test_result && round.test_result.metrics || {});
+      (result && result.rounds || []).forEach((round2) => {
+        const params = round2 && round2.best_params;
+        const metric = _btModeMetric(round2 && round2.test_result && round2.test_result.metrics || {});
         if (!params || typeof params !== "object") return;
         Object.keys(params).forEach((name) => push(name, params[name], metric));
       });
@@ -30633,8 +30633,8 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     const padL = 56, padR = 16, padT = 4, padB = 4;
     const innerW = W - padL - padR;
     const innerH = H - padT - padB;
-    const finite = vals.filter((v) => v != null && isFinite(v));
-    const vMax = Math.max(2, ...finite);
+    const finite2 = vals.filter((v) => v != null && isFinite(v));
+    const vMax = Math.max(2, ...finite2);
     const xAt = (i) => n <= 1 ? padL + innerW / 2 : padL + innerW * i / (n - 1);
     const yAt = (v) => padT + innerH - Math.min(v, vMax) / vMax * innerH;
     let d = "", started = false;
@@ -38724,6 +38724,126 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   }
   Object.assign(window, { V516ResearchProgramOverview });
 
+  // ai_strategy_loop/dashboard/frontend/v4-research-failure-autopsy-model.mjs
+  var FAILURE_LABELS = Object.freeze({
+    MIN_POSITIVE_TOTAL_PROFIT_FOLDS: "\uC591\uC218 Fold \uBD80\uC871",
+    COMBINED_AVG_PROFIT: "\uACB0\uD569 \uD3C9\uADE0 \uC190\uC775",
+    COMBINED_TOTAL_PROFIT: "\uACB0\uD569 \uCD1D\uC190\uC775",
+    MIN_TRADES_EACH_FOLD: "Fold \uCD5C\uC18C \uAC70\uB798\uC218",
+    MAX_MDD_EACH_FOLD: "MDD \uC0C1\uD55C"
+  });
+  function finite(value, fallback = 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+  function round(value, digits = 2) {
+    const factor = 10 ** digits;
+    return Math.round((finite(value) + Number.EPSILON) * factor) / factor;
+  }
+  function failureAutopsy(analysis) {
+    var _a;
+    const candidates = Array.isArray(analysis == null ? void 0 : analysis.candidates) ? analysis.candidates : [];
+    const failureCounts = {};
+    const exitMap = /* @__PURE__ */ new Map();
+    const familyMap = /* @__PURE__ */ new Map();
+    const folds = candidates.flatMap((candidate) => Array.isArray(candidate.folds) ? candidate.folds : []);
+    for (const candidate of candidates) {
+      for (const failure of candidate.development_failures || []) {
+        failureCounts[failure] = finite(failureCounts[failure]) + 1;
+      }
+      for (const exit of candidate.exits || []) {
+        const key = String(exit.exit_kind || "UNKNOWN");
+        const current2 = exitMap.get(key) || { exitKind: key, g0Count: 0, g1Count: 0, countDelta: 0, pnlDeltaKrw: 0 };
+        exitMap.set(key, {
+          exitKind: key,
+          g0Count: current2.g0Count + finite(exit.g0_count),
+          g1Count: current2.g1Count + finite(exit.g1_count),
+          countDelta: current2.countDelta + finite(exit.count_delta),
+          pnlDeltaKrw: current2.pnlDeltaKrw + finite(exit.pnl_delta_krw)
+        });
+      }
+      const familyId = String(candidate.family_id || "UNKNOWN");
+      const observed = (candidate.folds || []).some((fold) => fold.g1_metrics_observed === true);
+      const current = familyMap.get(familyId) || {
+        familyId,
+        candidateCount: 0,
+        pairedPassCount: 0,
+        developmentPassCount: 0,
+        g0Trades: 0,
+        g1Trades: 0,
+        positiveFolds: 0,
+        sumProfitPct: 0,
+        observedCandidateCount: 0,
+        maxMddPct: null
+      };
+      const candidateMdd = observed ? finite(candidate.g1_max_fold_mdd_pct) : null;
+      familyMap.set(familyId, {
+        ...current,
+        candidateCount: current.candidateCount + 1,
+        pairedPassCount: current.pairedPassCount + (candidate.paired_falsification_pass === true ? 1 : 0),
+        developmentPassCount: current.developmentPassCount + (candidate.development_rule_pass === true ? 1 : 0),
+        g0Trades: current.g0Trades + finite(candidate.g0_total_trades),
+        g1Trades: current.g1Trades + finite(candidate.g1_total_trades),
+        positiveFolds: current.positiveFolds + finite(candidate.g1_positive_fold_count),
+        sumProfitPct: current.sumProfitPct + (observed ? finite(candidate.g1_sum_total_profit_pct) : 0),
+        observedCandidateCount: current.observedCandidateCount + (observed ? 1 : 0),
+        maxMddPct: candidateMdd == null ? current.maxMddPct : Math.max((_a = current.maxMddPct) != null ? _a : candidateMdd, candidateMdd)
+      });
+    }
+    const g0Trades = candidates.reduce((sum, row) => sum + finite(row.g0_total_trades), 0);
+    const g1Trades = candidates.reduce((sum, row) => sum + finite(row.g1_total_trades), 0);
+    const reduction = g0Trades - g1Trades;
+    const failureRows = Object.entries(failureCounts).map(([code, count]) => ({ code, label: FAILURE_LABELS[code] || code, count })).sort((left, right) => right.count - left.count || left.label.localeCompare(right.label));
+    return {
+      candidateCount: candidates.length,
+      familyCount: familyMap.size,
+      pairedPassCount: finite(analysis == null ? void 0 : analysis.paired_pass_count),
+      developmentPassCount: finite(analysis == null ? void 0 : analysis.development_rule_pass_count),
+      failureCounts,
+      failureRows,
+      folds: {
+        total: folds.length,
+        observed: folds.filter((row) => row.g1_metrics_observed === true).length,
+        unobserved: folds.filter((row) => row.g1_metrics_observed !== true).length,
+        positiveProfit: folds.filter((row) => row.g1_metrics_observed === true && finite(row.g1_total_profit_pct) > 0).length,
+        averageImproved: folds.filter((row) => row.g1_metrics_observed === true && finite(row.avg_profit_pct_delta) > 0).length,
+        mddOver15: folds.filter((row) => row.g1_metrics_observed === true && finite(row.g1_mdd_pct) > 15).length
+      },
+      trades: { g0: g0Trades, g1: g1Trades, reduction, reductionPct: g0Trades ? round(reduction / g0Trades * 100) : 0 },
+      exits: [...exitMap.values()].map((row) => ({ ...row, pnlDeltaKrw: round(row.pnlDeltaKrw, 0) })).sort((left, right) => left.exitKind.localeCompare(right.exitKind)),
+      families: [...familyMap.values()].map((row) => ({ ...row, sumProfitPct: row.observedCandidateCount ? round(row.sumProfitPct) : null, maxMddPct: row.maxMddPct == null ? null : round(row.maxMddPct) })).sort((left, right) => left.familyId.localeCompare(right.familyId)),
+      candidates: candidates.map((row) => ({
+        candidateId: String(row.candidate_id || "UNKNOWN"),
+        familyId: String(row.family_id || "UNKNOWN"),
+        g1Trades: finite(row.g1_total_trades),
+        positiveFolds: finite(row.g1_positive_fold_count),
+        sumProfitPct: round(row.g1_sum_total_profit_pct),
+        maxMddPct: round(row.g1_max_fold_mdd_pct),
+        pairedPass: row.paired_falsification_pass === true,
+        developmentPass: row.development_rule_pass === true,
+        metricsObserved: (row.folds || []).some((fold) => fold.g1_metrics_observed === true),
+        failures: (row.development_failures || []).map((code) => FAILURE_LABELS[code] || code)
+      }))
+    };
+  }
+
+  // ai_strategy_loop/dashboard/frontend/v4-research-failure-autopsy.jsx
+  function _ra4Num(value, digits = 2) {
+    return value == null ? "\uBBF8\uAD00\uCE21" : Number(value).toFixed(digits);
+  }
+  function _ra4Signed(value) {
+    const number = Number(value || 0);
+    return `${number > 0 ? "+" : ""}${Math.round(number).toLocaleString("ko-KR")}`;
+  }
+  function V516ResearchFailureAutopsy({ analysis, onInspectCandidate }) {
+    const autopsy = failureAutopsy(analysis || {});
+    if (!autopsy.candidateCount) return null;
+    const stopLoss = autopsy.exits.find((row) => row.exitKind === "STOP_LOSS");
+    const takeProfit = autopsy.exits.find((row) => row.exitKind === "TAKE_PROFIT");
+    return /* @__PURE__ */ React.createElement("section", { className: "ra4-autopsy", "aria-label": "G0 G1 \uACF5\uD1B5 \uC2E4\uD328 \uBD80\uAC80" }, /* @__PURE__ */ React.createElement("header", { className: "ra4-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "ANA-04 \xB7 READ ONLY FAILURE AUTOPSY"), /* @__PURE__ */ React.createElement("h2", null, "7\uAC1C \uD6C4\uBCF4\uAC00 \uACF5\uD1B5\uC73C\uB85C \uC2E4\uD328\uD55C \uACF3")), /* @__PURE__ */ React.createElement("strong", null, "DEV ", autopsy.developmentPassCount, "/", autopsy.candidateCount, " \xB7 STOP")), /* @__PURE__ */ React.createElement("p", { className: "ra4-lede" }, "\uC0C1\uB300 \uAC1C\uC120 Fold\uAC00 \uC788\uC5B4\uB3C4 \uC808\uB300 \uC591\uC218 Fold\uC640 \uACB0\uD569 \uC190\uC775\uC774 \uBD80\uC871\uD588\uC2B5\uB2C8\uB2E4. \uC544\uB798 \uC218\uCE58\uB294 \uBD09\uC778 \uACB0\uACFC\uC758 \uC9D1\uACC4\uC774\uBA70 \uC0C8 \uAE30\uC900\uC774\uB098 \uC7AC\uC2E4\uD589 \uC9C0\uC2DC\uAC00 \uC544\uB2D9\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "ra4-kpis", role: "list", "aria-label": "\uC2E4\uD328 \uBD80\uAC80 \uD575\uC2EC \uAD00\uCE21" }, /* @__PURE__ */ React.createElement("article", { role: "listitem" }, /* @__PURE__ */ React.createElement("span", null, "\uACF5\uD1B5 Blocker"), /* @__PURE__ */ React.createElement("b", null, autopsy.failureCounts.MIN_POSITIVE_TOTAL_PROFIT_FOLDS, "/", autopsy.candidateCount), /* @__PURE__ */ React.createElement("p", null, "\uC591\uC218 Fold \uBD80\uC871")), /* @__PURE__ */ React.createElement("article", { role: "listitem" }, /* @__PURE__ */ React.createElement("span", null, "\uC591\uC218 Fold"), /* @__PURE__ */ React.createElement("b", null, autopsy.folds.positiveProfit, "/", autopsy.folds.total), /* @__PURE__ */ React.createElement("p", null, "\uAD00\uCE21 ", autopsy.folds.observed, " \xB7 \uBBF8\uAD00\uCE21 ", autopsy.folds.unobserved)), /* @__PURE__ */ React.createElement("article", { role: "listitem" }, /* @__PURE__ */ React.createElement("span", null, "\uAC70\uB798 \uAC10\uC18C"), /* @__PURE__ */ React.createElement("b", null, autopsy.trades.g0, " \u2192 ", autopsy.trades.g1), /* @__PURE__ */ React.createElement("p", null, "-", autopsy.trades.reduction, " \xB7 -", autopsy.trades.reductionPct, "%")), /* @__PURE__ */ React.createElement("article", { role: "listitem" }, /* @__PURE__ */ React.createElement("span", null, "MDD > 15%"), /* @__PURE__ */ React.createElement("b", null, autopsy.folds.mddOver15, " Fold"), /* @__PURE__ */ React.createElement("p", null, "\uC704\uD5D8 \uC0C1\uD55C \uC2E4\uD328 \uD6C4\uBCF4 ", autopsy.failureCounts.MAX_MDD_EACH_FOLD || 0, "/", autopsy.candidateCount))), /* @__PURE__ */ React.createElement("section", { className: "ra4-blockers", "aria-labelledby": "ra4-blockers-title" }, /* @__PURE__ */ React.createElement("h3", { id: "ra4-blockers-title" }, "\uACF5\uD1B5 \uC2E4\uD328 \uBE48\uB3C4"), /* @__PURE__ */ React.createElement("div", { className: "ra4-blocker-list" }, autopsy.failureRows.map((row) => /* @__PURE__ */ React.createElement("div", { key: row.code }, /* @__PURE__ */ React.createElement("span", null, row.label), /* @__PURE__ */ React.createElement("i", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("b", { style: { width: `${row.count / autopsy.candidateCount * 100}%` } })), /* @__PURE__ */ React.createElement("strong", null, row.count, "/", autopsy.candidateCount))))), /* @__PURE__ */ React.createElement("aside", { className: "ra4-interpretation" }, /* @__PURE__ */ React.createElement("b", null, "\uAD00\uCE21 \uD574\uC11D"), /* @__PURE__ */ React.createElement("span", null, "\uD3C9\uADE0 \uAC1C\uC120 Fold ", autopsy.folds.averageImproved, "/", autopsy.folds.total, "\uC640 Paired \uC2E0\uD638 ", autopsy.pairedPassCount, "/", autopsy.candidateCount, "\uB294 \uC874\uC7AC\uD558\uC9C0\uB9CC, \uC591\uC218 Fold ", autopsy.folds.positiveProfit, "/", autopsy.folds.total, "\uC640 DEV \uD1B5\uACFC 0/", autopsy.candidateCount, "\uB97C \uB4A4\uC9D1\uC9C0 \uBABB\uD569\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("details", { className: "ra4-details" }, /* @__PURE__ */ React.createElement("summary", null, /* @__PURE__ */ React.createElement("span", null, "Family\xB7Exit\xB7\uD6C4\uBCF4 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("strong", null, "\uC77D\uAE30 \uC804\uC6A9 \uC0C1\uC138")), /* @__PURE__ */ React.createElement("div", { className: "ra4-table-scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("table", { className: "ra4-family-table" }, /* @__PURE__ */ React.createElement("caption", null, "Family \uC694\uC57D \xB7 \uBBF8\uAD00\uCE21\uC744 0% \uC131\uACFC\uB85C \uD574\uC11D\uD558\uC9C0 \uC54A\uC74C"), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Family"), /* @__PURE__ */ React.createElement("th", null, "\uD6C4\uBCF4"), /* @__PURE__ */ React.createElement("th", null, "\uAC70\uB798 G0\u2192G1"), /* @__PURE__ */ React.createElement("th", null, "\uC591\uC218 Fold"), /* @__PURE__ */ React.createElement("th", null, "G1 \uACB0\uD569\uC190\uC775"), /* @__PURE__ */ React.createElement("th", null, "\uCD5C\uB300 MDD"), /* @__PURE__ */ React.createElement("th", null, "Paired"), /* @__PURE__ */ React.createElement("th", null, "DEV"))), /* @__PURE__ */ React.createElement("tbody", null, autopsy.families.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.familyId }, /* @__PURE__ */ React.createElement("th", null, row.familyId.replaceAll("_", " ")), /* @__PURE__ */ React.createElement("td", null, row.candidateCount), /* @__PURE__ */ React.createElement("td", null, row.g0Trades, "\u2192", row.g1Trades), /* @__PURE__ */ React.createElement("td", null, row.positiveFolds), /* @__PURE__ */ React.createElement("td", null, row.sumProfitPct == null ? "\uBBF8\uAD00\uCE21" : `${_ra4Num(row.sumProfitPct)}%`), /* @__PURE__ */ React.createElement("td", null, row.maxMddPct == null ? "\uBBF8\uAD00\uCE21" : `${_ra4Num(row.maxMddPct)}%`), /* @__PURE__ */ React.createElement("td", null, row.pairedPassCount, "/", row.candidateCount), /* @__PURE__ */ React.createElement("td", { className: "negative" }, row.developmentPassCount, "/", row.candidateCount)))))), /* @__PURE__ */ React.createElement("div", { className: "ra4-detail-grid" }, /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h3", null, "Exit attribution"), /* @__PURE__ */ React.createElement("p", { className: "ra4-exit-note" }, "\uC190\uC808 ", (stopLoss == null ? void 0 : stopLoss.countDelta) || 0, "\uAC74 \xB7 \uC775\uC808 ", (takeProfit == null ? void 0 : takeProfit.countDelta) || 0, "\uAC74. \uAC70\uB798 \uAC10\uC18C\uB9CC\uC73C\uB85C \uAC1C\uC120\uC744 \uC8FC\uC7A5\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", { className: "ra4-table-scroll", tabIndex: 0 }, /* @__PURE__ */ React.createElement("table", null, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Exit"), /* @__PURE__ */ React.createElement("th", null, "G0\u2192G1"), /* @__PURE__ */ React.createElement("th", null, "\uAC70\uB798 \u0394"), /* @__PURE__ */ React.createElement("th", null, "\uC190\uC775 \u0394 \uC6D0"))), /* @__PURE__ */ React.createElement("tbody", null, autopsy.exits.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.exitKind }, /* @__PURE__ */ React.createElement("th", null, row.exitKind), /* @__PURE__ */ React.createElement("td", null, row.g0Count, "\u2192", row.g1Count), /* @__PURE__ */ React.createElement("td", null, row.countDelta), /* @__PURE__ */ React.createElement("td", { className: row.pnlDeltaKrw >= 0 ? "positive" : "negative" }, _ra4Signed(row.pnlDeltaKrw)))))))), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h3", null, "\uD6C4\uBCF4\uBCC4 \uADFC\uAC70 \uC5F4\uAE30"), /* @__PURE__ */ React.createElement("div", { className: "ra4-candidates" }, autopsy.candidates.map((row) => /* @__PURE__ */ React.createElement("button", { type: "button", key: row.candidateId, onClick: () => onInspectCandidate(row.candidateId) }, /* @__PURE__ */ React.createElement("span", null, row.familyId.replaceAll("_", " ")), /* @__PURE__ */ React.createElement("b", null, row.metricsObserved ? `${row.positiveFolds}/4 \uC591\uC218 \xB7 ${_ra4Num(row.sumProfitPct)}%` : "\uBBF8\uAD00\uCE21 \xB7 NO_TRADES"), /* @__PURE__ */ React.createElement("em", null, row.pairedPass ? "PAIR SIGNAL" : "PAIR STOP", " \xB7 DEV STOP"))))))), /* @__PURE__ */ React.createElement("footer", null, "persistence none \xB7 threshold \uBCC0\uACBD \uC5C6\uC74C \xB7 G2/Holdout/\uC790\uB3D9\uCC44\uD0DD \uAD8C\uD55C \uC5C6\uC74C"));
+  }
+  Object.assign(window, { V516ResearchFailureAutopsy });
+
   // ai_strategy_loop/dashboard/frontend/v4-research-result.jsx
   var { useCallback: useCallback_rr3, useEffect: useEffect_rr3, useState: useState_rr3 } = React;
   var _RR3_FAILURES = Object.freeze({
@@ -38791,7 +38911,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     const platform = data.platform || {};
     const decision = data.decision || {};
     const selected2 = candidates.find((row) => row.candidate_id === selectedId) || candidates[0];
-    return /* @__PURE__ */ React.createElement("div", { className: "rr3-gateboard rr4-shell" }, /* @__PURE__ */ React.createElement(_Rr4MissionControl, { platform, decision, detailOpen, onToggleDetail: () => setDetailOpen((open) => !open) }), /* @__PURE__ */ React.createElement("details", { className: "rr4-evidence", id: "rr4-evidence-detail", open: detailOpen, onToggle: (event) => setDetailOpen(event.currentTarget.open) }, /* @__PURE__ */ React.createElement("summary", null, /* @__PURE__ */ React.createElement("span", null, "UX-03 \uBD09\uC778 \uD310\uC815 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("strong", null, detailOpen ? "\uD310\uC815 \uADFC\uAC70 \uC811\uAE30" : "\uD310\uC815 \uADFC\uAC70 \uD3BC\uCE58\uAE30")), /* @__PURE__ */ React.createElement("header", { className: "rr3-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "UX-03 \xB7 SEALED DECISION / READ ONLY"), /* @__PURE__ */ React.createElement("h2", { id: "rr3-title" }, "G0 \u2192 G1 \uC5F0\uAD6C \uAC8C\uC774\uD2B8\uBCF4\uB4DC")), /* @__PURE__ */ React.createElement("strong", null, decision.holdout_status || "UNKNOWN")), /* @__PURE__ */ React.createElement("div", { className: "rr3-rails" }, /* @__PURE__ */ React.createElement(_Rr3Rail, { label: "PLATFORM GATE", value: `${platform.valid_jobs || 0}/${platform.total_jobs || 0} VALID`, detail: `SUCCESS ${platform.success_jobs || 0} \xB7 NO_TRADES ${platform.no_trades_jobs || 0} \xB7 source/bundle ${platform.source_match_jobs || 0}/${platform.analysis_bundle_jobs || 0}`, tone: "valid" }), /* @__PURE__ */ React.createElement(_Rr3Rail, { label: "ECONOMIC GATE", value: `${decision.development_pass_count || 0}/${decision.candidate_count || 0} \xB7 STOP`, detail: "\uC2E4\uD589\uC740 \uC131\uACF5\uD588\uC9C0\uB9CC \uC808\uB300 \uAC1C\uBC1C \uAE30\uC900\uC744 \uD1B5\uACFC\uD55C \uC804\uB7B5\uC740 \uC5C6\uC2B5\uB2C8\uB2E4.", tone: "stop" }), /* @__PURE__ */ React.createElement(_Rr3Rail, { label: "PAIRED SIGNAL", value: `${decision.paired_pass_count || 0}/${decision.candidate_count || 0}`, detail: "\uBD80\uBAA8 \uB300\uBE44 \uAD6C\uC870 \uC2E0\uD638\uC77C \uBFD0 \uC2B9\uACA9\xB7\uC218\uC775\uC131 \uC99D\uAC70\uAC00 \uC544\uB2D9\uB2C8\uB2E4.", tone: "signal" })), /* @__PURE__ */ React.createElement("div", { className: "rr3-lock", role: "status" }, /* @__PURE__ */ React.createElement("b", null, "NEXT \xB7 ", decision.next_gate || "STOP"), /* @__PURE__ */ React.createElement("span", null, "G2 \uAE08\uC9C0 \xB7 Holdout \uBBF8\uAC1C\uBD09 \xB7 \uC790\uB3D9\uCC44\uD0DD \uBD88\uAC00 \xB7 DEVELOPMENT ONLY")), /* @__PURE__ */ React.createElement("div", { className: "rr3-body" }, /* @__PURE__ */ React.createElement("nav", { className: "rr3-candidates", "aria-label": "G1 \uD6C4\uBCF4 \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("h3", null, "7 candidates"), candidates.map((row) => /* @__PURE__ */ React.createElement("button", { type: "button", key: row.candidate_id, "aria-pressed": row.candidate_id === selectedId, onClick: () => setSelectedId(row.candidate_id) }, /* @__PURE__ */ React.createElement("span", null, _rr3CandidateLabel(row)), /* @__PURE__ */ React.createElement("b", null, row.g1_total_trades, " trades"), /* @__PURE__ */ React.createElement("em", null, row.paired_falsification_pass ? "PAIR SIGNAL" : "PAIR STOP", " \xB7 DEV STOP")))), selected2 && /* @__PURE__ */ React.createElement(_Rr3CandidateDetail, { candidate: selected2 })), /* @__PURE__ */ React.createElement("footer", null, "Evidence ", String(data.evidence && data.evidence[1] && data.evidence[1].sha256 || "unavailable").slice(0, 16), "\u2026 \xB7 persistence none \xB7 \uACBD\uC81C \uC2E4\uD328\uB97C \uC2E4\uD589 \uC2E4\uD328\uB85C \uBC14\uAFB8\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.")));
+    return /* @__PURE__ */ React.createElement("div", { className: "rr3-gateboard rr4-shell" }, /* @__PURE__ */ React.createElement(_Rr4MissionControl, { platform, decision, detailOpen, onToggleDetail: () => setDetailOpen((open) => !open) }), /* @__PURE__ */ React.createElement(V516ResearchFailureAutopsy, { analysis: data.analysis, onInspectCandidate: (candidateId) => {
+      setSelectedId(candidateId);
+      setDetailOpen(true);
+    } }), /* @__PURE__ */ React.createElement("details", { className: "rr4-evidence", id: "rr4-evidence-detail", open: detailOpen, onToggle: (event) => setDetailOpen(event.currentTarget.open) }, /* @__PURE__ */ React.createElement("summary", null, /* @__PURE__ */ React.createElement("span", null, "UX-03 \uBD09\uC778 \uD310\uC815 \uADFC\uAC70"), /* @__PURE__ */ React.createElement("strong", null, detailOpen ? "\uD310\uC815 \uADFC\uAC70 \uC811\uAE30" : "\uD310\uC815 \uADFC\uAC70 \uD3BC\uCE58\uAE30")), /* @__PURE__ */ React.createElement("header", { className: "rr3-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", null, "UX-03 \xB7 SEALED DECISION / READ ONLY"), /* @__PURE__ */ React.createElement("h2", { id: "rr3-title" }, "G0 \u2192 G1 \uC5F0\uAD6C \uAC8C\uC774\uD2B8\uBCF4\uB4DC")), /* @__PURE__ */ React.createElement("strong", null, decision.holdout_status || "UNKNOWN")), /* @__PURE__ */ React.createElement("div", { className: "rr3-rails" }, /* @__PURE__ */ React.createElement(_Rr3Rail, { label: "PLATFORM GATE", value: `${platform.valid_jobs || 0}/${platform.total_jobs || 0} VALID`, detail: `SUCCESS ${platform.success_jobs || 0} \xB7 NO_TRADES ${platform.no_trades_jobs || 0} \xB7 source/bundle ${platform.source_match_jobs || 0}/${platform.analysis_bundle_jobs || 0}`, tone: "valid" }), /* @__PURE__ */ React.createElement(_Rr3Rail, { label: "ECONOMIC GATE", value: `${decision.development_pass_count || 0}/${decision.candidate_count || 0} \xB7 STOP`, detail: "\uC2E4\uD589\uC740 \uC131\uACF5\uD588\uC9C0\uB9CC \uC808\uB300 \uAC1C\uBC1C \uAE30\uC900\uC744 \uD1B5\uACFC\uD55C \uC804\uB7B5\uC740 \uC5C6\uC2B5\uB2C8\uB2E4.", tone: "stop" }), /* @__PURE__ */ React.createElement(_Rr3Rail, { label: "PAIRED SIGNAL", value: `${decision.paired_pass_count || 0}/${decision.candidate_count || 0}`, detail: "\uBD80\uBAA8 \uB300\uBE44 \uAD6C\uC870 \uC2E0\uD638\uC77C \uBFD0 \uC2B9\uACA9\xB7\uC218\uC775\uC131 \uC99D\uAC70\uAC00 \uC544\uB2D9\uB2C8\uB2E4.", tone: "signal" })), /* @__PURE__ */ React.createElement("div", { className: "rr3-lock", role: "status" }, /* @__PURE__ */ React.createElement("b", null, "NEXT \xB7 ", decision.next_gate || "STOP"), /* @__PURE__ */ React.createElement("span", null, "G2 \uAE08\uC9C0 \xB7 Holdout \uBBF8\uAC1C\uBD09 \xB7 \uC790\uB3D9\uCC44\uD0DD \uBD88\uAC00 \xB7 DEVELOPMENT ONLY")), /* @__PURE__ */ React.createElement("div", { className: "rr3-body" }, /* @__PURE__ */ React.createElement("nav", { className: "rr3-candidates", "aria-label": "G1 \uD6C4\uBCF4 \uC120\uD0DD" }, /* @__PURE__ */ React.createElement("h3", null, "7 candidates"), candidates.map((row) => /* @__PURE__ */ React.createElement("button", { type: "button", key: row.candidate_id, "aria-pressed": row.candidate_id === selectedId, onClick: () => setSelectedId(row.candidate_id) }, /* @__PURE__ */ React.createElement("span", null, _rr3CandidateLabel(row)), /* @__PURE__ */ React.createElement("b", null, row.g1_total_trades, " trades"), /* @__PURE__ */ React.createElement("em", null, row.paired_falsification_pass ? "PAIR SIGNAL" : "PAIR STOP", " \xB7 DEV STOP")))), selected2 && /* @__PURE__ */ React.createElement(_Rr3CandidateDetail, { candidate: selected2 })), /* @__PURE__ */ React.createElement("footer", null, "Evidence ", String(data.evidence && data.evidence[1] && data.evidence[1].sha256 || "unavailable").slice(0, 16), "\u2026 \xB7 persistence none \xB7 \uACBD\uC81C \uC2E4\uD328\uB97C \uC2E4\uD589 \uC2E4\uD328\uB85C \uBC14\uAFB8\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.")));
   }
   Object.assign(window, { V516ResearchResultGateboard });
 
