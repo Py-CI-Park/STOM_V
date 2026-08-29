@@ -4,7 +4,11 @@
 >
 > SYS-04 기능 commit: `2d73a9f7`
 >
-> 정본 병합 SHA: 문서 병합 후 이 문서에 확정
+> SYS-04 문서 commit: `4b1ca309`
+>
+> 재출발 정본 병합: `05ab7df2`
+>
+> 파이프라인 정본 병합: `2a221586`
 >
 > push: 하지 않음
 
@@ -13,7 +17,7 @@
 ## 0. 30초 요약
 
 ```text
-SYS-04              COMPLETE
+SYS-04              COMPLETE @ 2a221586
 Fast Gate           7,928 PASS · 27 SKIP · 23m22s
 Slow Gate           24 PASS · 19m04s
 경제 후보           0/7 STOP
@@ -60,7 +64,7 @@ if (Test-Path -LiteralPath $dbPath) {
 codex/process-research-res-04-hypothesis-review
 ```
 
-정본 `loop/process-research-pipeline`의 SYS-04 최종 병합 SHA에서 생성한다.
+정본 `loop/process-research-pipeline` @ `2a221586` 또는 그 후속 문서 봉인 SHA에서 생성한다.
 
 ---
 

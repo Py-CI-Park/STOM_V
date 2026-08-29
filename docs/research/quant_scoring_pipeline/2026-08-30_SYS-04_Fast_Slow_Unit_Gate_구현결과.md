@@ -4,6 +4,8 @@
 >
 > 기능 커밋: `2d73a9f7`
 >
+> 문서 커밋: `4b1ca309` · 재출발 병합: `05ab7df2` · 파이프라인 병합: `2a221586`
+>
 > 작업 브랜치: `codex/process-research-sys-04-suite-performance`
 >
 > 연구 실행: 없음 · G2: 없음 · Holdout: `SEALED_NOT_TOUCHED`
@@ -42,6 +44,7 @@ Holdout ............... SEALED_NOT_TOUCHED
 | 연구 실행 | **NONE** | 코드/테스트 성숙화만 수행 |
 | 보호 DB | **주의** | main worktree에 0-byte test artifact 1개 잔존 |
 | 공식 review-work | **미실행** | 무위임 경계로 5-agent review 불가, 로컬 검토만 수행 |
+| 정본 통합 | **PASS** | restart `05ab7df2` → pipeline `2a221586` |
 
 ---
 
