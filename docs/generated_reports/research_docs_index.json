@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-29T12:59:34.995901+00:00",
-  "source_fingerprint": "359f60a0808683967d866a502f49021d79444733b4b365eb9f21bc991c397abb",
+  "generated_at": "2026-08-29T13:02:59.267732+00:00",
+  "source_fingerprint": "25ce0221e18d05b2dfc5da77cfb7b54669a45c461d6323b826707c4903c078ad",
   "count": 1092,
   "docs": [
     {
@@ -7106,7 +7106,7 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md",
       "title": "Process Research Pipeline 재출발 · 대시보드/연구 성숙화 마스터플랜 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T12:58:37.684702+00:00",
+      "updated_at": "2026-08-29T13:00:54.945802+00:00",
       "size": 25947
     },
     {
@@ -7239,8 +7239,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-29_전체완료단계_남은단계_필수성_연구상태_종합검토.md",
       "title": "Process Research 전체 완료 단계·남은 단계·필수성·연구 상태 종합 검토",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T12:58:37.678675+00:00",
-      "size": 5490
+      "updated_at": "2026-08-29T13:01:23.368012+00:00",
+      "size": 5492
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
@@ -7372,8 +7372,8 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-29_COMPACT_이후_합리적_권장순서.md",
       "title": "핸드오프 — Compact 이후 합리적 권장 순서",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T12:58:37.680698+00:00",
-      "size": 2705
+      "updated_at": "2026-08-29T13:01:23.364964+00:00",
+      "size": 2754
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-29_S9_완료.md",
@@ -7393,7 +7393,7 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-29_SYS-03_완료.md",
       "title": "핸드오프 — SYS-03 Trade-path Ordering 완료와 SYS-04 재개 지점",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T08:54:24.174164+00:00",
+      "updated_at": "2026-08-29T13:00:50.488716+00:00",
       "size": 882
     },
     {
@@ -7407,7 +7407,7 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T12:58:37.682704+00:00",
+      "updated_at": "2026-08-29T13:00:54.956316+00:00",
       "size": 17004
     },
     {

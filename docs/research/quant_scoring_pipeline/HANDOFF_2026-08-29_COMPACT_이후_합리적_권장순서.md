@@ -4,7 +4,9 @@
 >
 > 작업 폴더: `C:\System_Trading\STOM\STOM_V.wt-process-research-restart`
 >
-> 기준 정본: `loop/process-research-pipeline` @ `c6c2a50e`
+> 현재 정본: `loop/process-research-pipeline` @ `35bad5da`
+>
+> 문서 커밋: `3f85dae3` · 재출발 병합: `b34ad4cd` · 파이프라인 병합: `35bad5da`
 >
 > 종합 검토: `2026-08-29_전체완료단계_남은단계_필수성_연구상태_종합검토.md`
 >
@@ -101,7 +103,7 @@ python scripts/verify_nonrelease_sync.py
 
 ```text
 branch: loop/process-research-pipeline
-HEAD: compact handoff 통합 commit 또는 그 후속
+HEAD: 35bad5da 또는 그 후속
 dirty: tmap feedback 1개만 허용
 ```
 
