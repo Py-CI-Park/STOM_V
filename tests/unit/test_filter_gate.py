@@ -40,6 +40,7 @@ from ai_strategy_loop.brain.filter_gate import (  # noqa: E402
 from ai_strategy_loop.brain.generator import generate_strategy  # noqa: E402
 from ai_strategy_loop.brain.prompt import build_messages  # noqa: E402
 from ai_strategy_loop.config import LoopConfig  # noqa: E402
+from tests.seed_db_guard import open_seed_database  # noqa: E402
 
 # 실제 시드 매수 코드를 담은 루프 DB(읽기 전용).
 _SEED_DB = os.path.join(PROJECT_ROOT, "ai_strategy_loop", "state", "loop_strategies.db")
@@ -112,14 +113,11 @@ def test_empty_code():
 
 def test_real_seed_buy_has_many_categories():
     # 실측: 실제 인간 시드 매수 코드는 시드 게이팅 구조상 >= 8 범주를 충족한다.
-    assert os.path.exists(_SEED_DB), f"seed DB 없음: {_SEED_DB}"
-    con = sqlite3.connect(_SEED_DB)
-    try:
-        cur = con.cursor()
-        cur.execute('SELECT "전략코드" FROM stockbuy WHERE "index" = ?', (_SEED_BUY_INDEX,))
-        row = cur.fetchone()
-    finally:
-        con.close()
+    with open_seed_database(_SEED_DB, required_tables=("stockbuy",)) as con:
+        row = con.execute(
+            'SELECT "전략코드" FROM stockbuy WHERE "index" = ?',
+            (_SEED_BUY_INDEX,),
+        ).fetchone()
     assert row is not None, f"시드 매수 전략 없음: {_SEED_BUY_INDEX}"
     seed_code = row[0]
     ncat = count_filter_categories(seed_code)

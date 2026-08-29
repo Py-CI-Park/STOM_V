@@ -3733,7 +3733,7 @@ def _read_strategy_code(name: str, kind: str) -> Optional[str]:
     table = "stockbuy" if kind == "buy" else "stocksell"
     db = str(bootstrap.LOOP_DB_STRATEGY)
     try:
-        con = sqlite3.connect(db)
+        con = sqlite3.connect("file:" + os.path.abspath(db).replace("\\", "/") + "?mode=ro", uri=True)
         try:
             cur = con.cursor()
             cur.execute(f"PRAGMA table_info({table})")
@@ -3762,7 +3762,7 @@ def _strategy_gist(name: str, max_len: int = 90) -> str:
 
     db = str(bootstrap.LOOP_DB_STRATEGY)
     try:
-        con = sqlite3.connect(db)
+        con = sqlite3.connect("file:" + os.path.abspath(db).replace("\\", "/") + "?mode=ro", uri=True)
         try:
             cur = con.cursor()
             cur.execute('PRAGMA table_info(stockbuy)')
@@ -3793,7 +3793,7 @@ def _print_strategy_head(name: str, lines: int = 6) -> None:
 
     db = str(bootstrap.LOOP_DB_STRATEGY)
     try:
-        con = sqlite3.connect(db)
+        con = sqlite3.connect("file:" + os.path.abspath(db).replace("\\", "/") + "?mode=ro", uri=True)
         try:
             cur = con.cursor()
             cur.execute('PRAGMA table_info(stockbuy)')
