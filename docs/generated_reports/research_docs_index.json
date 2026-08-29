@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-29T08:52:49.103607+00:00",
-  "source_fingerprint": "ff767af148630c295627c36cccaf9717e83a8ab14736b4359c4f637f58604f0c",
+  "generated_at": "2026-08-29T08:55:26.049772+00:00",
+  "source_fingerprint": "6475b51a6816a0252ad5283ac7742aa82573877138c9ea319690eec0a309bdc7",
   "count": 1090,
   "docs": [
     {
@@ -7106,8 +7106,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md",
       "title": "Process Research Pipeline 재출발 · 대시보드/연구 성숙화 마스터플랜 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T08:51:48.210827+00:00",
-      "size": 25696
+      "updated_at": "2026-08-29T08:54:24.178657+00:00",
+      "size": 25837
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md",
@@ -7225,7 +7225,7 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-29_SYS-03_Trade_Path_Ordering_구현결과.md",
       "title": "SYS-03 Trade-path Completion Ordering 구현 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T08:51:48.199757+00:00",
+      "updated_at": "2026-08-29T08:54:00.979100+00:00",
       "size": 1570
     },
     {
@@ -7372,15 +7372,15 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-29_SYS-02_완료.md",
       "title": "핸드오프 — SYS-02 Test Isolation 완료와 SYS-03 재개 지점",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T08:51:48.214987+00:00",
+      "updated_at": "2026-08-29T08:54:00.986612+00:00",
       "size": 2173
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-29_SYS-03_완료.md",
       "title": "핸드오프 — SYS-03 Trade-path Ordering 완료와 SYS-04 재개 지점",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T08:51:48.203459+00:00",
-      "size": 892
+      "updated_at": "2026-08-29T08:54:24.174164+00:00",
+      "size": 882
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-29_UX-05_완료.md",
@@ -7393,7 +7393,7 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T08:51:48.206632+00:00",
+      "updated_at": "2026-08-29T08:54:01.002156+00:00",
       "size": 16748
     },
     {
