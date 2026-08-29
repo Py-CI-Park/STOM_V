@@ -12,7 +12,9 @@
 
  > **2026-08-29 실행 갱신:** G1 플랫폼 28/28 PASS와 Development 0/7 STOP을 유지한다. SYS-02 이후 SYS-03 Trade-path Ordering `b63fc885`을 완료했다. ledger 확정 전 success 공개를 barrier 테스트로 제거했다. 다음은 SYS-04 full-suite 성능 분리이고 G2/Holdout은 금지다.
 
- > **Compact 재개 정본:** `HANDOFF_2026-08-29_COMPACT_이후_합리적_권장순서.md`. 이후는 SYS-04 성능 분리 → 새 구조 가설 검토 → RES-04 사전등록 순서로 진행한다.
+> **Compact 재개 정본:** `HANDOFF_2026-08-29_COMPACT_이후_합리적_권장순서.md`. 이후는 SYS-04 성능 분리 → 새 구조 가설 검토 → RES-04 사전등록 순서로 진행한다.
+
+ > **2026-08-30 SYS-04 완료:** 기능 `2d73a9f7`. fast Gate `7,928 PASS · 27 SKIP · 23m22s`, slow Gate `24 PASS · 19m04s`. assertion 삭제 없이 18~19% 장시간 authority 그룹을 분리했다. 다음은 `HANDOFF_2026-08-30_SYS-04_완료_새구조가설_RESTART.md`에 따라 새 구조 가설 검토이며, 연구 실행은 아직 금지다.
 
 ---
 
@@ -23,7 +25,7 @@
 | 직접 사용하면서 하나씩 고치는 것이 좋은가 | **예. 단, 임의 페이지 순회가 아니라 작은 종단 슬라이스로 진행한다.** | 화면만 고치면 실제 연구 흐름이 검증되지 않고, 연구만 돌리면 실패 원인이 다시 흩어진다. 한 번에 `실행 → 결과 번들 → 분석 → 다음 행동`을 완성해야 한다. |
 | 현재 프로젝트는 실패한 것인가 | **경제적 연구는 아직 성공하지 못했다. 플랫폼은 상당 부분 구현됐지만 반복 연구는 미완료다.** | Robust 후보 0개, OOS 미검증, 자동채택 금지다. 동시에 Census·시드·공식엔진 연결·분석 자산은 재사용 가능하다. |
 | 백테스트 후 결과 분석을 더 고도화할 수 있는가 | **가능성이 높다.** | 이미 다수 분석 API와 화면이 존재한다. 새로 처음 만드는 것보다 흩어진 분석을 하나의 불변 결과 번들과 결정 화면으로 묶는 일이 핵심이다. |
- | 지금 가장 먼저 할 일 | **SYS-03을 정본에 통합한 뒤 SYS-04에서 89분 전체 suite를 fast/slow Gate로 분리한다.** | ordering flake는 결정적으로 고정됐고 개발 피드백 시간이 다음 병목이다. |
+| 지금 가장 먼저 할 일 | **SYS-04 완료 후 ANA-04를 근거로 새 구조 가설을 비교한다.** | fast/slow Gate는 완료됐고 새 연구는 사전등록 전 가설 검토가 먼저다. |
 | D4/BO를 바로 시작할 수 있는가 | **아니다.** | 실제 Controls, 다기간 fold, posterior를 통과한 `BO_ELIGIBLE` Cell이 0개다. |
 | 대시보드 리디자인부터 크게 할 것인가 | **아니다.** | 첫 종단 슬라이스에서 실제 데이터로 사용성 문제를 확인한 뒤 정보구조를 단계적으로 바꾼다. |
 
@@ -519,7 +521,8 @@
 ### 12.3 저장소 검증
 
 ```powershell
-python -m pytest tests/unit/ -q
+python -m pytest tests/unit/ -m 'not slow_suite' -q
+python -m pytest tests/unit/ -m slow_suite -q
 python scripts/verify_nonrelease_sync.py
 python scripts/smoke_offline_gui.py --branch codex/process-research-pipeline-restart --version V2.79 --offline --log-dir .omx/logs/process-research-restart
 python scripts/verify_pyd_gui_contract.py --branch codex/process-research-pipeline-restart --version V2.79 --upstream-ref STOM_Version_2 --manifest .omx/logs/process-research-restart/verify_pyd_gui_contract.json --log-dir .omx/logs/process-research-restart
