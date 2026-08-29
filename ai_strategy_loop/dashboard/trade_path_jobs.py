@@ -17,7 +17,6 @@ from ai_strategy_loop.dashboard.research_sidecar import ResearchSidecar
 from ai_strategy_loop.dashboard.trade_path_ledger import TradePathLedger
 from ai_strategy_loop.dashboard.trade_path_source import ResolvedTradePathSource
 
-
 # P4 — 메모리에 유지하는 완료 분석 결과 상한. 초과분은 결과만 비우고
 #   sidecar 에서 투명 복원한다(get 이 자동 재적재).
 _MAX_RESULTS_IN_MEMORY = 8
@@ -117,7 +116,6 @@ class TradePathCoordinator:
                 payload={"analysis_id": analysis_id, "reason": str(exc)},
             )
         else:
-            self._replace(analysis_id, status="success", progress=1.0, result=result)
             try:
                 self._sidecar.ingest_analysis(result)
             except (OSError, ValueError) as exc:  # 저장 실패는 분석 성공을 되돌리지 않는다.
@@ -126,16 +124,21 @@ class TradePathCoordinator:
                     payload={"analysis_id": analysis_id, "reason": str(exc)},
                 )
             self._evict_over_cap(keep=analysis_id)
-            self._ledger.append(
-                event="analysis_success",
-                authority="diagnostic",
-                payload={
-                    "analysis_id": analysis_id,
-                    "source": asdict(result.source),
-                    "summary": asdict(result.totals),
-                    "exclusion_reasons": sorted({row.reason for row in result.exclusions}),
-                },
-            )
+            try:
+                self._ledger.append(
+                    event="analysis_success",
+                    authority="diagnostic",
+                    payload={
+                        "analysis_id": analysis_id,
+                        "source": asdict(result.source),
+                        "summary": asdict(result.totals),
+                        "exclusion_reasons": sorted({row.reason for row in result.exclusions}),
+                    },
+                )
+            except OSError as exc:
+                self._replace(analysis_id, status="error", progress=1.0, error=f"analysis_success_ledger_failed: {exc}", result=result)
+                return
+            self._replace(analysis_id, status="success", progress=1.0, result=result)
 
     def _replace(self, analysis_id: str, **changes: object) -> None:
         with self._lock:
