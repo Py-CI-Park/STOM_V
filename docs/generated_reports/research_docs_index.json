@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-29T13:02:59.267732+00:00",
-  "source_fingerprint": "25ce0221e18d05b2dfc5da77cfb7b54669a45c461d6323b826707c4903c078ad",
-  "count": 1092,
+  "generated_at": "2026-08-29T16:03:38.409199+00:00",
+  "source_fingerprint": "ab49206cdcf4359ef6181dcaa4e1911a225ee3965574daff86dcac2c66a5d981",
+  "count": 1094,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7106,8 +7106,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md",
       "title": "Process Research Pipeline 재출발 · 대시보드/연구 성숙화 마스터플랜 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T13:00:54.945802+00:00",
-      "size": 25947
+      "updated_at": "2026-08-29T16:02:42.932460+00:00",
+      "size": 26236
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md",
@@ -7241,6 +7241,13 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-08-29T13:01:23.368012+00:00",
       "size": 5492
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-08-30_SYS-04_Fast_Slow_Unit_Gate_구현결과.md",
+      "title": "SYS-04 Fast/Slow Unit Gate 구현 결과",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-29T16:02:42.923819+00:00",
+      "size": 5754
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
@@ -7404,11 +7411,18 @@
       "size": 3493
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-30_SYS-04_완료_새구조가설_RESTART.md",
+      "title": "핸드오프 — SYS-04 완료 후 새 구조 가설 검토 재개",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-08-29T16:02:42.926826+00:00",
+      "size": 3233
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T13:00:54.956316+00:00",
-      "size": 17004
+      "updated_at": "2026-08-29T16:02:42.929453+00:00",
+      "size": 17249
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",

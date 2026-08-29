@@ -17,12 +17,15 @@
 
 ## CONVENTIONS
 - Prefer focused tests for changed contracts, then run `pytest tests/unit/ -q` for branch propagation/sync work.
+- Use `-m "not slow_suite"` for the SYS-04 commit Gate and `-m slow_suite` for the 24 measured authority contracts; do not delete or weaken the slow assertions.
 - Keep fixtures minimal and deterministic; avoid depending on live broker state or mutable production DBs.
 - Do not edit `__pycache__` or generated cache directories.
 - If a script contract changes, update the matching unit tests in the same change.
 
 ## COMMANDS
 ```powershell
+pytest tests/unit/ -m "not slow_suite" -q
+pytest tests/unit/ -m slow_suite -q
 pytest tests/unit/ -q
 pytest tests/unit/test_verify_nonrelease_sync.py tests/unit/test_verify_pyd_gui_contract.py tests/unit/test_smoke_offline_gui.py -q
 pytest tests/integration/ -q
