@@ -9,8 +9,10 @@
 
 | 순서 | 문서 | 내용 |
 |---:|---|---|
-| **최신 0** | **`2026-08-29_S9_Chrome_Keyboard_Accessibility_검증결과.md`** | **★ 접근성 최신 정본** — Chrome 실제 Tab·Shift+Tab·Enter·Space·focus-visible·1280/620 PASS |
-| **최신 0.1** | **`HANDOFF_2026-08-29_S9_완료.md`** | **★ 재개 정본** — S9 receipt·코드 무변경·SYS-02 테스트 격리·금지 경계 |
+| **최신 0** | **`2026-08-29_SYS-02_Test_Isolation_구현결과.md`** | **★ 시스템 최신 정본** — seed DB read-only·full unit 7,946 PASS·read path DB 생성 제거 |
+| **최신 0.1** | **`HANDOFF_2026-08-29_SYS-02_완료.md`** | **★ 재개 정본** — SYS-02 구현 SHA·SYS-03 trade-path ordering·금지 경계 |
+| **최신 0.2** | **`2026-08-29_S9_Chrome_Keyboard_Accessibility_검증결과.md`** | **S9 정본** — Chrome 실제 Tab·Shift+Tab·Enter·Space·focus-visible PASS |
+| **최신 0.3** | **`HANDOFF_2026-08-29_S9_완료.md`** | **직전 핸드오프** — SYS-02 완료 핸드오프가 재개 지점을 대체 |
 | **최신 0.2** | **`2026-08-29_UX-05_Current_vs_Historical_구현결과.md`** | **UX-05 정본** — 기록·성과 Current Canonical 우선·Historical-only·verified-at |
 | **최신 0.3** | **`HANDOFF_2026-08-29_UX-05_완료.md`** | **직전 핸드오프** — S9 완료 핸드오프가 재개 지점을 대체 |
 | **최신 0.4** | **`2026-08-29_ANA-04_Failure_Autopsy_구현결과.md`** | **ANA-04 정본** — 7후보·5Family·28Fold·Exit 공통 실패·후보 근거 |

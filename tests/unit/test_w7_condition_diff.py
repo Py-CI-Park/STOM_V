@@ -17,6 +17,7 @@ import pytest
 
 from ai_strategy_loop.controller import condition_diff as cd
 from ai_strategy_loop.labeling import champion_clauses as cc
+from tests.seed_db_guard import open_seed_database
 
 LEFT = """\
 매수 = True
@@ -153,13 +154,11 @@ def test_pick_pairs_keeps_only_our_namespace():
 @pytest.mark.parametrize("key", sorted(cc.DSL_ANCHOR))
 def test_every_anchor_is_classifiable_on_the_real_champion(key):
     """실제 챔피언 매수식에서 모든 앵커가 active 로 읽혀야 한다."""
-    import sqlite3
-    con = sqlite3.connect("_database/strategy.db")
-    try:
+    with open_seed_database(
+        "_database/strategy.db", required_tables=("stockbuy",)
+    ) as con:
         row = con.execute('SELECT 전략코드 FROM stockbuy WHERE "index"=?',
                           ("Tick_B_902_905",)).fetchone()
-    finally:
-        con.close()
     if row is None:
         pytest.skip("챔피언 매수식이 이 환경에 없다")
     assert cd.clause_state(str(row[0]))[key] == "active"

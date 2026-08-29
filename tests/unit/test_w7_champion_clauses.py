@@ -17,6 +17,7 @@ import pytest
 
 from ai_strategy_loop.labeling import champion_clauses as cc
 from ai_strategy_loop.labeling.verify_human_strategy import _mask_902, _mask_905
+from tests.seed_db_guard import open_seed_database
 
 COLUMNS = (
     "시분초", "현재가", "등락율", "고저평균대비등락율", "라운드피겨위5호가이내",
@@ -173,13 +174,11 @@ if 매수:
 @pytest.mark.parametrize("key", sorted(cc.DSL_ANCHOR))
 def test_anchor_is_unique_in_the_real_champion_code(key):
     """★ 902/905 는 같은 변수를 다른 임계로 쓴다 — 앵커가 겹치면 엉뚱한 절을 뺀다."""
-    import sqlite3
-    con = sqlite3.connect("_database/strategy.db")
-    try:
+    with open_seed_database(
+        "_database/strategy.db", required_tables=("stockbuy",)
+    ) as con:
         row = con.execute('SELECT 전략코드 FROM stockbuy WHERE "index"=?',
                           ("Tick_B_902_905",)).fetchone()
-    finally:
-        con.close()
     if row is None:
         pytest.skip("챔피언 매수식이 이 환경에 없다")
     assert str(row[0]).count(cc.DSL_ANCHOR[key]) == 1
