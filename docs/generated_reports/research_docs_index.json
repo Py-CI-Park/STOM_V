@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-29T03:23:48.520590+00:00",
-  "source_fingerprint": "2f8e64260e70d589c1782db6531fe3ebbb3cdf1646f9ca5432d13259b58119b3",
+  "generated_at": "2026-08-29T03:26:42.437875+00:00",
+  "source_fingerprint": "a917fc4e5b972517ba18c2faee5ccdc05e0de4f76ed6e44b5c6cca13ff61f0e8",
   "count": 1086,
   "docs": [
     {
@@ -7106,8 +7106,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md",
       "title": "Process Research Pipeline 재출발 · 대시보드/연구 성숙화 마스터플랜 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T03:22:59.971287+00:00",
-      "size": 25268
+      "updated_at": "2026-08-29T03:25:42.563249+00:00",
+      "size": 25400
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md",
@@ -7211,7 +7211,7 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-29_S9_Chrome_Keyboard_Accessibility_검증결과.md",
       "title": "S9 Chrome Keyboard Accessibility 검증 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T03:22:59.931160+00:00",
+      "updated_at": "2026-08-29T03:25:17.385257+00:00",
       "size": 3307
     },
     {
@@ -7351,21 +7351,21 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-29_S9_완료.md",
       "title": "핸드오프 — S9 Chrome 키보드 접근성 완료와 SYS-02 재개 지점",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T03:22:59.944741+00:00",
-      "size": 2604
+      "updated_at": "2026-08-29T03:25:42.558572+00:00",
+      "size": 2637
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-29_UX-05_완료.md",
       "title": "핸드오프 — UX-05 현재/역사 권위 분리 완료와 S9 재개 지점",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T03:22:59.981829+00:00",
+      "updated_at": "2026-08-29T03:25:17.397796+00:00",
       "size": 3493
     },
     {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T03:22:59.962260+00:00",
+      "updated_at": "2026-08-29T03:25:17.404526+00:00",
       "size": 16309
     },
     {
