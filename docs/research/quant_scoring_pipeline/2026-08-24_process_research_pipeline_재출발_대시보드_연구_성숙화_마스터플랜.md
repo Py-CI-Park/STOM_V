@@ -10,7 +10,7 @@
 >
 > 문서 성격: 이 문서는 개발 성공, 연구 성공, OOS 성공, 운영 승격을 서로 다른 상태로 관리한다.
 
- > **2026-08-29 실행 갱신:** G1 플랫폼 28/28 PASS와 Development 0/7 STOP을 유지한다. UX-04 Mission Control, ANA-04 Failure Autopsy에 이어 UX-05 Current vs Historical `b6b06bc8`을 완료했다. 기록·성과 화면에서 현재 canonical STOP을 과거 run·winner·HOF보다 먼저 표시한다. 다음은 S9 실제 키보드 접근성 교차검증이며 G2/Holdout은 금지다.
+ > **2026-08-29 실행 갱신:** G1 플랫폼 28/28 PASS와 Development 0/7 STOP을 유지한다. UX-05 Current vs Historical 이후 S9 Chrome 실제 키보드 검증을 완료했다. Tab·Shift+Tab·Enter·Space·focus-visible이 1280/620에서 동작해 코드 변경은 하지 않았다. 다음은 SYS-02 테스트 격리이며 G2/Holdout은 금지다.
 
 ---
 
@@ -21,7 +21,7 @@
 | 직접 사용하면서 하나씩 고치는 것이 좋은가 | **예. 단, 임의 페이지 순회가 아니라 작은 종단 슬라이스로 진행한다.** | 화면만 고치면 실제 연구 흐름이 검증되지 않고, 연구만 돌리면 실패 원인이 다시 흩어진다. 한 번에 `실행 → 결과 번들 → 분석 → 다음 행동`을 완성해야 한다. |
 | 현재 프로젝트는 실패한 것인가 | **경제적 연구는 아직 성공하지 못했다. 플랫폼은 상당 부분 구현됐지만 반복 연구는 미완료다.** | Robust 후보 0개, OOS 미검증, 자동채택 금지다. 동시에 Census·시드·공식엔진 연결·분석 자산은 재사용 가능하다. |
 | 백테스트 후 결과 분석을 더 고도화할 수 있는가 | **가능성이 높다.** | 이미 다수 분석 API와 화면이 존재한다. 새로 처음 만드는 것보다 흩어진 분석을 하나의 불변 결과 번들과 결정 화면으로 묶는 일이 핵심이다. |
- | 지금 가장 먼저 할 일 | **UX-05를 정본에 통합한 뒤 S9에서 실제 키보드 흐름을 교차검증한다.** | 현재/역사 권위 분리는 완료됐고 인앱 합성 키 제한을 실제 입력과 구분해야 한다. |
+ | 지금 가장 먼저 할 일 | **S9 receipt를 정본에 통합한 뒤 SYS-02에서 테스트의 보호 DB 생성과 plugin 충돌을 격리한다.** | 키보드 제품 동작은 정상이며 이제 전체 검증 Gate의 신뢰성을 복구해야 한다. |
 | D4/BO를 바로 시작할 수 있는가 | **아니다.** | 실제 Controls, 다기간 fold, posterior를 통과한 `BO_ELIGIBLE` Cell이 0개다. |
 | 대시보드 리디자인부터 크게 할 것인가 | **아니다.** | 첫 종단 슬라이스에서 실제 데이터로 사용성 문제를 확인한 뒤 정보구조를 단계적으로 바꾼다. |
 
@@ -431,7 +431,8 @@
  | 10b | UX-04 | UX | 정상 중단 Mission Control·상세 progressive disclosure | **완료** | `9f27ed24`, 15테스트·1280/620 QA |
  | 10c | ANA-04 | 분석 | G0/G1 공통 실패 읽기 전용 부검 카드 | **완료** | `f47999aa`, 5+15테스트·1280/620 QA |
  | 10d | UX-05 | UX | 현재 STOP과 과거 HOF 권위 분리 | **완료** | `b6b06bc8`, 기록·성과 1280/620 QA |
- | 10e | S9 | 접근성 | Mission·Autopsy·History 실제 키보드 교차검증 | **다음** | Tab·Enter·Space·focus-visible |
+ | 10e | S9 | 접근성 | Mission·Autopsy·History 실제 키보드 교차검증 | **완료** | Chrome 1280/620 PASS · 코드 무변경 |
+ | 10f | SYS-02 | 시스템 | seed DB·pytest plugin 테스트 격리 | **다음** | 보호 파일 생성 0 · deterministic pytest |
 | 11 | RES-04 | 연구 | Controls/FDR/posterior 또는 정상 중지 | 큼 | typed gate |
 | 12 | SCALE-01 | 연구 | 나머지 Band 순차 확장 | 큼 | Band별 독립 lineage |
 
