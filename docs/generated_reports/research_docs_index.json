@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-29T23:28:35.828006+00:00",
-  "source_fingerprint": "cf949a2226a0961e31cc25caa532231356c9a3fe94d47254c505761ef831ac01",
+  "generated_at": "2026-08-29T23:31:35.698855+00:00",
+  "source_fingerprint": "9d0394c09dec3570ecbe08b0027e0915a9372b38e5205930858d12c71cc6ee08",
   "count": 1095,
   "docs": [
     {
@@ -7106,8 +7106,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md",
       "title": "Process Research Pipeline 재출발 · 대시보드/연구 성숙화 마스터플랜 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T23:27:09.346479+00:00",
-      "size": 26704
+      "updated_at": "2026-08-29T23:30:56.780267+00:00",
+      "size": 26726
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md",
@@ -7246,14 +7246,14 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-30_RES-04_새구조가설_검토.md",
       "title": "RES-04 새 구조 가설 검토",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T23:27:52.504273+00:00",
-      "size": 14450
+      "updated_at": "2026-08-29T23:30:56.777267+00:00",
+      "size": 14516
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-30_SYS-04_Fast_Slow_Unit_Gate_구현결과.md",
       "title": "SYS-04 Fast/Slow Unit Gate 구현 결과",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T16:06:05.108912+00:00",
+      "updated_at": "2026-08-29T23:30:08.523830+00:00",
       "size": 5884
     },
     {
@@ -7421,14 +7421,14 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-30_SYS-04_완료_새구조가설_RESTART.md",
       "title": "핸드오프 — SYS-04 완료 후 새 구조 가설 검토 재개",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T16:06:05.106406+00:00",
+      "updated_at": "2026-08-29T23:30:08.526338+00:00",
       "size": 3312
     },
     {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T23:27:09.341973+00:00",
+      "updated_at": "2026-08-29T23:30:37.781436+00:00",
       "size": 17385
     },
     {

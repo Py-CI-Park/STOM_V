@@ -16,7 +16,7 @@
 
  > **2026-08-30 SYS-04 완료:** 기능 `2d73a9f7`, 재출발 병합 `05ab7df2`, 파이프라인 병합 `2a221586`. fast Gate `7,928 PASS · 27 SKIP · 23m22s`, slow Gate `24 PASS · 19m04s`. assertion 삭제 없이 18~19% 장시간 authority 그룹을 분리했다. 다음은 `HANDOFF_2026-08-30_SYS-04_완료_새구조가설_RESTART.md`에 따라 새 구조 가설 검토이며, 연구 실행은 아직 금지다.
 
- > **2026-08-30 RES-04 가설 검토:** `2026-08-30_RES-04_새구조가설_검토.md`. E1 episode onset/reset, R1 cross-family conflict router, X1 thesis invalidation exit, C1 causal cross-sectional rank를 비교했다. 직접 G0는 NO-GO이며, 기존 Event Gate의 성과 비사용 timestamp로 E1/R1 feasibility를 먼저 사전등록하는 조건부 GO다.
+ > **2026-08-30 RES-04 가설 검토:** 문서 `bbe1f874`, 재출발 병합 `f2de398e`, 파이프라인 병합 `921f1397`. E1 episode onset/reset, R1 cross-family conflict router, X1 thesis invalidation exit, C1 causal cross-sectional rank를 비교했다. 직접 G0는 NO-GO이며, 기존 Event Gate의 성과 비사용 timestamp로 E1/R1 feasibility를 먼저 사전등록하는 조건부 GO다.
 
 ---
 
