@@ -14,7 +14,7 @@
 
 > **Compact 재개 정본:** `HANDOFF_2026-08-29_COMPACT_이후_합리적_권장순서.md`. 이후는 SYS-04 성능 분리 → 새 구조 가설 검토 → RES-04 사전등록 순서로 진행한다.
 
- > **2026-08-30 SYS-04 완료:** 기능 `2d73a9f7`. fast Gate `7,928 PASS · 27 SKIP · 23m22s`, slow Gate `24 PASS · 19m04s`. assertion 삭제 없이 18~19% 장시간 authority 그룹을 분리했다. 다음은 `HANDOFF_2026-08-30_SYS-04_완료_새구조가설_RESTART.md`에 따라 새 구조 가설 검토이며, 연구 실행은 아직 금지다.
+ > **2026-08-30 SYS-04 완료:** 기능 `2d73a9f7`, 재출발 병합 `05ab7df2`, 파이프라인 병합 `2a221586`. fast Gate `7,928 PASS · 27 SKIP · 23m22s`, slow Gate `24 PASS · 19m04s`. assertion 삭제 없이 18~19% 장시간 authority 그룹을 분리했다. 다음은 `HANDOFF_2026-08-30_SYS-04_완료_새구조가설_RESTART.md`에 따라 새 구조 가설 검토이며, 연구 실행은 아직 금지다.
 
 ---
 
@@ -70,6 +70,8 @@
 | SYS-02 파이프라인 병합 | `8946c2ea` | `loop/process-research-pipeline` 정본 통합 |
 | SYS-03 재출발 병합 | `d4a93a8b` | ledger 확정 후 success 공개 계약 통합 |
 | SYS-03 파이프라인 병합 | `ac5a96d3` | `loop/process-research-pipeline` 정본 통합 |
+| SYS-04 재출발 병합 | `05ab7df2` | fast/slow unit Gate와 결과 핸드오프 통합 |
+| SYS-04 파이프라인 병합 | `2a221586` | `loop/process-research-pipeline` 정본 통합 |
 | 원 작업 폴더 | `STOM_V.wt-dev` | 기존 삭제·미추적 파일을 건드리지 않음 |
 | 재출발 worktree | `C:\System_Trading\STOM\STOM_V.wt-process-research-restart` | 연구 재개 전용 |
 
