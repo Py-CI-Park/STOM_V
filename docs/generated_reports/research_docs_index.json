@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-30T00:40:08.684855+00:00",
-  "source_fingerprint": "d4e223f4cbacdaedbe531375f3d60356effd1d6f3bc1e299dd3a84ca3b2da743",
+  "generated_at": "2026-08-30T00:49:04.313542+00:00",
+  "source_fingerprint": "9db64a47ab1345e42c76b6bc131ffc07304b8631b052814cc9e44ae2b2f3e179",
   "count": 1098,
   "docs": [
     {
@@ -7106,8 +7106,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-24_process_research_pipeline_재출발_대시보드_연구_성숙화_마스터플랜.md",
       "title": "Process Research Pipeline 재출발 · 대시보드/연구 성숙화 마스터플랜 (2026-08-24)",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-30T00:38:11.750863+00:00",
-      "size": 27039
+      "updated_at": "2026-08-30T00:46:39.005989+00:00",
+      "size": 27018
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-25_BOOT-01_PIPE-01_환경사전점검과_LT3000_실패원장.md",
@@ -7246,7 +7246,7 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-30_RES-04_새구조가설_검토.md",
       "title": "RES-04 새 구조 가설 검토",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-29T23:30:56.777267+00:00",
+      "updated_at": "2026-08-30T00:44:09.869663+00:00",
       "size": 14516
     },
     {
@@ -7260,15 +7260,15 @@
       "id": "docs/research/quant_scoring_pipeline/2026-08-30_백테스트후_분석_데이터마이닝_전수감사.md",
       "title": "백테스트 후 분석·데이터마이닝 전수감사",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-30T00:34:47.675799+00:00",
-      "size": 12977
+      "updated_at": "2026-08-30T00:46:38.989144+00:00",
+      "size": 13043
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-08-30_분석데이터마이닝_성숙화_수정마스터플랜.md",
       "title": "백테스트 분석·데이터마이닝 성숙화 수정 마스터플랜",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-30T00:36:58.461581+00:00",
-      "size": 18457
+      "updated_at": "2026-08-30T00:46:38.994432+00:00",
+      "size": 18524
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
@@ -7442,14 +7442,14 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-30_분석데이터마이닝_전수감사_완료.md",
       "title": "핸드오프 — 백테스트 후 분석·데이터마이닝 전수감사 완료",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-30T00:38:11.736844+00:00",
-      "size": 3022
+      "updated_at": "2026-08-30T00:46:39.000461+00:00",
+      "size": 3069
     },
     {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-30T00:38:36.024526+00:00",
+      "updated_at": "2026-08-30T00:45:06.119720+00:00",
       "size": 17730
     },
     {
