@@ -1,0 +1,45 @@
+{
+  "schema_version": "stom.res04.preparation.v1",
+  "authority": "PREPARATION_ONLY_NO_EXECUTION",
+  "source": {
+    "path": "C:/System_Trading/STOM/STOM_V.wt-dev/_database/stock_tick_back.db",
+    "bytes": 29727162368,
+    "sha256": "d3383f89cf0fccb952fc4c24ac9f02a81dc38b80e30aa0530d267cc369a7271a",
+    "hash_mode": "full_sha256",
+    "role": "DEVELOPMENT_PREVIOUSLY_EXPOSED"
+  },
+  "candidate_manifest_sha256": "251a37edb2b34539fe343a7ae533262fb41d02af7272fc1167076055136e94dc",
+  "candidate_ids": [
+    "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee",
+    "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_639515aa1e",
+    "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_55b6c25f13",
+    "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_ad1fb159a2",
+    "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_c5850a62eb",
+    "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_3205e5b871",
+    "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_89a4f88e5a"
+  ],
+  "folds": [
+    {"id": "DEV_2022_Q2_MONTH1", "start": "2022-04-01", "end_exclusive": "2022-05-01"},
+    {"id": "DEV_2023_Q3_MONTH1", "start": "2023-07-01", "end_exclusive": "2023-08-01"},
+    {"id": "DEV_2024_Q4_MONTH1", "start": "2024-10-01", "end_exclusive": "2024-11-01"},
+    {"id": "DEV_2025_Q1_MONTH1", "start": "2025-01-01", "end_exclusive": "2025-02-01"}
+  ],
+  "seed": 20260907,
+  "window_start": "09:00:00",
+  "window_end_exclusive": "09:30:00",
+  "timezone": "Asia/Seoul",
+  "max_gap_seconds": 1,
+  "min_total_episodes": 200,
+  "min_episodes_per_fold": 20,
+  "min_distinct_days": 20,
+  "min_distinct_symbols": 10,
+  "primary_hypothesis": "E1",
+  "secondary_hypothesis": "R1_DESCRIPTIVE_ONLY",
+  "initial_true_policy": "LEFT_CENSOR",
+  "gap_policy": "CENSOR_NOT_FALSE",
+  "duplicate_policy": "REJECT",
+  "nonfinite_policy": "REJECT",
+  "selection_policy": "NO_PNL_SELECTION",
+  "cost_policy": "NOT_APPLICABLE_NO_ECONOMIC_METRICS",
+  "execution_policy": "SEPARATE_APPROVAL_REQUIRED"
+}

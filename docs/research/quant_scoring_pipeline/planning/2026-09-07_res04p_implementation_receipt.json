@@ -1,0 +1,41 @@
+{
+  "task_id": "RES04P_PREPARATION_CONTRACT",
+  "status": "IMPLEMENTED_REVIEWED_NOT_INTEGRATED",
+  "baseline_commit": "48f9598638400cda3bd73d97ef0e6b6f5c0b5553",
+  "branch": "codex/process-research-res-04p-decision-contract",
+  "plan_file": "docs/research/quant_scoring_pipeline/planning/2026-09-07_res04p_preparation.json",
+  "plan_file_sha256": "c692bb8a7c44f5357d5b2842a0333fcd574f6e8bad4240d05a016f15bc4a6c13",
+  "commit_lookup": "git log -1 --format=fuller -- docs/research/quant_scoring_pipeline/planning/2026-09-07_res04p_implementation_receipt.json",
+  "test_results": {
+    "initial_red": {"failed": 17, "exit_code": 1, "reason": "import succeeds; new API absent"},
+    "first_green": {"passed": 17, "exit_code": 0},
+    "final_regression": {"passed": 24, "exit_code": 0},
+    "independent_regression": {"passed": 24, "exit_code": 0},
+    "independent_extra_scenarios": {"passed": 22, "exit_code": 0},
+    "public_plan_load": {"exit_code": 0, "output": "PREPARATION_ONLY_NO_EXECUTION 7 4 full_sha256"}
+  },
+  "review_results": [
+    {"reviewer": "/root/res04_goal", "scope": "bounded goal and constraints", "verdict": "PASS"},
+    {"reviewer": "/root/res04_code", "scope": "code quality", "verdict": "PASS"},
+    {"reviewer": "/root/res04_security", "scope": "security and authority", "verdict": "PASS"},
+    {"reviewer": "/root/res04_qa", "scope": "public library QA", "verdict": "PASS"},
+    {"reviewer": "/root/res04_context", "scope": "local lineage", "verdict": "PASS"}
+  ],
+  "review_limits": [
+    "PASS is for preparation reader, not RES04P completion or full platform",
+    "Context reviewer did not read DB; root independently computed current full SHA256",
+    "Independent QA initial temp directory setup failed, later rerun passed",
+    "JSON duplicate member keys use parser last-value-wins; no execution authority is granted",
+    "Source and manifest declarations require revalidation before any later execution"
+  ],
+  "raw_log_directory": "C:/Users/parkc/STOM_Verification/v1.5_20260907",
+  "source_verification_logs": ["res04p-backdb-sha256.log", "res04p-source-metadata.log"],
+  "research_jobs_submitted": 0,
+  "operating_db_writes": 0,
+  "holdout_rows_queried": 0,
+  "production_acceptance_tests_executed": false,
+  "browser_qa_executed": false,
+  "res04p_gate_complete": false,
+  "sys05_started": false,
+  "next_task": "event stream export contract and synthetic adapter tests; no Stage F execution"
+}
