@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-09-07T14:07:32.768027+00:00",
-  "source_fingerprint": "e93e9ff55fd96d1b1530b51053e9357b6b43be8b50f0d9dbe5fd03ae0c41cb0f",
-  "count": 1101,
+  "generated_at": "2026-09-07T14:42:12.448136+00:00",
+  "source_fingerprint": "5efcc4497f724136365fd7b37db4c3aba11d347b3b097a40a3a07f1019b8b260",
+  "count": 1102,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7278,11 +7278,18 @@
       "size": 3068
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-09-07_RES04P_설계결정_준비계약_구현.md",
+      "title": "RES-04P 설계결정·준비계약 구현 / TASK_RECEIPT",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-09-07T14:40:29.805038+00:00",
+      "size": 4761
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/2026-09-07_v15_실행계획_진행원장.md",
       "title": "v1.5 실행계획·페이지·브랜치 진행원장",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-09-07T14:06:38.770382+00:00",
-      "size": 5170
+      "updated_at": "2026-09-07T14:40:29.815589+00:00",
+      "size": 5226
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
@@ -7470,8 +7477,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-09-07T14:01:19.660794+00:00",
-      "size": 18055
+      "updated_at": "2026-09-07T14:40:29.825627+00:00",
+      "size": 18181
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
