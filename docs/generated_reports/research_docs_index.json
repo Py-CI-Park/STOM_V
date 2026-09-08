@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-08-30T00:49:04.313542+00:00",
-  "source_fingerprint": "9db64a47ab1345e42c76b6bc131ffc07304b8631b052814cc9e44ae2b2f3e179",
-  "count": 1098,
+  "generated_at": "2026-09-07T14:07:32.768027+00:00",
+  "source_fingerprint": "e93e9ff55fd96d1b1530b51053e9357b6b43be8b50f0d9dbe5fd03ae0c41cb0f",
+  "count": 1101,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7271,6 +7271,20 @@
       "size": 18524
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/2026-09-07_RES-04P_사전등록_초안.md",
+      "title": "RES-04P 사전등록 초안 — 미확정값 유지·실행 금지",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-09-07T14:01:19.624875+00:00",
+      "size": 3068
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-09-07_v15_실행계획_진행원장.md",
+      "title": "v1.5 실행계획·페이지·브랜치 진행원장",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-09-07T14:06:38.770382+00:00",
+      "size": 5170
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-08-01_QSP7_매도식연구.md",
       "title": "핸드오프 — QSP7 매도식 연구 (2026-08-01)",
       "category": "quant_scoring_pipeline",
@@ -7446,11 +7460,18 @@
       "size": 3069
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-09-07_RES04P_초안_진행관리.md",
+      "title": "RES-04P 초안·진행관리 핸드오프 / TASK_RECEIPT",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-09-07T14:06:38.775381+00:00",
+      "size": 1879
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-08-30T00:45:06.119720+00:00",
-      "size": 17730
+      "updated_at": "2026-09-07T14:01:19.660794+00:00",
+      "size": 18055
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
