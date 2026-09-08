@@ -29,6 +29,8 @@ from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
 from ai_strategy_loop.dashboard import backtest_jobs as J  # noqa: E402
 from ai_strategy_loop.dashboard import backtest_report as R  # noqa: E402
+from ai_strategy_loop.dashboard import backtest_api  # noqa: E402
+from tests.unit.dashboard.trade_quality_fixtures import official_pair  # noqa: E402
 from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
@@ -47,15 +49,16 @@ def _make_strategy_db(path: Path) -> None:
     con.close()
 
 
-def _make_trades_csv(path: Path, n: int = 60) -> str:
+def _make_trades_csv(path: Path, n: int = 60, *, official: bool = False) -> str:
     """analysis 가 기대하는 per-trade 컬럼명으로 CSV 생성(R_MFE/R_MAE/B_* 포함)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8-sig", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=[
+        fields = [
             "종목명", "매수시간", "매도시간", "보유시간", "수익률", "수익금",
             "R_MFE", "R_MAE", "매도조건",
             "B_체결강도", "B_매수총잔량", "B_매도총잔량", "B_전일동시간비", "B_등락율",
-        ])
+        ]
+        w = csv.DictWriter(fh, fieldnames=official_pair()[0].strip().split(",") if official else fields)
         w.writeheader()
         for i in range(n):
             day = (i % 25) + 1
@@ -195,8 +198,9 @@ def test_render_report_empty_payload_no_raise():
 
 
 # ----------------------------------------------------------------- /bt/report
-def test_report_route_by_job_id(client: TestClient, tmp_path: Path):
-    csv_path = _make_trades_csv(tmp_path / "trades.csv", n=60)
+def test_report_route_by_job_id(client: TestClient, tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(backtest_api, "REPO_ROOT", tmp_path)
+    csv_path = _make_trades_csv(tmp_path / "trades.csv", n=60, official=True)
     job_id = _seed_job(tmp_path, csv_path, status="success")
     r = client.get("/bt/report", params={"job_id": job_id})
     assert r.status_code == 200
@@ -215,13 +219,14 @@ def test_report_route_unknown_job_returns_notice(client: TestClient):
     assert "생성할 수 없습니다" in r.text
 
 
-def test_report_route_by_run_gen_with_csv(client: TestClient, tmp_path: Path):
-    csv_path = _make_trades_csv(tmp_path / "g0.csv", n=60)
+def test_report_route_by_run_gen_with_csv(client: TestClient, tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(backtest_api, "REPO_ROOT", tmp_path)
+    csv_path = _make_trades_csv(tmp_path / "g0.csv", n=60, official=True)
     db = tmp_path / "loop_runs.db"
     st = LoopState(db_path=str(db), snapshot_dir=str(tmp_path / "snaps"))
     st.start_run(LoopConfig(), run_id="runR")
     st.record_generation("runR", 0, buy_name="AILOOP_runR_g0_buy",
-                         sell_name="AILOOP_runR_g0_sell", status="evaluated",
+                         sell_name="AILOOP_runR_g0_sell", status="ok",
                          score=1.0, gate_passed=True, csv_path=csv_path,
                          trade_count=60, profit=150000, total_profit_pct=30.0, mdd=12.0)
     st.close()
@@ -230,6 +235,7 @@ def test_report_route_by_run_gen_with_csv(client: TestClient, tmp_path: Path):
     body = r.text
     assert body.startswith("<!DOCTYPE html>")
     assert "수익곡선" in body and "몬테카를로" in body
+    assert "CSV 분석 준비 충족" in body
     assert "http://" not in body
 
 

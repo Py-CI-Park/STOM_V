@@ -2360,31 +2360,20 @@ def _report_payload_for_job(
         return None
     status = record.get("status")
     spec = record.get("spec") or {}
-    csv_path = None if status == "no_trades" else _resolved_record_csv_path(record)
-    bundle = analysis.full_analysis(csv_path, t_start, t_end)
-    trades = analysis.filter_trades(analysis.load_trades_csv(csv_path), t_start, t_end)
-    mc = analysis.monte_carlo(trades, n=2000)
+    from ai_strategy_loop.dashboard.job_result_quality import inspect_job_result_source
+    from ai_strategy_loop.dashboard.report_quality import job_report
+
+    csv_path = _resolved_record_csv_path(record)
+    checked = inspect_job_result_source(Path(csv_path) if csv_path else None, record)
     ranged = t_start is not None or t_end is not None
-    note = ""
-    if status == "no_trades":
-        note = "거래 0건 — 전략이 해당 기간에 매수 신호를 내지 않았습니다(메트릭 없음)."
-    elif not csv_path:
-        note = "결과 CSV 가 없어 메트릭 요약만 표시합니다."
-    return {
-        "meta": {
+    return job_report(record, checked, {
             "title": f"백테스트 리포트 · {spec.get('buy', '')}",
             "buy": spec.get("buy"),
             "sell": spec.get("sell"),
             "period": _period_label(spec.get("start"), spec.get("end")),
             "source": f"job:{job_id}" + (" (구간)" if ranged else ""),
-            "trade_count": bundle["summary"]["trade_count"],
             "status": status,
-            "note": note,
-        },
-        "metrics": bundle["summary"] if ranged else (record.get("metrics") or bundle["summary"]),
-        "analysis": bundle,
-        "montecarlo": mc,
-    }
+        }, t_start, t_end)
 
 
 def _report_payload_for_run(run_id: str, gen_no: int) -> Optional[Dict[str, Any]]:
@@ -2398,46 +2387,29 @@ def _report_payload_for_run(run_id: str, gen_no: int) -> Optional[Dict[str, Any]
     if row is None:
         return None
 
-    csv_path = _resolve_gen_csv(row)
+    from ai_strategy_loop.dashboard.generation_result_view import GenerationOwners, generation_result
+    from ai_strategy_loop.dashboard.job_result_quality import inspect_job_result_source
+    from ai_strategy_loop.dashboard.report_quality import finish_report
 
-    base_meta = {
+    csv_path = _resolve_gen_csv(row)
+    checked = inspect_job_result_source(Path(csv_path) if csv_path else None,
+                                        {"metrics": {"trade_count": row.get("trade_count")}})
+    owners = GenerationOwners(lambda _run, _gen: row, lambda _row: csv_path,
+                              _run_condition_identity, _result_context)
+    result = generation_result(run_id, gen_no, owners=owners, prepared_source=checked).root
+    metrics = result.get("metrics")
+    result["meta"] = {
         "title": f"세대 리포트 · {run_id} / g{gen_no}",
         "buy": row.get("buy_name"),
         "sell": row.get("sell_name"),
         "period": "—",
         "source": f"run:{run_id} gen:{gen_no}",
+        "trade_count": metrics.get("trade_count") if isinstance(metrics, dict) else None,
+        "note": ("CSV 가 없어 저장된 미검증 요약만 표시합니다."
+                 if result.get("summary_authority") == "stored_unverified"
+                 else "진단 결과이며 실행 영수증·경제적 유효성은 별도 확인이 필요합니다."),
     }
-    if csv_path:
-        bundle = analysis.full_analysis(csv_path)
-        trades = analysis.load_trades_csv(csv_path)
-        mc = analysis.monte_carlo(trades, n=2000)
-        return {
-            "meta": {**base_meta, "trade_count": bundle["summary"]["trade_count"], "note": ""},
-            "metrics": bundle["summary"],
-            "analysis": bundle,
-            "montecarlo": mc,
-            # v5.13.2 — 리포트도 대시보드와 같은 실행 맥락을 싣는다(사람용 표 + AI용 JSON).
-            "context": _result_context(row, run_id, gen_no, bundle.get("summary")),
-        }
-    # CSV 부재 — generations 행 메트릭으로 축약 리포트(메트릭 카드만).
-    fallback_metrics = {
-        "trade_count": row.get("trade_count"),
-        "total_profit_krw": row.get("profit"),
-        "total_profit_pct": row.get("total_profit_pct"),
-        "max_drawdown_pct": row.get("mdd"),
-        "payoff_ratio": row.get("payoff_ratio"),
-    }
-    return {
-        "meta": {
-            **base_meta,
-            "trade_count": row.get("trade_count"),
-            "note": "결과 CSV 가 없어 세대 메트릭 요약만 표시합니다(차트/분석 생략).",
-        },
-        "metrics": fallback_metrics,
-        "analysis": {},
-        "montecarlo": None,
-        "context": _result_context(row, run_id, gen_no, None),
-    }
+    return finish_report(result, checked)
 
 
 @backtest_router.get("/report")
