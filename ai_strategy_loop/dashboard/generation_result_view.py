@@ -21,6 +21,8 @@ if TYPE_CHECKING:
 
     from pydantic import JsonValue
 
+    from ai_strategy_loop.dashboard.trade_csv_models import TradeQualityResult
+
 _STORED: Final = {
     "trade_count": "trade_count",
     "total_profit_krw": "profit",
@@ -48,6 +50,7 @@ def generation_result(
     t_end: int | None = None,
     *,
     owners: GenerationOwners,
+    prepared_source: TradeQualityResult | None = None,
 ) -> GenerationJson:
     """Separate recomputed CSV diagnostics from unverified stored summaries."""
     raw = owners.lookup(run_id, gen_no)
@@ -64,7 +67,7 @@ def generation_result(
             assert_never(unreachable)
     policy = generation_policy(status)
     csv_path = owners.resolve_csv(row)
-    checked = inspect_job_result_source(
+    checked = prepared_source if prepared_source is not None else inspect_job_result_source(
         Path(csv_path) if csv_path else None,
         {"metrics": {"trade_count": row.get("trade_count")}},
     )

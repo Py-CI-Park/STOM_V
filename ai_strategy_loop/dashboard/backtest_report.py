@@ -35,6 +35,7 @@ from ai_strategy_loop.fitness.measurement_frame import (
     resolve_frame,
 )
 from ai_strategy_loop.dashboard.backtest_report_summary import render_metric_summary
+from ai_strategy_loop.dashboard.report_quality import quality_html
 
 # SVG 캔버스 기본 치수(뷰박스 좌표계 — 반응형 width:100%).
 _SVG_W = 720
@@ -791,6 +792,7 @@ def render_report(payload: Dict[str, Any]) -> str:
     body_parts = [
         _header(meta),
         _machine_meta_block(meta, ctx, summary, metrics),
+        quality_html(payload),
         note_html,
         _hero_block(metrics, summary, ctx),
         _toc_block(),
@@ -810,6 +812,12 @@ def render_report(payload: Dict[str, Any]) -> str:
         _stats_block(_get(analysis, "stats")),
         '<footer class="rpt-ft">STOM 백테스트 워크벤치 · 자급자족 리포트(외부 리소스 없음)</footer>',
     ]
+    if payload.get("analysis_ready") is False and payload.get("summary_authority") != "stored_unverified":
+        body_parts = [_header(meta), quality_html(payload), note_html]
+    elif payload.get("summary_authority") == "stored_unverified":
+        body_parts = [_header(meta), _machine_meta_block(meta, ctx, summary, metrics),
+                      quality_html(payload), note_html, _hero_block(metrics, summary, ctx),
+                      _metric_cards(metrics, summary)]
     body = "".join(body_parts)
     return (
         "<!DOCTYPE html>"

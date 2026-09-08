@@ -127,6 +127,10 @@ def make_app(directory: Path) -> FastAPI:
     def result(job_id: str = "", run_id: str = "", gen_no: int | None = None) -> JSONResponse:
         return JSONResponse(backtest_api.get_result(job_id=job_id, run_id=run_id, gen_no=gen_no))
 
+    @app.get("/bt/report")
+    def report_view(job_id: str = "", run_id: str = "", gen_no: int | None = None):
+        return backtest_api.backtest_report_html(job_id=job_id, run_id=run_id, gen_no=gen_no)
+
     @app.get("/bt/analysis/montecarlo")
     def no_research() -> JSONResponse:
         return JSONResponse({"montecarlo": None, "reason": "fixture_does_not_execute_research"})

@@ -2,9 +2,9 @@
   "schema": "stom.maturity_page_progress.v1",
   "date": "2026-09-08",
   "basis": "NEW_V15_ACCEPTANCE_SCOPE_NOT_EXISTING_STOM_FEATURE_COUNT",
-  "branch": "codex/process-research-sys-05-generation-quality",
-  "source_base_commit": "2cea89143b736346df5e8c86adbc06f5c707cf5a",
-  "receipt": "2026-09-08_SYS05_SQ01B2_TASK_RECEIPT.md",
+  "branch": "codex/process-research-sys-05-report-quality",
+  "source_base_commit": "b522a71a",
+  "receipt": "2026-09-08_SYS05_SQ01B3_TASK_RECEIPT.md",
   "canonical_order": [
     "RES-04P",
     "SYS-05",
@@ -22,9 +22,10 @@
     "SQ00.evaluation_stats_v2",
     "SQ01.csv_quality_data_contract",
     "SQ01B1.job_result_quality",
-    "SQ01B2.generation_result_quality"
+    "SQ01B2.generation_result_quality",
+    "SQ01B3.report_export_quality"
   ],
-  "next_atomic_scope": "SQ01B3.report_export_quality",
+  "next_atomic_scope": "SQ01B4.individual_analysis_admission",
   "full_page_acceptance_closed": 0,
   "page_count": 14,
   "full_program_percent": null,
@@ -65,7 +66,7 @@
         "SQ01B1.job_result_quality"
       ],
       "remaining": [
-        "보고서·개별/복수 분석 소비자 품질 전파",
+        "개별/복수 분석 소비자 품질 전파",
         "정본 Bundle 계보 통합",
         "전체 페이지 수용"
       ],
@@ -231,12 +232,12 @@
     },
     {
       "id": "SQ01B3",
-      "status": "NEXT",
+      "status": "COMPLETE",
       "scope": "report/export quality"
     },
     {
       "id": "SQ01B4",
-      "status": "PENDING",
+      "status": "NEXT",
       "scope": "individual analysis and Monte Carlo admission"
     },
     {
@@ -250,5 +251,5 @@
       "scope": "versioned metrics and invalid values"
     }
   ],
-  "work_group_ratio_note": "4/8 atomic scopes verified; integration full unit gate pending; not effort-weighted development percent."
+  "work_group_ratio_note": "5/8 atomic scopes verified; integration full unit gate pending; not effort-weighted development percent."
 }
