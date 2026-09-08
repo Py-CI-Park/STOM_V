@@ -24,7 +24,7 @@ function BtDataContract({ contract }) {
       <span className="tp-authority diagnostic">진단</span>
     </header>
     <div className="tp-contract-lineage">
-      <article><small>CSV schema</small><b>{artifact.schema_variant || "미확인"}</b><span>{artifact.row_count || 0}행 · {artifact.column_count || 0}열</span></article>
+      <article><small>CSV 열수 분류</small><b>{artifact.schema_variant || "미확인"}</b><span>{artifact.row_count || 0}행 · {artifact.column_count || 0}열 · 공식 스키마 여부는 품질 진단 참조</span></article>
       <article><small>전체청산 경계</small><b>{_dcTime(boundary.forced_liquidation_time)}</b><span>{boundary.source || "missing"} · {boundary.confidence || "unknown"}</span></article>
       <article><small>비용 정책</small><b>{Number(cost.round_trip_rate_pct || 0).toFixed(3)}%</b><span>{cost.result_profit_state === "already_net" ? "수익금에 이미 반영" : "상태 미확인"}</span></article>
       <article><small>timeframe</small><b>{contract.timeframe || "—"}</b><span>tick/min 독립 계약</span></article>

@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-09-08T04:04:20.480909+00:00",
-  "source_fingerprint": "b2d0eb3b95f4f28cb670e48f2dd7df1d87c3e2394f662206ee3d304d64573035",
-  "count": 1108,
+  "generated_at": "2026-09-08T07:27:31.195341+00:00",
+  "source_fingerprint": "4718933cc853f64299de4ff823829830df416e73388fa627aec94426a577edd3",
+  "count": 1111,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7288,8 +7288,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-09-07_v15_실행계획_진행원장.md",
       "title": "v1.5 실행계획·페이지·브랜치 진행원장",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-09-08T04:01:03.764295+00:00",
-      "size": 6278
+      "updated_at": "2026-09-08T07:27:16.121927+00:00",
+      "size": 6954
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-09-08_RES04P_controls_TASK_RECEIPT.md",
@@ -7318,6 +7318,20 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-09-08T04:01:03.800330+00:00",
       "size": 3680
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-09-08_SYS05_SQ01_TASK_RECEIPT.md",
+      "title": "SYS-05 SQ01 데이터 계약 CSV 품질 연결 TASK_RECEIPT",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-09-08T07:27:16.140211+00:00",
+      "size": 5149
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-09-08_SYS05_SQ01_실행계획.md",
+      "title": "SYS-05 SQ01 CSV 품질·데이터 계약·V4 화면 실행계획",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-09-08T06:29:41.426446+00:00",
+      "size": 1984
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-09-08_누적감사_반영과_원천후보_binding_구현.md",
@@ -7516,11 +7530,18 @@
       "size": 5499
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-09-08_SYS05_SQ01_완료_전체페이지_진행.md",
+      "title": "SQ01 완료·전체 페이지 고도화 인계",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-09-08T07:20:48.172679+00:00",
+      "size": 4091
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-09-08T04:01:03.786638+00:00",
-      "size": 18980
+      "updated_at": "2026-09-08T07:20:48.174678+00:00",
+      "size": 19250
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
