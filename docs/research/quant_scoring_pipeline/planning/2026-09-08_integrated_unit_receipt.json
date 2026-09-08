@@ -1,0 +1,67 @@
+{
+  "schema": "stom.integrated_unit_receipt.v1",
+  "tested_commit": "10b67ed3a389e8c255c4900af447d250a9dc1d0b",
+  "tested_worktree": "C:/System_Trading/STOM/STOM_V.wt-pipeline-integration",
+  "status": "FAST_DEFAULT_TEMP_RUNNING_SLOW_PASS",
+  "toolchain": {"python": "3.13.13", "node": "24.19.0", "npm": "12.0.2"},
+  "history_preservation": {
+    "published_commits_not_rewritten": ["30e05d6385d53ed0366c0151d036a954ab55b785", "0db7457ce64cf8d16bc61a192381bccf416458c8"],
+    "fetched_origin_pipeline": "e30197c44507acf2f2360e78463e48b1ccfdc81c",
+    "existing_unpublished_source_commits_retained": 9,
+    "existing_scopes_no_ff_merged_through": "2cea89143b736346df5e8c86adbc06f5c707cf5a",
+    "push_performed": false
+  },
+  "functional_commits": {"B2": "b522a71a7396f60c8bad24f56a4a6523ff3dab6f", "B3": "0c9b09d916977c92e097f955531b59facc597546"},
+  "functional_merges": {"B2": "cf133ef3a6a9d1238060a2b48e5792eb2662df87", "B3": "bf5d02a1118f3eb533c9b122f7688b6f7dfa0fae"},
+  "runs": [
+    {
+      "id": "initial_full_unit",
+      "commit": "2cea89143b736346df5e8c86adbc06f5c707cf5a",
+      "passed": 8078, "failed": 4, "skipped": 27, "warnings": 54,
+      "seconds": 4831.58, "exit_code": 1,
+      "log": "C:/Users/parkc/STOM_Verification/v1.5_20260907/pipeline-integration-full-v2.log",
+      "classification": ["3: tester-selected basetemp outside Python approved temp root", "1: generated document index mismatched fresh checkout bytes"]
+    },
+    {
+      "id": "integrated_fast_env_temp",
+      "passed": 8076, "failed": 4, "skipped": 27, "deselected": 24, "warnings": 54,
+      "seconds": 1740.47, "exit_code": 1,
+      "log": "C:/Users/parkc/STOM_Verification/v1.5_20260907/sys05-integrated-fast.log",
+      "classification": ["3: TEMP root differs from TMPDIR/gettempdir", "1: D3 checkpoint os.replace WinError5; precise mechanism unconfirmed"]
+    },
+    {
+      "id": "integrated_slow",
+      "passed": 24, "failed": 0, "deselected": 8107, "warnings": 1,
+      "seconds": 1571.85, "exit_code": 0,
+      "log": "C:/Users/parkc/STOM_Verification/v1.5_20260907/sys05-integrated-slow.log"
+    },
+    {
+      "id": "default_temp_targeted",
+      "files": ["tests/unit/test_tick_seed_timeout_probe.py", "tests/unit/test_d3_engine_screen.py"],
+      "passed": 12, "failed": 0, "seconds": 7.70, "exit_code": 0,
+      "note": "No production source/ACL/safety-rule change; this does not establish the cause of WinError5."
+    },
+    {
+      "id": "integrated_fast_default_temp",
+      "command": "python -m pytest tests/unit/ -m 'not slow_suite' -q -p no:cacheprovider",
+      "status": "RUNNING",
+      "passed": null, "failed": null, "skipped": null, "exit_code": null,
+      "log": "C:/Users/parkc/STOM_Verification/v1.5_20260907/sys05-integrated-fast-default-temp.log",
+      "tool_session_id": 45532
+    }
+  ],
+  "confirmed_temp_configuration": {
+    "TEMP": "C:/Temp", "TMP": "C:/Temp",
+    "TMPDIR": "C:/Users/Public/Documents/ESTsoft/CreatorTemp",
+    "python_gettempdir": "C:/Users/Public/Documents/ESTsoft/CreatorTemp",
+    "resolution": "Do not override basetemp with TEMP. Keep safety allowlist unchanged."
+  },
+  "independent_environment_reviews": {"res04_code": "DEFAULT_TEMP_REEXECUTION_APPROPRIATE", "res04_qa": "CONDITIONAL_GO_PENDING_FULL_FAST"},
+  "remaining_runtime_risk": "One WinError5 at run_d3_engine_screen._write_checkpoint temporary.replace. Lock/ACL/security-software cause is not established; targeted default-temp rerun did not reproduce it.",
+  "other_checks": {"document_index": "PASS_1120_AT_TESTED_COMMIT", "nonrelease_sync": "PASS", "pyd_gui_verifier": "NOT_VERIFIED: optional CLI invocation requires branch/version/upstream-ref/manifest; do not infer a runtime parity PASS"},
+  "completed_sys05_groups": ["SQ00", "SQ01", "SQ01B1", "SQ01B2", "SQ01B3"],
+  "next": "Close integrated Fast Gate, then B4a/B4b, B5, SQ02, ANA05, ANA06, ANA07, ANA08, UX06.",
+  "percent_scope": "5/8 equally counted SYS05 groups, not total product effort completion; full page acceptance 0/14, closed canonical stages1/7.",
+  "boundaries": {"real_research_executed": false, "economic_success_claimed": false, "operating_db_write": false, "holdout_opened": false, "automatic_adoption": false, "live_orders": false},
+  "preserved_wip": ["dirty STOM_V.wt-dev", "restart .omo/evidence/tmap-walkforward/_discovery_feedback.txt", "integration test-generated tmap feedback remains untracked, not staged or cleaned"]
+}
