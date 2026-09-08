@@ -19,13 +19,14 @@ from typing import Final, TypedDict
 
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 ROOT: Final = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from ai_strategy_loop.dashboard import trade_contract_api  # noqa: E402
+from ai_strategy_loop.dashboard import backtest_api  # noqa: E402
 from tests.unit.dashboard.trade_quality_fixtures import official_pair  # noqa: E402
 
 
@@ -95,9 +96,19 @@ def make_app(directory: Path) -> FastAPI:
             return records[job_id]
 
     trade_contract_api.get_job_manager = Manager
+    backtest_api.get_job_manager = Manager
+    backtest_api.REPO_ROOT = directory
     app = FastAPI()
     app.include_router(trade_contract_api.trade_contract_router, prefix="/bt/trade-path")
     app.mount("/ui", StaticFiles(directory=ROOT / "ai_strategy_loop/dashboard/frontend"))
+
+    @app.get("/bt/result")
+    def result(job_id: str) -> JSONResponse:
+        return JSONResponse(backtest_api.get_result(job_id=job_id))
+
+    @app.get("/bt/analysis/montecarlo")
+    def no_research() -> JSONResponse:
+        return JSONResponse({"montecarlo": None, "reason": "fixture_does_not_execute_research"})
 
     @app.get("/bt/jobs")
     def jobs() -> Jobs:
@@ -130,14 +141,24 @@ def make_app(directory: Path) -> FastAPI:
 <link rel="stylesheet" href="/ui/styles.css"><link rel="stylesheet" href="/ui/v4.css">
 <link rel="stylesheet" href="/ui/trade-path.css">
 <script src="/ui/vendor-react.js"></script><script src="/ui/vendor-react-dom.js"></script>
+<script type="module" src="/ui/bundle/stom-ui.js"></script>
 <script>window.__STOM_NO_AUTO_MOUNT__=true;</script></head>
 <body style="padding:20px;background:var(--bg-0);color:var(--ink-1)">
 <h1>SQ01 합성 입력 검증</h1><p>실제 생산 컴포넌트·데이터 계약 API / 시장 연구·주문 없음</p>
 <button onclick="fetch('/fixture/release')">대기 응답 해제</button><main id="root"></main>
-<script src="/ui/bundle/app.js"></script><script>
+<script defer src="/ui/bundle/app.js"></script><script>
+document.addEventListener('DOMContentLoaded', function () {
 ReactDOM.createRoot(document.getElementById('root')).render(
  React.createElement(window.BtTradePathTab,{baseUrl:location.origin}));
+});
 </script></body></html>"""
+
+    @app.get("/result-view", response_class=HTMLResponse)
+    def result_page() -> str:
+        return page().replace(
+            "window.BtTradePathTab,{baseUrl:location.origin}",
+            "window.BtResultArea,{baseUrl:location.origin,jobId:new URLSearchParams(location.search).get('job')||'normal'}",
+        )
 
     return app
 

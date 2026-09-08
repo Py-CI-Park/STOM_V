@@ -26,6 +26,7 @@ if PROJECT_ROOT not in sys.path:
 import ai_strategy_loop.bootstrap  # noqa: E402,F401
 from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.dashboard import backtest_api as BA  # noqa: E402
+from tests.unit.dashboard.trade_quality_fixtures import official_pair
 from tests.unit.security_test_client import authorized_dashboard_client  # pyright: ignore[reportMissingImports]  # noqa: E402
 
 
@@ -38,10 +39,11 @@ _CSV_FIELDS = [
 ]
 
 
-def _write_csv(path: Path, rows: List[Dict[str, Any]]) -> str:
+def _write_csv(path: Path, rows: List[Dict[str, Any]], *, official: bool = False) -> str:
     # 누락 컬럼은 빈칸(restval), 미정의 키는 무시(extrasaction) — 부분 행 허용.
     with open(path, "w", encoding="utf-8-sig", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=_CSV_FIELDS, restval="", extrasaction="ignore")
+        fields = official_pair()[0].strip().split(",") if official else _CSV_FIELDS
+        w = csv.DictWriter(fh, fieldnames=fields, restval="", extrasaction="ignore")
         w.writeheader()
         for r in rows:
             w.writerow(r)
@@ -79,7 +81,7 @@ def _sample_csv(path: Path) -> str:
         {"종목명": "감마", "매수시간": "20250408133000", "매도시간": "20250408140000",
          "보유시간": 30, "수익률": 3.0, "수익금": 30000, "매도조건": "익절", "R_MAE": -0.1, "R_MFE": 3.1},
     ]
-    return _write_csv(path, rows)
+    return _write_csv(path, rows, official=True)
 
 
 class _FakeJobManager:

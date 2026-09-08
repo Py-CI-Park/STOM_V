@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 QualityStatus = Literal[
     "VALID",
@@ -33,6 +33,11 @@ class CsvIssue(QualityModel):
     row: int | None = None
     column: str = ""
     detail: str
+
+
+class TradeCountExpectation(QualityModel):
+    model_config: ClassVar[ConfigDict] = ConfigDict(extra="ignore")
+    trade_count: int | None = Field(default=None, ge=0, strict=True)
 
 
 class TradeCsvQuality(QualityModel):

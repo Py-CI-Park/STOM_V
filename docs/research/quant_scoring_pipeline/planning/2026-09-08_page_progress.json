@@ -2,9 +2,9 @@
   "schema": "stom.maturity_page_progress.v1",
   "date": "2026-09-08",
   "basis": "NEW_V15_ACCEPTANCE_SCOPE_NOT_EXISTING_STOM_FEATURE_COUNT",
-  "branch": "codex/process-research-sys-05-quality",
-  "source_base_commit": "23d3b16d3087af2b9b5d1e09a4d86408808e3cd3",
-  "receipt": "2026-09-08_SYS05_SQ01_TASK_RECEIPT.md",
+  "branch": "codex/process-research-sys-05-analysis-quality",
+  "source_base_commit": "1933e7fbd0898cff630ef7ae34a3c07073f362d5",
+  "receipt": "2026-09-08_SYS05_SQ01B1_TASK_RECEIPT.md",
   "canonical_order": [
     "RES-04P",
     "SYS-05",
@@ -20,9 +20,10 @@
   "active_stage": "SYS-05",
   "completed_atomic_scopes": [
     "SQ00.evaluation_stats_v2",
-    "SQ01.csv_quality_data_contract"
+    "SQ01.csv_quality_data_contract",
+    "SQ01B1.job_result_quality"
   ],
-  "next_atomic_scope": "SQ01B.analysis_consumer_quality",
+  "next_atomic_scope": "SQ01B2.generation_result_quality",
   "full_page_acceptance_closed": 0,
   "page_count": 14,
   "full_program_percent": null,
@@ -46,7 +47,8 @@
       "name": "결과 라이브러리",
       "status": "PARTIAL_UI",
       "achieved": [
-        "SQ01.terminal_source_selector"
+        "SQ01.terminal_source_selector",
+        "SQ01B1.job_result_quality"
       ],
       "remaining": [
         "전체 결과 identity·라이브러리 통합"
@@ -58,10 +60,11 @@
       "name": "품질·계보",
       "status": "SCOPED_WORKFLOW_VERIFIED",
       "achieved": [
-        "SQ01.csv_quality_data_contract"
+        "SQ01.csv_quality_data_contract",
+        "SQ01B1.job_result_quality"
       ],
       "remaining": [
-        "모든 분석 소비자 품질 전파",
+        "세대·보고서·개별/복수 분석 소비자 품질 전파",
         "정본 Bundle 계보 통합",
         "전체 페이지 수용"
       ],
@@ -70,8 +73,10 @@
     {
       "id": "P04",
       "name": "성과·자본·위험",
-      "status": "PENDING",
-      "achieved": [],
+      "status": "PARTIAL_UI",
+      "achieved": [
+        "SQ01B1.job_result_quality"
+      ],
       "remaining": [
         "동일 기간·자본·비용 기준",
         "미정의·비유한 값 처리"
@@ -182,7 +187,8 @@
       "name": "보고서",
       "status": "PARTIAL_PROJECTION",
       "achieved": [
-        "SQ00.report_metadata"
+        "SQ00.report_metadata",
+        "SQ01B1.job_result_quality"
       ],
       "remaining": [
         "모든 화면·HTML·JSON의 동일 Bundle/hash"
@@ -200,5 +206,48 @@
       ],
       "full_acceptance": "NOT_VERIFIED"
     }
-  ]
+  ],
+  "sys05_work_groups": [
+    {
+      "id": "SQ00",
+      "status": "COMPLETE",
+      "scope": "evaluation statistics v2"
+    },
+    {
+      "id": "SQ01",
+      "status": "COMPLETE",
+      "scope": "data-contract quality API and UI"
+    },
+    {
+      "id": "SQ01B1",
+      "status": "COMPLETE",
+      "scope": "normal backtest job result quality"
+    },
+    {
+      "id": "SQ01B2",
+      "status": "NEXT",
+      "scope": "generation result quality and execution truth mapping"
+    },
+    {
+      "id": "SQ01B3",
+      "status": "PENDING",
+      "scope": "report/export quality"
+    },
+    {
+      "id": "SQ01B4",
+      "status": "PENDING",
+      "scope": "individual analysis and Monte Carlo admission"
+    },
+    {
+      "id": "SQ01B5",
+      "status": "PENDING",
+      "scope": "compare/overlay/portfolio quality"
+    },
+    {
+      "id": "SQ02",
+      "status": "PENDING",
+      "scope": "versioned metrics and invalid values"
+    }
+  ],
+  "work_group_ratio_note": "3/8 equal work groups closed; not effort-weighted development percent."
 }
