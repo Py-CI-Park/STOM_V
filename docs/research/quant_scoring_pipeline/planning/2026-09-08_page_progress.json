@@ -5,7 +5,10 @@
   "branch": "codex/process-research-sys-05-report-quality",
   "source_base_commit": "b522a71a7396f60c8bad24f56a4a6523ff3dab6f",
   "integrated_code_commit": "bf5d02a1118f3eb533c9b122f7688b6f7dfa0fae",
-  "integration_gate": "FAST_SLOW_REVERIFY_PENDING",
+  "integration_gate": "PASS_AT_10b67ed3",
+  "canonical_branch": "loop/process-research-pipeline",
+  "integration_receipt": "2026-09-08_integrated_unit_receipt.json",
+  "verification_completed_date_kst": "2026-09-09",
   "receipt": "2026-09-08_SYS05_SQ01B3_TASK_RECEIPT.md",
   "canonical_order": [
     "RES-04P",
@@ -258,5 +261,5 @@
       "scope": "versioned metrics and invalid values"
     }
   ],
-  "work_group_ratio_note": "5/8 atomic scopes verified; integration full unit gate pending; not effort-weighted development percent."
+  "work_group_ratio_note": "5/8 atomic scopes verified; disjoint Fast8080/Slow24 unit gates passed at10b67ed3 with27 skipped. Not effort-weighted full program completion."
 }
