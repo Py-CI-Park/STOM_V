@@ -124,6 +124,13 @@ def _serialize_rules(
             "fdr_pass": bool(leaf["fdr_survivor"]),
             "adopted": key in adopted_by_key,
         }
+        row.update({
+            key: leaf[key]
+            for key in (
+                "stats_definition", "stats_scope", "discovery_stats", "base_rate"
+            )
+            if key in leaf
+        })
         if key in adopted_by_key:
             row["per_year_lift"] = {
                 str(year): float(v)

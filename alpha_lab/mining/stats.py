@@ -7,6 +7,9 @@ evaluate_leaves: 리프 규칙로 표본 마스크를 재구성해 일 블록 �
 (stat='lift', 리프 i는 seed+i)으로 95% CI와 단측 p를 얻고, 전체 리프 p에
 BH-FDR(q)를 적용해 생존 마스크를 만든다. 원본 리프 dict는 변경하지 않고
 {ci_low, ci_high, p, fdr_survivor}를 부착한 새 dict 리스트를 반환한다.
+v2: support/positives/lift/base_rate는 전달된 평가 행에서 재집계한다.
+기존 발견 통계는 discovery_stats에 보존한다. 평가 행이 독립 자료라는
+보장은 없으며 과거 봉인 보고서를 소급 재작성하지 않는다.
 adopt 단계용 내부 키도 함께 부착한다(직렬화 시 '_' 접두 키는 제외할 것):
   _idx[np.ndarray]      리프 마스크 표본 인덱스
   _pos_idx[np.ndarray]  리프 내 양성(y==1) 표본 인덱스
@@ -78,15 +81,29 @@ def evaluate_leaves(
     day_arr = np.asarray(day_ids)
     _validate_eval_inputs(X_arr, y_pos, day_arr)
     pos_all = np.flatnonzero(y_pos > 0.0)
+    base_rate = float(y_pos.mean()) if y_pos.size else float("nan")
     enriched: List[dict] = []
     for i, leaf in enumerate(leaves):
         mask = _rule_mask(X_arr, leaf)
         boot = day_block_bootstrap(
             day_arr, y_pos, mask, n_boot=n_boot, seed=seed + i, stat="lift"
         )
+        support = int(mask.sum())
+        positives = int(y_pos[mask].sum())
         enriched.append(
             {
                 **leaf,
+                "discovery_stats": dict(
+                    leaf.get("discovery_stats", {
+                        key: leaf.get(key) for key in ("support", "positives", "lift")
+                    })
+                ),
+                "stats_definition": "evaluation_binary_lift_v2",
+                "stats_scope": "PROVIDED_EVALUATION_ROWS_NOT_INDEPENDENCE_PROOF",
+                "support": support,
+                "positives": positives,
+                "base_rate": base_rate,
+                "lift": float(_lift(positives, support, base_rate)),
                 "ci_low": boot["ci_low"],
                 "ci_high": boot["ci_high"],
                 "p": boot["p_one_sided"],
