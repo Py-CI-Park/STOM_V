@@ -1,0 +1,1123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stom.res04.stage_f_receipt.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "stom.res04.stage_f_receipt.v1"
+    },
+    "definition_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "raw_source_sha256": {
+      "const": "d3383f89cf0fccb952fc4c24ac9f02a81dc38b80e30aa0530d267cc369a7271a"
+    },
+    "candidate_manifest_sha256": {
+      "const": "251a37edb2b34539fe343a7ae533262fb41d02af7272fc1167076055136e94dc"
+    },
+    "implementation_identity": {
+      "const": {
+        "base_commit": "993001cddae6ea5c58aedb6c3fe20743542506bc",
+        "git_blob_format": "sha1_normalized_git_blob",
+        "code_blobs": {
+          "ai_strategy_loop/revision/res04_preparation_contract.py": "457d367426a35c1bf355ef2d39d737e507b1dcf5",
+          "ai_strategy_loop/revision/res04_input_binding.py": "6306d6d4e18d09fbaf3b0e5b91f90a6a27907174",
+          "ai_strategy_loop/revision/res04_tick_source.py": "048801f4f009a63e895ff10ab60ba3ccc06ec23a",
+          "ai_strategy_loop/revision/res04_event_stream.py": "e529243b7a9fcd60ca2b562eaa4398f538509277",
+          "ai_strategy_loop/revision/res04_event_models.py": "384ee6538e77d4117cd4dd599308b3879673666e",
+          "ai_strategy_loop/revision/res04_controls.py": "cd5ee93841a0188d38edaed5ae696d46e663afd4",
+          "ai_strategy_loop/revision/res04_control_models.py": "4c9c1c5ac2c073af31956cdb856d62e0c54ed7e6",
+          "ai_strategy_loop/revision/res04_control_validation.py": "3b75de96645f2b85810ac349a7e8c21e80decd01",
+          "ai_strategy_loop/revision/res04_overlap.py": "2e684da822e77b9806a79ad430b743fd43d1a4c5",
+          "ai_strategy_loop/revision/res04_overlap_models.py": "ed4ccee3ae305cfef2f72cd01907b8548078c90d",
+          "ai_strategy_loop/revision/mcap_event_inputs.py": "691a6153acabf0443dd19e6d37c42c7cf212057c",
+          "ai_strategy_loop/revision/mcap_event_source.py": "91b68548b99a1d4eb21db220e16a03417d1777cf",
+          "ai_strategy_loop/revision/mcap_event_logic.py": "17509271dc72b74582761f95db6feaae48b7cb62",
+          "ai_strategy_loop/revision/mcap_event_candidate_eval.py": "cbd03a92b214f317d53992581a5a499d1c56fe5b",
+          "utility/sqlite_readonly.py": "edc7d32344ea1a2257954ad1b222941d5df3619d",
+          "ai_strategy_loop/controller/research_truth_models.py": "63bd3de9aaffa213fa1b896f8ba6a85437db9296"
+        },
+        "runtime": {
+          "python": "3.13.13",
+          "numpy": "2.3.5",
+          "pydantic": "2.12.5",
+          "sqlite": "3.50.4"
+        }
+      }
+    },
+    "inventory_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "event_output_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "execution_authority": {
+      "const": "OUTCOME_FREE_NO_ECONOMIC_APPROVAL"
+    },
+    "program_decision": {
+      "enum": [
+        "BLOCKED_DATA",
+        "NORMAL_STOP",
+        "REVIEW_ONLY",
+        "ERROR",
+        "RESOURCE_LIMIT"
+      ]
+    },
+    "source_binding": {
+      "type": "array",
+      "maxItems": 1024,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "BOUND_EVENT_STREAM_MANIFEST"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "kind",
+          "sha256"
+        ]
+      }
+    },
+    "expected_vs_received_inventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "expected_slices": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "received_slices": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "missing_scope_keys": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "type": "string",
+            "maxLength": 1024
+          }
+        },
+        "unexpected_scope_keys": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "type": "string",
+            "maxLength": 1024
+          }
+        }
+      },
+      "required": [
+        "expected_slices",
+        "received_slices",
+        "missing_scope_keys",
+        "unexpected_scope_keys"
+      ]
+    },
+    "candidate_sample_reports": {
+      "type": "array",
+      "maxItems": 7,
+      "items": {
+        "$ref": "#/$defs/CandidateFeasibility"
+      }
+    },
+    "overlap_reports": {
+      "type": "array",
+      "maxItems": 1024,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "OVERLAP_MANIFEST"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "kind",
+          "sha256"
+        ]
+      }
+    },
+    "coverage_and_errors": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "excluded_expected_slices": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "errors": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "enum": [
+                  "SOURCE_UNAVAILABLE",
+                  "SOURCE_IDENTITY_MISMATCH",
+                  "ROW_INVALID",
+                  "INVENTORY_MISSING",
+                  "RESOURCE_LIMIT",
+                  "UNEXPECTED_ERROR"
+                ]
+              },
+              "scope_key": {
+                "type": "string",
+                "maxLength": 1024
+              }
+            },
+            "required": [
+              "code",
+              "scope_key"
+            ]
+          }
+        }
+      },
+      "required": [
+        "excluded_expected_slices",
+        "errors"
+      ]
+    },
+    "elapsed_and_resource_usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "workers": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "bytes_read": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "budget_exceeded": {
+          "type": "boolean"
+        },
+        "elapsed_milliseconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        }
+      },
+      "required": [
+        "workers",
+        "bytes_read",
+        "budget_exceeded",
+        "elapsed_milliseconds"
+      ]
+    },
+    "stop_reason": {
+      "enum": [
+        "INVENTORY_INCOMPLETE",
+        "DATA_NOT_EVALUABLE",
+        "INSUFFICIENT_ONSET_SAMPLE",
+        "SAMPLE_SCREEN_REVIEW_ONLY",
+        "RESOURCE_LIMIT",
+        "EXECUTION_ERROR"
+      ]
+    }
+  },
+  "required": [
+    "schema",
+    "definition_sha256",
+    "raw_source_sha256",
+    "candidate_manifest_sha256",
+    "implementation_identity",
+    "inventory_sha256",
+    "event_output_sha256",
+    "execution_authority",
+    "program_decision",
+    "source_binding",
+    "expected_vs_received_inventory",
+    "candidate_sample_reports",
+    "overlap_reports",
+    "coverage_and_errors",
+    "elapsed_and_resource_usage",
+    "stop_reason"
+  ],
+  "$defs": {
+    "ControlScope": {
+      "additionalProperties": false,
+      "description": "One candidate/family/symbol/day stratum, with bounded identifier sizes.",
+      "properties": {
+        "candidate": {
+          "maxLength": 192,
+          "minLength": 1,
+          "title": "Candidate",
+          "type": "string"
+        },
+        "family": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Family",
+          "type": "string"
+        },
+        "fold": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Fold",
+          "type": "string"
+        },
+        "day": {
+          "format": "date",
+          "title": "Day",
+          "type": "string"
+        },
+        "symbol": {
+          "pattern": "^[0-9]{6}$",
+          "title": "Symbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate",
+        "family",
+        "fold",
+        "day",
+        "symbol"
+      ],
+      "title": "ControlScope",
+      "type": "object"
+    },
+    "ControlSelection": {
+      "additionalProperties": false,
+      "description": "Matched diagnostic positions, not tradable orders or calibrated inference.",
+      "properties": {
+        "scope": {
+          "$ref": "#/$defs/ControlScope"
+        },
+        "input_stream_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Input Stream Sha256",
+          "type": "string"
+        },
+        "preparation_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Preparation Sha256",
+          "type": "string"
+        },
+        "seed": {
+          "minimum": 0,
+          "title": "Seed",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "OBSERVED",
+            "NOT_EVALUABLE"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "use": {
+          "const": "RETROSPECTIVE_DIAGNOSTIC_NOT_EXECUTABLE_ENTRY_POLICY",
+          "default": "RETROSPECTIVE_DIAGNOSTIC_NOT_EXECUTABLE_ENTRY_POLICY",
+          "title": "Use",
+          "type": "string"
+        },
+        "method": {
+          "const": "sha256_rank_matched_known_true_v1",
+          "default": "sha256_rank_matched_known_true_v1",
+          "title": "Method",
+          "type": "string"
+        },
+        "known_transitions": {
+          "minimum": 0,
+          "title": "Known Transitions",
+          "type": "integer"
+        },
+        "pool_size": {
+          "minimum": 0,
+          "title": "Pool Size",
+          "type": "integer"
+        },
+        "censored_true_count": {
+          "minimum": 0,
+          "title": "Censored True Count",
+          "type": "integer"
+        },
+        "onset_positions": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Onset Positions",
+          "type": "array"
+        },
+        "control_positions": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Control Positions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "scope",
+        "input_stream_sha256",
+        "preparation_sha256",
+        "seed",
+        "status",
+        "known_transitions",
+        "pool_size",
+        "censored_true_count",
+        "onset_positions",
+        "control_positions"
+      ],
+      "title": "ControlSelection",
+      "type": "object"
+    },
+    "FoldCount": {
+      "additionalProperties": false,
+      "description": "Observed onset count, not an effective independent sample size.",
+      "properties": {
+        "fold": {
+          "minLength": 1,
+          "title": "Fold",
+          "type": "string"
+        },
+        "onsets": {
+          "minimum": 0,
+          "title": "Onsets",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "fold",
+        "onsets"
+      ],
+      "title": "FoldCount",
+      "type": "object"
+    },
+    "CandidateFeasibility": {
+      "additionalProperties": false,
+      "description": "Sample screen relative to declared inventory, never economic approval.",
+      "properties": {
+        "candidate": {
+          "minLength": 1,
+          "title": "Candidate",
+          "type": "string",
+          "enum": [
+            "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee",
+            "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_639515aa1e",
+            "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_55b6c25f13",
+            "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_ad1fb159a2",
+            "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_c5850a62eb",
+            "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_3205e5b871",
+            "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_89a4f88e5a"
+          ]
+        },
+        "status": {
+          "enum": [
+            "INCOMPLETE",
+            "NOT_EVALUABLE",
+            "NORMAL_STOP",
+            "REVIEW_ONLY"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "coverage_authority": {
+          "const": "RELATIVE_TO_DECLARED_INVENTORY_ONLY",
+          "default": "RELATIVE_TO_DECLARED_INVENTORY_ONLY",
+          "title": "Coverage Authority",
+          "type": "string"
+        },
+        "execution_policy": {
+          "const": "SEPARATE_APPROVAL_REQUIRED",
+          "default": "SEPARATE_APPROVAL_REQUIRED",
+          "title": "Execution Policy",
+          "type": "string"
+        },
+        "inventory_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Inventory Sha256",
+          "type": "string"
+        },
+        "preparation_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Preparation Sha256",
+          "type": "string"
+        },
+        "input_receipt_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Input Receipt Sha256",
+          "type": "string"
+        },
+        "candidate_definition_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Candidate Definition Sha256"
+        },
+        "expected_slices": {
+          "minimum": 0,
+          "title": "Expected Slices",
+          "type": "integer"
+        },
+        "received_slices": {
+          "minimum": 0,
+          "title": "Received Slices",
+          "type": "integer"
+        },
+        "total_onsets": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Total Onsets"
+        },
+        "onset_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Onset Days"
+        },
+        "onset_symbols": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Onset Symbols"
+        },
+        "per_fold": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/FoldCount"
+          },
+          "title": "Per Fold",
+          "type": "array"
+        }
+      },
+      "required": [
+        "candidate",
+        "status",
+        "reason",
+        "inventory_sha256",
+        "preparation_sha256",
+        "input_receipt_sha256",
+        "candidate_definition_sha256",
+        "expected_slices",
+        "received_slices",
+        "total_onsets",
+        "onset_days",
+        "onset_symbols"
+      ],
+      "title": "CandidateFeasibility",
+      "type": "object",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "NORMAL_STOP",
+                  "REVIEW_ONLY"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "total_onsets": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "onset_days": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "onset_symbols": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "candidate_definition_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "per_fold": {
+                "minItems": 4,
+                "maxItems": 4,
+                "allOf": [
+                  {
+                    "contains": {
+                      "properties": {
+                        "fold": {
+                          "const": "DEV_2022_Q2_MONTH1"
+                        }
+                      },
+                      "required": [
+                        "fold"
+                      ]
+                    }
+                  },
+                  {
+                    "contains": {
+                      "properties": {
+                        "fold": {
+                          "const": "DEV_2023_Q3_MONTH1"
+                        }
+                      },
+                      "required": [
+                        "fold"
+                      ]
+                    }
+                  },
+                  {
+                    "contains": {
+                      "properties": {
+                        "fold": {
+                          "const": "DEV_2024_Q4_MONTH1"
+                        }
+                      },
+                      "required": [
+                        "fold"
+                      ]
+                    }
+                  },
+                  {
+                    "contains": {
+                      "properties": {
+                        "fold": {
+                          "const": "DEV_2025_Q1_MONTH1"
+                        }
+                      },
+                      "required": [
+                        "fold"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "REVIEW_ONLY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "total_onsets": {
+                "minimum": 200
+              },
+              "onset_days": {
+                "minimum": 20
+              },
+              "onset_symbols": {
+                "minimum": 10
+              },
+              "per_fold": {
+                "items": {
+                  "properties": {
+                    "onsets": {
+                      "minimum": 20
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "FamilyPair": {
+      "additionalProperties": false,
+      "description": "Counts on complete-case timestamps, not duration-weighted effects.",
+      "properties": {
+        "family_a": {
+          "minLength": 1,
+          "title": "Family A",
+          "type": "string"
+        },
+        "family_b": {
+          "minLength": 1,
+          "title": "Family B",
+          "type": "string"
+        },
+        "co_firing": {
+          "minimum": 0,
+          "title": "Co Firing",
+          "type": "integer"
+        },
+        "a_only": {
+          "minimum": 0,
+          "title": "A Only",
+          "type": "integer"
+        },
+        "b_only": {
+          "minimum": 0,
+          "title": "B Only",
+          "type": "integer"
+        },
+        "neither": {
+          "minimum": 0,
+          "title": "Neither",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "family_a",
+        "family_b",
+        "co_firing",
+        "a_only",
+        "b_only",
+        "neither"
+      ],
+      "title": "FamilyPair",
+      "type": "object"
+    },
+    "FamilyOverlap": {
+      "additionalProperties": false,
+      "description": "Missing candidates never become a zero-overlap matrix.",
+      "properties": {
+        "status": {
+          "enum": [
+            "INCOMPLETE",
+            "NOT_EVALUABLE",
+            "OBSERVED"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "interpretation": {
+          "const": "CO_FIRING_NOT_PROVEN_CONFLICT",
+          "default": "CO_FIRING_NOT_PROVEN_CONFLICT",
+          "title": "Interpretation",
+          "type": "string"
+        },
+        "coverage": {
+          "const": "COMPLETE_CASE_INTERSECTION",
+          "default": "COMPLETE_CASE_INTERSECTION",
+          "title": "Coverage",
+          "type": "string"
+        },
+        "execution_policy": {
+          "const": "NO_ROUTER_OR_ECONOMIC_EXECUTION",
+          "default": "NO_ROUTER_OR_ECONOMIC_EXECUTION",
+          "title": "Execution Policy",
+          "type": "string"
+        },
+        "preparation_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Preparation Sha256",
+          "type": "string"
+        },
+        "input_receipt_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Input Receipt Sha256",
+          "type": "string"
+        },
+        "common_observations": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Common Observations"
+        },
+        "excluded_observations": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Excluded Observations",
+          "type": "array"
+        },
+        "missing_candidates": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Missing Candidates",
+          "type": "array"
+        },
+        "pairs": {
+          "items": {
+            "$ref": "#/$defs/FamilyPair"
+          },
+          "title": "Pairs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status",
+        "preparation_sha256",
+        "input_receipt_sha256",
+        "common_observations",
+        "excluded_observations",
+        "missing_candidates",
+        "pairs"
+      ],
+      "title": "FamilyOverlap",
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "program_decision": {
+            "enum": [
+              "NORMAL_STOP",
+              "REVIEW_ONLY"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "candidate_sample_reports": {
+            "minItems": 7,
+            "maxItems": 7,
+            "allOf": [
+              {
+                "contains": {
+                  "properties": {
+                    "candidate": {
+                      "const": "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_cb7275dfee"
+                    }
+                  },
+                  "required": [
+                    "candidate"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "candidate": {
+                      "const": "D3_ABSORPTION_REVERSAL_MCAP_A_LT3000_639515aa1e"
+                    }
+                  },
+                  "required": [
+                    "candidate"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "candidate": {
+                      "const": "D3_FAILED_BREAKOUT_RETURN_MCAP_A_LT3000_55b6c25f13"
+                    }
+                  },
+                  "required": [
+                    "candidate"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "candidate": {
+                      "const": "D3_COMPRESSION_CONFIRMED_BREAKOUT_MCAP_A_LT3000_ad1fb159a2"
+                    }
+                  },
+                  "required": [
+                    "candidate"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "candidate": {
+                      "const": "D3_FLOW_PRICE_DIVERGENCE_MCAP_A_LT3000_c5850a62eb"
+                    }
+                  },
+                  "required": [
+                    "candidate"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "candidate": {
+                      "const": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_3205e5b871"
+                    }
+                  },
+                  "required": [
+                    "candidate"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "candidate": {
+                      "const": "D3_OPENING_OVERREACTION_MEAN_REVERT_MCAP_A_LT3000_89a4f88e5a"
+                    }
+                  },
+                  "required": [
+                    "candidate"
+                  ]
+                }
+              }
+            ]
+          },
+          "coverage_and_errors": {
+            "properties": {
+              "excluded_expected_slices": {
+                "const": 0
+              },
+              "errors": {
+                "maxItems": 0
+              }
+            }
+          },
+          "expected_vs_received_inventory": {
+            "properties": {
+              "missing_scope_keys": {
+                "maxItems": 0
+              },
+              "unexpected_scope_keys": {
+                "maxItems": 0
+              },
+              "expected_slices": {
+                "minimum": 1
+              },
+              "received_slices": {
+                "minimum": 1
+              }
+            }
+          },
+          "elapsed_and_resource_usage": {
+            "properties": {
+              "budget_exceeded": {
+                "const": false
+              }
+            }
+          },
+          "source_binding": {
+            "minItems": 1
+          },
+          "overlap_reports": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "program_decision": {
+            "enum": [
+              "NORMAL_STOP"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "candidate_sample_reports": {
+            "items": {
+              "properties": {
+                "status": {
+                  "const": "NORMAL_STOP"
+                }
+              }
+            }
+          },
+          "stop_reason": {
+            "const": "INSUFFICIENT_ONSET_SAMPLE"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "program_decision": {
+            "enum": [
+              "REVIEW_ONLY"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "candidate_sample_reports": {
+            "items": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "NORMAL_STOP",
+                    "REVIEW_ONLY"
+                  ]
+                }
+              }
+            },
+            "contains": {
+              "properties": {
+                "status": {
+                  "const": "REVIEW_ONLY"
+                }
+              },
+              "required": [
+                "status"
+              ]
+            }
+          },
+          "stop_reason": {
+            "const": "SAMPLE_SCREEN_REVIEW_ONLY"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "candidate_sample_reports": {
+            "contains": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "INCOMPLETE",
+                    "NOT_EVALUABLE"
+                  ]
+                }
+              },
+              "required": [
+                "status"
+              ]
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "program_decision": {
+            "enum": [
+              "BLOCKED_DATA",
+              "ERROR",
+              "RESOURCE_LIMIT"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "elapsed_and_resource_usage": {
+            "properties": {
+              "budget_exceeded": {
+                "const": true
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "program_decision": {
+            "enum": [
+              "RESOURCE_LIMIT"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "elapsed_and_resource_usage": {
+            "anyOf": [
+              {
+                "properties": {
+                  "elapsed_milliseconds": {
+                    "minimum": 1800001
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "workers": {
+                    "minimum": 2
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "program_decision": {
+            "const": "RESOURCE_LIMIT"
+          },
+          "elapsed_and_resource_usage": {
+            "properties": {
+              "budget_exceeded": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "schema": "stom.res04.prereg_definition.v1",
+  "status": "SPECIFICATION_CANDIDATE_REVIEW_IN_SEPARATE_RECEIPT",
+  "authority": "SPECIFICATION_ONLY_NO_EXECUTION_GRANT",
+  "preparation": {
+    "path": "docs/research/quant_scoring_pipeline/planning/2026-09-07_res04p_preparation.json",
+    "sha256": "c692bb8a7c44f5357d5b2842a0333fcd574f6e8bad4240d05a016f15bc4a6c13"
+  },
+  "selection_evidence": {
+    "path": "docs/research/quant_scoring_pipeline/evidence/2026-08-26_res02_event_gate.json",
+    "sha256": "cb567e3b76342676e3a66393c849c1dd13d97670afbc09bd103ac88fe0c930bb",
+    "role": "AGGREGATE_SELECTION_METADATA_NOT_EVENT_ROWS"
+  },
+  "raw_source": {
+    "path": "C:/System_Trading/STOM/STOM_V.wt-dev/_database/stock_tick_back.db",
+    "sha256": "d3383f89cf0fccb952fc4c24ac9f02a81dc38b80e30aa0530d267cc369a7271a",
+    "bytes": 29727162368,
+    "identity_mode": "FULL_SHA256_RECHECK_BEFORE_EXECUTION",
+    "role": "DEVELOPMENT_PREVIOUSLY_EXPOSED"
+  },
+  "candidate_manifest": {
+    "path": "docs/research/quant_scoring_pipeline/evidence/2026-08-15_d3_candidate_manifest.json",
+    "sha256": "251a37edb2b34539fe343a7ae533262fb41d02af7272fc1167076055136e94dc",
+    "selection": "EXACT_SEVEN_IDS_FROM_PREPARATION_NO_PNL_RESELECTION"
+  },
+  "inventory_rule": {
+    "source": "moneytop point-in-time membership",
+    "folds": "EXACT_FOUR_DEVELOPMENT_FOLDS_FROM_PREPARATION",
+    "time_filter": "PER_ROW_HHMMSS_GTE_090030_LT_093000",
+    "expansion": "seven candidates x unique in-window symbol/day pairs",
+    "missing_data": "KEEP_EXPECTED_SLICE_AND_REASON_NEVER_DROP_TO_PASS",
+    "freeze_point": "inventory receipt before candidate sample assessment",
+    "binding_status": "SOURCE_INVENTORY_ORCHESTRATION_REQUIRED_BEFORE_STAGE_F"
+  },
+  "event_fields": [
+    "candidate",
+    "family",
+    "fold",
+    "day",
+    "symbol",
+    "timestamp",
+    "triggered",
+    "previous_triggered"
+  ],
+  "provenance_fields": [
+    "source_position",
+    "source_hashes",
+    "coverage",
+    "gaps"
+  ],
+  "forbidden_outcomes": [
+    "pnl",
+    "profit",
+    "return",
+    "mdd",
+    "win_rate",
+    "future_price",
+    "exit_result"
+  ],
+  "e1": {
+    "onset": "triggered true AND previous_triggered false",
+    "reset": "observed false; unknown is not false",
+    "left_censor": "first observed true or first true after gap is not an onset",
+    "history": "legacy recorded-row factors; max(60, twice each window) warmup",
+    "gap_seconds": 1,
+    "control_pool": "same candidate/family/fold/day/symbol; observed true with known predecessor",
+    "control_count": "exactly number of onsets in that stratum",
+    "control_rank": "SHA256 JSON array [res04-e1-control-v1,seed,candidate,family,fold,day,symbol,timestamp]; lowest hashes without replacement; position tie-break",
+    "seed": 20260907,
+    "use": "RETROSPECTIVE_DIAGNOSTIC_NOT_EXECUTABLE_ENTRY_POLICY",
+    "overlap_with_onsets": "ALLOWED; do not force disjoint controls",
+    "inference": "NO_CALIBRATED_P_VALUE_OR_CAUSAL_EFFECT_CLAIM"
+  },
+  "r1": {
+    "scope": "same raw projection/fold/day/symbol; exact seven candidates",
+    "alignment": "complete-case intersection of observed timestamps",
+    "family_signal": "OR of registered candidate signals within family",
+    "measurements": [
+      "co_firing",
+      "a_only",
+      "b_only",
+      "neither",
+      "excluded_by_alignment"
+    ],
+    "conflict_interpretation": "co-firing is potential contention for review, not proven thesis conflict",
+    "routing": "DESCRIPTIVE_ONLY_NO_ROUTER_SELECTION"
+  },
+  "sample_screen": {
+    "total_onsets": 200,
+    "onsets_per_fold": 20,
+    "distinct_onset_days": 20,
+    "distinct_onset_symbols": 10,
+    "meaning": "OPERATIONAL_SCREEN_NOT_POWER_OR_PROFITABILITY_PROOF"
+  },
+  "stop_rules": {
+    "program_precedence": [
+      "RESOURCE_LIMIT if any budget exceeded",
+      "ERROR if invalid input or execution error",
+      "BLOCKED_DATA if any INCOMPLETE or NOT_EVALUABLE or missing expected input",
+      "NORMAL_STOP if all seven complete candidates stop",
+      "REVIEW_ONLY otherwise; never economic approval"
+    ],
+    "missing_inventory_or_slice": "INCOMPLETE_NO_NUMERIC_SUCCESS",
+    "no_known_transitions": "NOT_EVALUABLE",
+    "complete_below_sample_screen": "NORMAL_STOP_NO_G0",
+    "sample_screen_sufficient": "REVIEW_ONLY_NO_EXECUTION_GRANT",
+    "program_incomplete": "BLOCKED_DATA",
+    "all_e1_candidates_normal_stop": "NORMAL_STOP_NO_G0",
+    "r1_fallback": "NONE_IN_THIS_REVISION",
+    "selection": "E1_PRIMARY_ONLY_PER_PREPARATION; no PnL-based selection",
+    "resource_exceeded": "RESOURCE_LIMIT_NO_PARTIAL_SUCCESS"
+  },
+  "budgets": {
+    "current_research_jobs_authorized": 0,
+    "historical_future_economic_job_ceiling": 40,
+    "stage_f_max_workers": 1,
+    "stage_f_max_wall_seconds": 1800,
+    "deadline_enforcement": "REQUIRED_IN_FUTURE_STAGE_F_SUPERVISOR",
+    "source_request_max_rows": 10000,
+    "sqlite_value_max_bytes": 16384,
+    "event_factor_cells": 2000000,
+    "candidate_expected_scopes": 20000,
+    "candidate_total_observations": 5000000,
+    "overlap_total_observations": 200000
+  },
+  "expected_receipt": {
+    "schema_path": "docs/research/quant_scoring_pipeline/planning/2026-09-08_res04p_expected_receipt.schema.json",
+    "schema_sha256": "4197de7a350b75c444c34657e6ad5efc799cee8810aaafaed50ad2204d5e29f1",
+    "required_identities": [
+      "definition_sha256",
+      "raw_source_sha256",
+      "candidate_manifest_sha256",
+      "implementation_identity",
+      "inventory_sha256",
+      "event_output_sha256"
+    ],
+    "required_sections": [
+      "source_binding",
+      "expected_vs_received_inventory",
+      "candidate_sample_reports",
+      "overlap_reports",
+      "coverage_and_errors",
+      "elapsed_and_resource_usage",
+      "stop_reason"
+    ],
+    "candidate_report_model": "ai_strategy_loop.revision.res04_control_models.CandidateFeasibility",
+    "overlap_report_model": "ai_strategy_loop.revision.res04_overlap_models.FamilyOverlap",
+    "future_event_output_hash": "GENERATED_AND_VERIFIED_AT_STAGE_F_NOT_INVENTED_NOW",
+    "authority": "OUTCOME_FREE_NO_ECONOMIC_APPROVAL"
+  },
+  "implementation_identity": {
+    "base_commit": "993001cddae6ea5c58aedb6c3fe20743542506bc",
+    "git_blob_format": "sha1_normalized_git_blob",
+    "code_blobs": {
+      "ai_strategy_loop/revision/res04_preparation_contract.py": "457d367426a35c1bf355ef2d39d737e507b1dcf5",
+      "ai_strategy_loop/revision/res04_input_binding.py": "6306d6d4e18d09fbaf3b0e5b91f90a6a27907174",
+      "ai_strategy_loop/revision/res04_tick_source.py": "048801f4f009a63e895ff10ab60ba3ccc06ec23a",
+      "ai_strategy_loop/revision/res04_event_stream.py": "e529243b7a9fcd60ca2b562eaa4398f538509277",
+      "ai_strategy_loop/revision/res04_event_models.py": "384ee6538e77d4117cd4dd599308b3879673666e",
+      "ai_strategy_loop/revision/res04_controls.py": "cd5ee93841a0188d38edaed5ae696d46e663afd4",
+      "ai_strategy_loop/revision/res04_control_models.py": "4c9c1c5ac2c073af31956cdb856d62e0c54ed7e6",
+      "ai_strategy_loop/revision/res04_control_validation.py": "3b75de96645f2b85810ac349a7e8c21e80decd01",
+      "ai_strategy_loop/revision/res04_overlap.py": "2e684da822e77b9806a79ad430b743fd43d1a4c5",
+      "ai_strategy_loop/revision/res04_overlap_models.py": "ed4ccee3ae305cfef2f72cd01907b8548078c90d",
+      "ai_strategy_loop/revision/mcap_event_inputs.py": "691a6153acabf0443dd19e6d37c42c7cf212057c",
+      "ai_strategy_loop/revision/mcap_event_source.py": "91b68548b99a1d4eb21db220e16a03417d1777cf",
+      "ai_strategy_loop/revision/mcap_event_logic.py": "17509271dc72b74582761f95db6feaae48b7cb62",
+      "ai_strategy_loop/revision/mcap_event_candidate_eval.py": "cbd03a92b214f317d53992581a5a499d1c56fe5b",
+      "utility/sqlite_readonly.py": "edc7d32344ea1a2257954ad1b222941d5df3619d",
+      "ai_strategy_loop/controller/research_truth_models.py": "63bd3de9aaffa213fa1b896f8ba6a85437db9296"
+    },
+    "runtime": {
+      "python": "3.13.13",
+      "numpy": "2.3.5",
+      "pydantic": "2.12.5",
+      "sqlite": "3.50.4"
+    }
+  },
+  "approval": {
+    "design_basis": "User delegated research-design and development decisions in this conversation",
+    "review": "INDEPENDENT_AGENT_REVIEW_REQUIRED",
+    "stage_f_execution": false,
+    "economic_g0_g2": false,
+    "holdout": false,
+    "automatic_adoption": false,
+    "operating_db_write": false
+  }
+}
