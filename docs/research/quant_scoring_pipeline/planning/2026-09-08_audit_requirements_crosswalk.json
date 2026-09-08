@@ -1,0 +1,3494 @@
+{
+  "schema_version": "stom.planning.audit_crosswalk.v1",
+  "source_package_version": "v1.5_20260906",
+  "source_package_sha256": "0df551896b5f885100c620f5e22f36201c6fb3abd46d85a085bd986a3256124f",
+  "code_baseline": "8de7c70ea1a24232d8092101417674f5ba0993e0",
+  "purpose": "Preserve v1.1-v1.5 requirements without declaring them implemented. Archived prompts are HISTORY_ONLY.",
+  "canonical_order": [
+    "RES-04P",
+    "SYS-05",
+    "ANA-05",
+    "ANA-06",
+    "ANA-07",
+    "ANA-08",
+    "UX-06"
+  ],
+  "source_registry_hashes": [
+    {
+      "Path": "C:\\Users\\parkc\\STOM_Verification\\v1.5_20260907\\STOM_Design_Implementation_v1.5_20260906\\planning\\design_traceability.json",
+      "Hash": "5D6A925993517E541A5D787340EE92F8899785CEBDC49BD66DAF04D5B27CB606"
+    },
+    {
+      "Path": "C:\\Users\\parkc\\STOM_Verification\\v1.5_20260907\\STOM_Design_Implementation_v1.5_20260906\\planning\\baseline_acceptance_tests.json",
+      "Hash": "C21B159D3B42BB5D18F49E2230DBB9293A5C13F11B0A44E342BEF445D5475B12"
+    },
+    {
+      "Path": "C:\\Users\\parkc\\STOM_Verification\\v1.5_20260907\\STOM_Design_Implementation_v1.5_20260906\\planning\\baseline_analysis_methods.json",
+      "Hash": "FFEDA4699DE4DC80C5128ADADD098BB65EE7E6AD54E639F99418DCC36EF2FCEF"
+    },
+    {
+      "Path": "C:\\Users\\parkc\\STOM_Verification\\v1.5_20260907\\STOM_Design_Implementation_v1.5_20260906\\planning\\baseline_legacy_requirement_disposition.json",
+      "Hash": "AE3D3EE9CBD18E0678F70D1AD369C308620D0C2B14AF93538E8B15AAF961BB90"
+    },
+    {
+      "Path": "C:\\Users\\parkc\\STOM_Verification\\v1.5_20260907\\STOM_Design_Implementation_v1.5_20260906\\planning\\baseline_canonical_gaps.json",
+      "Hash": "69BEFEE7969F958CB58157D1CEDA99A767521122F6CBF066DD82D6BB75C255C8"
+    },
+    {
+      "Path": "C:\\Users\\parkc\\STOM_Verification\\v1.5_20260907\\STOM_Design_Implementation_v1.5_20260906\\planning\\baseline_combined_findings.json",
+      "Hash": "86A02E0DECE630971810A3518B57A2C415284527DABEDA5A8324929863988F17"
+    },
+    {
+      "Path": "C:\\Users\\parkc\\STOM_Verification\\v1.5_20260907\\STOM_Design_Implementation_v1.5_20260906\\planning\\baseline_work_packages.json",
+      "Hash": "FFA18437545944A83B8CE334357740A7E9ACD7F934C2747802AD74D685FE852D"
+    }
+  ],
+  "work_package_stage_map": {
+    "WP00": [
+      "RES-04P"
+    ],
+    "WP01": [
+      "SYS-05",
+      "ANA-07",
+      "ANA-08"
+    ],
+    "WP02": [
+      "SYS-05",
+      "ANA-06"
+    ],
+    "WP03": [
+      "SYS-05",
+      "ANA-05"
+    ],
+    "WP04": [
+      "ANA-05"
+    ],
+    "WP05": [
+      "ANA-05",
+      "UX-06"
+    ],
+    "WP06": [
+      "ANA-07"
+    ],
+    "WP07": [
+      "ANA-06",
+      "UX-06"
+    ],
+    "WP08": [
+      "ANA-05",
+      "UX-06"
+    ],
+    "WP09": [
+      "SYS-05",
+      "UX-06"
+    ],
+    "WP10": [
+      "ANA-07",
+      "ANA-08"
+    ],
+    "WP11": [
+      "ANA-08",
+      "UX-06"
+    ],
+    "WP12": [
+      "UX-06"
+    ],
+    "WP13": [
+      "SYS-06"
+    ],
+    "WP14": [
+      "RES-04P",
+      "SYS-05",
+      "ANA-05",
+      "ANA-06",
+      "ANA-07",
+      "ANA-08",
+      "UX-06"
+    ],
+    "WP15": [
+      "RES-04P",
+      "UX-06"
+    ]
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "title": "동일 표본 채굴·평가를 독립 발견으로 읽을 위험",
+      "priority": "P0",
+      "work_packages": [
+        "WP01"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL"
+      ],
+      "acceptance_ids": [
+        "TF_F01",
+        "CAN-09"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-07",
+        "ANA-08"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07"
+      ]
+    },
+    {
+      "id": "F02",
+      "title": "평가 CI와 학습 support/lift가 한 결과에 혼합",
+      "priority": "P0",
+      "work_packages": [
+        "WP01"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL"
+      ],
+      "acceptance_ids": [
+        "TF_F02"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-07",
+        "ANA-08"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07"
+      ]
+    },
+    {
+      "id": "F03",
+      "title": "부트스트랩 꼬리 비율과 FDR의 권위 경계",
+      "priority": "P0",
+      "work_packages": [
+        "WP01"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL"
+      ],
+      "acceptance_ids": [
+        "TF_F03",
+        "CAN-09"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-07",
+        "ANA-08"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07"
+      ]
+    },
+    {
+      "id": "F04",
+      "title": "NaN·무한대가 가설 accepted로 갈 수 있음",
+      "priority": "P0",
+      "work_packages": [
+        "WP01"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL"
+      ],
+      "acceptance_ids": [
+        "TF_F04"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-07",
+        "ANA-08"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07"
+      ]
+    },
+    {
+      "id": "F05",
+      "title": "파일 해시와 캐시 분석 내용의 결합이 약함",
+      "priority": "P0",
+      "work_packages": [
+        "WP02"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "05_STORAGE_AND_DATA_ENGINEERING"
+      ],
+      "acceptance_ids": [
+        "TF_F05"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ]
+    },
+    {
+      "id": "F06",
+      "title": "역사적 19전략 보고서의 9개 거래수 모순",
+      "priority": "P0",
+      "work_packages": [
+        "WP02"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "05_STORAGE_AND_DATA_ENGINEERING"
+      ],
+      "acceptance_ids": [
+        "TF_F06"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ]
+    },
+    {
+      "id": "F07",
+      "title": "결측·진짜 0·미지원 피처의 혼합",
+      "priority": "P1",
+      "work_packages": [
+        "WP02"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "05_STORAGE_AND_DATA_ENGINEERING"
+      ],
+      "acceptance_ids": [
+        "TF_F07",
+        "CAN-02"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ]
+    },
+    {
+      "id": "F08",
+      "title": "미관측 event_count가 0으로 생성됨",
+      "priority": "P1",
+      "work_packages": [
+        "WP02"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "05_STORAGE_AND_DATA_ENGINEERING"
+      ],
+      "acceptance_ids": [
+        "TF_F08"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ]
+    },
+    {
+      "id": "F09",
+      "title": "AnalysisBundle과 다른 분석 산출물의 합류 부족",
+      "priority": "P1",
+      "work_packages": [
+        "WP04"
+      ],
+      "planned_stages": [
+        "ANA-05",
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "06_API_AND_INTEGRATION"
+      ],
+      "acceptance_ids": [
+        "TF_F09",
+        "CAN-01",
+        "CAN-05",
+        "CAN-06"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-05"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-05",
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "F10",
+      "title": "AnalysisCardV3는 존재하지만 기본 opt-in",
+      "priority": "P1",
+      "work_packages": [
+        "WP04"
+      ],
+      "planned_stages": [
+        "ANA-05",
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "06_API_AND_INTEGRATION"
+      ],
+      "acceptance_ids": [
+        "TF_F10",
+        "CAN-05",
+        "CAN-10"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-05"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-05",
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "F11",
+      "title": "거래 결과와 거래 기회 데이터의 연결 부족",
+      "priority": "P1",
+      "work_packages": [
+        "WP02"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "05_STORAGE_AND_DATA_ENGINEERING"
+      ],
+      "acceptance_ids": [
+        "TF_F11"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ]
+    },
+    {
+      "id": "F12",
+      "title": "라벨 정책·미관측 지평이 분석 대상에 영향",
+      "priority": "P1",
+      "work_packages": [
+        "WP02"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "05_STORAGE_AND_DATA_ENGINEERING"
+      ],
+      "acceptance_ids": [
+        "TF_F12"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ]
+    },
+    {
+      "id": "F13",
+      "title": "행·거래·독립 기회의 표본수 혼동",
+      "priority": "P1",
+      "work_packages": [
+        "WP02"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "05_STORAGE_AND_DATA_ENGINEERING"
+      ],
+      "acceptance_ids": [
+        "TF_F13",
+        "CAN-07"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06"
+      ]
+    },
+    {
+      "id": "F14",
+      "title": "교차창 검사와 최종 미개봉 OOS 구별",
+      "priority": "P1",
+      "work_packages": [
+        "WP01"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL"
+      ],
+      "acceptance_ids": [
+        "TF_F14",
+        "CAN-04"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-07",
+        "ANA-08"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07"
+      ]
+    },
+    {
+      "id": "F15",
+      "title": "기존 정식 원장과 레거시 카운터의 대응률 미증명",
+      "priority": "P1",
+      "work_packages": [
+        "WP10"
+      ],
+      "planned_stages": [
+        "ANA-06",
+        "ANA-07",
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "03_QUANT_ANALYSIS_PROTOCOL",
+        "04_AUTONOMOUS_RESEARCH_CONTROL"
+      ],
+      "acceptance_ids": [
+        "TF_F15",
+        "CAN-07"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-07",
+        "ANA-08"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-06",
+        "ANA-07",
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "F16",
+      "title": "손상행 무시와 역사적 편의 상수의 범위",
+      "priority": "P1",
+      "work_packages": [
+        "WP01"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL"
+      ],
+      "acceptance_ids": [
+        "TF_F16",
+        "CAN-02"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-07",
+        "ANA-08"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07"
+      ]
+    },
+    {
+      "id": "F17",
+      "title": "MFE/MAE·상관·Root Cause의 과잉 해석",
+      "priority": "P1",
+      "work_packages": [
+        "WP10"
+      ],
+      "planned_stages": [
+        "ANA-06",
+        "ANA-07",
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "03_QUANT_ANALYSIS_PROTOCOL",
+        "04_AUTONOMOUS_RESEARCH_CONTROL"
+      ],
+      "acceptance_ids": [
+        "TF_F17"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-07",
+        "ANA-08"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-06",
+        "ANA-07",
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "F18",
+      "title": "고정 진입 반사실과 전체 전략 효과 구분",
+      "priority": "P1",
+      "work_packages": [
+        "WP10"
+      ],
+      "planned_stages": [
+        "ANA-06",
+        "ANA-07",
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "03_QUANT_ANALYSIS_PROTOCOL",
+        "04_AUTONOMOUS_RESEARCH_CONTROL"
+      ],
+      "acceptance_ids": [
+        "TF_F18"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-07",
+        "ANA-08"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-06",
+        "ANA-07",
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "F19",
+      "title": "스트림→리스트·전 샤드 concatenate 병목",
+      "priority": "P1",
+      "work_packages": [
+        "WP13"
+      ],
+      "planned_stages": [
+        "SYS-06"
+      ],
+      "design_docs": [
+        "05_STORAGE_AND_DATA_ENGINEERING",
+        "09_VERIFICATION_RELEASE"
+      ],
+      "acceptance_ids": [
+        "TF_F19",
+        "CAN-13"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-06"
+      ]
+    },
+    {
+      "id": "F20",
+      "title": "카탈로그는 있으나 발견의 재사용 계약을 강화해야 함",
+      "priority": "P1",
+      "work_packages": [
+        "WP11"
+      ],
+      "planned_stages": [
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "04_AUTONOMOUS_RESEARCH_CONTROL",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "TF_F20",
+        "CAN-05",
+        "CAN-06",
+        "CAN-08",
+        "CAN-10"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-08",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "F21",
+      "title": "분석 현황·표본 손실·지식 흐름의 가시성",
+      "priority": "P2",
+      "work_packages": [
+        "WP11"
+      ],
+      "planned_stages": [
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "04_AUTONOMOUS_RESEARCH_CONTROL",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "TF_F21"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-08",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "F22",
+      "title": "불변성 테스트와 지식 유효성 테스트 분리",
+      "priority": "P1",
+      "work_packages": [
+        "WP14"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-07",
+        "UX-06",
+        "SYS-06"
+      ],
+      "design_docs": [
+        "09_VERIFICATION_RELEASE"
+      ],
+      "acceptance_ids": [
+        "TF_F22",
+        "CAN-03"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "RES-04P",
+        "SYS-05",
+        "ANA-05",
+        "ANA-06",
+        "ANA-07",
+        "ANA-08",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-07",
+        "UX-06",
+        "SYS-06"
+      ]
+    },
+    {
+      "id": "UX01",
+      "title": "세대 구간 분석이 전체 수익률과 선택구간 일수를 혼합",
+      "priority": "P0",
+      "work_packages": [
+        "WP03"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL"
+      ],
+      "acceptance_ids": [
+        "R01"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-05"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07"
+      ]
+    },
+    {
+      "id": "UX02",
+      "title": "CSV 없는 세대 MDD가 수익 반납률로 잘못 명명됨",
+      "priority": "P0",
+      "work_packages": [
+        "WP03"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL"
+      ],
+      "acceptance_ids": [
+        "R02"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-05"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07"
+      ]
+    },
+    {
+      "id": "UX03",
+      "title": "A/B 정규화 ON이 자본 정규화가 아닌 원화 평행이동",
+      "priority": "P0",
+      "work_packages": [
+        "WP06"
+      ],
+      "planned_stages": [
+        "ANA-07",
+        "UX-06"
+      ],
+      "design_docs": [
+        "03_QUANT_ANALYSIS_PROTOCOL",
+        "06_API_AND_INTEGRATION"
+      ],
+      "acceptance_ids": [
+        "R03",
+        "R04"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-07"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-07",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX04",
+      "title": "A/B 날짜 정렬·비교 적격성·우세색 기준 부족",
+      "priority": "P1",
+      "work_packages": [
+        "WP06"
+      ],
+      "planned_stages": [
+        "ANA-07",
+        "UX-06"
+      ],
+      "design_docs": [
+        "03_QUANT_ANALYSIS_PROTOCOL",
+        "06_API_AND_INTEGRATION"
+      ],
+      "acceptance_ids": [
+        "R05",
+        "R06",
+        "CAN-07"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-07"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-07",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX05",
+      "title": "구간 배너 아래 리프·피처맵은 전체 결과를 조회",
+      "priority": "P1",
+      "work_packages": [
+        "WP04"
+      ],
+      "planned_stages": [
+        "ANA-05",
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "06_API_AND_INTEGRATION"
+      ],
+      "acceptance_ids": [
+        "R07"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-05"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-05",
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX06",
+      "title": "세대 변경 후 이전 수정 제안이 남을 수 있음",
+      "priority": "P1",
+      "work_packages": [
+        "WP05"
+      ],
+      "planned_stages": [
+        "UX-06"
+      ],
+      "design_docs": [
+        "06_API_AND_INTEGRATION",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R08",
+        "R09"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX07",
+      "title": "피처맵의 이전 값이 새 변수·소스 라벨 아래 남음",
+      "priority": "P1",
+      "work_packages": [
+        "WP05"
+      ],
+      "planned_stages": [
+        "UX-06"
+      ],
+      "design_docs": [
+        "06_API_AND_INTEGRATION",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R10",
+        "R11"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX08",
+      "title": "A/B 비교 요청에는 현재성 guard가 없음",
+      "priority": "P1",
+      "work_packages": [
+        "WP05"
+      ],
+      "planned_stages": [
+        "UX-06"
+      ],
+      "design_docs": [
+        "06_API_AND_INTEGRATION",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R12"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX09",
+      "title": "최악·최고 리플레이의 날짜와 종목이 독립 선택됨",
+      "priority": "P1",
+      "work_packages": [
+        "WP07"
+      ],
+      "planned_stages": [
+        "ANA-06",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R17"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-06",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-06",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX10",
+      "title": "Overview 새로고침 실패를 기존 성공 payload가 가림",
+      "priority": "P1",
+      "work_packages": [
+        "WP05"
+      ],
+      "planned_stages": [
+        "UX-06"
+      ],
+      "design_docs": [
+        "06_API_AND_INTEGRATION",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R13"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX11",
+      "title": "연결 오류를 CSV 없음·데이터 없음으로 설명",
+      "priority": "P1",
+      "work_packages": [
+        "WP05"
+      ],
+      "planned_stages": [
+        "UX-06"
+      ],
+      "design_docs": [
+        "06_API_AND_INTEGRATION",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R14",
+        "R15",
+        "CAN-02"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX12",
+      "title": "Overview와 차트가 별도 API에서 독립 조립됨",
+      "priority": "P1",
+      "work_packages": [
+        "WP04"
+      ],
+      "planned_stages": [
+        "ANA-05",
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "06_API_AND_INTEGRATION"
+      ],
+      "acceptance_ids": [
+        "R16",
+        "CAN-01"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-05"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-05",
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX13",
+      "title": "선택구간 화면과 세대 HTML 리포트의 범위가 다름",
+      "priority": "P1",
+      "work_packages": [
+        "WP08"
+      ],
+      "planned_stages": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "design_docs": [
+        "05_STORAGE_AND_DATA_ENGINEERING",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R19"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-05",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX14",
+      "title": "ChartFrame 기본 검사가 수치 필드를 검증하지 않음",
+      "priority": "P1",
+      "work_packages": [
+        "WP09"
+      ],
+      "planned_stages": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R21"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-05",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX15",
+      "title": "원본값 표가 차트의 모든 계열·중앙 극값을 대표하지 않음",
+      "priority": "P2",
+      "work_packages": [
+        "WP09"
+      ],
+      "planned_stages": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R22",
+        "R23"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-05",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX16",
+      "title": "모든 차트 매트릭스보다 연구 질문 중심의 작업 순서 필요",
+      "priority": "P1",
+      "work_packages": [
+        "WP11"
+      ],
+      "planned_stages": [
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "04_AUTONOMOUS_RESEARCH_CONTROL",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R34",
+        "CAN-11"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-08",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX17",
+      "title": "게이트 PASS·성공의 종류가 패널마다 압축됨",
+      "priority": "P1",
+      "work_packages": [
+        "WP10"
+      ],
+      "planned_stages": [
+        "ANA-06",
+        "ANA-07",
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "03_QUANT_ANALYSIS_PROTOCOL",
+        "04_AUTONOMOUS_RESEARCH_CONTROL"
+      ],
+      "acceptance_ids": [
+        "R25",
+        "CAN-04",
+        "CAN-12"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-07",
+        "ANA-08"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-06",
+        "ANA-07",
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX18",
+      "title": "탐색 p값과 손실 랭킹이 곧바로 수정 근거처럼 보임",
+      "priority": "P1",
+      "work_packages": [
+        "WP10"
+      ],
+      "planned_stages": [
+        "ANA-06",
+        "ANA-07",
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "03_QUANT_ANALYSIS_PROTOCOL",
+        "04_AUTONOMOUS_RESEARCH_CONTROL"
+      ],
+      "acceptance_ids": [
+        "R26",
+        "CAN-09"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-07",
+        "ANA-08"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-06",
+        "ANA-07",
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX19",
+      "title": "전체화면 모달의 초점 격리·SVG ID 분리 필요",
+      "priority": "P1",
+      "work_packages": [
+        "WP12"
+      ],
+      "planned_stages": [
+        "UX-06"
+      ],
+      "design_docs": [
+        "07_PAGE_UX_SPEC",
+        "09_VERIFICATION_RELEASE"
+      ],
+      "acceptance_ids": [
+        "R27",
+        "R28"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX20",
+      "title": "하위탭·레이아웃 라디오·선택셀의 의미 일관성",
+      "priority": "P1",
+      "work_packages": [
+        "WP12"
+      ],
+      "planned_stages": [
+        "UX-06"
+      ],
+      "design_docs": [
+        "07_PAGE_UX_SPEC",
+        "09_VERIFICATION_RELEASE"
+      ],
+      "acceptance_ids": [
+        "R29"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX21",
+      "title": "리플로·대비·단일 포인터 대안은 실측 수용시험 필요",
+      "priority": "P2",
+      "work_packages": [
+        "WP12"
+      ],
+      "planned_stages": [
+        "UX-06"
+      ],
+      "design_docs": [
+        "07_PAGE_UX_SPEC",
+        "09_VERIFICATION_RELEASE"
+      ],
+      "acceptance_ids": [
+        "R30",
+        "R31",
+        "R32"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX22",
+      "title": "verified-at이 검증 시각 아닌 생성 시각에서 나옴",
+      "priority": "P1",
+      "work_packages": [
+        "WP09"
+      ],
+      "planned_stages": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R24",
+        "CAN-12"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-05",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX23",
+      "title": "MC 자동 재계산과 여러 패널의 독립 조회 비용",
+      "priority": "P1",
+      "work_packages": [
+        "WP13"
+      ],
+      "planned_stages": [
+        "SYS-06"
+      ],
+      "design_docs": [
+        "05_STORAGE_AND_DATA_ENGINEERING",
+        "09_VERIFICATION_RELEASE"
+      ],
+      "acceptance_ids": [
+        "R33",
+        "CAN-13"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-06"
+      ]
+    },
+    {
+      "id": "UX24",
+      "title": "로컬 상태 중심 선택으로 링크 공유·복귀가 불완전",
+      "priority": "P2",
+      "work_packages": [
+        "WP07"
+      ],
+      "planned_stages": [
+        "ANA-06",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R18"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-06",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-06",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX25",
+      "title": "사용자 증상에서 분석 요청·근거까지 추적하는 영수증",
+      "priority": "P1",
+      "work_packages": [
+        "WP08"
+      ],
+      "planned_stages": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "design_docs": [
+        "05_STORAGE_AND_DATA_ENGINEERING",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R20"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-05",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "UX26",
+      "title": "문자열·정적 구조 검사만으로 사용자 행동을 증명하지 않기",
+      "priority": "P1",
+      "work_packages": [
+        "WP14"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-07",
+        "UX-06",
+        "SYS-06"
+      ],
+      "design_docs": [
+        "09_VERIFICATION_RELEASE"
+      ],
+      "acceptance_ids": [
+        "R36",
+        "CAN-03"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "RES-04P",
+        "SYS-05",
+        "ANA-05",
+        "ANA-06",
+        "ANA-07",
+        "ANA-08",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-07",
+        "UX-06",
+        "SYS-06"
+      ]
+    },
+    {
+      "id": "UX27",
+      "title": "frontend README가 실제 STOM 생산 구조 안내가 아님",
+      "priority": "P1",
+      "work_packages": [
+        "WP00",
+        "WP15"
+      ],
+      "planned_stages": [
+        "RES-04P",
+        "ANA-08",
+        "SYS-06"
+      ],
+      "design_docs": [
+        "01_SYSTEM_ARCHITECTURE",
+        "08_SECURITY_OPERATIONS",
+        "09_VERIFICATION_RELEASE",
+        "10_ECONOMIC_SUCCESS_AND_DECISIONS"
+      ],
+      "acceptance_ids": [
+        "R36"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "RES-04P",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "RES-04P",
+        "ANA-08",
+        "SYS-06"
+      ]
+    },
+    {
+      "id": "UX28",
+      "title": "발견→반증→다음실험의 사용자 동선 완성",
+      "priority": "P2",
+      "work_packages": [
+        "WP11"
+      ],
+      "planned_stages": [
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "04_AUTONOMOUS_RESEARCH_CONTROL",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "R35",
+        "CAN-08",
+        "CAN-11"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "ANA-08",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "Q01",
+      "title": "거래 발생일 원화 Sharpe와 전체 운용기간 수익률 Sharpe 구분",
+      "priority": "P1",
+      "work_packages": [
+        "WP02",
+        "WP03"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06",
+        "ANA-07"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL",
+        "05_STORAGE_AND_DATA_ENGINEERING"
+      ],
+      "acceptance_ids": [
+        "TQ01"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-05"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06",
+        "ANA-07"
+      ]
+    },
+    {
+      "id": "Q02",
+      "title": "PF·Payoff 등의 미정의 상태가 측정된 0으로 반환됨",
+      "priority": "P1",
+      "work_packages": [
+        "WP03",
+        "WP09"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "TQ02"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-05",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "Q03",
+      "title": "첫 손익 이전 기준점이 빠진 drawdown을 운용 MDD와 혼동",
+      "priority": "P1",
+      "work_packages": [
+        "WP03"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL"
+      ],
+      "acceptance_ids": [
+        "TQ03"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-05"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07"
+      ]
+    },
+    {
+      "id": "Q04",
+      "title": "Monte Carlo 파산 문구의 자본이 실제 운용자본이 아닌 손익 대용값",
+      "priority": "P1",
+      "work_packages": [
+        "WP03",
+        "WP10"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07",
+        "ANA-06",
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL",
+        "04_AUTONOMOUS_RESEARCH_CONTROL"
+      ],
+      "acceptance_ids": [
+        "TQ04"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07",
+        "ANA-08"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07",
+        "ANA-06",
+        "ANA-08",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "Q05",
+      "title": "같은 분 내 틱 진입·청산의 보유금액 잔류",
+      "priority": "P0",
+      "work_packages": [
+        "WP03",
+        "WP07"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07",
+        "ANA-06",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL",
+        "07_PAGE_UX_SPEC"
+      ],
+      "acceptance_ids": [
+        "TQ05"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-06",
+        "UX-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-05",
+        "ANA-07",
+        "ANA-06",
+        "UX-06"
+      ]
+    },
+    {
+      "id": "Q06",
+      "title": "라벨 타입 미검증 상태의 y==1 이진화",
+      "priority": "P1",
+      "work_packages": [
+        "WP01",
+        "WP02",
+        "WP10"
+      ],
+      "planned_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07",
+        "ANA-05",
+        "ANA-08",
+        "UX-06"
+      ],
+      "design_docs": [
+        "02_DOMAIN_AND_CONTRACTS",
+        "03_QUANT_ANALYSIS_PROTOCOL",
+        "04_AUTONOMOUS_RESEARCH_CONTROL",
+        "05_STORAGE_AND_DATA_ENGINEERING"
+      ],
+      "acceptance_ids": [
+        "TQ06"
+      ],
+      "current_closure": "NOT_CLOSED_BY_RES04P_WORK",
+      "validation_scope": "BASELINE_CARRIED_NOT_FULLY_REAUDITED",
+      "wp_derived_stage_hints": [
+        "SYS-05",
+        "ANA-07",
+        "ANA-08",
+        "ANA-06"
+      ],
+      "baseline_canonical_stages": [
+        "SYS-05",
+        "ANA-06",
+        "ANA-07",
+        "ANA-05",
+        "ANA-08",
+        "UX-06"
+      ]
+    }
+  ],
+  "canonical_requirements": [
+    {
+      "id": "REPO-P0-01",
+      "title": "분석 단일 정본 미완성",
+      "canonical_stages": [
+        "ANA-05"
+      ],
+      "related_issues": [
+        "F09",
+        "UX12"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-01"
+    },
+    {
+      "id": "REPO-P0-02",
+      "title": "CSV 품질 오류와 빈결과 혼합",
+      "canonical_stages": [
+        "SYS-05"
+      ],
+      "related_issues": [
+        "F07",
+        "F16",
+        "UX11"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-02"
+    },
+    {
+      "id": "REPO-P0-03",
+      "title": "Golden 성공 결과 E2E 미확보",
+      "canonical_stages": [
+        "SYS-05"
+      ],
+      "related_issues": [
+        "F22",
+        "UX26"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-03"
+    },
+    {
+      "id": "REPO-P0-04",
+      "title": "holdout 이름·권위 충돌",
+      "canonical_stages": [
+        "ANA-05",
+        "UX-06"
+      ],
+      "related_issues": [
+        "F14",
+        "UX17"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-04"
+    },
+    {
+      "id": "REPO-P1-05",
+      "title": "Card v2/v3·prompt·UI·영속성 분리",
+      "canonical_stages": [
+        "ANA-05",
+        "ANA-08"
+      ],
+      "related_issues": [
+        "F09",
+        "F10",
+        "F20"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-05"
+    },
+    {
+      "id": "REPO-P1-06",
+      "title": "analysis_snapshot persistence 고립",
+      "canonical_stages": [
+        "ANA-05"
+      ],
+      "related_issues": [
+        "F09",
+        "F20"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-06"
+    },
+    {
+      "id": "REPO-P1-07",
+      "title": "범용 Fold/Control 집계 미완성",
+      "canonical_stages": [
+        "ANA-07"
+      ],
+      "related_issues": [
+        "F13",
+        "F15",
+        "UX04"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-07"
+    },
+    {
+      "id": "REPO-P1-08",
+      "title": "Research Tools 수동·비영속",
+      "canonical_stages": [
+        "ANA-08"
+      ],
+      "related_issues": [
+        "F20",
+        "UX28"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-08"
+    },
+    {
+      "id": "REPO-P1-09",
+      "title": "계층마다 통계·actionable 계약 상이",
+      "canonical_stages": [
+        "ANA-07",
+        "ANA-08"
+      ],
+      "related_issues": [
+        "F01",
+        "F03",
+        "UX18"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-09"
+    },
+    {
+      "id": "REPO-P1-10",
+      "title": "feedback 옵트인·효과적소비 미증명",
+      "canonical_stages": [
+        "ANA-08"
+      ],
+      "related_issues": [
+        "F10",
+        "F20"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-10"
+    },
+    {
+      "id": "REPO-P1-11",
+      "title": "UX 의사결정 동선 분산",
+      "canonical_stages": [
+        "UX-06"
+      ],
+      "related_issues": [
+        "UX16",
+        "UX28"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-11"
+    },
+    {
+      "id": "REPO-P1-12",
+      "title": "현재/과거 Program 병렬 혼동",
+      "canonical_stages": [
+        "UX-06"
+      ],
+      "related_issues": [
+        "UX17",
+        "UX22"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-12"
+    },
+    {
+      "id": "REPO-P2-13",
+      "title": "대형모듈 책임 과밀",
+      "canonical_stages": [
+        "SYS-06"
+      ],
+      "related_issues": [
+        "F19",
+        "UX23"
+      ],
+      "status": "PLANNED_NOT_IMPLEMENTED",
+      "source": "R02",
+      "acceptance_test": "CAN-13"
+    }
+  ],
+  "acceptance_tests": [
+    {
+      "id": "R01",
+      "title": "Full+selected metric scope",
+      "findings": [
+        "UX01"
+      ],
+      "work_packages": [
+        "WP03"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R02",
+      "title": "MDD metrics-only alias",
+      "findings": [
+        "UX02"
+      ],
+      "work_packages": [
+        "WP03"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R03",
+      "title": "Capital scale invariance",
+      "findings": [
+        "UX03"
+      ],
+      "work_packages": [
+        "WP06"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R04",
+      "title": "Normalization ineligible",
+      "findings": [
+        "UX03"
+      ],
+      "work_packages": [
+        "WP06"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R05",
+      "title": "Date-key alignment",
+      "findings": [
+        "UX04"
+      ],
+      "work_packages": [
+        "WP06"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R06",
+      "title": "Comparable metric judgement",
+      "findings": [
+        "UX04"
+      ],
+      "work_packages": [
+        "WP06"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R07",
+      "title": "Range propagation",
+      "findings": [
+        "UX05"
+      ],
+      "work_packages": [
+        "WP04"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R08",
+      "title": "Proposal source reset",
+      "findings": [
+        "UX06"
+      ],
+      "work_packages": [
+        "WP05"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R09",
+      "title": "Late proposal response",
+      "findings": [
+        "UX06"
+      ],
+      "work_packages": [
+        "WP05"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R10",
+      "title": "Feature control/result match",
+      "findings": [
+        "UX07"
+      ],
+      "work_packages": [
+        "WP05"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R11",
+      "title": "Server switch",
+      "findings": [
+        "UX07"
+      ],
+      "work_packages": [
+        "WP05"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R12",
+      "title": "Compare response reversal",
+      "findings": [
+        "UX08"
+      ],
+      "work_packages": [
+        "WP05"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R13",
+      "title": "Refresh fail with data",
+      "findings": [
+        "UX10"
+      ],
+      "work_packages": [
+        "WP05"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R14",
+      "title": "Transport vs application error",
+      "findings": [
+        "UX11"
+      ],
+      "work_packages": [
+        "WP05"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R15",
+      "title": "Observed zero vs no artifact",
+      "findings": [
+        "UX11"
+      ],
+      "work_packages": [
+        "WP05"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R16",
+      "title": "Digest mismatch",
+      "findings": [
+        "UX12"
+      ],
+      "work_packages": [
+        "WP04"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R17",
+      "title": "Replay join",
+      "findings": [
+        "UX09"
+      ],
+      "work_packages": [
+        "WP07"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R18",
+      "title": "Deep-link and return",
+      "findings": [
+        "UX24"
+      ],
+      "work_packages": [
+        "WP07"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R19",
+      "title": "Export scope parity",
+      "findings": [
+        "UX13"
+      ],
+      "work_packages": [
+        "WP08"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R20",
+      "title": "Safe export",
+      "findings": [
+        "UX25"
+      ],
+      "work_packages": [
+        "WP08"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R21",
+      "title": "Numeric validity",
+      "findings": [
+        "UX14"
+      ],
+      "work_packages": [
+        "WP09"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R22",
+      "title": "Table complete-series access",
+      "findings": [
+        "UX15"
+      ],
+      "work_packages": [
+        "WP09"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R23",
+      "title": "Bounded rows",
+      "findings": [
+        "UX15"
+      ],
+      "work_packages": [
+        "WP09"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R24",
+      "title": "Time semantics",
+      "findings": [
+        "UX22"
+      ],
+      "work_packages": [
+        "WP09"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R25",
+      "title": "Authority vocabulary",
+      "findings": [
+        "UX17"
+      ],
+      "work_packages": [
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R26",
+      "title": "Discovery claims",
+      "findings": [
+        "UX18"
+      ],
+      "work_packages": [
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R27",
+      "title": "Modal keyboard",
+      "findings": [
+        "UX19"
+      ],
+      "work_packages": [
+        "WP12"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R28",
+      "title": "Multiple chart instances",
+      "findings": [
+        "UX19"
+      ],
+      "work_packages": [
+        "WP12"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R29",
+      "title": "Tab/radio/cell semantics",
+      "findings": [
+        "UX20"
+      ],
+      "work_packages": [
+        "WP12"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R30",
+      "title": "Non-drag input",
+      "findings": [
+        "UX21"
+      ],
+      "work_packages": [
+        "WP12"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R31",
+      "title": "Reflow and typography",
+      "findings": [
+        "UX21"
+      ],
+      "work_packages": [
+        "WP12"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R32",
+      "title": "Contrast/motion",
+      "findings": [
+        "UX21"
+      ],
+      "work_packages": [
+        "WP12"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R33",
+      "title": "Resource budget",
+      "findings": [
+        "UX23"
+      ],
+      "work_packages": [
+        "WP13"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R34",
+      "title": "End-to-end user task",
+      "findings": [
+        "UX16"
+      ],
+      "work_packages": [
+        "WP11"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R35",
+      "title": "Claim evidence lineage",
+      "findings": [
+        "UX28"
+      ],
+      "work_packages": [
+        "WP11"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "R36",
+      "title": "Handoff and closure",
+      "findings": [
+        "UX27",
+        "UX26"
+      ],
+      "work_packages": [
+        "WP00",
+        "WP14",
+        "WP15"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F01",
+      "title": "계승 검증: 동일 표본 채굴·평가를 독립 발견으로 읽을 위험",
+      "findings": [
+        "F01"
+      ],
+      "work_packages": [
+        "WP01"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F02",
+      "title": "계승 검증: 평가 CI와 학습 support/lift가 한 결과에 혼합",
+      "findings": [
+        "F02"
+      ],
+      "work_packages": [
+        "WP01"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F03",
+      "title": "계승 검증: 부트스트랩 꼬리 비율과 FDR의 권위 경계",
+      "findings": [
+        "F03"
+      ],
+      "work_packages": [
+        "WP01"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F04",
+      "title": "계승 검증: NaN·무한대가 가설 accepted로 갈 수 있음",
+      "findings": [
+        "F04"
+      ],
+      "work_packages": [
+        "WP01"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F05",
+      "title": "계승 검증: 파일 해시와 캐시 분석 내용의 결합이 약함",
+      "findings": [
+        "F05"
+      ],
+      "work_packages": [
+        "WP02"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F06",
+      "title": "계승 검증: 역사적 19전략 보고서의 9개 거래수 모순",
+      "findings": [
+        "F06"
+      ],
+      "work_packages": [
+        "WP02"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F07",
+      "title": "계승 검증: 결측·진짜 0·미지원 피처의 혼합",
+      "findings": [
+        "F07"
+      ],
+      "work_packages": [
+        "WP02"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F08",
+      "title": "계승 검증: 미관측 event_count가 0으로 생성됨",
+      "findings": [
+        "F08"
+      ],
+      "work_packages": [
+        "WP02"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F09",
+      "title": "계승 검증: AnalysisBundle과 다른 분석 산출물의 합류 부족",
+      "findings": [
+        "F09"
+      ],
+      "work_packages": [
+        "WP04"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F10",
+      "title": "계승 검증: AnalysisCardV3는 존재하지만 기본 opt-in",
+      "findings": [
+        "F10"
+      ],
+      "work_packages": [
+        "WP04"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F11",
+      "title": "계승 검증: 거래 결과와 거래 기회 데이터의 연결 부족",
+      "findings": [
+        "F11"
+      ],
+      "work_packages": [
+        "WP02"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F12",
+      "title": "계승 검증: 라벨 정책·미관측 지평이 분석 대상에 영향",
+      "findings": [
+        "F12"
+      ],
+      "work_packages": [
+        "WP02"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F13",
+      "title": "계승 검증: 행·거래·독립 기회의 표본수 혼동",
+      "findings": [
+        "F13"
+      ],
+      "work_packages": [
+        "WP02"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F14",
+      "title": "계승 검증: 교차창 검사와 최종 미개봉 OOS 구별",
+      "findings": [
+        "F14"
+      ],
+      "work_packages": [
+        "WP01"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F15",
+      "title": "계승 검증: 기존 정식 원장과 레거시 카운터의 대응률 미증명",
+      "findings": [
+        "F15"
+      ],
+      "work_packages": [
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F16",
+      "title": "계승 검증: 손상행 무시와 역사적 편의 상수의 범위",
+      "findings": [
+        "F16"
+      ],
+      "work_packages": [
+        "WP01"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F17",
+      "title": "계승 검증: MFE/MAE·상관·Root Cause의 과잉 해석",
+      "findings": [
+        "F17"
+      ],
+      "work_packages": [
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F18",
+      "title": "계승 검증: 고정 진입 반사실과 전체 전략 효과 구분",
+      "findings": [
+        "F18"
+      ],
+      "work_packages": [
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F19",
+      "title": "계승 검증: 스트림→리스트·전 샤드 concatenate 병목",
+      "findings": [
+        "F19"
+      ],
+      "work_packages": [
+        "WP13"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F20",
+      "title": "계승 검증: 카탈로그는 있으나 발견의 재사용 계약을 강화해야 함",
+      "findings": [
+        "F20"
+      ],
+      "work_packages": [
+        "WP11"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F21",
+      "title": "계승 검증: 분석 현황·표본 손실·지식 흐름의 가시성",
+      "findings": [
+        "F21"
+      ],
+      "work_packages": [
+        "WP11"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TF_F22",
+      "title": "계승 검증: 불변성 테스트와 지식 유효성 테스트 분리",
+      "findings": [
+        "F22"
+      ],
+      "work_packages": [
+        "WP14"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TQ01",
+      "title": "거래 발생일 원화 Sharpe와 전체 운용기간 수익률 Sharpe 구분",
+      "findings": [
+        "Q01"
+      ],
+      "work_packages": [
+        "WP02",
+        "WP03"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TQ02",
+      "title": "PF·Payoff 등의 미정의 상태가 측정된 0으로 반환됨",
+      "findings": [
+        "Q02"
+      ],
+      "work_packages": [
+        "WP03",
+        "WP09"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TQ03",
+      "title": "첫 손익 이전 기준점이 빠진 drawdown을 운용 MDD와 혼동",
+      "findings": [
+        "Q03"
+      ],
+      "work_packages": [
+        "WP03"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TQ04",
+      "title": "Monte Carlo 파산 문구의 자본이 실제 운용자본이 아닌 손익 대용값",
+      "findings": [
+        "Q04"
+      ],
+      "work_packages": [
+        "WP03",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TQ05",
+      "title": "같은 분 내 틱 진입·청산의 보유금액 잔류",
+      "findings": [
+        "Q05"
+      ],
+      "work_packages": [
+        "WP03",
+        "WP07"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TQ06",
+      "title": "라벨 타입 미검증 상태의 y==1 이진화",
+      "findings": [
+        "Q06"
+      ],
+      "work_packages": [
+        "WP01",
+        "WP02",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M01",
+      "title": "분석 프로토콜: 자료 계약·관측 모집단",
+      "findings": [],
+      "work_packages": [
+        "WP02",
+        "WP04"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M02",
+      "title": "분석 프로토콜: 경제 성과·기대값 분해",
+      "findings": [],
+      "work_packages": [
+        "WP03"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M03",
+      "title": "분석 프로토콜: 자본·노출·낙폭·꼬리위험",
+      "findings": [],
+      "work_packages": [
+        "WP03",
+        "WP07"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M04",
+      "title": "분석 프로토콜: Cohort·시간·시총·레짐 분해",
+      "findings": [],
+      "work_packages": [
+        "WP04",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M05",
+      "title": "분석 프로토콜: 거래 경로·MFE/MAE·Exit 부검",
+      "findings": [],
+      "work_packages": [
+        "WP07",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M06",
+      "title": "분석 프로토콜: 피처 변별·상호작용",
+      "findings": [],
+      "work_packages": [
+        "WP01",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M07",
+      "title": "분석 프로토콜: 규칙 채굴·희소 구조 발견",
+      "findings": [],
+      "work_packages": [
+        "WP01",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M08",
+      "title": "분석 프로토콜: A/B·Ablation·Matched Control",
+      "findings": [],
+      "work_packages": [
+        "WP06",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M09",
+      "title": "분석 프로토콜: 시계열 별도 확인·누수 차단",
+      "findings": [],
+      "work_packages": [
+        "WP01",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M10",
+      "title": "분석 프로토콜: 불확실성·다중시행 보정",
+      "findings": [],
+      "work_packages": [
+        "WP01",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M11",
+      "title": "분석 프로토콜: 경제 강건성·민감도·용량",
+      "findings": [],
+      "work_packages": [
+        "WP02",
+        "WP03",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M12",
+      "title": "분석 프로토콜: 전략 다양성·포트폴리오",
+      "findings": [],
+      "work_packages": [
+        "WP06",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M13",
+      "title": "분석 프로토콜: 지식 카드·반증·AI 환류",
+      "findings": [],
+      "work_packages": [
+        "WP04",
+        "WP11"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "TM_M14",
+      "title": "분석 프로토콜: 대규모 처리·재현성·효과 측정",
+      "findings": [],
+      "work_packages": [
+        "WP13",
+        "WP14"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-01",
+      "title": "분석 단일 정본 미완성",
+      "findings": [
+        "F09",
+        "UX12"
+      ],
+      "work_packages": [
+        "WP02",
+        "WP04",
+        "WP08"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-02",
+      "title": "CSV 품질 오류와 빈결과 혼합",
+      "findings": [
+        "F07",
+        "F16",
+        "UX11"
+      ],
+      "work_packages": [
+        "WP02"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-03",
+      "title": "Golden 성공 결과 E2E 미확보",
+      "findings": [
+        "F22",
+        "UX26"
+      ],
+      "work_packages": [
+        "WP04",
+        "WP14"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-04",
+      "title": "holdout 이름·권위 충돌",
+      "findings": [
+        "F14",
+        "UX17"
+      ],
+      "work_packages": [
+        "WP04",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-05",
+      "title": "Card v2/v3·prompt·UI·영속성 분리",
+      "findings": [
+        "F09",
+        "F10",
+        "F20"
+      ],
+      "work_packages": [
+        "WP04",
+        "WP11"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-06",
+      "title": "analysis_snapshot persistence 고립",
+      "findings": [
+        "F09",
+        "F20"
+      ],
+      "work_packages": [
+        "WP02",
+        "WP11"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-07",
+      "title": "범용 Fold/Control 집계 미완성",
+      "findings": [
+        "F13",
+        "F15",
+        "UX04"
+      ],
+      "work_packages": [
+        "WP01",
+        "WP06",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-08",
+      "title": "Research Tools 수동·비영속",
+      "findings": [
+        "F20",
+        "UX28"
+      ],
+      "work_packages": [
+        "WP11"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-09",
+      "title": "계층마다 통계·actionable 계약 상이",
+      "findings": [
+        "F01",
+        "F03",
+        "UX18"
+      ],
+      "work_packages": [
+        "WP01",
+        "WP10"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-10",
+      "title": "feedback 옵트인·효과적소비 미증명",
+      "findings": [
+        "F10",
+        "F20"
+      ],
+      "work_packages": [
+        "WP00",
+        "WP11"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-11",
+      "title": "UX 의사결정 동선 분산",
+      "findings": [
+        "UX16",
+        "UX28"
+      ],
+      "work_packages": [
+        "WP11",
+        "WP12"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-12",
+      "title": "현재/과거 Program 병렬 혼동",
+      "findings": [
+        "UX17",
+        "UX22"
+      ],
+      "work_packages": [
+        "WP10",
+        "WP11"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "CAN-13",
+      "title": "대형모듈 책임 과밀",
+      "findings": [
+        "F19",
+        "UX23"
+      ],
+      "work_packages": [
+        "WP13",
+        "WP14"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "V14-01",
+      "title": "사전등록·권한",
+      "findings": [],
+      "work_packages": [
+        "WP00",
+        "WP15"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "V14-02",
+      "title": "Stage F projection",
+      "findings": [],
+      "work_packages": [
+        "WP02",
+        "WP07"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "V14-03",
+      "title": "불변 persistence 장애",
+      "findings": [],
+      "work_packages": [
+        "WP02",
+        "WP04"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "V14-04",
+      "title": "소비계보",
+      "findings": [],
+      "work_packages": [
+        "WP11"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "V14-05",
+      "title": "권한상태머신",
+      "findings": [],
+      "work_packages": [
+        "WP10",
+        "WP11"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "V14-06",
+      "title": "새정본 선행단계",
+      "findings": [],
+      "work_packages": [
+        "WP00",
+        "WP15"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "V14-07",
+      "title": "Closed directions",
+      "findings": [],
+      "work_packages": [
+        "WP10",
+        "WP15"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "V14-08",
+      "title": "패키지·예전명령",
+      "findings": [],
+      "work_packages": [
+        "WP14",
+        "WP15"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    },
+    {
+      "id": "V14-09",
+      "title": "증거 수준",
+      "findings": [],
+      "work_packages": [
+        "WP14",
+        "WP15"
+      ],
+      "test_status": "PLANNED_NOT_RUN_ON_PRODUCTION"
+    }
+  ],
+  "analysis_methods": [
+    {
+      "id": "M01",
+      "title": "자료 계약·관측 모집단",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M02",
+      "title": "경제 성과·기대값 분해",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M03",
+      "title": "자본·노출·낙폭·꼬리위험",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M04",
+      "title": "Cohort·시간·시총·레짐 분해",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M05",
+      "title": "거래 경로·MFE/MAE·Exit 부검",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M06",
+      "title": "피처 변별·상호작용",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M07",
+      "title": "규칙 채굴·희소 구조 발견",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M08",
+      "title": "A/B·Ablation·Matched Control",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M09",
+      "title": "시계열 별도 확인·누수 차단",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M10",
+      "title": "불확실성·다중시행 보정",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M11",
+      "title": "경제 강건성·민감도·용량",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M12",
+      "title": "전략 다양성·포트폴리오",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M13",
+      "title": "지식 카드·반증·AI 환류",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    },
+    {
+      "id": "M14",
+      "title": "대규모 처리·재현성·효과 측정",
+      "status": "RETAINED_METHOD_PLAN_NOT_COMPLETION"
+    }
+  ],
+  "legacy_ideas": [
+    {
+      "id": "V10-P0-01",
+      "title": "모든 분석을 묶는 원자적 의무 번들 부재/미강제",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P0-02",
+      "title": "global trial/multiplicity family 결속 불완전",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P0-03",
+      "title": "핵심 robust 통계가 advisory",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P0-04",
+      "title": "현재 development 0/7, OOS 미개봉",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P0-05",
+      "title": "legacy evidence 경로 혼재",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P0-06",
+      "title": "trade/feature/event의 단일 FK 모델 약함",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P1-01",
+      "title": "결측·파싱 실패가 0.0과 합쳐짐",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P1-02",
+      "title": "NPZ/CSV/Pandas 중심",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P1-03",
+      "title": "incumbent exit 종속 라벨",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P1-04",
+      "title": "holdout·fold 경계 interval purge 미확인",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P1-05",
+      "title": "cost에서 수량 역산",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P1-06",
+      "title": "단일 스칼라 선택",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P1-07",
+      "title": "셀·leaf 안정성",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P1-08",
+      "title": "전략 간 독립 가정",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P1-09",
+      "title": "PIT/universe/corporate-action 종단 증거 미확인",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P1-10",
+      "title": "evidence 저장소 분산",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P2-01",
+      "title": "GitHub Actions 자동 gate 미확인",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P2-02",
+      "title": "controller `loop.py` 대형·legacy variant 다수",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P2-03",
+      "title": "label 체계 중복",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P2-04",
+      "title": "연구 문서 1,095건 탐색 비용",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P2-05",
+      "title": "live drift 폐쇄루프 약함",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-P2-06",
+      "title": "scale/performance regression gate 부족",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-M01",
+      "title": "전략 family 공통성 / AST frequent itemset·graph",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-M02",
+      "title": "거래 경로 DTW·shapelet·clustering",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-M03",
+      "title": "Time-to-exit competing-risk survival/hazard",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-M04",
+      "title": "정책 반사실 doubly-robust/off-policy",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-M05",
+      "title": "레짐 change-point·state transition",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-M06",
+      "title": "trade overlap·tail co-loss graph",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-M07",
+      "title": "negative-control feature·placebo·falsification",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-M08",
+      "title": "발견수명·OOS/shadow decay",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10-M09",
+      "title": "실패 포함 meta-research dataset",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10R2-B01",
+      "title": "Trade Genome",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10R2-B02",
+      "title": "Failure Atlas",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10R2-B03",
+      "title": "Episode Onset Lab",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10R2-B04",
+      "title": "Cross-Family Router",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10R2-B05",
+      "title": "Counterfactual Exit Lab",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10R2-B06",
+      "title": "Strategy DNA Graph",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10R2-B07",
+      "title": "Robustness Cube",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10R2-B08",
+      "title": "Global Trial Ledger",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10R2-B09",
+      "title": "Negative Knowledge Base",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10R2-B10",
+      "title": "Next Best Experiment",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10R2-B11",
+      "title": "Cost-Capacity Frontier",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    },
+    {
+      "id": "V10R2-B12",
+      "title": "Shadow Twin",
+      "status": "RETAINED_SEE_ORIGINAL_DISPOSITION"
+    }
+  ],
+  "local_contribution": {
+    "task": "RES04P_INPUT_BINDING",
+    "related_findings": [
+      "F05",
+      "F07",
+      "F11",
+      "F13",
+      "F16"
+    ],
+    "scope": "Preparation source identity and bounded read only. Not production CSV/Mining/Hypothesis/API/UI closure.",
+    "baseline_issue_closed": false
+  },
+  "stage_mapping_policy": "baseline_canonical_stages and planned_stages preserve each original finding's routing. wp_derived_stage_hints are non-authoritative allocation hints only. SYS-06 is deferred cross-cutting work outside the seven-stage sequence."
+}

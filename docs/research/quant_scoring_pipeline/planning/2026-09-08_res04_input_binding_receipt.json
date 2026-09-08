@@ -1,0 +1,37 @@
+{
+  "task_id": "RES04P_INPUT_BINDING_AND_AUDIT_CROSSWALK",
+  "status": "IMPLEMENTED_SYNTHETIC_VERIFIED",
+  "baseline_commit": "8de7c70ea1a24232d8092101417674f5ba0993e0",
+  "branch": "codex/process-research-res-04p-input-binding",
+  "commit_lookup": "git log -1 --format=fuller -- docs/research/quant_scoring_pipeline/planning/2026-09-08_res04_input_binding_receipt.json",
+  "tests": {
+    "initial_red_failed": 10,
+    "initial_red_exit": 1,
+    "cell_limit_red_failed": 1,
+    "cell_limit_red_exit": 1,
+    "final_focused_passed": 68,
+    "final_focused_exit": 0,
+    "independent_extra_passed": 7,
+    "independent_extra_exit": 0
+  },
+  "reviews": [
+    {"reviewer": "/root/res04_goal", "final": "PASS"},
+    {"reviewer": "/root/res04_code", "initial": "FAIL_CELL_MEMORY", "final": "PASS"},
+    {"reviewer": "/root/res04_security", "initial": "FAIL_CELL_MEMORY", "final": "PASS"},
+    {"reviewer": "/root/res04_qa", "final": "PASS"},
+    {"reviewer": "/root/res04_context", "initial": "FAIL_CROSSWALK_LINEAGE", "final": "PASS"}
+  ],
+  "crosswalk_counts": {"findings": 56, "acceptance_plans": 100, "methods": 14, "legacy_ideas": 43, "canonical_requirements": 13, "work_packages": 16, "source_registries": 7},
+  "baseline_findings_closed": 0,
+  "demo_mode": "SYNTHETIC_TEST_ONLY",
+  "demo_path": "C:/Users/parkc/STOM_Verification/v1.5_20260907/binding-demo-20260908/bound_event_stream.json",
+  "demo_sha256": "51614ea57461cd6949349ed934091a844f3d1daab5043949df2f5b327d6d6ba8",
+  "market_db_opened_this_task": false,
+  "operating_db_writes": 0,
+  "research_jobs_submitted": 0,
+  "res04p_gate_complete": false,
+  "sys05_started": false,
+  "ui_wired": false,
+  "production_acceptance_suite_executed": false,
+  "source_limits": "Trusted expected hashes and stable local snapshots required. Full hashing twice per slice is correctness-first, not large-scale performance certification."
+}
