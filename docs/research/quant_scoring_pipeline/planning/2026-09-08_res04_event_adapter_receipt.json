@@ -1,0 +1,42 @@
+{
+  "task_id": "RES04P_EVENT_ADAPTER",
+  "status": "IMPLEMENTED_SYNTHETIC_VERIFIED",
+  "baseline_commit": "b84a90f244f1e567b26f2059de3e2ddf806e4b28",
+  "branch": "codex/process-research-res-04p-event-stream",
+  "commit_lookup": "git log -1 --format=fuller -- docs/research/quant_scoring_pipeline/planning/2026-09-08_res04_event_adapter_receipt.json",
+  "code_hash_mode": "working_tree_file_bytes_sha256",
+  "code_hashes": {
+    "ai_strategy_loop/revision/res04_event_models.py": "3fc3384e6ee1a32590a4b433febf72a4f7fb6526065c052767017221180dc7b3",
+    "ai_strategy_loop/revision/res04_event_stream.py": "becd3a58735d786b0510ec28f44b46e2989ef8ce1452b9f44b8cef6bba8e8f17",
+    "ai_strategy_loop/revision/mcap_event_candidate_eval.py": "ce3c16cd951c8b4c60f2d039aab5e3248298cd87f4560ae9ac356b87fd58f5fe",
+    "ai_strategy_loop/revision/mcap_event_logic.py": "ea16d973620f7b546352a6ff9f8329452aef5de6e9a08fee5c1e9973510b2fac"
+  },
+  "code_hash_limits": "Observed Windows file bytes; line-ending conversion can differ in other worktrees. Not a complete transitive source/manifest execution seal.",
+  "tests": {
+    "initial_red_failed": 11,
+    "initial_red_exit": 1,
+    "resource_red_failed": 2,
+    "resource_red_exit": 1,
+    "final_focused_passed": 48,
+    "final_focused_exit": 0,
+    "independent_extra_passed": 21,
+    "independent_extra_exit": 0
+  },
+  "reviews": [
+    {"reviewer": "/root/res04_goal", "final": "PASS"},
+    {"reviewer": "/root/res04_code", "initial": "FAIL_WORKSPACE_BOUND", "final": "PASS"},
+    {"reviewer": "/root/res04_security", "initial": "FAIL_WORKSPACE_BOUND", "final": "PASS", "std_call_count_attack": 0},
+    {"reviewer": "/root/res04_qa", "final": "PASS"},
+    {"reviewer": "/root/res04_context", "final": "PASS"}
+  ],
+  "synthetic_artifact": "C:/Users/parkc/STOM_Verification/v1.5_20260907/res04-event-stream-synthetic-20260908.json",
+  "synthetic_file_sha256": "6d04c0346a436209f85f61a29eb920210545b0511576f87eafe5725cc4669ee0",
+  "synthetic_content_hash": "a471a5a0965a61c12a1eed494de9e8f293496560ee50d06630b3eac46c81a51c",
+  "market_db_opened_this_task": false,
+  "research_jobs_submitted": 0,
+  "res04p_gate_complete": false,
+  "sys05_started": false,
+  "ui_wired": false,
+  "browser_qa_executed": false,
+  "next": "source/candidate binding, expected receipt and control/STOP contract"
+}
