@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-09-08T08:12:40.920679+00:00",
-  "source_fingerprint": "62f0508cc709604db2f1bcb5da27c161c0d7ea2a6fcf501b4a7352592c8bf6dc",
-  "count": 1114,
+  "generated_at": "2026-09-08T13:39:01.536921+00:00",
+  "source_fingerprint": "895a256595a85d4ad9600034a83c667703a5e8a4b1da8e323b0e3a9f0a149ac4",
+  "count": 1116,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7288,8 +7288,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-09-07_v15_실행계획_진행원장.md",
       "title": "v1.5 실행계획·페이지·브랜치 진행원장",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-09-08T08:08:40.523787+00:00",
-      "size": 7748
+      "updated_at": "2026-09-08T13:38:17.158137+00:00",
+      "size": 8233
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-09-08_RES04P_controls_TASK_RECEIPT.md",
@@ -7332,6 +7332,20 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-09-08T07:37:46.211573+00:00",
       "size": 837
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-09-08_SYS05_SQ01B2_TASK_RECEIPT.md",
+      "title": "SYS05 SQ01B2 세대 결과 품질 TASK_RECEIPT",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-09-08T13:37:20.406172+00:00",
+      "size": 2964
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-09-08_SYS05_SQ01B2_실행계획.md",
+      "title": "SQ01B2 진화 세대 결과 품질 전파",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-09-08T12:57:56.035320+00:00",
+      "size": 1350
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-09-08_SYS05_SQ01_TASK_RECEIPT.md",
@@ -7561,8 +7575,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-09-08T08:12:26.846564+00:00",
-      "size": 19510
+      "updated_at": "2026-09-08T13:38:17.162911+00:00",
+      "size": 19731
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",

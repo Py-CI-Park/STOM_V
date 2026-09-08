@@ -165,7 +165,7 @@ def test_evo_gens_unknown_run_empty(client: TestClient):
 
 # --------------------------------------------------------- result by run/gen
 def test_result_by_run_gen_with_csv(client: TestClient, tmp_path: Path):
-    csv_path = _make_trades_csv(tmp_path / "g0.csv", n=60)
+    csv_path = _make_trades_csv(tmp_path / "g0.csv", n=60, official=True)
     _seed_gen(tmp_path, "runR", 0, csv_path=csv_path)
     r = client.get("/bt/result", params={"run_id": "runR", "gen_no": 0})
     assert r.status_code == 200
@@ -212,7 +212,9 @@ def test_result_by_run_gen_csv_missing_abbreviated(client: TestClient, tmp_path:
     assert body["metrics"]["total_profit_krw"] == -5000.0
     assert body["metrics"]["max_drawdown_pct"] == 12.0
     assert body["artifact_state"] == "metrics_only_csv_missing"
-    assert body["analysis"]["summary"]["trade_count"] == 0
+    assert body["analysis"] is None
+    assert body["summary_authority"] == "stored_unverified"
+    assert body["analysis_ready"] is False
     assert "message" in body
 
 

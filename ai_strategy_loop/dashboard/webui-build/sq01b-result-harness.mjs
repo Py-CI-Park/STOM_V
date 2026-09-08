@@ -28,6 +28,11 @@ w.fetch = url => {
 };
 w.eval(readFileSync(fe + "vendor-react.js", "utf8"));
 w.eval(readFileSync(fe + "vendor-react-dom.js", "utf8"));
+const format = await esbuild.build({
+  entryPoints: [fileURLToPath(new URL("src/format.ts", import.meta.url))],
+  bundle: true, write: false, format: "iife", platform: "browser",
+});
+w.eval(format.outputFiles[0].text);
 w.eval(output.outputFiles[0].text);
 const root = w.ReactDOM.createRoot(w.document.getElementById("root"));
 for (const status of ["ROW_PARSE_PARTIAL", "MISSING_ARTIFACT", "NO_TRADES", "ROW_COUNT_MISMATCH"]) {
@@ -45,8 +50,18 @@ for (const status of ["ROW_PARSE_PARTIAL", "MISSING_ARTIFACT", "NO_TRADES", "ROW
   assert.equal(w.document.querySelector('[aria-label="결과 분석 섹션"]'), null);
   assert.match(w.document.getElementById("root").textContent, /분석 준비 미충족/);
 }
+const stored = { available: true, status: "rejected", execution_status: "partial",
+  has_csv: false, analysis_ready: false, summary_authority: "stored_unverified",
+  metrics: {total_profit_krw: -5000, max_drawdown_pct: 12}, analysis: null,
+  data_quality: {status:"MISSING_ARTIFACT", issues:[], issue_count:0} };
+w.ReactDOM.flushSync(() => root.render(w.React.createElement(w.QaResult, {
+  result: stored, sourceContext: {capabilities:{label:"stored",notes:{}}},
+})));
+assert.match(w.document.getElementById("root").textContent, /저장된 미검증 요약/);
+assert.ok(w.document.querySelector(".bt-result-metrics-only"));
+assert.equal(w.document.querySelector('[aria-label="결과 분석 섹션"]'), null);
 w.ReactDOM.flushSync(() => root.unmount());
 dom.window.close();
 assert.deepEqual(errors, []);
 assert.deepEqual(requests, []);
-console.log(JSON.stringify({ scenarios: 4, passed: 4, errors }));
+console.log(JSON.stringify({ scenarios: 5, passed: 5, errors }));

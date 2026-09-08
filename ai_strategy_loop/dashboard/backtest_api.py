@@ -1692,69 +1692,11 @@ def evo_generations(run_id: str = "") -> Dict[str, Any]:
 def _result_for_run(
     run_id: str, gen_no: int, t_start: Optional[int] = None, t_end: Optional[int] = None
 ) -> Dict[str, Any]:
-    """run/gen 세대 → 잡 결과(/bt/result)와 동일 스키마 응답(무예외).
+    """Preserved facade; generation quality projection uses readonly owners."""
+    from ai_strategy_loop.dashboard.generation_result_view import GenerationOwners, generation_result
 
-    csv_path 존재 시 풀 분석(잡과 동일 묶음, t_start/t_end 구간 한정 지원). CSV 부재 시
-    generations 행 메트릭 요약 + 빈 분석 구조(차트/분석 생략, 카드만). 세대 없음이면
-    available=False.
-    """
-    row = _gen_row_readonly(run_id, gen_no)
-    if row is None:
-        return {"available": False, "run_id": run_id, "gen_no": gen_no}
-    csv_path = _resolve_gen_csv(row)
-    if csv_path:
-        ranged = t_start is not None or t_end is not None
-        bundle = analysis.full_analysis(csv_path, t_start, t_end)
-        return {
-            "ranged": ranged,
-            "available": True,
-            "run_id": run_id,
-            "gen_no": gen_no,
-            "evidence_id": f"gen:{run_id}:{int(gen_no)}",
-            "source_type": "generation",
-            "condition_identity": _run_condition_identity(row),
-            "status": row.get("status"),
-            "status_kind": row.get("status") or "generation",
-            "artifact_state": "openable",
-            "openable": True,
-            "recoverable": False,
-            "open_actions": ["open_result"],
-            "rerun_spec": None,
-            "metrics": bundle["summary"],
-            "analysis": bundle,
-            "has_csv": True,
-            # v5.13.2 — "언제·어떤 연구·몇 세대·어느 기간·tick/min" 실행 맥락(결과 요약 상단).
-            "context": _result_context(row, run_id, gen_no, bundle.get("summary")),
-        }
-    # CSV 부재 — generations 행 메트릭 요약 + 빈 분석 구조(무예외).
-    #   None(미측정)은 모든 저장 메트릭에서 그대로 전파해 실제 0과 구분한다.
-    fallback_metrics = {
-        "trade_count": _opt_metric(row.get("trade_count")),
-        "total_profit_krw": _opt_metric(row.get("profit")),
-        "total_profit_pct": _opt_metric(row.get("total_profit_pct")),
-        "max_drawdown_pct": _opt_metric(row.get("mdd")),
-        "payoff_ratio": _opt_metric(row.get("payoff_ratio")),
-    }
-    return {
-        "available": True,
-        "run_id": run_id,
-        "gen_no": gen_no,
-        "evidence_id": f"gen:{run_id}:{int(gen_no)}",
-        "source_type": "generation",
-        "condition_identity": _run_condition_identity(row),
-        "status": row.get("status"),
-        "status_kind": row.get("status") or "generation",
-        "artifact_state": "metrics_only_csv_missing",
-        "openable": True,
-        "recoverable": False,
-        "open_actions": ["open_result"],
-        "rerun_spec": None,
-        "metrics": fallback_metrics,
-        "analysis": analysis.full_analysis(None),
-        "has_csv": False,
-        "context": _result_context(row, run_id, gen_no, None),
-        "message": "결과 CSV 가 없어 세대 메트릭 요약만 표시합니다(차트/분석 생략).",
-    }
+    owners = GenerationOwners(_gen_row_readonly, _resolve_gen_csv, _run_condition_identity, _result_context)
+    return generation_result(run_id, gen_no, t_start, t_end, owners=owners).root
 
 
 # ----------------------------------------------------------------------- demo
