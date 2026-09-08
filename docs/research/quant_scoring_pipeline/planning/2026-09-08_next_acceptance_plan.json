@@ -35,7 +35,7 @@
     {
       "id": "SYS05.B5",
       "purpose": "여러 결과 중 일부가 빠지거나 비교 조건이 다른데 하나의 총성과로 보이는 문제를 막는다.",
-      "owners": ["backtest_api.compare", "backtest_api.overlay", "backtest_api.portfolio", "별도 evolution_gui_parity 소비자 조사"],
+      "owners": ["backtest_api.compare_jobs", "backtest_api._compare_side", "backtest_api._compare_side_for_run", "backtest_api.overlay_jobs", "backtest_api.portfolio_combine", "backtest_api._portfolio_item_trades", "별도 evolution_gui_parity 소비자 조사"],
       "acceptance": ["입력별 identity/hash/품질/범위", "부분 실패를 명시하고 조용한 제외 금지", "공통 기간/자본/비용의 비교 적격성", "중복 입력/같은 source 다른 alias", "정상0과 미확보 자료 구분"],
       "ui": ["각 입력 상태를 보여주는 비교 준비표", "차단 이유와 수정 가능한 입력 링크", "이전 비교 결과의 뒤늦은 응답 제거"]
     },
