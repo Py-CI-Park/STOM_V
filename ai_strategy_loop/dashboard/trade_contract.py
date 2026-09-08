@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-import csv
 import hashlib
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, Literal, TypeAlias
+
+from ai_strategy_loop.dashboard.trade_csv_models import CsvSnapshot
+from ai_strategy_loop.dashboard.trade_csv_snapshot import read_csv_snapshot
 
 from backtest.back_static import (
     TRADE_RESULT_B_COLUMNS,
@@ -173,7 +175,7 @@ def _optional_int(value: Scalar) -> int | None:
 def _legacy_exit_boundary(rows: Sequence[Mapping[str, str]]) -> int | None:
     values: list[int] = []
     for row in rows:
-        digits = "".join(char for char in str(row.get("매도시간") or "") if char.isdigit())
+        digits = "".join(char for char in str(row.get("매도시간") or "") if char in "0123456789")
         if len(digits) == 14:
             values.append(int(digits[-6:]))
         elif len(digits) == 12:
@@ -184,11 +186,18 @@ def _legacy_exit_boundary(rows: Sequence[Mapping[str, str]]) -> int | None:
 def build_trade_artifact_contract(
     *, csv_path: Path, job_id: str, spec: Mapping[str, Scalar],
 ) -> TradeArtifactContract:
-    """Profile an immutable official CSV without changing its contents."""
-    with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
-        reader = csv.DictReader(handle)
-        fieldnames = tuple(reader.fieldnames or ())
-        rows = tuple(reader)
+    """Preserved facade; profile and identity now use the same byte snapshot."""
+    return build_trade_contract_from_snapshot(
+        snapshot=read_csv_snapshot(csv_path), job_id=job_id, spec=spec,
+    )
+
+
+def build_trade_contract_from_snapshot(
+    *, snapshot: CsvSnapshot, job_id: str, spec: Mapping[str, Scalar],
+) -> TradeArtifactContract:
+    """Reuse the existing contract without reopening or rewriting its artifact."""
+    fieldnames = snapshot.headers
+    rows = tuple(dict(zip(fieldnames, cells)) for cells in snapshot.rows)
     columns = _column_profiles(fieldnames, rows)
     end_time = _optional_int(spec.get("end_time"))
     legacy_boundary = None if end_time is not None else _legacy_exit_boundary(rows)
@@ -204,9 +213,9 @@ def build_trade_artifact_contract(
         ),
     )
     artifact = ArtifactIdentity(
-        path=str(csv_path.resolve()),
-        sha256=_sha256(csv_path),
-        bytes=csv_path.stat().st_size,
+        path=snapshot.path,
+        sha256=snapshot.sha256,
+        bytes=snapshot.size,
         row_count=len(rows),
         column_count=len(fieldnames),
         schema_variant=_schema_variant(len(fieldnames)),

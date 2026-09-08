@@ -1,0 +1,204 @@
+{
+  "schema": "stom.maturity_page_progress.v1",
+  "date": "2026-09-08",
+  "basis": "NEW_V15_ACCEPTANCE_SCOPE_NOT_EXISTING_STOM_FEATURE_COUNT",
+  "branch": "codex/process-research-sys-05-quality",
+  "source_base_commit": "23d3b16d3087af2b9b5d1e09a4d86408808e3cd3",
+  "receipt": "2026-09-08_SYS05_SQ01_TASK_RECEIPT.md",
+  "canonical_order": [
+    "RES-04P",
+    "SYS-05",
+    "ANA-05",
+    "ANA-06",
+    "ANA-07",
+    "ANA-08",
+    "UX-06"
+  ],
+  "closed_stage_gates": [
+    "RES-04P"
+  ],
+  "active_stage": "SYS-05",
+  "completed_atomic_scopes": [
+    "SQ00.evaluation_stats_v2",
+    "SQ01.csv_quality_data_contract"
+  ],
+  "next_atomic_scope": "SQ01B.analysis_consumer_quality",
+  "full_page_acceptance_closed": 0,
+  "page_count": 14,
+  "full_program_percent": null,
+  "percent_reason": "No effort-weighted complete acceptance baseline; scope completion is not page completion.",
+  "research_executed": false,
+  "economic_success_verified": false,
+  "pages": [
+    {
+      "id": "P01",
+      "name": "종합 대시보드",
+      "status": "PLAN_ONLY",
+      "achieved": [],
+      "remaining": [
+        "허용 행동·차단 사유 API 연결",
+        "전체 상태 대시보드 검증"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P02",
+      "name": "결과 라이브러리",
+      "status": "PARTIAL_UI",
+      "achieved": [
+        "SQ01.terminal_source_selector"
+      ],
+      "remaining": [
+        "전체 결과 identity·라이브러리 통합"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P03",
+      "name": "품질·계보",
+      "status": "SCOPED_WORKFLOW_VERIFIED",
+      "achieved": [
+        "SQ01.csv_quality_data_contract"
+      ],
+      "remaining": [
+        "모든 분석 소비자 품질 전파",
+        "정본 Bundle 계보 통합",
+        "전체 페이지 수용"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P04",
+      "name": "성과·자본·위험",
+      "status": "PENDING",
+      "achieved": [],
+      "remaining": [
+        "동일 기간·자본·비용 기준",
+        "미정의·비유한 값 처리"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P05",
+      "name": "거래·Replay",
+      "status": "PARTIAL_UI",
+      "achieved": [
+        "RES04P.source_events",
+        "SQ01.csv_quality_data_contract"
+      ],
+      "remaining": [
+        "trade key 기반 전체 상세 연결",
+        "실제 결과 경로 검증"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P06",
+      "name": "집단·피처",
+      "status": "BACKEND_FOUNDATION",
+      "achieved": [
+        "RES04P.source_events",
+        "RES04P.controls"
+      ],
+      "remaining": [
+        "집단별 품질·표본·불확실성 화면"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P07",
+      "name": "데이터마이닝",
+      "status": "BACKEND_PARTIAL",
+      "achieved": [
+        "SQ00.evaluation_stats_v2"
+      ],
+      "remaining": [
+        "발견·평가 dataset identity",
+        "별도 확인·FDR·연속 라벨"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P08",
+      "name": "A/B·반사실",
+      "status": "PENDING",
+      "achieved": [],
+      "remaining": [
+        "비교 적격성",
+        "공통·제거·신규 거래 효과 분해"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P09",
+      "name": "Fold·Control",
+      "status": "BACKEND_FOUNDATION",
+      "achieved": [
+        "RES04P.controls",
+        "RES04P.overlap"
+      ],
+      "remaining": [
+        "실제 Bundle fold cell·누락 사유 UI"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P10",
+      "name": "지식·반증",
+      "status": "PENDING",
+      "achieved": [],
+      "remaining": [
+        "적용범위·반증·재개조건 원장 연결"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P11",
+      "name": "가설·사전등록",
+      "status": "DEFINITION_COMPLETE",
+      "achieved": [
+        "RES04P.definition"
+      ],
+      "remaining": [
+        "가설·검토·승인 UI 연결"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P12",
+      "name": "큐·예산",
+      "status": "PLAN_ONLY",
+      "achieved": [
+        "RES04P.budget_definition"
+      ],
+      "remaining": [
+        "원천 inventory 감독",
+        "deadline·시도/취소 영수증"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P13",
+      "name": "보고서",
+      "status": "PARTIAL_PROJECTION",
+      "achieved": [
+        "SQ00.report_metadata"
+      ],
+      "remaining": [
+        "모든 화면·HTML·JSON의 동일 Bundle/hash"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    },
+    {
+      "id": "P14",
+      "name": "설정·건강",
+      "status": "PLAN_ONLY",
+      "achieved": [],
+      "remaining": [
+        "default/effective 구분",
+        "환경·자료·금지 행동 UI"
+      ],
+      "full_acceptance": "NOT_VERIFIED"
+    }
+  ]
+}

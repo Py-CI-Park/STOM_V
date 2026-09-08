@@ -1,4 +1,15 @@
 /* QSP7 trade episode workbench — industrial forensic layer over the V4 token system. */
+.tp-csv-quality { margin:14px 0; padding:16px; border:1px solid var(--line-1); border-left:4px solid #e7b65b; border-radius:6px; background:var(--bg-1); color:var(--ink-1); overflow-wrap:anywhere; }
+.tp-csv-quality.ready { border-left-color:#55e0ac; }
+.tp-csv-quality header { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; }
+.tp-csv-quality h3 { margin:4px 0; color:var(--ink-0); }
+.tp-csv-quality small,.tp-csv-quality dt { color:var(--ink-2); }
+.tp-csv-counts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:16px 0; }
+.tp-csv-counts dd { margin:4px 0 0; font:700 20px var(--font-mono,monospace); }
+.tp-csv-hash { display:grid; gap:5px; }.tp-csv-hash code { word-break:break-all; }
+.tp-csv-quality summary { cursor:pointer; padding:8px 0; }.tp-csv-quality li { margin:7px 0; }
+.tp-csv-quality summary:focus-visible { outline:2px solid #75d9ff; outline-offset:3px; }
+@media(max-width:600px) { .tp-csv-counts { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 .tp-workbench { margin-top: 18px; border-color: color-mix(in srgb, var(--line-1) 72%, #e7b65b); overflow: hidden; }
 .tp-workbench > .panel-hd { background: linear-gradient(118deg, color-mix(in srgb, var(--bg-2) 90%, #153b36), var(--bg-2) 65%, color-mix(in srgb, var(--bg-2) 88%, #624c20)); }
 .tp-authority-strip,.tp-form-row,.tp-source-bar,.tp-path-actions,.tp-marker-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }

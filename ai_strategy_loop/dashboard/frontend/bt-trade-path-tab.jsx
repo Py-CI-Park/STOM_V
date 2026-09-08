@@ -4,6 +4,7 @@ import { BtExitCounterfactual } from "./bt-exit-counterfactual.jsx";
 import { BtConditionProposals } from "./bt-condition-proposals.jsx";
 import { BtExitTransition } from "./bt-exit-transition.jsx";
 import { BtDataContract } from "./bt-data-contract.jsx";
+import { BtCsvQuality } from "./bt-csv-quality.jsx";
 import { BtEntryAutopsy } from "./bt-entry-autopsy.jsx";
 import { BtSellDslTrace } from "./bt-sell-dsl-trace.jsx";
 import { BtOosGate } from "./bt-oos-gate.jsx";
@@ -22,7 +23,7 @@ import { BtAnalysisCardTab } from "./bt-analysis-card.jsx";
 import { BtTransferLedgerPanel } from "./bt-transfer-ledger.jsx";
 import { BtExitAxisPanel } from "./bt-exit-axis.jsx";
 import { _tpKo, _tpNextHint } from "./bt-tp-messages.jsx";
-const { useState: useState_tpt, useEffect: useEffect_tpt } = React;
+const { useState: useState_tpt, useEffect: useEffect_tpt, useRef: useRef_tpt } = React;
 
 function _tpFetch(url, options) {
   return fetch(url, options).then(response => response.ok ? response.json() : Promise.reject(new Error("HTTP " + response.status)));
@@ -35,7 +36,10 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
   const [cohorts, setCohorts] = useState_tpt([]), [trades, setTrades] = useState_tpt([]);
   const [detail, setDetail] = useState_tpt(null), [cf, setCf] = useState_tpt(null);
   const [proposals, setProposals] = useState_tpt(null), [error, setError] = useState_tpt("");
-  const [dataContract, setDataContract] = useState_tpt(null);
+  const [contractEnvelope, setContractEnvelope] = useState_tpt(null);
+  const dataContract = contractEnvelope?.contract || null;
+  const [inspecting, setInspecting] = useState_tpt(false);
+  const inspectVersion = useRef_tpt(0);
   const [boundaryTime, setBoundaryTime] = useState_tpt("");
   const [activeView, setActiveView] = useState_tpt("data");
   const [showReachMap, setShowReachMap] = useState_tpt(false);
@@ -53,38 +57,54 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
   const analysisId = analysis && analysis.analysis_id;
 
   const resetForLane = () => {
-    setJobId(""); setPreflight(null); setDataContract(null); setBoundaryTime("");
+    inspectVersion.current += 1; setInspecting(false);
+    setJobId(""); setPreflight(null); setContractEnvelope(null); setBoundaryTime("");
     setAnalysis(null); setCohorts([]); setTrades([]); setDetail(null); setCf(null);
     setProposals(null); setSelectedProposalId(""); setActiveView("data");
     setBuyFilters(null); setSelectedFilter(null);
   };
 
   useEffect_tpt(() => {
+    setPreflight(null); setContractEnvelope(null); setInspecting(false);
+    return () => { inspectVersion.current += 1; };
+  }, [baseUrl, jobId, lane]);
+
+  useEffect_tpt(() => {
     if (!baseUrl) return;
+    let active = true;
     // 레인 전환은 하위 상태를 전부 초기화한다 — tick/min 교차 오염 방지(P1-6).
     _tpFetch(baseUrl + "/bt/trade-path/lane-manifest?lane=" + encodeURIComponent(lane))
-      .then(payload => setLaneManifest(payload.available ? payload : null))
-      .catch(reason => setError(_tpKo(String(reason.message || reason))));
+      .then(payload => { if (active) setLaneManifest(payload.available ? payload : null); })
+      .catch(reason => { if (active) setError(_tpKo(String(reason.message || reason))); });
     _tpFetch(baseUrl + "/bt/jobs").then(payload => {
+      if (!active) return;
       const rows = (payload && (payload.jobs || payload.items)) || [];
-      const ready = rows.filter(row => row && row.status === "success" && row.csv_exists !== false
+      const ready = rows.filter(row => row && ["success", "error", "cancelled", "no_trades"].includes(row.status)
         && ((row.spec && row.spec.timeframe) || "min") === lane);
       setJobs(ready); setJobId(current => (ready.some(row => row.job_id === current) ? current : (ready[0] && ready[0].job_id) || ""));
-    }).catch(reason => setError(_tpKo(String(reason.message || reason))));
+    }).catch(reason => { if (active) setError(_tpKo(String(reason.message || reason))); });
+    return () => { active = false; };
   }, [baseUrl, lane]);
 
   const inspect = () => {
     if (!jobId) return;
-    setError("");
+    const version = ++inspectVersion.current;
+    setError(""); setPreflight(null); setContractEnvelope(null); setInspecting(true);
     const boundaryQuery = boundaryTime ? "&forced_liquidation_time=" + encodeURIComponent(boundaryTime) : "";
     Promise.all([
-      _tpFetch(baseUrl + "/bt/trade-path/preflight?job_id=" + encodeURIComponent(jobId) + boundaryQuery),
+      _tpFetch(baseUrl + "/bt/trade-path/preflight?job_id=" + encodeURIComponent(jobId) + boundaryQuery)
+        .catch(reason => ({ available: false, reason: "사전 점검 요청 실패: " + String(reason.message || reason) })),
       _tpFetch(baseUrl + "/bt/trade-path/data-contract?job_id=" + encodeURIComponent(jobId)),
-    ]).then(([payload, contractPayload]) => { setPreflight(payload); setDataContract(contractPayload.contract || null); setActiveView("data"); if (payload.forced_liquidation_time) setBoundaryTime(String(payload.forced_liquidation_time).padStart(6, "0")); })
-      .catch(reason => setError(_tpKo(String(reason.message || reason))));
+    ]).then(([payload, contractPayload]) => {
+      if (version !== inspectVersion.current) return;
+      setPreflight(payload); setContractEnvelope(contractPayload); setActiveView("data");
+      if (!payload.available && payload.reason) setError(_tpKo(payload.reason));
+      if (payload.forced_liquidation_time) setBoundaryTime(String(payload.forced_liquidation_time).padStart(6, "0"));
+    }).catch(reason => { if (version === inspectVersion.current) setError(_tpKo(String(reason.message || reason))); })
+      .finally(() => { if (version === inspectVersion.current) setInspecting(false); });
   };
   const start = () => {
-    if (!jobId || !preflight?.available || !boundaryTime) return;
+    if (!jobId || !preflight?.available || !contractEnvelope?.analysis_ready || !boundaryTime) return;
     setError(""); setDetail(null); setCf(null); setProposals(null);
     _tpFetch(baseUrl + "/bt/trade-path/jobs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_id: jobId, forced_liquidation_time: Number(boundaryTime) }) })
       .then(setAnalysis).catch(reason => setError(_tpKo(String(reason.message || reason))));
@@ -171,8 +191,9 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
       {showAnalysisCard && <BtAnalysisCardTab baseUrl={baseUrl} jobId={jobId}/>}
       {showTransferLedger && <BtTransferLedgerPanel/>}
       {showExitAxis && <BtExitAxisPanel baseUrl={baseUrl}/>}
-      <div className="tp-source-bar"><label>완료 결과<select value={jobId} onChange={event => { setJobId(event.target.value); setBoundaryTime(""); setPreflight(null); setDataContract(null); setActiveView("data"); setAnalysis(null); setCohorts([]); setTrades([]); setDetail(null); }}><option value="">job 선택</option>{jobs.map(job => <option key={job.job_id} value={job.job_id}>{job.spec?.buy || ""} · {job.spec?.sell || ""} · {job.job_id}</option>)}</select></label><label>전체청산 (HHMMSS)<input value={boundaryTime} inputMode="numeric" maxLength="6" placeholder="자동 판별" onChange={event => { setBoundaryTime(event.target.value.replace(/\D/g, "").slice(0, 6)); setPreflight(null); }}/></label><button className="btn ghost sm" onClick={inspect} disabled={!jobId}>사전 점검</button><button className="btn primary sm" onClick={start} disabled={!jobId || !preflight?.available || running}>경로 분석 시작</button>{running && <button className="btn danger sm" onClick={() => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" }).catch(reason => setError(_tpKo(String(reason.message || reason))))}>취소</button>}</div>
-      {preflight && <div className={`tp-preflight ${preflight.available ? "ready" : "blocked"}`}><b>{preflight.available ? "분석 가능" : "분석 불가"}</b><span>{preflight.available ? `거래 ${preflight.trade_count} · 날짜 ${preflight.covered_date_count}/${preflight.date_count} · ${preflight.source.timeframe}` : `${_tpKo(preflight.reason)}${preflight.exit_after_boundary_count ? ` · 경계 뒤 실제 매도 ${preflight.exit_after_boundary_count}건` : ""}`}</span>{(preflight.uncovered_dates || []).length > 0 && <span className="tp-uncovered">⚠ 데이터 없는 날짜 {preflight.date_count - preflight.covered_date_count}일: {preflight.uncovered_dates.slice(0, 6).join(", ")}{preflight.uncovered_dates.length > 6 ? " …" : ""}</span>}<small>전체청산 {String(preflight.forced_liquidation_time || "").padStart(6, "0")} · {preflight.boundary_source || "미확인"} · 전체청산 이후 데이터는 존재해도 사용하지 않음</small></div>}
+      <div className="tp-source-bar"><label>완료 결과<select value={jobId} onChange={event => { inspectVersion.current += 1; setInspecting(false); setJobId(event.target.value); setBoundaryTime(""); setPreflight(null); setContractEnvelope(null); setActiveView("data"); setAnalysis(null); setCohorts([]); setTrades([]); setDetail(null); }}><option value="">job 선택</option>{jobs.map(job => <option key={job.job_id} value={job.job_id}>{job.spec?.buy || ""} · {job.spec?.sell || ""} · {job.job_id}</option>)}</select></label><label>전체청산 (HHMMSS)<input value={boundaryTime} inputMode="numeric" maxLength="6" placeholder="자동 판별" onChange={event => { inspectVersion.current += 1; setInspecting(false); setBoundaryTime(event.target.value.replace(/\D/g, "").slice(0, 6)); setPreflight(null); }}/></label><button className="btn ghost sm" onClick={inspect} disabled={!jobId || inspecting}>사전 점검</button><button className="btn primary sm" onClick={start} disabled={!jobId || !preflight?.available || !contractEnvelope?.analysis_ready || inspecting || running}>경로 분석 시작</button>{running && <button className="btn danger sm" onClick={() => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" }).catch(reason => setError(_tpKo(String(reason.message || reason))))}>취소</button>}</div>
+      <BtCsvQuality envelope={contractEnvelope} pending={inspecting}/>
+      {preflight && <div className={`tp-preflight ${preflight.available ? "ready" : "blocked"}`}><b>{preflight.available ? "경로 자료 점검 통과" : "경로 자료 점검 미충족"}</b><span>{preflight.available ? `거래 ${preflight.trade_count} · 날짜 ${preflight.covered_date_count}/${preflight.date_count} · ${preflight.source.timeframe}` : `${_tpKo(preflight.reason)}${preflight.exit_after_boundary_count ? ` · 경계 뒤 실제 매도 ${preflight.exit_after_boundary_count}건` : ""}`}</span>{(preflight.uncovered_dates || []).length > 0 && <span className="tp-uncovered">⚠ 데이터 없는 날짜 {preflight.date_count - preflight.covered_date_count}일: {preflight.uncovered_dates.slice(0, 6).join(", ")}{preflight.uncovered_dates.length > 6 ? " …" : ""}</span>}<small>전체청산 {String(preflight.forced_liquidation_time || "").padStart(6, "0")} · {preflight.boundary_source || "미확인"} · 전체청산 이후 데이터는 존재해도 사용하지 않음</small></div>}
       {dataContract && <nav className="tp-view-tabs" aria-label="통합 백테스트 연구 단계">{pageTabs.map(([key,label]) => <button key={key} className={activeView === key ? "active" : ""} onClick={() => setActiveView(key)}>{label}</button>)}</nav>}
       {dataContract && _tpNextHint(activeView) && <div className="tp-next-hint">{_tpNextHint(activeView)}</div>}
       {dataContract && activeView === "data" && <div aria-label="데이터 계약"><BtDataContract contract={dataContract}/></div>}
