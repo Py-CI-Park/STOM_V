@@ -1,7 +1,7 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-09-08T14:13:06.212009+00:00",
-  "source_fingerprint": "636c8d8617f8cdc5dc862019d0a4c716cb671b853f013965e16fede5bc5b40c5",
+  "generated_at": "2026-09-08T15:08:10.860970+00:00",
+  "source_fingerprint": "9a01aadf7cce6abae299c7569ec2aee83958530b69e8230dbd22185a7be752c3",
   "count": 1120,
   "docs": [
     {
@@ -7575,8 +7575,8 @@
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-09-08_SYS05_B2_B3_통합검증.md",
       "title": "SYS05 B2/B3 통합·전체 페이지 핸드오프",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-09-08T14:11:40.884244+00:00",
-      "size": 5689
+      "updated_at": "2026-09-08T15:07:54.553836+00:00",
+      "size": 6937
     },
     {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-09-08_SYS05_SQ00_완료_SQ01_재개.md",
@@ -7603,7 +7603,7 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-09-08T14:11:40.904313+00:00",
+      "updated_at": "2026-09-08T15:07:54.556339+00:00",
       "size": 19989
     },
     {
