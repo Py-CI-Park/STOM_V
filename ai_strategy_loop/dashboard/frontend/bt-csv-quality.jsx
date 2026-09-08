@@ -15,6 +15,7 @@ const CSV_QUALITY_LABELS = {
 const CSV_EXECUTION_LABELS = {
   success: "실행 완료", error: "실행 실패", cancelled: "실행 취소",
   no_trades: "무거래 종료", timeout: "실행 시간 초과",
+  partial: "실행 영수증 미확인",
 };
 const csvCount = value => value == null ? "—" : Number(value).toLocaleString();
 const CSV_DETAIL_LABELS = {
@@ -49,6 +50,7 @@ function BtCsvQuality({ envelope, pending = false }) {
       <span>{CSV_EXECUTION_LABELS[envelope.execution_status] || "실행 상태 미확인"}</span>
       <strong>{ready ? "CSV 분석 준비 충족" : "분석 준비 미충족"}</strong></header>
     <p>{help}</p>
+    {envelope.analysis_authority === "diagnostic_legacy_generation" && <p>{envelope.summary_authority === "stored_unverified" ? "과거 세대의 저장 요약입니다." : "과거 세대 CSV의 진단 분석입니다."} 실행 영수증과 경제적 유효성은 별도 확인이 필요합니다.</p>}
     <p>공식 스키마: <code>{q?.official_schema || "미확인"}</code> · 컬럼 이름과 구성을 함께 검사합니다.</p>
     {q?.issue_codes?.length > 0 && <p>문제 유형: {q.issue_codes.map(code => CSV_QUALITY_LABELS[code]?.[0] || code).join(" · ")}</p>}
     <dl className="tp-csv-counts">

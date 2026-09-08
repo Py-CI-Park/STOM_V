@@ -340,7 +340,8 @@ function ResultDetailBody({
   useEffect_btc(() => {
     try { window.localStorage.setItem(_BT_RESULT_LAYOUT_KEY, layout); } catch (e) {}
   }, [layout]);
-if (result.analysis_ready === false && result.data_quality) {
+const storedUnverified = result.summary_authority === "stored_unverified" && result.has_csv === false;
+if (result.analysis_ready === false && result.data_quality && !storedUnverified) {
   return <section className="panel bt-result-quality-blocked" aria-label="결과 분석 보류">
     <div className="panel-hd"><b>{result.data_quality.status === "NO_TRADES" ? "거래 표본이 없는 결과" : "결과 품질 확인 필요"}</b></div>
     <div className="panel-bd"><BtCsvQuality envelope={result}/>
@@ -391,7 +392,9 @@ if (metricsOnly) {
         <span className="badge warn">CSV 없음</span>
       </div>
       <div className="panel-bd">
+        {result.data_quality && <BtCsvQuality envelope={result}/>}
         <p className="bt-section-purpose">{result.message || "결과 CSV가 없어 저장된 세대 메트릭만 표시합니다. 차트와 상세 분석은 제공하지 않습니다."}</p>
+        {storedUnverified && <p className="bt-section-purpose">저장된 미검증 요약입니다. 아래 수치를 재계산·실행 성공·경제 승인 증거로 사용하지 않습니다.</p>}
         <div className="bt-summary-row" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
           {_BT_METRIC_CARDS.map(meta => {
             const value = metricVal(meta.key);

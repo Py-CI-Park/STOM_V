@@ -67,6 +67,15 @@ class Flag(TypedDict):
     available: bool
 
 
+class GenerationStub(TypedDict):
+    status: str
+    trade_count: int
+    csv_path: str | None
+    profit: float
+    mdd: float
+    gate_passed: bool
+
+
 def make_app(directory: Path) -> FastAPI:
     """Compose only the production read-only route and synthetic source discovery."""
     header, row = official_pair()
@@ -98,13 +107,25 @@ def make_app(directory: Path) -> FastAPI:
     trade_contract_api.get_job_manager = Manager
     backtest_api.get_job_manager = Manager
     backtest_api.REPO_ROOT = directory
+    loss_path = directory / "generation_loss.csv"
+    loss_path.write_text(header + row.replace(",0,0\n", ",-1,-100\n"), encoding="utf-8")
+    generations = {
+        1: GenerationStub(status="ok", trade_count=1, csv_path=str(loss_path), profit=-100, mdd=12, gate_passed=False),
+        2: GenerationStub(status="error", trade_count=1, csv_path=str(loss_path), profit=-100, mdd=12, gate_passed=False),
+        3: GenerationStub(status="rejected", trade_count=0, csv_path=None, profit=-5000, mdd=12, gate_passed=False),
+    }
+
+    def generation_row(run_id: str, gen_no: int) -> GenerationStub | None:
+        return generations.get(gen_no) if run_id == "fixture" else None
+
+    backtest_api._gen_row_readonly = generation_row
     app = FastAPI()
     app.include_router(trade_contract_api.trade_contract_router, prefix="/bt/trade-path")
     app.mount("/ui", StaticFiles(directory=ROOT / "ai_strategy_loop/dashboard/frontend"))
 
     @app.get("/bt/result")
-    def result(job_id: str) -> JSONResponse:
-        return JSONResponse(backtest_api.get_result(job_id=job_id))
+    def result(job_id: str = "", run_id: str = "", gen_no: int | None = None) -> JSONResponse:
+        return JSONResponse(backtest_api.get_result(job_id=job_id, run_id=run_id, gen_no=gen_no))
 
     @app.get("/bt/analysis/montecarlo")
     def no_research() -> JSONResponse:
@@ -158,6 +179,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         return page().replace(
             "window.BtTradePathTab,{baseUrl:location.origin}",
             "window.BtResultArea,{baseUrl:location.origin,jobId:new URLSearchParams(location.search).get('job')||'normal'}",
+        )
+
+    @app.get("/generation-view", response_class=HTMLResponse)
+    def generation_page() -> str:
+        return page().replace(
+            "window.BtTradePathTab,{baseUrl:location.origin}",
+            "window.BtResultArea,{baseUrl:location.origin,evoSource:{run_id:'fixture',gen_no:Number(new URLSearchParams(location.search).get('gen')||1)}}",
         )
 
     return app
