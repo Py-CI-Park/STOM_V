@@ -3,7 +3,9 @@
   "date": "2026-09-08",
   "basis": "NEW_V15_ACCEPTANCE_SCOPE_NOT_EXISTING_STOM_FEATURE_COUNT",
   "branch": "codex/process-research-sys-05-report-quality",
-  "source_base_commit": "b522a71a",
+  "source_base_commit": "b522a71a7396f60c8bad24f56a4a6523ff3dab6f",
+  "integrated_code_commit": "bf5d02a1118f3eb533c9b122f7688b6f7dfa0fae",
+  "integration_gate": "FAST_SLOW_REVERIFY_PENDING",
   "receipt": "2026-09-08_SYS05_SQ01B3_TASK_RECEIPT.md",
   "canonical_order": [
     "RES-04P",
@@ -50,7 +52,8 @@
       "status": "PARTIAL_UI",
       "achieved": [
         "SQ01.terminal_source_selector",
-        "SQ01B1.job_result_quality"
+        "SQ01B1.job_result_quality",
+        "SQ01B2.generation_result_quality"
       ],
       "remaining": [
         "전체 결과 identity·라이브러리 통합"
@@ -63,7 +66,9 @@
       "status": "SCOPED_WORKFLOW_VERIFIED",
       "achieved": [
         "SQ01.csv_quality_data_contract",
-        "SQ01B1.job_result_quality"
+        "SQ01B1.job_result_quality",
+        "SQ01B2.generation_result_quality",
+        "SQ01B3.report_export_quality"
       ],
       "remaining": [
         "개별/복수 분석 소비자 품질 전파",
@@ -77,7 +82,8 @@
       "name": "성과·자본·위험",
       "status": "PARTIAL_UI",
       "achieved": [
-        "SQ01B1.job_result_quality"
+        "SQ01B1.job_result_quality",
+        "SQ01B2.generation_result_quality"
       ],
       "remaining": [
         "동일 기간·자본·비용 기준",
@@ -190,7 +196,8 @@
       "status": "PARTIAL_PROJECTION",
       "achieved": [
         "SQ00.report_metadata",
-        "SQ01B1.job_result_quality"
+        "SQ01B1.job_result_quality",
+        "SQ01B3.report_export_quality"
       ],
       "remaining": [
         "모든 화면·HTML·JSON의 동일 Bundle/hash"
