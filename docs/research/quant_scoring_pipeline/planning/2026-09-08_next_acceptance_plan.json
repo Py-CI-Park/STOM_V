@@ -1,0 +1,83 @@
+{
+  "schema": "stom.next_acceptance_plan.v1",
+  "source_commit": "10b67ed3a389e8c255c4900af447d250a9dc1d0b",
+  "status": "PLAN_ONLY_NOT_IMPLEMENTED",
+  "purpose": "검증 가능한 백테스트 자료에서 재현 가능한 분석과 후속 가설로 연결한다. 기능 완료와 경제적 성공은 분리한다.",
+  "authority": {
+    "local_development_and_no_ff_merge": true,
+    "remote_push": false,
+    "operating_db_write": false,
+    "stage_f_or_economic_gate": false,
+    "holdout_or_adoption_or_orders": false
+  },
+  "next_order": ["SYS05.B4a", "SYS05.B4b", "SYS05.B5", "SYS05.SQ02", "ANA05", "ANA06", "ANA07", "ANA08", "UX06"],
+  "required_before_next_code": ["통합 Fast/Slow 최종 출력과 exit code 확인", "현재 HEAD/dirty/작업 브랜치 확인", "tmap 및 원본 evidence 보존"],
+  "work": [
+    {
+      "id": "SYS05.B4a",
+      "purpose": "개별 분석과 MC 직접 호출이 화면의 품질 차단을 우회하지 않도록 한다.",
+      "owners": ["backtest_api._analysis_for_job", "backtest_api._analysis_for_run", "job_result_quality.inspect_job_result_source", "generation_result_policy.generation_policy"],
+      "routes": ["summary", "equity", "distribution", "heatmap", "underwater", "insights", "mae_mfe", "exit_reasons", "orderflow", "gui_parity", "montecarlo"],
+      "red_cases": ["불량 CSV + 계산함수 trap", "error + 정상 CSV", "no CSV와 정상0행 구분", "generation gateFalse 손실 진단 유지", "미검증 실행을 SUCCESS로 승격하지 않음"],
+      "compatibility": ["기존 결과 field 이름 유지", "analysis_ready/data_quality를 소비자까지 전달", "차단 상태에서 빈 list로 정상0 계산을 유도하지 않음", "MC n상한/seed/method/block_length/범위 필터 유지"],
+      "ui": ["직접 API의 차단 사유를 공유 컴포넌트에 표시", "오류 시 이전 성과 카드 잔존 금지"],
+      "done_when": ["생산 모듈 import red→green", "공식54/37 fixture 양성 회귀", "API/component/실제 합성 브라우저", "독립검토와 원자 receipt"]
+    },
+    {
+      "id": "SYS05.B4b",
+      "purpose": "피처 분석의 정보 손실과 검사 후 CSV 재읽기를 방지한다.",
+      "owners": ["backtest_api.analysis_leaf_matrix", "label_dataset.build/enrich", "backtest_api.analysis_feature_map", "backtest_api.analysis_revision_proposals"],
+      "adapter_requirement": "NormalizedTrade는 전체 B/S/R 열을 보존하지 않는다. CsvSnapshot의 headers/rows에서 기존 DataFrame 소유 코드로 연결하는 명시 adapter가 필요하다.",
+      "red_cases": ["품질 검사 뒤 path 재읽기 trap", "전체 B/S/R 열 및 순서/이름 보존", "품질 차단이 전략 조회/제안보다 선행", "정상 제안0개와 자료 차단 구분"],
+      "ui": ["BtLeafExplorer", "BtFeatureMap", "trade-path의 BtEntryAutopsy", "A→B 전환 즉시 이전 상태 제거", "늦은 A응답 무시", "baseUrl 변경 재조회"],
+      "boundaries": ["entry-time 변수와 결과 라벨의 역할 분리", "메모리 apply 미리보기는 저장/채택 아님", "마이닝 실제 연구 실행하지 않음"]
+    },
+    {
+      "id": "SYS05.B5",
+      "purpose": "여러 결과 중 일부가 빠지거나 비교 조건이 다른데 하나의 총성과로 보이는 문제를 막는다.",
+      "owners": ["backtest_api.compare_jobs", "backtest_api._compare_side", "backtest_api._compare_side_for_run", "backtest_api.overlay_jobs", "backtest_api.portfolio_combine", "backtest_api._portfolio_item_trades", "별도 evolution_gui_parity 소비자 조사"],
+      "acceptance": ["입력별 identity/hash/품질/범위", "부분 실패를 명시하고 조용한 제외 금지", "공통 기간/자본/비용의 비교 적격성", "중복 입력/같은 source 다른 alias", "정상0과 미확보 자료 구분"],
+      "ui": ["각 입력 상태를 보여주는 비교 준비표", "차단 이유와 수정 가능한 입력 링크", "이전 비교 결과의 뒤늦은 응답 제거"]
+    },
+    {
+      "id": "SYS05.SQ02",
+      "purpose": "같은 이름의 수치가 서로 다른 의미로 쓰이지 않도록 지표 정의를 버전으로 관리한다.",
+      "verified_observations": [
+        {"owner": "backtest_analysis._drawdown_from_profits", "synthetic_input": [-100.0], "legacy_output": [0.0, 0.0], "meaning": "현재 구현은 누적손익 첫 관측치를 초기 peak로 삼는다. 원점0 포함 여부를 새 definition에서 명시할 필요가 있다."},
+        {"owner": "backtest_analysis._drawdown_from_profits", "synthetic_input": [100.0, -50.0], "legacy_output": [50.0, 50.0], "meaning": "기존 비율은 누적 peak 기준이며 계좌 초기자본 대비 낙폭과 다른 값이다."},
+        {"owner": "backtest_analysis.monte_carlo", "meaning": "현재 capital은 총이익, 없으면 절대 총손익, 그래도 없으면1로 추정한다. 실제 운용자본 기반 파산확률로 확정해 표현하지 않아야 한다."},
+        {"owner": "tests/manual/sq01_browser_fixture.make_app", "meaning": "브라우저 fixture는 시각을12자리 min으로 바꾸지만 hold 원값60을 유지하므로1시간 표시다. 생산 변환 오류라고 단정하지 않는다. 실제 엔진 단위와 fixture 시간 일관성을 별도로 검증한다."}
+      ],
+      "definition_decisions_required": ["원점0을 포함한 실현손익 낙폭과 실제자본 낙폭의 분리", "자본 미확정 시 비율/파산 항목의 미정의 사유", "tick초/min분 단위와 누락 metadata", "수수료/슬리피지/순손익의 동일 기준", "평가창과 발견창의 정의 분리", "무거래/전승/전패/평탄/비유한 수치"],
+      "rules": ["기존 봉인 결과 재계산/덮어쓰기 금지", "새 definition/projection으로 식별", "미정의를0으로 치환하지 않음", "legacy 모드와 새 정의 양쪽 Golden fixture", "F04 NaN/Inf accepted 가설 차단도 별도로 종료 증거 필요"],
+      "economic_validation": "이 작업은 지표 계약 수정이며 실제 수익성 검증이 아니다."
+    },
+    {
+      "id": "ANA05",
+      "purpose": "한 결과를 재사용 가능한 정본 Bundle로 묶고 화면·HTML·JSON이 같은 근거를 보도록 한다.",
+      "acceptance": ["기존 CardV3/production Bundle v3/TradeArtifactContract/TradePath/Catalog 재사용", "source bytes/hash/context/definition 고정", "시간차 export의 동일 Bundle identity", "현재 Catalog6-table 보존", "영속화와 원본불변 테스트"]
+    },
+    {
+      "id": "ANA06",
+      "purpose": "거래를 사건·집단·피처로 연결해 어떤 조건에서 달라지는지 설명한다.",
+      "acceptance": ["trade key 왕복 연결", "entry-time 변수/결과 라벨 분리", "표본수·결측·불확실성", "전체 B/S/R raw snapshot 계보", "대용량 자료의 메모리·처리시간·중단 복구 검증"]
+    },
+    {
+      "id": "ANA07",
+      "purpose": "발견된 패턴의 별도 확인과 비교·fold/control 적격성을 관리한다.",
+      "acceptance": ["발견/평가 dataset identity", "다중비교/FDR·연속형 라벨", "missing fold/control은 PASS/0으로 채우지 않음", "공통/신규/제거 거래 효과", "인과·수익성 확정 주장 차단"]
+    },
+    {
+      "id": "ANA08",
+      "purpose": "Finding을 반증 가능한 가설·사전등록·승인된 후속 실험 계획으로 연결한다.",
+      "acceptance": ["Formal Ledger/ContextPack 재사용", "근거·적용범위·반증·재개조건", "미확정 값/승인자를 임의 생성하지 않음", "attempt/retry/cancel/예산 영수증", "자동채택·Holdout·실주문 권한 자동 생성 금지"]
+    },
+    {
+      "id": "UX06",
+      "purpose": "14화면을 사용자의 질문 순서로 연결하고 전체 사용성을 검증한다.",
+      "acceptance": ["Mission의 현재 Gate/허용행동/차단사유", "모든 source에서 동일 상태 의미", "키보드/초점/200% 확대", "A→B 전환 및 stale 응답", "화면/보고서 동일 Bundle", "실제 설정 default/effective 분리", "전체 페이지 실제 사용 수용시험"]
+    }
+  ],
+  "workflow": ["최신 loop에서 codex/작업 branch", "실패재현", "최소 수정", "회귀 및 해당 UI 사용", "독립검토", "TASK_RECEIPT/진행원장", "지정 파일만 stage/한국어 commit", "loop no-ff merge", "통합 Gate"],
+  "known_infrastructure_debt": "문서 색인은 raw bytes fingerprint이므로 Windows 새 checkout의 줄바꿈과 mtime에 민감하다. 원본/evidence를 일괄 정규화하지 말고 문서 병합 완료 후 생성 색인만 별도 작업으로 갱신한다. 장기적으로 fingerprint 정의의 이식성 개선은 별도 설계가 필요하다."
+}
