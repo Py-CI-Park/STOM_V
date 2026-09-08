@@ -29,6 +29,7 @@ from ai_strategy_loop.controller import state as S  # noqa: E402
 from ai_strategy_loop.controller.state import LoopState  # noqa: E402
 from ai_strategy_loop.dashboard import backtest_api  # noqa: E402
 from ai_strategy_loop.dashboard import backtest_jobs as J  # noqa: E402
+from tests.unit.dashboard.trade_quality_fixtures import official_pair
 
 
 # --------------------------------------------------------------------- fixtures
@@ -44,7 +45,7 @@ def _make_strategy_db(path: Path) -> None:
     con.close()
 
 
-def _make_trades_csv(path: Path, n: int = 60, *, sign: int = 1) -> str:
+def _make_trades_csv(path: Path, n: int = 60, *, sign: int = 1, official: bool = False) -> str:
     """analysis 가 기대하는 per-trade 컬럼명으로 CSV 생성.
 
     sign=+1 이면 짝수 인덱스 이익(전반 흑자), sign=-1 이면 부호 반전(전반 적자) —
@@ -52,10 +53,11 @@ def _make_trades_csv(path: Path, n: int = 60, *, sign: int = 1) -> str:
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8-sig", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=[
+        fields = [
             "종목명", "매수시간", "매도시간", "보유시간", "수익률", "수익금",
             "R_MFE", "R_MAE", "매도조건",
-        ])
+        ]
+        w = csv.DictWriter(fh, fieldnames=official_pair()[0].strip().split(",") if official else fields)
         w.writeheader()
         for i in range(n):
             day = (i % 25) + 1
@@ -108,7 +110,7 @@ def _seed_gen(tmp_path: Path, run_id: str, gen_no: int, *, csv_path=None,
         st.close()
 
 
-def _seed_job(tmp_path: Path, csv_path: str | None, job_id: str, status: str = "success") -> str:
+def _seed_job(tmp_path: Path, csv_path: str | None, job_id: str, status: str = "success", *, trade_count: int = 60) -> str:
     import json
     jobs_dir = tmp_path / "webbt_jobs"
     jobs_dir.mkdir(parents=True, exist_ok=True)
@@ -120,7 +122,7 @@ def _seed_job(tmp_path: Path, csv_path: str | None, job_id: str, status: str = "
         "status": status,
         "created_at": 1700000000.0, "started_at": 1700000001.0, "finished_at": 1700000050.0,
         "returncode": 0, "csv_path": csv_path,
-        "metrics": {"trade_count": 60, "win_rate": 50.0, "total_profit_pct": 30.0,
+        "metrics": {"trade_count": trade_count, "win_rate": 50.0, "total_profit_pct": 30.0,
                     "total_profit_krw": 150000, "mdd_pct": 12.0, "cagr": 88.0},
         "message": "ok", "progress": 1.0, "phase": "done", "pid": 111,
     }
@@ -182,8 +184,8 @@ def test_job_result_reads_relative_artifact_from_repo_root_not_cwd(
 ):
     repo_root = tmp_path / "repo"
     rel_csv = "backtest/csv/relative_result.csv"
-    _make_trades_csv(repo_root / rel_csv, n=12)
-    _seed_job(tmp_path, rel_csv, "20260101_000000_REL_00001")
+    _make_trades_csv(repo_root / rel_csv, n=12, official=True)
+    _seed_job(tmp_path, rel_csv, "20260101_000000_REL_00001", trade_count=12)
     other_cwd = tmp_path / "not_repo_cwd"
     other_cwd.mkdir()
     monkeypatch.setattr(backtest_api, "REPO_ROOT", repo_root)

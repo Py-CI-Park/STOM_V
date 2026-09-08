@@ -32,7 +32,12 @@ import math
 import os
 import struct
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from ai_strategy_loop.dashboard.trade_csv_models import NormalizedTrade
 
 # ---------------------------------------------------------------------------
 # 컬럼 상수 (holdout/equity_series 와 동일 헤더 계열).
@@ -1945,13 +1950,19 @@ def full_analysis(
     csv_path: Optional[str],
     t_start: Optional[int] = None,
     t_end: Optional[int] = None,
+    *,
+    prepared_trades: Sequence[NormalizedTrade] | None = None,
 ) -> Dict[str, Any]:
     """CSV 한 파일로 summary/equity/distribution/heatmap/underwater/insights 전부 산출.
 
     t_start/t_end(매수시간 YYYYMMDDHHMMSS) 를 주면 그 구간 거래만으로 재계산한다
     (수익곡선 브러시 → 구간 분석). 빈 구간이어도 무예외(빈 분석 구조).
     """
-    trades = filter_trades(load_trades_csv(csv_path), t_start, t_end)
+    source_trades = (
+        [trade.model_dump() for trade in prepared_trades]
+        if prepared_trades is not None else load_trades_csv(csv_path)
+    )
+    trades = filter_trades(source_trades, t_start, t_end)
     summary = summary_metrics(trades)
     distribution = pnl_distribution(trades)
     heatmap = time_heatmap(trades)

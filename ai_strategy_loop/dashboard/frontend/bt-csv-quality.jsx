@@ -31,6 +31,8 @@ const CSV_DETAIL_LABELS = {
   "Duplicate/empty/missing required header": "헤더가 중복되거나 필수 컬럼이 없습니다.",
   "CSV file is missing": "지정된 CSV 파일이 없습니다.",
   "Job has no CSV artifact path": "실행 기록에 CSV 경로가 없습니다.",
+  "Job has no readable CSV artifact": "실행 기록에서 읽을 수 있는 CSV를 찾지 못했습니다.",
+  "Invalid job trade_count metadata": "실행 기록의 예상 거래 수가 올바른 정수가 아닙니다.",
   "CSV cannot be read": "CSV 파일에 접근할 수 없습니다.",
   "CSV must be UTF-8": "UTF-8로 인코딩된 CSV가 필요합니다.",
   "Malformed CSV record": "CSV 따옴표나 레코드 형식이 잘못되었습니다.",

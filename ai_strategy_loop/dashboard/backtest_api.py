@@ -1430,7 +1430,8 @@ def get_result(
       - demo=1: 합성 예시 결과(잡 미선택 기본 화면 — 빈 화면 금지, 트랙 B ④). is_demo:true.
       - job_id: 완료 잡 결과(t_start/t_end 로 구간 한정 가능 — 브러시).
       - run_id+gen_no: loop_runs.db 세대 결과(잡과 동일 스키마, CSV 부재 시 축약).
-    no_trades 잡은 metrics=None, analysis=빈 구조로 정상 반환(에러 아님).
+    SQ01B1: job 경로의 자료/실행 미충족은 metrics/analysis=None과 품질 영수증을
+    반환한다. no_trades도 실행 사실과 CSV 품질을 분리한다. 다른 경로는 기존 계약.
     """
     # 데모 경로 — 잡/세대 없이 합성 거래로 풀 분석을 만든다(분석 전 키 포함).
     #   sentinel job_id("__demo__") 도 데모로 라우팅한다(프론트 BtResultArea 가 job_id 만
@@ -1458,17 +1459,25 @@ def get_result(
             "mode_result": record.get("mode_result"),
             "message": record.get("message", ""),
         }, record)
-    # no_trades 는 csv_path 없이 정상 종결 — 빈 분석 구조를 반환한다.
-    if status == "no_trades":
+    # SQ01B1: validate one snapshot before any job-result metric computation.
+    from ai_strategy_loop.dashboard.job_result_quality import inspect_job_result_source
+
+    checked = inspect_job_result_source(Path(csv_path) if csv_path else None, record)
+    quality = checked.quality.model_dump(mode="json")
+    if status != "success" or not checked.quality.analysis_ready:
         return _augment_job_result({
             "available": True,
             "job_id": job_id,
             "status": status,
             "metrics": None,
-            "analysis": analysis.full_analysis(None),
+            "analysis": None,
+            "analysis_ready": False,
+            "execution_status": status,
+            "data_quality": quality,
+            "analysis_contract": "job_result_quality_v1",
             "message": record.get("message", ""),
         }, record)
-    bundle = analysis.full_analysis(csv_path, t_start, t_end)
+    bundle = analysis.full_analysis(None, t_start, t_end, prepared_trades=checked.trades)
     ranged = t_start is not None or t_end is not None
     return _augment_job_result({
         "available": True,
@@ -1477,6 +1486,10 @@ def get_result(
         # 구간 분석 시 metrics 는 CLI 전체 메트릭 대신 구간 summary 로 대체(카드 동기).
         "metrics": bundle["summary"] if ranged else record.get("metrics"),
         "analysis": bundle,
+        "analysis_ready": True,
+        "execution_status": status,
+        "data_quality": quality,
+        "analysis_contract": "job_result_quality_v1",
         "ranged": ranged,
     }, record)
 

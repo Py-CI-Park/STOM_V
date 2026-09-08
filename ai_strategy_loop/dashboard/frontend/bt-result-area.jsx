@@ -27,6 +27,7 @@ import { BtGuiParitySection } from "./bt-gui-parity.jsx";
 import { BtQuantPanel } from "./bt-quant.jsx";
 import { BtLeafExplorer } from "./bt-leaf-explorer.jsx";
 import { BtFeatureMap } from "./bt-feature-map.jsx";
+import { BtCsvQuality } from "./bt-csv-quality.jsx";
 
 // ===========================================================================
 // 결과·분석 영역 — 메트릭 카드 + 4차트 + 기여 테이블 + 인사이트.
@@ -193,7 +194,7 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
   const loadMc = useCallback_btc((method) => {
     const requestState = mcRequestRef.current;
     if (requestState.controller) requestState.controller.abort();
-    if (isDemo || !baseUrl || (!jobId && !isEvo)) {
+    if (isDemo || !baseUrl || (!jobId && !isEvo) || result?.analysis_ready === false) {
       requestState.controller = null;
       setMc(null);
       setMcLoading(false);
@@ -222,7 +223,7 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
       .finally(() => {
         if (btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setMcLoading(false);
       });
-  }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
+  }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range, result?.analysis_ready]);
 
   useEffect_btc(() => {
     sourceKeyRef.current = sourceKey;
@@ -237,7 +238,7 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
   }, []);
   // 결과/구간이 바뀌면 몬테카를로 자동 재계산(성공/구간 잡일 때만; 세대는 스킵).
   useEffect_btc(() => {
-    if (capabilities.monteCarlo && result && result.available && result.status !== "no_trades") { loadMc(); }
+    if (capabilities.monteCarlo && result && result.available && result.status !== "no_trades" && result.analysis_ready !== false) { loadMc(); }
   }, [result, loadMc, capabilities.monteCarlo]);
 
   const onBrush = useCallback_btc((t_start, t_end) => {
@@ -339,6 +340,15 @@ function ResultDetailBody({
   useEffect_btc(() => {
     try { window.localStorage.setItem(_BT_RESULT_LAYOUT_KEY, layout); } catch (e) {}
   }, [layout]);
+if (result.analysis_ready === false && result.data_quality) {
+  return <section className="panel bt-result-quality-blocked" aria-label="결과 분석 보류">
+    <div className="panel-hd"><b>{result.data_quality.status === "NO_TRADES" ? "거래 표본이 없는 결과" : "결과 품질 확인 필요"}</b></div>
+    <div className="panel-bd"><BtCsvQuality envelope={result}/>
+      <p>{result.data_quality.status === "NO_TRADES" ? "CSV 구조는 정상이지만 거래 표본이 없어 거래 기반 지표와 차트를 계산하지 않습니다." : "자료 품질 또는 실행 상태가 분석 준비 조건을 충족하지 않아 성과·차트·추가 분석을 계산하지 않습니다."}</p>
+      {onReload && <button className="btn ghost sm" onClick={onReload}>품질 다시 확인</button>}
+    </div>
+  </section>;
+}
 // no_trades → 안내 카드(에러 아님).
 if (result.status === "no_trades") {
   return (
@@ -421,6 +431,7 @@ const stats = analysis.stats || [];
 return (
   <div ref={layoutRef} className={"bt-result-flow bt-result-grid-12 bt-result-layout-" + layout}
        style={{ "--bt-result-columns": columns }}>
+    {result.data_quality && <div style={{ gridColumn: "1 / -1" }}><BtCsvQuality envelope={result}/></div>}
     <nav className="bt-result-nav" aria-label="결과 분석 섹션">
       <a href="#bt-result-summary-title">요약</a>
       <a href="#bt-analysis-matrix-title">전체 차트</a>

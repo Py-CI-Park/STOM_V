@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 from ai_strategy_loop.dashboard.backtest_jobs import get_job_manager
 from ai_strategy_loop.dashboard.trade_contract import (
@@ -14,6 +14,7 @@ from ai_strategy_loop.dashboard.trade_contract import (
     build_trade_contract_from_snapshot,
 )
 from ai_strategy_loop.dashboard.trade_csv_models import CsvIssue, TradeCsvQuality
+from ai_strategy_loop.dashboard.trade_csv_models import TradeCountExpectation as CompletedMetricsPayload
 from ai_strategy_loop.dashboard.trade_csv_quality import load_trade_quality
 
 
@@ -27,11 +28,6 @@ class ArtifactSpecPayload(BaseModel):
     timeframe: str = "unknown"
     start_time: int | None = None
     end_time: int | None = None
-
-
-class CompletedMetricsPayload(BaseModel):
-    model_config = ConfigDict(extra="ignore", frozen=True)
-    trade_count: int | None = Field(default=None, ge=0, strict=True)
 
 
 class CompletedJobPayload(BaseModel):

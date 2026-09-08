@@ -27051,6 +27051,65 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     }))))))), view === "regions" && /* @__PURE__ */ React.createElement("div", null, !(regions && regions.regions && regions.regions.length) ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC190\uC2E4 \uC601\uC5ED \uC5C6\uC74C \uB610\uB294 \uB370\uC774\uD130 \uBBF8\uB85C\uB4DC") : /* @__PURE__ */ React.createElement("table", { className: "bt-fm-rank" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "#"), /* @__PURE__ */ React.createElement("th", null, "\uBCC0\uC218"), /* @__PURE__ */ React.createElement("th", null, "\uAD6C\uAC04"), /* @__PURE__ */ React.createElement("th", null, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("th", null, "\uC190\uC775 \uD569"))), /* @__PURE__ */ React.createElement("tbody", null, regions.regions.map((r, i) => /* @__PURE__ */ React.createElement("tr", { key: `${r.feature}|${r.bin}` }, /* @__PURE__ */ React.createElement("td", null, i + 1), /* @__PURE__ */ React.createElement("td", null, r.feature), /* @__PURE__ */ React.createElement("td", { className: "num" }, r.bin), /* @__PURE__ */ React.createElement("td", { className: "num" }, r.n.toLocaleString()), /* @__PURE__ */ React.createElement("td", { className: "num neg" }, Math.round(r.pnl).toLocaleString()))))), /* @__PURE__ */ React.createElement("div", { className: "bt-fm-help" }, '"\uC774 \uB9E4\uC218 \uD2B9\uC9D5 = \uC190\uC2E4" \uC790\uB3D9 \uD6C4\uBCF4 \u2014 QSP3 \uC81C\uAC70/\uD544\uD130 \uC81C\uC548\uC758 \uC785\uB825\uACFC \uAC19\uC740 \uACC4\uC0B0\uC774\uB2E4. \uCC44\uD0DD\uC740 \uD56D\uC0C1 \uC7AC\uBC31\uD14C \uC2E4\uCE21(\uC7AC\uC720\uC785 \uD6A8\uACFC 21~38% \uC2E4\uC99D) + \uD640\uB4DC\uC544\uC6C3 \uB3D9\uBC29\uD5A5.'))));
   }
 
+  // ai_strategy_loop/dashboard/frontend/bt-csv-quality.jsx
+  var CSV_QUALITY_LABELS = {
+    VALID: ["\uC815\uC0C1", "CSV \uD589 \uAC80\uC0AC\uB97C \uD1B5\uACFC\uD588\uC2B5\uB2C8\uB2E4. \uC5F0\uAD6C\xB7\uC218\uC775\uC131 \uC2B9\uC778\uC744 \uB73B\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."],
+    NO_TRADES: ["\uC815\uC0C1 \uBB34\uAC70\uB798", "\uC720\uD6A8\uD55C \uD5E4\uB354\uAC00 \uC788\uC9C0\uB9CC \uAC70\uB798 \uD589\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uC624\uB958\uB098 \uC218\uC775 0\uACFC \uAD6C\uBD84\uD569\uB2C8\uB2E4."],
+    MISSING_ARTIFACT: ["\uD30C\uC77C \uC5C6\uC74C", "\uACB0\uACFC CSV \uC704\uCE58\uC640 \uD30C\uC77C \uC874\uC7AC \uC5EC\uBD80\uB97C \uD655\uC778\uD558\uC138\uC694."],
+    INVALID_SCHEMA: ["CSV \uAD6C\uC870 \uC624\uB958", "\uD544\uC218 \uCEEC\uB7FC\xB7\uC911\uBCF5 \uD5E4\uB354\xB7CSV \uAD6C\uBD84 \uD615\uC2DD\uC744 \uD655\uC778\uD558\uC138\uC694."],
+    ROW_PARSE_PARTIAL: ["\uC77C\uBD80 \uD589 \uC624\uB958", "\uAC70\uBD80\uB41C \uD589\uC744 \uD655\uC778\uD558\uC138\uC694. \uB0A8\uC740 \uD589\uB9CC\uC73C\uB85C \uC804\uCCB4 \uC131\uACFC\uB97C \uD310\uB2E8\uD558\uC9C0 \uB9C8\uC138\uC694."],
+    ROW_COUNT_MISMATCH: ["\uAC70\uB798 \uC218 \uBD88\uC77C\uCE58", "\uC608\uC0C1 \uAC70\uB798 \uC218\uC640 \uC6D0\uBCF8 \uD589 \uC218\uB97C \uBA3C\uC800 \uB300\uC870\uD558\uC138\uC694."],
+    NONFINITE_VALUE: ["\uC798\uBABB\uB41C \uC218\uCE58", "NaN\xB7\uBB34\uD55C\uB300\uAC00 \uD3EC\uD568\uB41C \uD589\uC744 \uD655\uC778\uD558\uC138\uC694. 0\uC73C\uB85C \uB300\uCCB4\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."],
+    IDENTITY_MISMATCH: ["\uC6D0\uBCF8 \uC2DD\uBCC4 \uBD88\uC77C\uCE58", "\uC608\uC0C1 \uD574\uC2DC\uC640 \uC2E4\uC81C CSV \uD574\uC2DC\uAC00 \uB2E4\uB985\uB2C8\uB2E4. \uC6D0\uBCF8\uC744 \uD655\uC778\uD558\uC138\uC694."],
+    IO_ERROR: ["\uD30C\uC77C \uC77D\uAE30 \uC624\uB958", "\uD30C\uC77C \uD615\uC2DD\xB7\uC811\uADFC \uAD8C\uD55C\uC744 \uD655\uC778\uD558\uC138\uC694."],
+    ENCODING_ERROR: ["\uBB38\uC790 \uC778\uCF54\uB529 \uC624\uB958", "UTF-8 CSV\uC778\uC9C0 \uD655\uC778\uD558\uC138\uC694. \uC6D0\uBCF8\uC744 \uB36E\uC5B4\uC4F0\uC9C0 \uB9C8\uC138\uC694."],
+    RESOURCE_LIMIT: ["\uAC80\uC0AC \uD55C\uB3C4 \uCD08\uACFC", "\uC790\uB8CC \uD06C\uAE30\xB7\uD589 \uC218 \uD55C\uB3C4\uB97C \uCD08\uACFC\uD588\uC2B5\uB2C8\uB2E4. \uBD80\uBD84 \uC131\uACF5\uC73C\uB85C \uCC98\uB9AC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."]
+  };
+  var CSV_EXECUTION_LABELS = {
+    success: "\uC2E4\uD589 \uC644\uB8CC",
+    error: "\uC2E4\uD589 \uC2E4\uD328",
+    cancelled: "\uC2E4\uD589 \uCDE8\uC18C",
+    no_trades: "\uBB34\uAC70\uB798 \uC885\uB8CC",
+    timeout: "\uC2E4\uD589 \uC2DC\uAC04 \uCD08\uACFC"
+  };
+  var csvCount = (value) => value == null ? "\u2014" : Number(value).toLocaleString();
+  var CSV_DETAIL_LABELS = {
+    "Column count differs from header": "\uD5E4\uB354\uC640 \uB370\uC774\uD130\uC758 \uCEEC\uB7FC \uC218\uAC00 \uB2E4\uB985\uB2C8\uB2E4.",
+    "Rejected rows are diagnostic only": "\uAC70\uBD80 \uD589\uC774 \uC788\uC5B4 \uC804\uCCB4 \uACB0\uACFC\uC758 \uBD84\uC11D \uC900\uBE44\uB97C \uCDA9\uC871\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    "Numeric value must be finite": "NaN \uB610\uB294 \uBB34\uD55C\uB300 \uAC12\uC740 \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Numeric value cannot be parsed": "\uC22B\uC790\uB85C \uC77D\uC744 \uC218 \uC5C6\uB294 \uAC12\uC785\uB2C8\uB2E4.",
+    "Required value is empty": "\uD544\uC218 \uAC12\uC774 \uBE44\uC5B4 \uC788\uC2B5\uB2C8\uB2E4.",
+    "Holding duration is negative": "\uBCF4\uC720\uC2DC\uAC04\uC774 \uC74C\uC218\uC785\uB2C8\uB2E4.",
+    "Invalid or reversed trade timestamps": "\uAC70\uB798 \uC2DC\uAC01\uC774 \uC798\uBABB\uB418\uC5C8\uAC70\uB098 \uB9E4\uB3C4\uAC00 \uB9E4\uC218\uBCF4\uB2E4 \uBE60\uB985\uB2C8\uB2E4.",
+    "Expected raw row count differs": "\uC2E4\uD589 \uAE30\uB85D\uC758 \uAC70\uB798 \uC218\uC640 CSV \uC6D0\uBCF8 \uD589 \uC218\uAC00 \uB2E4\uB985\uB2C8\uB2E4.",
+    "Expected source hash differs": "\uC608\uC0C1\uD55C \uC6D0\uBCF8\uACFC \uC2E4\uC81C \uD30C\uC77C\uC758 \uD574\uC2DC\uAC00 \uB2E4\uB985\uB2C8\uB2E4.",
+    "Not a supported official 54/37-column schema": "\uC9C0\uC6D0\uD558\uB294 \uACF5\uC2DD 54/37\uC5F4 \uC2A4\uD0A4\uB9C8\uAC00 \uC544\uB2D9\uB2C8\uB2E4.",
+    "Duplicate/empty/missing required header": "\uD5E4\uB354\uAC00 \uC911\uBCF5\uB418\uAC70\uB098 \uD544\uC218 \uCEEC\uB7FC\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "CSV file is missing": "\uC9C0\uC815\uB41C CSV \uD30C\uC77C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Job has no CSV artifact path": "\uC2E4\uD589 \uAE30\uB85D\uC5D0 CSV \uACBD\uB85C\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "Job has no readable CSV artifact": "\uC2E4\uD589 \uAE30\uB85D\uC5D0\uC11C \uC77D\uC744 \uC218 \uC788\uB294 CSV\uB97C \uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    "Invalid job trade_count metadata": "\uC2E4\uD589 \uAE30\uB85D\uC758 \uC608\uC0C1 \uAC70\uB798 \uC218\uAC00 \uC62C\uBC14\uB978 \uC815\uC218\uAC00 \uC544\uB2D9\uB2C8\uB2E4.",
+    "CSV cannot be read": "CSV \uD30C\uC77C\uC5D0 \uC811\uADFC\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "CSV must be UTF-8": "UTF-8\uB85C \uC778\uCF54\uB529\uB41C CSV\uAC00 \uD544\uC694\uD569\uB2C8\uB2E4.",
+    "Malformed CSV record": "CSV \uB530\uC634\uD45C\uB098 \uB808\uCF54\uB4DC \uD615\uC2DD\uC774 \uC798\uBABB\uB418\uC5C8\uC2B5\uB2C8\uB2E4."
+  };
+  function BtCsvQuality({ envelope, pending = false }) {
+    var _a, _b;
+    if (pending) return /* @__PURE__ */ React.createElement("div", { className: "tp-csv-quality", role: "status" }, "\uC120\uD0DD\uD55C \uACB0\uACFC\uC758 CSV \uD488\uC9C8\uC744 \uD655\uC778\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4\u2026");
+    if (!envelope) return null;
+    const q = envelope.data_quality;
+    const [label, help] = CSV_QUALITY_LABELS[q == null ? void 0 : q.status] || ["\uD488\uC9C8 \uBBF8\uD655\uC778", "\uD604\uC7AC \uACB0\uACFC\uC758 \uD488\uC9C8 \uC601\uC218\uC99D\uC744 \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC0AC\uC804 \uC810\uAC80\uC744 \uB2E4\uC2DC \uC2E4\uD589\uD558\uC138\uC694."];
+    const ready = envelope.analysis_ready === true;
+    return /* @__PURE__ */ React.createElement("section", { className: `tp-csv-quality ${ready ? "ready" : "blocked"}`, "aria-label": "CSV \uD488\uC9C8 \uC9C4\uB2E8", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("small", null, "\uC790\uB8CC \uD488\uC9C8 \xB7 \uC2E4\uD589 \uC0C1\uD0DC \uBCC4\uB3C4 \uD310\uC815"), /* @__PURE__ */ React.createElement("h3", null, label)), /* @__PURE__ */ React.createElement("span", null, CSV_EXECUTION_LABELS[envelope.execution_status] || "\uC2E4\uD589 \uC0C1\uD0DC \uBBF8\uD655\uC778"), /* @__PURE__ */ React.createElement("strong", null, ready ? "CSV \uBD84\uC11D \uC900\uBE44 \uCDA9\uC871" : "\uBD84\uC11D \uC900\uBE44 \uBBF8\uCDA9\uC871")), /* @__PURE__ */ React.createElement("p", null, help), /* @__PURE__ */ React.createElement("p", null, "\uACF5\uC2DD \uC2A4\uD0A4\uB9C8: ", /* @__PURE__ */ React.createElement("code", null, (q == null ? void 0 : q.official_schema) || "\uBBF8\uD655\uC778"), " \xB7 \uCEEC\uB7FC \uC774\uB984\uACFC \uAD6C\uC131\uC744 \uD568\uAED8 \uAC80\uC0AC\uD569\uB2C8\uB2E4."), ((_a = q == null ? void 0 : q.issue_codes) == null ? void 0 : _a.length) > 0 && /* @__PURE__ */ React.createElement("p", null, "\uBB38\uC81C \uC720\uD615: ", q.issue_codes.map((code) => {
+      var _a2;
+      return ((_a2 = CSV_QUALITY_LABELS[code]) == null ? void 0 : _a2[0]) || code;
+    }).join(" \xB7 ")), /* @__PURE__ */ React.createElement("dl", { className: "tp-csv-counts" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uC6D0\uBCF8 \uD589"), /* @__PURE__ */ React.createElement("dd", null, csvCount(q == null ? void 0 : q.raw_count))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uC815\uC0C1 \uD589"), /* @__PURE__ */ React.createElement("dd", null, csvCount(q == null ? void 0 : q.accepted_count))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uAC70\uBD80 \uD589"), /* @__PURE__ */ React.createElement("dd", null, csvCount(q == null ? void 0 : q.rejected_count))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uC608\uC0C1 \uD589"), /* @__PURE__ */ React.createElement("dd", null, csvCount(q == null ? void 0 : q.expected_row_count)))), /* @__PURE__ */ React.createElement("p", { className: "tp-csv-hash" }, /* @__PURE__ */ React.createElement("small", null, "\uAC80\uC0AC\uD55C CSV SHA256"), /* @__PURE__ */ React.createElement("code", null, (q == null ? void 0 : q.source_sha256) || "\uBBF8\uD655\uC778")), ((_b = q == null ? void 0 : q.issues) == null ? void 0 : _b.length) > 0 && /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", null, "\uBB38\uC81C \uC0C1\uC138 ", csvCount(q.issue_count), "\uAC74", q.issues_truncated ? " \xB7 \uC77C\uBD80 \uD45C\uC2DC" : ""), /* @__PURE__ */ React.createElement("ul", null, q.issues.map((issue, index2) => {
+      var _a2;
+      return /* @__PURE__ */ React.createElement("li", { key: index2 }, /* @__PURE__ */ React.createElement("b", null, ((_a2 = CSV_QUALITY_LABELS[issue.code]) == null ? void 0 : _a2[0]) || "\uAC80\uC0AC \uC624\uB958"), issue.row != null && /* @__PURE__ */ React.createElement("span", null, " \xB7 \uB808\uCF54\uB4DC ", issue.row), issue.column && /* @__PURE__ */ React.createElement("code", null, " \xB7 ", issue.column), /* @__PURE__ */ React.createElement("span", null, " \xB7 ", CSV_DETAIL_LABELS[issue.detail] || issue.detail));
+    }))));
+  }
+  Object.assign(window, { BtCsvQuality });
+
   // ai_strategy_loop/dashboard/frontend/bt-result-area.jsx
   function btFmtHold(sec) {
     const v = Number(sec);
@@ -27237,7 +27296,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     const loadMc = useCallback_btc((method) => {
       const requestState = mcRequestRef.current;
       if (requestState.controller) requestState.controller.abort();
-      if (isDemo || !baseUrl || !jobId && !isEvo) {
+      if (isDemo || !baseUrl || !jobId && !isEvo || (result == null ? void 0 : result.analysis_ready) === false) {
         requestState.controller = null;
         setMc(null);
         setMcLoading(false);
@@ -27261,7 +27320,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
       }).finally(() => {
         if (btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setMcLoading(false);
       });
-    }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
+    }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range, result == null ? void 0 : result.analysis_ready]);
     useEffect_btc(() => {
       sourceKeyRef.current = sourceKey;
       setResult(null);
@@ -27279,7 +27338,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
       if (mcRequestRef.current.controller) mcRequestRef.current.controller.abort();
     }, []);
     useEffect_btc(() => {
-      if (capabilities.monteCarlo && result && result.available && result.status !== "no_trades") {
+      if (capabilities.monteCarlo && result && result.available && result.status !== "no_trades" && result.analysis_ready !== false) {
         loadMc();
       }
     }, [result, loadMc, capabilities.monteCarlo]);
@@ -27368,6 +27427,9 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
       } catch (e) {
       }
     }, [layout]);
+    if (result.analysis_ready === false && result.data_quality) {
+      return /* @__PURE__ */ React.createElement("section", { className: "panel bt-result-quality-blocked", "aria-label": "\uACB0\uACFC \uBD84\uC11D \uBCF4\uB958" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("b", null, result.data_quality.status === "NO_TRADES" ? "\uAC70\uB798 \uD45C\uBCF8\uC774 \uC5C6\uB294 \uACB0\uACFC" : "\uACB0\uACFC \uD488\uC9C8 \uD655\uC778 \uD544\uC694")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(BtCsvQuality, { envelope: result }), /* @__PURE__ */ React.createElement("p", null, result.data_quality.status === "NO_TRADES" ? "CSV \uAD6C\uC870\uB294 \uC815\uC0C1\uC774\uC9C0\uB9CC \uAC70\uB798 \uD45C\uBCF8\uC774 \uC5C6\uC5B4 \uAC70\uB798 \uAE30\uBC18 \uC9C0\uD45C\uC640 \uCC28\uD2B8\uB97C \uACC4\uC0B0\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4." : "\uC790\uB8CC \uD488\uC9C8 \uB610\uB294 \uC2E4\uD589 \uC0C1\uD0DC\uAC00 \uBD84\uC11D \uC900\uBE44 \uC870\uAC74\uC744 \uCDA9\uC871\uD558\uC9C0 \uC54A\uC544 \uC131\uACFC\xB7\uCC28\uD2B8\xB7\uCD94\uAC00 \uBD84\uC11D\uC744 \uACC4\uC0B0\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), onReload && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onReload }, "\uD488\uC9C8 \uB2E4\uC2DC \uD655\uC778")));
+    }
     if (result.status === "no_trades") {
       return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uACB0\uACFC \xB7 \uBD84\uC11D"), /* @__PURE__ */ React.createElement("span", { className: "badge warn" }, "\uAC70\uB798 0\uAC74")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "empty", style: { padding: "28px 24px" } }, /* @__PURE__ */ React.createElement("h2", { style: { color: "var(--amber)" } }, "\uAC70\uB798 0\uAC74"), /* @__PURE__ */ React.createElement("p", null, result.message || "\uC804\uB7B5\uC774 \uD574\uB2F9 \uAE30\uAC04\uC5D0 \uB9E4\uC218 \uC2E0\uD638\uB97C \uB0B4\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4. \uC5D0\uB7EC\uAC00 \uC544\uB2D9\uB2C8\uB2E4 \u2014 \uC870\uAC74\uC2DD/\uAE30\uAC04\uC744 \uC870\uC815\uD574 \uBCF4\uC138\uC694.")), /* @__PURE__ */ React.createElement(_BtResultCapabilities, { capabilities })));
     }
@@ -27412,6 +27474,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
         className: "bt-result-flow bt-result-grid-12 bt-result-layout-" + layout,
         style: { "--bt-result-columns": columns }
       },
+      result.data_quality && /* @__PURE__ */ React.createElement("div", { style: { gridColumn: "1 / -1" } }, /* @__PURE__ */ React.createElement(BtCsvQuality, { envelope: result })),
       /* @__PURE__ */ React.createElement("nav", { className: "bt-result-nav", "aria-label": "\uACB0\uACFC \uBD84\uC11D \uC139\uC158" }, /* @__PURE__ */ React.createElement("a", { href: "#bt-result-summary-title" }, "\uC694\uC57D"), /* @__PURE__ */ React.createElement("a", { href: "#bt-analysis-matrix-title" }, "\uC804\uCCB4 \uCC28\uD2B8"), /* @__PURE__ */ React.createElement("span", { className: "bt-result-layout-status", role: "status" }, "\uB808\uC774\uC544\uC6C3: ", layout, " \xB7 \uC2E4\uC81C ", columns, "\uC5F4"), /* @__PURE__ */ React.createElement("span", { className: "bt-result-layout-controls", role: "radiogroup", "aria-label": "\uACB0\uACFC \uCC28\uD2B8 \uB808\uC774\uC544\uC6C3" }, _BT_RESULT_LAYOUTS.map((mode) => /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -39549,63 +39612,6 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     })));
   }
   Object.assign(window, { BtDataContract });
-
-  // ai_strategy_loop/dashboard/frontend/bt-csv-quality.jsx
-  var CSV_QUALITY_LABELS = {
-    VALID: ["\uC815\uC0C1", "CSV \uD589 \uAC80\uC0AC\uB97C \uD1B5\uACFC\uD588\uC2B5\uB2C8\uB2E4. \uC5F0\uAD6C\xB7\uC218\uC775\uC131 \uC2B9\uC778\uC744 \uB73B\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."],
-    NO_TRADES: ["\uC815\uC0C1 \uBB34\uAC70\uB798", "\uC720\uD6A8\uD55C \uD5E4\uB354\uAC00 \uC788\uC9C0\uB9CC \uAC70\uB798 \uD589\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uC624\uB958\uB098 \uC218\uC775 0\uACFC \uAD6C\uBD84\uD569\uB2C8\uB2E4."],
-    MISSING_ARTIFACT: ["\uD30C\uC77C \uC5C6\uC74C", "\uACB0\uACFC CSV \uC704\uCE58\uC640 \uD30C\uC77C \uC874\uC7AC \uC5EC\uBD80\uB97C \uD655\uC778\uD558\uC138\uC694."],
-    INVALID_SCHEMA: ["CSV \uAD6C\uC870 \uC624\uB958", "\uD544\uC218 \uCEEC\uB7FC\xB7\uC911\uBCF5 \uD5E4\uB354\xB7CSV \uAD6C\uBD84 \uD615\uC2DD\uC744 \uD655\uC778\uD558\uC138\uC694."],
-    ROW_PARSE_PARTIAL: ["\uC77C\uBD80 \uD589 \uC624\uB958", "\uAC70\uBD80\uB41C \uD589\uC744 \uD655\uC778\uD558\uC138\uC694. \uB0A8\uC740 \uD589\uB9CC\uC73C\uB85C \uC804\uCCB4 \uC131\uACFC\uB97C \uD310\uB2E8\uD558\uC9C0 \uB9C8\uC138\uC694."],
-    ROW_COUNT_MISMATCH: ["\uAC70\uB798 \uC218 \uBD88\uC77C\uCE58", "\uC608\uC0C1 \uAC70\uB798 \uC218\uC640 \uC6D0\uBCF8 \uD589 \uC218\uB97C \uBA3C\uC800 \uB300\uC870\uD558\uC138\uC694."],
-    NONFINITE_VALUE: ["\uC798\uBABB\uB41C \uC218\uCE58", "NaN\xB7\uBB34\uD55C\uB300\uAC00 \uD3EC\uD568\uB41C \uD589\uC744 \uD655\uC778\uD558\uC138\uC694. 0\uC73C\uB85C \uB300\uCCB4\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."],
-    IDENTITY_MISMATCH: ["\uC6D0\uBCF8 \uC2DD\uBCC4 \uBD88\uC77C\uCE58", "\uC608\uC0C1 \uD574\uC2DC\uC640 \uC2E4\uC81C CSV \uD574\uC2DC\uAC00 \uB2E4\uB985\uB2C8\uB2E4. \uC6D0\uBCF8\uC744 \uD655\uC778\uD558\uC138\uC694."],
-    IO_ERROR: ["\uD30C\uC77C \uC77D\uAE30 \uC624\uB958", "\uD30C\uC77C \uD615\uC2DD\xB7\uC811\uADFC \uAD8C\uD55C\uC744 \uD655\uC778\uD558\uC138\uC694."],
-    ENCODING_ERROR: ["\uBB38\uC790 \uC778\uCF54\uB529 \uC624\uB958", "UTF-8 CSV\uC778\uC9C0 \uD655\uC778\uD558\uC138\uC694. \uC6D0\uBCF8\uC744 \uB36E\uC5B4\uC4F0\uC9C0 \uB9C8\uC138\uC694."],
-    RESOURCE_LIMIT: ["\uAC80\uC0AC \uD55C\uB3C4 \uCD08\uACFC", "\uC790\uB8CC \uD06C\uAE30\xB7\uD589 \uC218 \uD55C\uB3C4\uB97C \uCD08\uACFC\uD588\uC2B5\uB2C8\uB2E4. \uBD80\uBD84 \uC131\uACF5\uC73C\uB85C \uCC98\uB9AC\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."]
-  };
-  var CSV_EXECUTION_LABELS = {
-    success: "\uC2E4\uD589 \uC644\uB8CC",
-    error: "\uC2E4\uD589 \uC2E4\uD328",
-    cancelled: "\uC2E4\uD589 \uCDE8\uC18C",
-    no_trades: "\uBB34\uAC70\uB798 \uC885\uB8CC",
-    timeout: "\uC2E4\uD589 \uC2DC\uAC04 \uCD08\uACFC"
-  };
-  var csvCount = (value) => value == null ? "\u2014" : Number(value).toLocaleString();
-  var CSV_DETAIL_LABELS = {
-    "Column count differs from header": "\uD5E4\uB354\uC640 \uB370\uC774\uD130\uC758 \uCEEC\uB7FC \uC218\uAC00 \uB2E4\uB985\uB2C8\uB2E4.",
-    "Rejected rows are diagnostic only": "\uAC70\uBD80 \uD589\uC774 \uC788\uC5B4 \uC804\uCCB4 \uACB0\uACFC\uC758 \uBD84\uC11D \uC900\uBE44\uB97C \uCDA9\uC871\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
-    "Numeric value must be finite": "NaN \uB610\uB294 \uBB34\uD55C\uB300 \uAC12\uC740 \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
-    "Numeric value cannot be parsed": "\uC22B\uC790\uB85C \uC77D\uC744 \uC218 \uC5C6\uB294 \uAC12\uC785\uB2C8\uB2E4.",
-    "Required value is empty": "\uD544\uC218 \uAC12\uC774 \uBE44\uC5B4 \uC788\uC2B5\uB2C8\uB2E4.",
-    "Holding duration is negative": "\uBCF4\uC720\uC2DC\uAC04\uC774 \uC74C\uC218\uC785\uB2C8\uB2E4.",
-    "Invalid or reversed trade timestamps": "\uAC70\uB798 \uC2DC\uAC01\uC774 \uC798\uBABB\uB418\uC5C8\uAC70\uB098 \uB9E4\uB3C4\uAC00 \uB9E4\uC218\uBCF4\uB2E4 \uBE60\uB985\uB2C8\uB2E4.",
-    "Expected raw row count differs": "\uC2E4\uD589 \uAE30\uB85D\uC758 \uAC70\uB798 \uC218\uC640 CSV \uC6D0\uBCF8 \uD589 \uC218\uAC00 \uB2E4\uB985\uB2C8\uB2E4.",
-    "Expected source hash differs": "\uC608\uC0C1\uD55C \uC6D0\uBCF8\uACFC \uC2E4\uC81C \uD30C\uC77C\uC758 \uD574\uC2DC\uAC00 \uB2E4\uB985\uB2C8\uB2E4.",
-    "Not a supported official 54/37-column schema": "\uC9C0\uC6D0\uD558\uB294 \uACF5\uC2DD 54/37\uC5F4 \uC2A4\uD0A4\uB9C8\uAC00 \uC544\uB2D9\uB2C8\uB2E4.",
-    "Duplicate/empty/missing required header": "\uD5E4\uB354\uAC00 \uC911\uBCF5\uB418\uAC70\uB098 \uD544\uC218 \uCEEC\uB7FC\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
-    "CSV file is missing": "\uC9C0\uC815\uB41C CSV \uD30C\uC77C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
-    "Job has no CSV artifact path": "\uC2E4\uD589 \uAE30\uB85D\uC5D0 CSV \uACBD\uB85C\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.",
-    "CSV cannot be read": "CSV \uD30C\uC77C\uC5D0 \uC811\uADFC\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
-    "CSV must be UTF-8": "UTF-8\uB85C \uC778\uCF54\uB529\uB41C CSV\uAC00 \uD544\uC694\uD569\uB2C8\uB2E4.",
-    "Malformed CSV record": "CSV \uB530\uC634\uD45C\uB098 \uB808\uCF54\uB4DC \uD615\uC2DD\uC774 \uC798\uBABB\uB418\uC5C8\uC2B5\uB2C8\uB2E4."
-  };
-  function BtCsvQuality({ envelope, pending = false }) {
-    var _a, _b;
-    if (pending) return /* @__PURE__ */ React.createElement("div", { className: "tp-csv-quality", role: "status" }, "\uC120\uD0DD\uD55C \uACB0\uACFC\uC758 CSV \uD488\uC9C8\uC744 \uD655\uC778\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4\u2026");
-    if (!envelope) return null;
-    const q = envelope.data_quality;
-    const [label, help] = CSV_QUALITY_LABELS[q == null ? void 0 : q.status] || ["\uD488\uC9C8 \uBBF8\uD655\uC778", "\uD604\uC7AC \uACB0\uACFC\uC758 \uD488\uC9C8 \uC601\uC218\uC99D\uC744 \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC0AC\uC804 \uC810\uAC80\uC744 \uB2E4\uC2DC \uC2E4\uD589\uD558\uC138\uC694."];
-    const ready = envelope.analysis_ready === true;
-    return /* @__PURE__ */ React.createElement("section", { className: `tp-csv-quality ${ready ? "ready" : "blocked"}`, "aria-label": "CSV \uD488\uC9C8 \uC9C4\uB2E8", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("small", null, "\uC790\uB8CC \uD488\uC9C8 \xB7 \uC2E4\uD589 \uC0C1\uD0DC \uBCC4\uB3C4 \uD310\uC815"), /* @__PURE__ */ React.createElement("h3", null, label)), /* @__PURE__ */ React.createElement("span", null, CSV_EXECUTION_LABELS[envelope.execution_status] || "\uC2E4\uD589 \uC0C1\uD0DC \uBBF8\uD655\uC778"), /* @__PURE__ */ React.createElement("strong", null, ready ? "CSV \uBD84\uC11D \uC900\uBE44 \uCDA9\uC871" : "\uBD84\uC11D \uC900\uBE44 \uBBF8\uCDA9\uC871")), /* @__PURE__ */ React.createElement("p", null, help), /* @__PURE__ */ React.createElement("p", null, "\uACF5\uC2DD \uC2A4\uD0A4\uB9C8: ", /* @__PURE__ */ React.createElement("code", null, (q == null ? void 0 : q.official_schema) || "\uBBF8\uD655\uC778"), " \xB7 \uCEEC\uB7FC \uC774\uB984\uACFC \uAD6C\uC131\uC744 \uD568\uAED8 \uAC80\uC0AC\uD569\uB2C8\uB2E4."), ((_a = q == null ? void 0 : q.issue_codes) == null ? void 0 : _a.length) > 0 && /* @__PURE__ */ React.createElement("p", null, "\uBB38\uC81C \uC720\uD615: ", q.issue_codes.map((code) => {
-      var _a2;
-      return ((_a2 = CSV_QUALITY_LABELS[code]) == null ? void 0 : _a2[0]) || code;
-    }).join(" \xB7 ")), /* @__PURE__ */ React.createElement("dl", { className: "tp-csv-counts" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uC6D0\uBCF8 \uD589"), /* @__PURE__ */ React.createElement("dd", null, csvCount(q == null ? void 0 : q.raw_count))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uC815\uC0C1 \uD589"), /* @__PURE__ */ React.createElement("dd", null, csvCount(q == null ? void 0 : q.accepted_count))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uAC70\uBD80 \uD589"), /* @__PURE__ */ React.createElement("dd", null, csvCount(q == null ? void 0 : q.rejected_count))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", null, "\uC608\uC0C1 \uD589"), /* @__PURE__ */ React.createElement("dd", null, csvCount(q == null ? void 0 : q.expected_row_count)))), /* @__PURE__ */ React.createElement("p", { className: "tp-csv-hash" }, /* @__PURE__ */ React.createElement("small", null, "\uAC80\uC0AC\uD55C CSV SHA256"), /* @__PURE__ */ React.createElement("code", null, (q == null ? void 0 : q.source_sha256) || "\uBBF8\uD655\uC778")), ((_b = q == null ? void 0 : q.issues) == null ? void 0 : _b.length) > 0 && /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", null, "\uBB38\uC81C \uC0C1\uC138 ", csvCount(q.issue_count), "\uAC74", q.issues_truncated ? " \xB7 \uC77C\uBD80 \uD45C\uC2DC" : ""), /* @__PURE__ */ React.createElement("ul", null, q.issues.map((issue, index2) => {
-      var _a2;
-      return /* @__PURE__ */ React.createElement("li", { key: index2 }, /* @__PURE__ */ React.createElement("b", null, ((_a2 = CSV_QUALITY_LABELS[issue.code]) == null ? void 0 : _a2[0]) || "\uAC80\uC0AC \uC624\uB958"), issue.row != null && /* @__PURE__ */ React.createElement("span", null, " \xB7 \uB808\uCF54\uB4DC ", issue.row), issue.column && /* @__PURE__ */ React.createElement("code", null, " \xB7 ", issue.column), /* @__PURE__ */ React.createElement("span", null, " \xB7 ", CSV_DETAIL_LABELS[issue.detail] || issue.detail));
-    }))));
-  }
-  Object.assign(window, { BtCsvQuality });
 
   // ai_strategy_loop/dashboard/frontend/bt-entry-autopsy.jsx
   var { useState: useState_tpea, useEffect: useEffect_tpea } = React;

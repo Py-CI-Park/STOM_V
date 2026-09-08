@@ -1,8 +1,8 @@
 {
   "schema_version": "stom-research-doc-index-v1",
-  "generated_at": "2026-09-08T07:27:31.195341+00:00",
-  "source_fingerprint": "4718933cc853f64299de4ff823829830df416e73388fa627aec94426a577edd3",
-  "count": 1111,
+  "generated_at": "2026-09-08T08:12:40.920679+00:00",
+  "source_fingerprint": "62f0508cc709604db2f1bcb5da27c161c0d7ea2a6fcf501b4a7352592c8bf6dc",
+  "count": 1114,
   "docs": [
     {
       "id": "docs/research/condition_research/2026-04-24_wide_v1_research_flow_and_cli_structure_review.md",
@@ -7288,8 +7288,8 @@
       "id": "docs/research/quant_scoring_pipeline/2026-09-07_v15_실행계획_진행원장.md",
       "title": "v1.5 실행계획·페이지·브랜치 진행원장",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-09-08T07:27:16.121927+00:00",
-      "size": 6954
+      "updated_at": "2026-09-08T08:08:40.523787+00:00",
+      "size": 7748
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-09-08_RES04P_controls_TASK_RECEIPT.md",
@@ -7318,6 +7318,20 @@
       "category": "quant_scoring_pipeline",
       "updated_at": "2026-09-08T04:01:03.800330+00:00",
       "size": 3680
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-09-08_SYS05_SQ01B1_TASK_RECEIPT.md",
+      "title": "SYS05 SQ01B1 일반 job 결과 분석 품질 적용 TASK_RECEIPT",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-09-08T08:12:26.840816+00:00",
+      "size": 4640
+    },
+    {
+      "id": "docs/research/quant_scoring_pipeline/2026-09-08_SYS05_SQ01B1_실행계획.md",
+      "title": "SQ01B1 실제 job 결과 분석 경로 품질 적용",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-09-08T07:37:46.211573+00:00",
+      "size": 837
     },
     {
       "id": "docs/research/quant_scoring_pipeline/2026-09-08_SYS05_SQ01_TASK_RECEIPT.md",
@@ -7530,6 +7544,13 @@
       "size": 5499
     },
     {
+      "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-09-08_SYS05_SQ01B1_완료_전체계획.md",
+      "title": "SQ01B1 완료·전체 페이지 고도화 재개",
+      "category": "quant_scoring_pipeline",
+      "updated_at": "2026-09-08T08:12:26.843323+00:00",
+      "size": 3237
+    },
+    {
       "id": "docs/research/quant_scoring_pipeline/HANDOFF_2026-09-08_SYS05_SQ01_완료_전체페이지_진행.md",
       "title": "SQ01 완료·전체 페이지 고도화 인계",
       "category": "quant_scoring_pipeline",
@@ -7540,8 +7561,8 @@
       "id": "docs/research/quant_scoring_pipeline/INDEX.md",
       "title": "QSP 연구 기록 색인 (정본) — 문서 상태·읽는 순서·기록 관리 규칙",
       "category": "quant_scoring_pipeline",
-      "updated_at": "2026-09-08T07:20:48.174678+00:00",
-      "size": 19250
+      "updated_at": "2026-09-08T08:12:26.846564+00:00",
+      "size": 19510
     },
     {
       "id": "docs/research/quant_scoring_pipeline/PROGRAM_LEDGER.md",
