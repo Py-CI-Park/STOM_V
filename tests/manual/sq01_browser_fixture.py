@@ -82,6 +82,7 @@ def make_app(directory: Path) -> FastAPI:
     row = row.replace("20250102090000", "202501020900").replace("20250102090100", "202501020901")
     cases = (
         ("normal", "정상 CSV", "success", row, 1),
+        ("mc_blocked", "결과 조회 뒤 실행 실패", "success", row, 1),
         ("empty", "정상 무거래", "success", "", 0),
         ("partial", "부분 파싱", "success", row + "bad\n", 2),
         ("failed", "실행 실패·정상 CSV", "error", row, 1),
@@ -132,8 +133,16 @@ def make_app(directory: Path) -> FastAPI:
         return backtest_api.backtest_report_html(job_id=job_id, run_id=run_id, gen_no=gen_no)
 
     @app.get("/bt/analysis/montecarlo")
-    def no_research() -> JSONResponse:
-        return JSONResponse({"montecarlo": None, "reason": "fixture_does_not_execute_research"})
+    def synthetic_montecarlo(job_id: str = "", run_id: str = "", gen_no: int | None = None,
+                             n: int = 2000, method: str = "shuffle",
+                             t_start: int | None = None, t_end: int | None = None) -> JSONResponse:
+        # Synthetic in-memory transition between result and MC requests, never an operating job.
+        if job_id == "mc_blocked":
+            records[job_id]["status"] = "error"
+        return JSONResponse(backtest_api.analysis_montecarlo(
+            job_id=job_id, run_id=run_id, gen_no=gen_no, n=n, method=method,
+            t_start=t_start, t_end=t_end,
+        ))
 
     @app.get("/bt/jobs")
     def jobs() -> Jobs:

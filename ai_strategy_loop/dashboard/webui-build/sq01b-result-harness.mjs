@@ -60,8 +60,16 @@ w.ReactDOM.flushSync(() => root.render(w.React.createElement(w.QaResult, {
 assert.match(w.document.getElementById("root").textContent, /저장된 미검증 요약/);
 assert.ok(w.document.querySelector(".bt-result-metrics-only"));
 assert.equal(w.document.querySelector('[aria-label="결과 분석 섹션"]'), null);
+const mcEnvelope = {analysis_ready:false, execution_status:"error", data_quality:{status:"VALID", issues:[]}};
+assert.deepEqual(requests, []);
+w.ReactDOM.flushSync(() => root.render(w.React.createElement(w.QaResult, {
+  result: {available:true,status:"success",analysis_ready:true,metrics:{trade_count:1},analysis:{trade_count:1,summary:{trade_count:1}}},
+  sourceContext: {capabilities:{label:"job",monteCarlo:true,notes:{}},baseUrl:"",jobId:"fixture"},
+  mcEnvelope,
+})));
+assert.ok(w.document.querySelector('[aria-label="몬테카를로 분석 보류"]'));
 w.ReactDOM.flushSync(() => root.unmount());
 dom.window.close();
 assert.deepEqual(errors, []);
-assert.deepEqual(requests, []);
-console.log(JSON.stringify({ scenarios: 5, passed: 5, errors }));
+assert.equal(requests.filter(url => url.includes("montecarlo")).length, 0);
+console.log(JSON.stringify({ scenarios: 6, passed: 6, errors }));
