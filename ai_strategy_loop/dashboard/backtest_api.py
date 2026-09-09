@@ -30,6 +30,8 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StringConstraints
 from ai_strategy_loop.dashboard import backtest_analysis as analysis
 from ai_strategy_loop.dashboard import backtest_report as report
 from ai_strategy_loop.dashboard.backtest_jobs import BacktestJobSpec, get_job_manager
+from ai_strategy_loop.dashboard.individual_analysis import DEFAULT_MC, IndividualResult, MonteCarloOptions, Operation, individual_result
+from ai_strategy_loop.dashboard.individual_source import AnalysisOwners, SourceRecord, inspect_individual_source
 from ai_strategy_loop.dashboard.security import Capability, close_websocket_failure
 
 # 라이브 잡 WS push 간격(초)·로그 테일 줄 수.
@@ -1494,31 +1496,24 @@ def get_result(
     }, record)
 
 
-def _analysis_for_job(
-    job_id: str, t_start: Optional[int] = None, t_end: Optional[int] = None
-) -> List[Dict[str, Any]]:
-    """잡 결과 CSV → trades 리스트(분석 개별 엔드포인트 공용, 옵션 매수시간 범위 필터)."""
-    csv_path = _resolved_job_csv_path(job_id)
-    trades = analysis.load_trades_csv(csv_path)
-    return analysis.filter_trades(trades, t_start, t_end)
+def _individual_result(
+    operation: Operation, job_id: str, t_start: int | None, t_end: int | None,
+    run_id: str = "", gen_no: int | None = None,
+    mc: MonteCarloOptions = DEFAULT_MC,
+) -> IndividualResult:
+    """Late-bound legacy owners keep path guards and test seams intact."""
+    def generation(run: str, gen: int) -> SourceRecord | None:
+        row = _gen_row_readonly(run, gen)
+        return SourceRecord.model_validate(row) if row is not None else None
 
-
-def _analysis_for_run(
-    run_id: str, gen_no: int, t_start: Optional[int] = None, t_end: Optional[int] = None
-) -> List[Dict[str, Any]]:
-    """진화 세대 CSV → trades 리스트(잡과 동일 계약). 세대/CSV 없음이면 빈 목록(무예외).
-
-    세대 결과도 잡과 같은 거래 CSV 를 남기므로 몬테카를로·구간 분석 입력 표본이 실제로
-    존재한다. 이 헬퍼가 없던 동안 세대 결과는 '표본 없음'으로 잘못 안내됐다.
-    """
-    row = _gen_row_readonly(run_id, int(gen_no))
-    if row is None:
-        return []
-    csv_path = _resolve_gen_csv(row)
-    if not csv_path:
-        return []
-    trades = analysis.load_trades_csv(csv_path)
-    return analysis.filter_trades(trades, t_start, t_end)
+    owners = AnalysisOwners(
+        lambda job: SourceRecord.model_validate(get_job_manager().get(job, log_tail=0)),
+        generation,
+        lambda record: _resolved_record_csv_path(record.root),
+        lambda record: _resolve_gen_csv(record.root),
+    )
+    source = inspect_individual_source(owners, job_id, run_id, gen_no)
+    return individual_result(source, operation, job_id, run_id, gen_no, t_start, t_end, mc)
 
 
 # --------------------------------------------------------------- evo (run/gen)
@@ -1831,45 +1826,44 @@ def _demo_result() -> Dict[str, Any]:
 
 @backtest_router.get("/analysis/summary")
 def analysis_summary(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
-    return {"job_id": job_id, "summary": analysis.summary_metrics(_analysis_for_job(job_id, t_start, t_end))}
+    return _individual_result(Operation.SUMMARY, job_id, t_start, t_end).root
 
 
 @backtest_router.get("/analysis/equity")
 def analysis_equity(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
-    return {"job_id": job_id, "equity": analysis.equity_series(_analysis_for_job(job_id, t_start, t_end))}
+    return _individual_result(Operation.EQUITY, job_id, t_start, t_end).root
 
 
 @backtest_router.get("/analysis/distribution")
 def analysis_distribution(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
-    return {"job_id": job_id, "distribution": analysis.pnl_distribution(_analysis_for_job(job_id, t_start, t_end))}
+    return _individual_result(Operation.DISTRIBUTION, job_id, t_start, t_end).root
 
 
 @backtest_router.get("/analysis/heatmap")
 def analysis_heatmap(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
-    return {"job_id": job_id, "heatmap": analysis.time_heatmap(_analysis_for_job(job_id, t_start, t_end))}
+    return _individual_result(Operation.HEATMAP, job_id, t_start, t_end).root
 
 
 @backtest_router.get("/analysis/underwater")
 def analysis_underwater(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
-    return {"job_id": job_id, "underwater": analysis.underwater(_analysis_for_job(job_id, t_start, t_end))}
+    return _individual_result(Operation.UNDERWATER, job_id, t_start, t_end).root
 
 
 @backtest_router.get("/analysis/insights")
 def analysis_insights(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
-    trades = _analysis_for_job(job_id, t_start, t_end)
-    return {"job_id": job_id, "insights": analysis.generate_insights(trades)}
+    return _individual_result(Operation.INSIGHTS, job_id, t_start, t_end).root
 
 
 @backtest_router.get("/analysis/mae_mfe")
 def analysis_mae_mfe(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
     """MAE/MFE 산점도 포인트(R_MAE/R_MFE, 결측 제외, 최대 1000pt)."""
-    return {"job_id": job_id, "mae_mfe": analysis.mae_mfe(_analysis_for_job(job_id, t_start, t_end))}
+    return _individual_result(Operation.MAE_MFE, job_id, t_start, t_end).root
 
 
 @backtest_router.get("/analysis/exit_reasons")
 def analysis_exit_reasons(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
     """매도조건(청산사유)별 거래수/총손익/승률 분해."""
-    return {"job_id": job_id, "exit_reasons": analysis.exit_reason_breakdown(_analysis_for_job(job_id, t_start, t_end))}
+    return _individual_result(Operation.EXIT_REASONS, job_id, t_start, t_end).root
 
 
 # 몬테카를로 시행수 상한(서버 보호 — 과도한 n 차단).
@@ -1897,17 +1891,10 @@ def analysis_montecarlo(
     "moving_block"(연속 의존성 보존) — 의미는 analysis.monte_carlo 참조.
     """
     n = max(0, min(int(n), _MC_MAX_N))
-    if not job_id and run_id and gen_no is not None:
-        trades = _analysis_for_run(run_id, int(gen_no), t_start, t_end)
-    else:
-        trades = _analysis_for_job(job_id, t_start, t_end)
-    return {
-        "job_id": job_id,
-        "run_id": run_id,
-        "gen_no": gen_no,
-        "montecarlo": analysis.monte_carlo(trades, n=n, seed=seed, ruin_pct=ruin_pct,
-                                           method=method, block_length=block_length),
-    }
+    return _individual_result(
+        Operation.MONTECARLO, job_id, t_start, t_end, run_id, gen_no,
+        MonteCarloOptions(n, seed, ruin_pct, method, block_length),
+    ).root
 
 
 @backtest_router.get("/analysis/leaf_matrix")
@@ -2063,7 +2050,7 @@ def analysis_revision_proposals(run_id: str = "", gen_no: Optional[int] = None,
 @backtest_router.get("/analysis/orderflow")
 def analysis_orderflow(job_id: str = "", t_start: Optional[int] = None, t_end: Optional[int] = None) -> Dict[str, Any]:
     """오더플로우 — 승/패 그룹별 진입 체결강도/호가불균형/전일동시간비/등락율 분포 비교."""
-    return {"job_id": job_id, "orderflow": analysis.entry_orderflow(_analysis_for_job(job_id, t_start, t_end))}
+    return _individual_result(Operation.ORDERFLOW, job_id, t_start, t_end).root
 
 
 @backtest_router.get("/analysis/gui_parity")
@@ -2072,7 +2059,7 @@ def analysis_gui_parity(job_id: str = "", t_start: Optional[int] = None, t_end: 
 
     full_analysis 묶음의 gui_parity 와 동일 데이터를 개별 라우트로도 제공한다(구간 필터 지원).
     """
-    return {"job_id": job_id, "gui_parity": analysis.gui_parity(_analysis_for_job(job_id, t_start, t_end))}
+    return _individual_result(Operation.GUI_PARITY, job_id, t_start, t_end).root
 
 
 # --------------------------------------------------------------------- compare

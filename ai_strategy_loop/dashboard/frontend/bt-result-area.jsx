@@ -17,7 +17,7 @@ import {
   BtEquityChart, BtMaeMfeScatter, BtUnderwaterChart, BtRollingChart, BtCumulativeTradesChart,
 } from "./bt-equity-charts.jsx";
 import {
-  BtDistributionChart, BtHeatmap, BtMonteCarloChart, BtMonthlyCalendar,
+  BtDistributionChart, BtHeatmap, BtMonthlyCalendar,
 } from "./bt-distribution-charts.jsx";
 import {
   BtExitReasonPanel, BtContribTable, BtInsightsPanel,
@@ -28,6 +28,7 @@ import { BtQuantPanel } from "./bt-quant.jsx";
 import { BtLeafExplorer } from "./bt-leaf-explorer.jsx";
 import { BtFeatureMap } from "./bt-feature-map.jsx";
 import { BtCsvQuality } from "./bt-csv-quality.jsx";
+import { useMonteCarloSource, BtAdmittedMonteCarlo } from "./bt-montecarlo-source.jsx";
 
 // ===========================================================================
 // 결과·분석 영역 — 메트릭 카드 + 4차트 + 기여 테이블 + 인사이트.
@@ -117,13 +118,9 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
   const [err, setErr] = useState_btc("");
   // 브러시 구간 분석 — {t_start,t_end} 또는 null(전체). 진화 세대(evoSource)는 미지원.
   const [range, setRange] = useState_btc(null);
-  // 몬테카를로(지연 계산) — {data, loading}.
-  const [mc, setMc] = useState_btc(null);
-  const [mcLoading, setMcLoading] = useState_btc(false);
   // 전체화면 분석 모드(트랙 D) — position:fixed 오버레이. Esc 로 닫기.
   const [fullscreen, setFullscreen] = useState_btc(false);
   const resultRequestRef = useRef_btc({ seq: 0, controller: null });
-  const mcRequestRef = useRef_btc({ seq: 0, controller: null });
   const sourceKeyRef = useRef_btc("");
 
   // Esc 키로 전체화면 닫기 + 배경 스크롤 잠금(전체화면 동안만).
@@ -149,7 +146,10 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
     : (jobId ? "job" : (isEvo ? (evoHasSeries ? "evolution" : "evolution_summary") : "none"));
   const capabilities = _BT_RESULT_CAPABILITIES[sourceKind];
   const hasSource = sourceKind === "job" || sourceKind === "evolution" || sourceKind === "evolution_summary";
-  const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
+  const sourceKey = baseUrl + "|" + (jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : ""));
+  const {mc, mcLoading, mcEnvelope, loadMc} = useMonteCarloSource({
+    baseUrl, jobId, evoSource, range, result, enabled: !isDemo && capabilities.monteCarlo,
+  });
 
   const load = useCallback_btc(() => {
     const requestState = resultRequestRef.current;
@@ -189,57 +189,15 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
       });
   }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
 
-  // 몬테카를로 재계산(현재 구간 반영). 완료 잡과 결과 CSV 가 있는 진화 세대 모두 지원. 무예외.
-  //   v5.13.2 — method 인자 추가: "shuffle"(순서 위험) / "bootstrap"(표본 위험).
-  const loadMc = useCallback_btc((method) => {
-    const requestState = mcRequestRef.current;
-    if (requestState.controller) requestState.controller.abort();
-    if (isDemo || !baseUrl || (!jobId && !isEvo) || result?.analysis_ready === false) {
-      requestState.controller = null;
-      setMc(null);
-      setMcLoading(false);
-      return;
-    }
-    const controller = new AbortController();
-    const seq = requestState.seq + 1;
-    mcRequestRef.current = { seq, controller };
-    const expectedKey = sourceKey;
-    setMcLoading(true);
-    let url = baseUrl + "/bt/analysis/montecarlo?n=2000&"
-            + (jobId
-                ? "job_id=" + encodeURIComponent(jobId)
-                : "run_id=" + encodeURIComponent(evoSource.run_id)
-                  + "&gen_no=" + encodeURIComponent(evoSource.gen_no));
-    if (range) { url += "&t_start=" + range.t_start + "&t_end=" + range.t_end; }
-    url += "&method=" + (method === "bootstrap" ? "bootstrap" : "shuffle");
-    _btFetchJson(url, 12000, controller.signal)
-      .then(j => {
-        if (!btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) return;
-        setMc((j && j.montecarlo) || null);
-      })
-      .catch(() => {
-        if (btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setMc(null);
-      })
-      .finally(() => {
-        if (btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setMcLoading(false);
-      });
-  }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range, result?.analysis_ready]);
-
   useEffect_btc(() => {
     sourceKeyRef.current = sourceKey;
-    setResult(null); setErr(""); setRange(null); setMc(null);
+    setResult(null); setErr(""); setRange(null);
     if (resultRequestRef.current.controller) resultRequestRef.current.controller.abort();
-    if (mcRequestRef.current.controller) mcRequestRef.current.controller.abort();
   }, [sourceKey]);
   useEffect_btc(() => { load(); }, [load]);
   useEffect_btc(() => () => {
     if (resultRequestRef.current.controller) resultRequestRef.current.controller.abort();
-    if (mcRequestRef.current.controller) mcRequestRef.current.controller.abort();
   }, []);
-  // 결과/구간이 바뀌면 몬테카를로 자동 재계산(성공/구간 잡일 때만; 세대는 스킵).
-  useEffect_btc(() => {
-    if (capabilities.monteCarlo && result && result.available && result.status !== "no_trades" && result.analysis_ready !== false) { loadMc(); }
-  }, [result, loadMc, capabilities.monteCarlo]);
 
   const onBrush = useCallback_btc((t_start, t_end) => {
     if (!capabilities.range) return;
@@ -295,6 +253,7 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
       range={range}
       loading={loading}
       mc={mc}
+      mcEnvelope={mcEnvelope}
       mcLoading={mcLoading}
       compareView={compareView}
       onSetCompareA={onSetCompareA}
@@ -312,7 +271,7 @@ function BtResultArea({ baseUrl, isDemo, jobId, evoSource, onSetCompareA, compar
 
 
 function ResultDetailBody({
-  result, sourceContext, range, loading, mc, mcLoading, compareView,
+  result, sourceContext, range, loading, mc, mcLoading, mcEnvelope, compareView,
   onSetCompareA, onCloseCompare, onBrush, onBrushClear, onRunMc, onReload,
   onFullscreen, onCloseFullscreen, fullscreen,
 }) {
@@ -596,7 +555,7 @@ return (
         <BtDistributionChart distribution={distribution} />
         <BtUnderwaterChart underwater={analysis.underwater} />
         {capabilities.monteCarlo ? (
-          <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} moneyCtx={moneyCtx} />
+          <BtAdmittedMonteCarlo envelope={mcEnvelope} mc={mc} loading={mcLoading} onRun={onRunMc} moneyCtx={moneyCtx} />
         ) : (
           <div className="panel bt-equal-card bt-analysis-unavailable" role="status">
             <div className="panel-hd"><div className="panel-hd-title"><span className="dot"></span>몬테카를로</div></div>
@@ -644,7 +603,7 @@ return (
     {fullscreen && (
       <_BtFullscreenAnalysis
         analysis={analysis} distribution={distribution} orderflow={orderflow}
-        stats={stats} insights={insights} mc={mc} mcLoading={mcLoading} onRunMc={onRunMc}
+        stats={stats} insights={insights} mc={mc} mcLoading={mcLoading} mcEnvelope={mcEnvelope} onRunMc={onRunMc}
         range={range} onBrush={onBrush} onBrushClear={onBrushClear}
         onClose={onCloseFullscreen} moneyCtx={moneyCtx}
       />
@@ -658,7 +617,7 @@ return (
 //   인라인 스타일 풀스크린(position:fixed). 닫기: ✕ 버튼 또는 Esc(상위에서 처리).
 function _BtFullscreenAnalysis({
   analysis, distribution, orderflow, stats, insights,
-  mc, mcLoading, onRunMc, range, onBrush, onBrushClear, onClose, moneyCtx,
+  mc, mcLoading, mcEnvelope, onRunMc, range, onBrush, onBrushClear, onClose, moneyCtx,
 }) {
   return (
     <div style={{
@@ -700,7 +659,7 @@ function _BtFullscreenAnalysis({
                        brushActive={!!range} onBrushClear={onBrushClear} moneyCtx={moneyCtx} />
         <BtDistributionChart distribution={distribution} />
         <BtUnderwaterChart underwater={analysis.underwater} />
-        <BtMonteCarloChart mc={mc} loading={mcLoading} onRun={onRunMc} moneyCtx={moneyCtx} />
+        <BtAdmittedMonteCarlo envelope={mcEnvelope} mc={mc} loading={mcLoading} onRun={onRunMc} moneyCtx={moneyCtx} />
         <BtHeatmap heatmap={analysis.heatmap} />
         <BtMaeMfeScatter points={analysis.mae_mfe} />
         <BtQuantPanel analysis={analysis} />

@@ -232,13 +232,13 @@ def test_demo_result_sentinel_job_id(client: TestClient):
 
 
 def test_gui_parity_route_empty_job_no_raise(client: TestClient):
-    # B3 — 잡 미지정 GUI 패리티 라우트는 빈 구조를 200 으로 돌린다(무예외 계약).
+    # B4a — 잡 미지정은 정상0 계산 대신 품질 차단을 200으로 반환한다.
     r = client.get("/bt/analysis/gui_parity", params={"job_id": ""})
     assert r.status_code == 200
-    gp = r.json()["gui_parity"]
-    assert set(gp.keys()) == {"mdd_random", "daily", "hourly", "weekday", "holding", "trade_rolling"}
-    assert gp["mdd_random"]["n"] == 0 and gp["daily"]["series"] == []
-    assert gp["holding"]["series"] == [] and gp["trade_rolling"]["series"] == []
+    body = r.json()
+    assert body["job_id"] == "" and body["gui_parity"] is None
+    assert body["analysis_ready"] is False
+    assert body["data_quality"]["status"] == "MISSING_ARTIFACT"
 
 
 # --------------------------------------------------------------- variables SSOT

@@ -1,15 +1,15 @@
 {
   "schema": "stom.maturity_page_progress.v1",
-  "date": "2026-09-08",
+  "date": "2026-09-10",
   "basis": "NEW_V15_ACCEPTANCE_SCOPE_NOT_EXISTING_STOM_FEATURE_COUNT",
-  "branch": "codex/process-research-sys-05-report-quality",
-  "source_base_commit": "b522a71a7396f60c8bad24f56a4a6523ff3dab6f",
+  "branch": "codex/process-research-sys-05-individual-quality",
+  "source_base_commit": "d6bef0b30c2789bbf198068ae022f18833c1ca97",
   "integrated_code_commit": "bf5d02a1118f3eb533c9b122f7688b6f7dfa0fae",
-  "integration_gate": "PASS_AT_10b67ed3",
+  "integration_gate": "B4A_SCOPED_PASS_FULL_GATE_PENDING",
   "canonical_branch": "loop/process-research-pipeline",
   "integration_receipt": "2026-09-08_integrated_unit_receipt.json",
   "verification_completed_date_kst": "2026-09-09",
-  "receipt": "2026-09-08_SYS05_SQ01B3_TASK_RECEIPT.md",
+  "receipt": "2026-09-10_SYS05_B4a_TASK_RECEIPT.md",
   "canonical_order": [
     "RES-04P",
     "SYS-05",
@@ -28,9 +28,10 @@
     "SQ01.csv_quality_data_contract",
     "SQ01B1.job_result_quality",
     "SQ01B2.generation_result_quality",
-    "SQ01B3.report_export_quality"
+    "SQ01B3.report_export_quality",
+    "SQ01B4a.individual_analysis_admission"
   ],
-  "next_atomic_scope": "SQ01B4.individual_analysis_admission",
+  "next_atomic_scope": "SQ01B4b.raw_feature_admission",
   "full_page_acceptance_closed": 0,
   "page_count": 14,
   "full_program_percent": null,
@@ -247,8 +248,9 @@
     },
     {
       "id": "SQ01B4",
-      "status": "NEXT",
-      "scope": "individual analysis and Monte Carlo admission"
+      "status": "PARTIAL",
+      "scope": "individual analysis, Monte Carlo and raw feature admission",
+      "children": {"B4a": "SCOPED_COMPLETE", "B4b": "NEXT"}
     },
     {
       "id": "SQ01B5",
@@ -261,5 +263,5 @@
       "scope": "versioned metrics and invalid values"
     }
   ],
-  "work_group_ratio_note": "5/8 atomic scopes verified; disjoint Fast8080/Slow24 unit gates passed at10b67ed3 with27 skipped. Not effort-weighted full program completion."
+  "work_group_ratio_note": "5/8 complete groups plus B4a scoped complete; B4 parent remains partial until B4b. New full Gate pending. Prior disjoint unit Gate at10b67ed3 is historical, not current B4a full verification."
 }

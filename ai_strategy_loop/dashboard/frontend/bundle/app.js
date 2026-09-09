@@ -27111,6 +27111,75 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
   }
   Object.assign(window, { BtCsvQuality });
 
+  // ai_strategy_loop/dashboard/frontend/bt-montecarlo-source.jsx
+  function useMonteCarloSource({ baseUrl, jobId, evoSource, range, result, enabled }) {
+    var _a;
+    const runId = (evoSource == null ? void 0 : evoSource.run_id) || "";
+    const genNo = evoSource == null ? void 0 : evoSource.gen_no;
+    const expectedHash = ((_a = result == null ? void 0 : result.data_quality) == null ? void 0 : _a.source_sha256) || "";
+    const key = JSON.stringify([baseUrl, jobId, runId, genNo, range == null ? void 0 : range.t_start, range == null ? void 0 : range.t_end, expectedHash]);
+    const eligible = !!(enabled && baseUrl && (result == null ? void 0 : result.available) && result.analysis_ready !== false && result.status !== "no_trades");
+    const current = useRef_btc({ key, eligible });
+    current.current = { key, eligible };
+    const request = useRef_btc({ seq: 0, controller: null });
+    const [state, setState] = useState_btc({ key: "", envelope: null, loading: false });
+    const loadMc = useCallback_btc((method) => {
+      var _a2;
+      (_a2 = request.current.controller) == null ? void 0 : _a2.abort();
+      const seq = request.current.seq + 1;
+      if (!eligible) {
+        request.current = { seq, controller: null };
+        setState({ key, envelope: null, loading: false });
+        return;
+      }
+      const controller = new AbortController();
+      request.current = { seq, controller };
+      const active = () => !controller.signal.aborted && request.current.seq === seq && current.current.key === key && current.current.eligible;
+      setState({ key, envelope: null, loading: true });
+      let url = baseUrl + "/bt/analysis/montecarlo?n=2000&" + (jobId ? "job_id=" + encodeURIComponent(jobId) : "run_id=" + encodeURIComponent(runId) + "&gen_no=" + encodeURIComponent(genNo));
+      if (range) url += "&t_start=" + range.t_start + "&t_end=" + range.t_end;
+      url += "&method=" + (["shuffle", "bootstrap", "moving_block"].includes(method) ? method : "shuffle");
+      _btFetchJson(url, 12e3, controller.signal).then((envelope2) => {
+        var _a3;
+        if (!active()) return;
+        const actualHash = (_a3 = envelope2 == null ? void 0 : envelope2.data_quality) == null ? void 0 : _a3.source_sha256;
+        const mismatch = expectedHash && actualHash && expectedHash !== actualHash;
+        setState({ key, loading: false, envelope: mismatch ? {
+          ...envelope2,
+          display_ready: false,
+          display_reason: "\uACB0\uACFC \uD654\uBA74\uACFC \uBAAC\uD14C\uCE74\uB97C\uB85C\uC758 \uC6D0\uBCF8 CSV\uAC00 \uB2E4\uB985\uB2C8\uB2E4. \uACB0\uACFC\uB97C \uB2E4\uC2DC \uC870\uD68C\uD558\uC138\uC694."
+        } : envelope2 });
+      }).catch(() => {
+        if (active()) setState({ key, loading: false, envelope: {
+          analysis_ready: false,
+          display_reason: "\uBAAC\uD14C\uCE74\uB97C\uB85C \uC751\uB2F5\uC744 \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uC138\uC694."
+        } });
+      });
+    }, [baseUrl, jobId, runId, genNo, key, eligible, range, expectedHash]);
+    useEffect_btc(() => {
+      loadMc();
+      return () => {
+        var _a2;
+        return (_a2 = request.current.controller) == null ? void 0 : _a2.abort();
+      };
+    }, [loadMc]);
+    const visible = eligible && state.key === key;
+    const envelope = visible ? state.envelope : null;
+    const blocked = (envelope == null ? void 0 : envelope.analysis_ready) === false || (envelope == null ? void 0 : envelope.display_ready) === false;
+    return {
+      loadMc,
+      mcEnvelope: envelope,
+      mc: blocked ? null : (envelope == null ? void 0 : envelope.montecarlo) || null,
+      mcLoading: visible && state.loading
+    };
+  }
+  function BtAdmittedMonteCarlo({ envelope, mc, loading, onRun, moneyCtx }) {
+    if ((envelope == null ? void 0 : envelope.analysis_ready) === false || (envelope == null ? void 0 : envelope.display_ready) === false) {
+      return /* @__PURE__ */ React.createElement("section", { className: "panel bt-equal-card", "aria-label": "\uBAAC\uD14C\uCE74\uB97C\uB85C \uBD84\uC11D \uBCF4\uB958" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("b", null, "\uBAAC\uD14C\uCE74\uB97C\uB85C \uBD84\uC11D \uBCF4\uB958")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(BtCsvQuality, { envelope }), /* @__PURE__ */ React.createElement("p", null, envelope.display_reason || "\uC790\uB8CC \uD488\uC9C8 \uB610\uB294 \uC2E4\uD589 \uC0C1\uD0DC\uAC00 \uACC4\uC0B0 \uC870\uAC74\uC744 \uCDA9\uC871\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."), onRun && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => onRun() }, "\uB2E4\uC2DC \uD655\uC778")));
+    }
+    return /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading, onRun, moneyCtx });
+  }
+
   // ai_strategy_loop/dashboard/frontend/bt-result-area.jsx
   function btFmtHold(sec) {
     const v = Number(sec);
@@ -27230,11 +27299,8 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     const [loading, setLoading] = useState_btc(false);
     const [err, setErr] = useState_btc("");
     const [range, setRange] = useState_btc(null);
-    const [mc, setMc] = useState_btc(null);
-    const [mcLoading, setMcLoading] = useState_btc(false);
     const [fullscreen, setFullscreen] = useState_btc(false);
     const resultRequestRef = useRef_btc({ seq: 0, controller: null });
-    const mcRequestRef = useRef_btc({ seq: 0, controller: null });
     const sourceKeyRef = useRef_btc("");
     useEffect_btc(() => {
       if (!fullscreen) return void 0;
@@ -27254,7 +27320,15 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     const sourceKind = isDemo ? "demo" : jobId ? "job" : isEvo ? evoHasSeries ? "evolution" : "evolution_summary" : "none";
     const capabilities = _BT_RESULT_CAPABILITIES[sourceKind];
     const hasSource = sourceKind === "job" || sourceKind === "evolution" || sourceKind === "evolution_summary";
-    const sourceKey = jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : "");
+    const sourceKey = baseUrl + "|" + (jobId || (isEvo ? evoSource.run_id + "/" + evoSource.gen_no : ""));
+    const { mc, mcLoading, mcEnvelope, loadMc } = useMonteCarloSource({
+      baseUrl,
+      jobId,
+      evoSource,
+      range,
+      result,
+      enabled: !isDemo && capabilities.monteCarlo
+    });
     const load = useCallback_btc(() => {
       const requestState = resultRequestRef.current;
       if (requestState.controller) requestState.controller.abort();
@@ -27294,55 +27368,19 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
         if (btRequestIsCurrent(resultRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setLoading(false);
       });
     }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range]);
-    const loadMc = useCallback_btc((method) => {
-      const requestState = mcRequestRef.current;
-      if (requestState.controller) requestState.controller.abort();
-      if (isDemo || !baseUrl || !jobId && !isEvo || (result == null ? void 0 : result.analysis_ready) === false) {
-        requestState.controller = null;
-        setMc(null);
-        setMcLoading(false);
-        return;
-      }
-      const controller = new AbortController();
-      const seq = requestState.seq + 1;
-      mcRequestRef.current = { seq, controller };
-      const expectedKey = sourceKey;
-      setMcLoading(true);
-      let url = baseUrl + "/bt/analysis/montecarlo?n=2000&" + (jobId ? "job_id=" + encodeURIComponent(jobId) : "run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no));
-      if (range) {
-        url += "&t_start=" + range.t_start + "&t_end=" + range.t_end;
-      }
-      url += "&method=" + (method === "bootstrap" ? "bootstrap" : "shuffle");
-      _btFetchJson(url, 12e3, controller.signal).then((j) => {
-        if (!btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) return;
-        setMc(j && j.montecarlo || null);
-      }).catch(() => {
-        if (btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setMc(null);
-      }).finally(() => {
-        if (btRequestIsCurrent(mcRequestRef.current, seq, sourceKeyRef.current, expectedKey, controller.signal)) setMcLoading(false);
-      });
-    }, [baseUrl, isDemo, jobId, isEvo, sourceKey, range, result == null ? void 0 : result.analysis_ready]);
     useEffect_btc(() => {
       sourceKeyRef.current = sourceKey;
       setResult(null);
       setErr("");
       setRange(null);
-      setMc(null);
       if (resultRequestRef.current.controller) resultRequestRef.current.controller.abort();
-      if (mcRequestRef.current.controller) mcRequestRef.current.controller.abort();
     }, [sourceKey]);
     useEffect_btc(() => {
       load();
     }, [load]);
     useEffect_btc(() => () => {
       if (resultRequestRef.current.controller) resultRequestRef.current.controller.abort();
-      if (mcRequestRef.current.controller) mcRequestRef.current.controller.abort();
     }, []);
-    useEffect_btc(() => {
-      if (capabilities.monteCarlo && result && result.available && result.status !== "no_trades" && result.analysis_ready !== false) {
-        loadMc();
-      }
-    }, [result, loadMc, capabilities.monteCarlo]);
     const onBrush = useCallback_btc((t_start, t_end) => {
       if (!capabilities.range) return;
       setRange({ t_start, t_end });
@@ -27369,6 +27407,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
         range,
         loading,
         mc,
+        mcEnvelope,
         mcLoading,
         compareView,
         onSetCompareA,
@@ -27390,6 +27429,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     loading,
     mc,
     mcLoading,
+    mcEnvelope,
     compareView,
     onSetCompareA,
     onCloseCompare,
@@ -27606,7 +27646,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
           onBrushClear,
           moneyCtx
         }
-      ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), capabilities.monteCarlo ? /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc, moneyCtx }) : /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card bt-analysis-unavailable", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBAAC\uD14C\uCE74\uB97C\uB85C")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uBBF8\uC9C0\uC6D0 \xB7 ", capabilities.notes.monteCarlo))), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtLeafExplorer, { baseUrl, jobId, evoSource, isDemo: false }), /* @__PURE__ */ React.createElement(BtFeatureMap, { baseUrl, jobId, evoSource, isDemo: false }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades, moneyCtx }))),
+      ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), capabilities.monteCarlo ? /* @__PURE__ */ React.createElement(BtAdmittedMonteCarlo, { envelope: mcEnvelope, mc, loading: mcLoading, onRun: onRunMc, moneyCtx }) : /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card bt-analysis-unavailable", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBAAC\uD14C\uCE74\uB97C\uB85C")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uBBF8\uC9C0\uC6D0 \xB7 ", capabilities.notes.monteCarlo))), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtLeafExplorer, { baseUrl, jobId, evoSource, isDemo: false }), /* @__PURE__ */ React.createElement(BtFeatureMap, { baseUrl, jobId, evoSource, isDemo: false }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades, moneyCtx }))),
       (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("section", { className: "bt-result-section bt-result-evidence bt-contributor-evidence", "aria-label": "\uC885\uBAA9 \uAE30\uC5EC \uC99D\uAC70" }, /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC }))))),
       /* @__PURE__ */ React.createElement("section", { className: "bt-result-section bt-result-evidence", "aria-label": "\uBD84\uC11D \uC778\uC0AC\uC774\uD2B8" }, /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights })),
       fullscreen && /* @__PURE__ */ React.createElement(
@@ -27619,6 +27659,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
           insights,
           mc,
           mcLoading,
+          mcEnvelope,
           onRunMc,
           range,
           onBrush,
@@ -27637,6 +27678,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     insights,
     mc,
     mcLoading,
+    mcEnvelope,
     onRunMc,
     range,
     onBrush,
@@ -27679,7 +27721,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
         onBrushClear,
         moneyCtx
       }
-    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtMonteCarloChart, { mc, loading: mcLoading, onRun: onRunMc, moneyCtx }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades, moneyCtx })));
+    ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), /* @__PURE__ */ React.createElement(BtAdmittedMonteCarlo, { envelope: mcEnvelope, mc, loading: mcLoading, onRun: onRunMc, moneyCtx }), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades, moneyCtx })));
   }
   function _BtMetricCard({ meta, num, dailyPnl }) {
     const animated = _useCountUp(num != null ? num : 0, 600);
