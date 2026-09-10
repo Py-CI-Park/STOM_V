@@ -1,0 +1,18 @@
+{
+  "schema": "stom.integrated_unit_receipt.v1",
+  "scope": "SYS05.B4a",
+  "status": "PASS",
+  "feature_commit": "c26378b0c9984bba979d006fcb04273b2e208ac0",
+  "tested_commit": "5f1e7ca901845a0dc396fec56e6d7c057f5b6f20",
+  "worktree": "C:/System_Trading/STOM/STOM_V.wt-pipeline-integration",
+  "fast": {"passed": 8154, "skipped": 27, "deselected": 24, "warnings": 54, "seconds": 1089.46, "exit_code": 0, "log": "C:/Users/parkc/STOM_Verification/v1.5_20260910/b4a-integrated-fast.log"},
+  "slow": {"passed": 24, "deselected": 8181, "warnings": 1, "seconds": 766.75, "exit_code": 0, "log": "C:/Users/parkc/STOM_Verification/v1.5_20260910/b4a-integrated-slow.log"},
+  "combined_disjoint": {"passed": 8178, "skipped": 27},
+  "invocation": "python -m pytest tests/unit/ -m <not slow_suite|slow_suite> -q -p no:cacheprovider",
+  "environment": "PYTHONDONTWRITEBYTECODE=1; QT_QPA_PLATFORM=offscreen; no basetemp override",
+  "scope_boundary": "B4a only. B4b development, B5, SQ02 and later stages not closed by this receipt.",
+  "no_operating_db_write": true,
+  "real_research_executed": false,
+  "economic_success_verified": false,
+  "push_performed": false
+}
