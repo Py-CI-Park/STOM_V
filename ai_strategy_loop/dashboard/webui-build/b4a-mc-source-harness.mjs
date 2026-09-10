@@ -79,7 +79,11 @@ assert.equal(w.state.mc,null); assert.equal(w.state.mcEnvelope.data_quality.stat
 await act(async()=>w.state.loadMc("moving_block"));
 assert.match(pending.at(-1).url,/method=moving_block/);
 await reply(pending.at(-1),success("BLOCK"));
+await render(props("H",{result:{available:true,analysis_ready:true,data_quality:{source_sha256:"expected"}}}));
+await reply(pending.at(-1),success("NO_HASH"));
+assert.equal(w.state.mc,null);
+assert.equal(w.state.mcEnvelope.display_ready,false);
 await act(async()=>root.unmount());
 dom.window.close();
 assert.deepEqual(errors,[]);
-console.log(JSON.stringify({scenarios:8,passed:8,errors}));
+console.log(JSON.stringify({scenarios:9,passed:9,errors}));

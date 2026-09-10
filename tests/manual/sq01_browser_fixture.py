@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from threading import Event
-from typing import Final, TypedDict
+from typing import Final, NotRequired, TypedDict
 
 import uvicorn
 from fastapi import FastAPI
@@ -28,6 +28,9 @@ sys.path.insert(0, str(ROOT))
 from ai_strategy_loop.dashboard import trade_contract_api  # noqa: E402
 from ai_strategy_loop.dashboard import backtest_api  # noqa: E402
 from tests.unit.dashboard.trade_quality_fixtures import official_pair  # noqa: E402
+from tests.unit.dashboard.feature_quality_fixtures import feature_csv, revision_csv  # noqa: E402
+from tests.unit.test_revision_p2 import CODE  # noqa: E402
+from ai_strategy_loop.controller import strategy_preflight  # noqa: E402
 
 
 class Spec(TypedDict):
@@ -72,8 +75,9 @@ class GenerationStub(TypedDict):
     trade_count: int
     csv_path: str | None
     profit: float
-    mdd: float
+    mdd: float | None
     gate_passed: bool
+    buy_name: NotRequired[str]
 
 
 def make_app(directory: Path) -> FastAPI:
@@ -101,6 +105,11 @@ def make_app(directory: Path) -> FastAPI:
             metrics=Metrics(trade_count=count),
         )
 
+    feature_path = feature_csv(directory / "features.csv")
+    records["features"] = Job(job_id="features", available=True, status="success", csv_path=str(feature_path),
+        csv_exists=True, spec=Spec(timeframe="tick",buy="합성 피처40행",sell="합성 입력"), metrics=Metrics(trade_count=40))
+    preview_path = revision_csv(directory / "revision.csv")
+
     class Manager:
         def get(self, job_id: str, log_tail: int = 0) -> Job:
             return records[job_id]
@@ -114,12 +123,14 @@ def make_app(directory: Path) -> FastAPI:
         1: GenerationStub(status="ok", trade_count=1, csv_path=str(loss_path), profit=-100, mdd=12, gate_passed=False),
         2: GenerationStub(status="error", trade_count=1, csv_path=str(loss_path), profit=-100, mdd=12, gate_passed=False),
         3: GenerationStub(status="rejected", trade_count=0, csv_path=None, profit=-5000, mdd=12, gate_passed=False),
+        4: GenerationStub(status="ok",trade_count=160,csv_path=str(preview_path),profit=0,mdd=None,gate_passed=False,buy_name="fixture_hier"),
     }
 
     def generation_row(run_id: str, gen_no: int) -> GenerationStub | None:
         return generations.get(gen_no) if run_id == "fixture" else None
 
     backtest_api._gen_row_readonly = generation_row
+    strategy_preflight.load_loop_strategy_code = lambda kind, name, db_path=None: CODE if kind=="buy" and name=="fixture_hier" else None
     app = FastAPI()
     app.include_router(trade_contract_api.trade_contract_router, prefix="/bt/trade-path")
     app.mount("/ui", StaticFiles(directory=ROOT / "ai_strategy_loop/dashboard/frontend"))
@@ -143,6 +154,19 @@ def make_app(directory: Path) -> FastAPI:
             job_id=job_id, run_id=run_id, gen_no=gen_no, n=n, method=method,
             t_start=t_start, t_end=t_end,
         ))
+
+    @app.get("/bt/analysis/leaf_matrix")
+    def leaf(job_id: str = "", run_id: str = "", gen_no: int | None = None) -> JSONResponse:
+        return JSONResponse(backtest_api.analysis_leaf_matrix(job_id=job_id,run_id=run_id,gen_no=gen_no))
+
+    @app.get("/bt/analysis/feature_map")
+    def feature(job_id: str = "", run_id: str = "", gen_no: int | None = None,
+                x: str = "", y: str = "", bins: int = 5, mode: str = "grid", top: int = 20) -> JSONResponse:
+        return JSONResponse(backtest_api.analysis_feature_map(job_id=job_id,run_id=run_id,gen_no=gen_no,x=x,y=y,bins=bins,mode=mode,top=top))
+
+    @app.get("/bt/analysis/revision_proposals")
+    def revision(run_id: str = "", gen_no: int | None = None, top_k: int = 3) -> JSONResponse:
+        return JSONResponse(backtest_api.analysis_revision_proposals(run_id=run_id,gen_no=gen_no,top_k=top_k))
 
     @app.get("/bt/jobs")
     def jobs() -> Jobs:

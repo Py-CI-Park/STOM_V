@@ -26823,234 +26823,6 @@ ${sellCode}` : code);
   }
   Object.assign(window, { BtQuantPanel });
 
-  // ai_strategy_loop/dashboard/frontend/bt-leaf-explorer.jsx
-  var _LF_TIME_ORDER = [
-    "B1_900_902",
-    "B2_902_905",
-    "B3_905_910",
-    "B4_910_920",
-    "B5_920_930",
-    "B1_\uC7A5\uCD08\uBC18",
-    "B2_\uC624\uC804",
-    "B3_\uD55C\uC0B0",
-    "B4_\uC624\uD6C4",
-    "B5_\uB9C8\uAC10",
-    "out_of_window",
-    "unknown"
-  ];
-  var _LF_CAP_ORDER = ["S_3000\uBBF8\uB9CC", "M1_3000_5000", "M2_5000_10000", "L_10000\uC774\uC0C1", "unknown"];
-  var _LF_CAP_LABEL = {
-    S_3000\uBBF8\uB9CC: "\uC18C\uD615 <3\uCC9C\uC5B5",
-    M1_3000_5000: "\uC911\uC18C 3~5\uCC9C\uC5B5",
-    M2_5000_10000: "\uC911\uD615 5\uCC9C~1\uC870",
-    L_10000\uC774\uC0C1: "\uB300\uD615 \u22651\uC870",
-    unknown: "\uBBF8\uC0C1"
-  };
-  function _lfCellColor(v) {
-    if (v == null || !Number.isFinite(v)) return "var(--bg-2)";
-    const t = Math.max(-1, Math.min(1, v / 0.8));
-    return t >= 0 ? `rgba(76,214,179,${0.12 + 0.5 * t})` : `rgba(255,107,107,${0.12 + 0.5 * -t})`;
-  }
-  function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo }) {
-    const [data, setData] = useState_btc(null);
-    const [metric, setMetric] = useState_btc("mean_pct");
-    const [picked, setPicked] = useState_btc(null);
-    const [props_, setProps_] = useState_btc(null);
-    const [propsBusy, setPropsBusy] = useState_btc(false);
-    const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
-    const loadProposals = () => {
-      if (!isEvo || propsBusy) return;
-      setPropsBusy(true);
-      _btFetchJson(baseUrl + "/bt/analysis/revision_proposals?run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no), 2e4).then((j) => setProps_(j || { available: false, reason: "\uC751\uB2F5 \uC5C6\uC74C" })).catch((e) => setProps_({ available: false, reason: String(e) })).finally(() => setPropsBusy(false));
-    };
-    useEffect_btc(() => {
-      setData(null);
-      setPicked(null);
-      if (isDemo || !baseUrl || !jobId && !isEvo) return void 0;
-      const q = jobId ? "job_id=" + encodeURIComponent(jobId) : "run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
-      let cancelled = false;
-      _btFetchJson(baseUrl + "/bt/analysis/leaf_matrix?" + q, 15e3).then((j) => {
-        if (!cancelled) setData(j && j.available ? j : { available: false });
-      }).catch(() => {
-        if (!cancelled) setData({ available: false });
-      });
-      return () => {
-        cancelled = true;
-      };
-    }, [baseUrl, isDemo, jobId, isEvo, isEvo ? evoSource.run_id : "", isEvo ? evoSource.gen_no : -1]);
-    if (isDemo || !jobId && !isEvo) return null;
-    const rows = data && data.leaf_matrix || [];
-    const times = _LF_TIME_ORDER.filter((t) => rows.some((r) => r.leaf_time === t));
-    const caps = _LF_CAP_ORDER.filter((c) => rows.some((r) => r.leaf_cap === c));
-    const byKey = {};
-    rows.forEach((r) => {
-      byKey[r.leaf_time + "\xD7" + r.leaf_cap] = r;
-    });
-    const pickedRow = picked ? byKey[picked] : null;
-    const samples = picked && data && data.leaf_samples && data.leaf_samples[picked] || [];
-    const feats = data && data.features || [];
-    return /* @__PURE__ */ React.createElement("section", { className: "panel bt-equal-card", "aria-label": "\uB9AC\uD504 \uC794\uCC28 \uD788\uD2B8\uB9F5 \u2014 \uC2DC\uAC04\uBC34\uB4DC\xD7\uC2DC\uCD1D\uB2E8\uACC4" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uB9AC\uD504 \uC794\uCC28 \uD788\uD2B8\uB9F5 \xB7 \uC2DC\uAC04 \xD7 \uC2DC\uCD1D"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "bt-quant-meta mono" }, data && data.available ? `${data.n.toLocaleString("ko-KR")}\uAC70\uB798 \xB7 ${data.timeframe} \xB7 \uD30C\uC0DD ${(data.derived || []).length}\uC885` : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "bt-mc-method", role: "group", "aria-label": "\uC140 \uAC12 \uAE30\uC900" }, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        className: "btn ghost sm" + (metric === "mean_pct" ? " active" : ""),
-        onClick: () => setMetric("mean_pct"),
-        title: "\uC140 \uAC12 = \uB9AC\uD504 \uD3C9\uADE0 \uC218\uC775\uB960"
-      },
-      "\uD3C9\uADE0"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        className: "btn ghost sm" + (metric === "median_pct" ? " active" : ""),
-        onClick: () => setMetric("median_pct"),
-        title: "\uC140 \uAC12 = \uB9AC\uD504 \uC911\uC559\uAC12 \uC218\uC775\uB960 \u2014 \uBCF5\uAD8C\uD615(\uAC00\uB054 \uD070 \uC2B9) \uBD84\uD3EC\uC5D0\uC11C \uD3C9\uADE0 \uC65C\uACE1\uC744 \uAC77\uC5B4\uB0C5\uB2C8\uB2E4"
-      },
-      "\uC911\uC559\uAC12"
-    )))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
-      "\uD589 = \uC2DC\uCD1D\uB2E8\uACC4 \xB7 \uC5F4 = \uC2DC\uAC04\uBC34\uB4DC \xB7 \uC140 = \uC218\uC775\uB960(\uC0C9) + \uD45C\uBCF8\xB7\uC2B9\uB960",
-      "\uBE68\uAC15\uC774 \uC9D9\uC744\uC218\uB85D \uC190\uC2E4 \uC9D1\uC911 \u2014 \uC870\uAC74\uC2DD \uC870\uC784(\uACBD\uACC4 \uC218\uC815)\uC758 1\uC21C\uC704 \uD6C4\uBCF4",
-      "\uC140 \uD074\uB9AD = \uADF8 \uB9AC\uD504\uC758 \uB300\uD45C \uAC70\uB798(\uCD5C\uC545 4\xB7\uCD5C\uACE0 4)\uC640 \uC88C\uD45C \uD655\uC778"
-    ] }), !data && /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uB9AC\uD504 \uB9E4\uD2B8\uB9AD\uC2A4 \uB85C\uB529\u2026"), data && !data.available && /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uC774 \uACB0\uACFC\uC5D0\uB294 \uB9AC\uD504 \uBD84\uC11D\uC6A9 CSV \uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."), data && data.available && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-grid", style: { gridTemplateColumns: `120px repeat(${times.length}, minmax(84px, 1fr))` } }, /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-corner mono" }, "\uC2DC\uCD1D \\ \uC2DC\uAC04"), times.map((t) => /* @__PURE__ */ React.createElement("div", { key: t, className: "bt-leaf-colhead mono" }, t.replace(/^B\d_/, ""))), caps.map((c) => /* @__PURE__ */ React.createElement(React.Fragment, { key: c }, /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-rowhead mono" }, _LF_CAP_LABEL[c] || c), times.map((t) => {
-      const r = byKey[t + "\xD7" + c];
-      const v = r ? r[metric] : null;
-      const key = t + "\xD7" + c;
-      return /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          key,
-          type: "button",
-          className: "bt-leaf-cell mono" + (picked === key ? " picked" : "") + (r && !r.reliable ? " thin" : ""),
-          style: { background: _lfCellColor(v) },
-          title: r ? `${key}
-\uD3C9\uADE0 ${r.mean_pct.toFixed(3)}% \xB7 \uC911\uC559\uAC12 ${r.median_pct.toFixed(2)}% \xB7 \uC2B9\uB960 ${r.win_rate.toFixed(1)}%
-n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC5C6\uC74C",
-          onClick: () => setPicked(picked === key ? null : key)
-        },
-        r ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("b", null, v.toFixed(2), "%"), /* @__PURE__ */ React.createElement("small", null, "n=", r.n, " \xB7 \uC2B9 ", Math.round(r.win_rate), "%")) : /* @__PURE__ */ React.createElement("small", null, "\u2014")
-      );
-    })))), pickedRow && /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-detail", role: "region", "aria-label": "\uB9AC\uD504 \uC0C1\uC138 " + picked }, /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-detail-hd mono" }, /* @__PURE__ */ React.createElement("b", null, picked), /* @__PURE__ */ React.createElement("span", null, "n=", pickedRow.n, " \xB7 \uD3C9\uADE0 ", pickedRow.mean_pct.toFixed(3), "% \xB7 \uC911\uC559\uAC12 ", pickedRow.median_pct.toFixed(2), "% \xB7 \uC2B9\uB960 ", pickedRow.win_rate.toFixed(1), "% \xB7 \uD569\uACC4 ", Math.round(pickedRow.total_krw).toLocaleString("ko-KR"), "\uC6D0", pickedRow.reliable ? "" : " \xB7 \u26A0 \uD45C\uBCF8 \uBD80\uC871(\uC218\uC815 \uADFC\uAC70\uB85C \uC4F0\uC9C0 \uB9D0 \uAC83)")), samples.length > 0 && /* @__PURE__ */ React.createElement("table", { className: "mono bt-leaf-sample" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC885\uBAA9"), /* @__PURE__ */ React.createElement("th", null, "\uB9E4\uC218\uC2DC\uAC04"), /* @__PURE__ */ React.createElement("th", null, "\uC218\uC775\uB960"), /* @__PURE__ */ React.createElement("th", null, "\uC218\uC775\uAE08"))), /* @__PURE__ */ React.createElement("tbody", null, samples.map((s, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: s.pct >= 0 ? "pos" : "neg" }, /* @__PURE__ */ React.createElement("td", null, s.name), /* @__PURE__ */ React.createElement("td", null, s.buy_time), /* @__PURE__ */ React.createElement("td", null, s.pct.toFixed(2), "%"), /* @__PURE__ */ React.createElement("td", null, Math.round(s.krw).toLocaleString("ko-KR"))))))), isEvo && /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-proposals" }, /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-prop-hd" }, /* @__PURE__ */ React.createElement("b", { className: "mono" }, "\uC218\uC815 \uC81C\uC548 (\uBD84\uC11D\u2192\uC870\uAC74\uC2DD \uBC88\uC5ED \xB7 \uC77D\uAE30 \uC804\uC6A9 \uBBF8\uB9AC\uBCF4\uAE30)"), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        className: "btn ghost sm",
-        onClick: loadProposals,
-        disabled: propsBusy,
-        title: "\uC190\uC2E4 \uB9AC\uD504\uC758 \uBCC0\uBCC4 \uBCC0\uC218\uC640 \uC2B9\uC790 \uBD84\uC704\uC218 \uACBD\uACC4\uB85C \uB9AC\uD504 \uB2E8\uC704 \uC218\uC815\uC548\uC744 \uB9CC\uB4ED\uB2C8\uB2E4. \uB4F1\uB85D\xB7\uC801\uC6A9\uC740 \uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."
-      },
-      propsBusy ? "\uC0DD\uC131 \uC911\u2026" : props_ ? "\u21BB \uB2E4\uC2DC \uC0DD\uC131" : "\uC81C\uC548 \uC0DD\uC131"
-    )), props_ && !props_.available && /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, props_.reason), props_ && props_.available && (props_.proposals || []).length === 0 && /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, props_.reason), props_ && (props_.proposals || []).map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bt-leaf-prop mono" }, /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-prop-title" }, /* @__PURE__ */ React.createElement(
-      "span",
-      {
-        className: "badge " + (p.gate && p.gate.ok ? "done" : "warn"),
-        title: "\uC758\uB3C4-\uC77C\uCE58 \uAC8C\uC774\uD2B8: \uACE8\uACA9 \uBD88\uBCC0 \xB7 \uBA85\uC138 \uC678 \uBCC0\uACBD 0 \xB7 preflight"
-      },
-      p.gate && p.gate.ok ? "\uAC8C\uC774\uD2B8 PASS" : "\uAC8C\uC774\uD2B8 FAIL"
-    ), /* @__PURE__ */ React.createElement("b", null, p.spec.change)), /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-prop-ev" }, "\uADFC\uAC70: n=", p.spec.evidence.n, " \xB7 \uC911\uC559\uAC12 ", p.spec.evidence.median_pct.toFixed(2), "% (\uC804\uCCB4 \uB300\uBE44 ", p.spec.evidence.vs_overall_median.toFixed(2), "%p) \xB7 d=", p.spec.evidence.cohen_d.toFixed(2), " \xB7 \uC2B9\uC790\uBD84\uC704 \uACBD\uACC4 ", Number(p.spec.evidence.win_quantile_bound).toPrecision(3)), (p.diff_preview || []).map((d, k) => /* @__PURE__ */ React.createElement("div", { key: k, className: "bt-leaf-prop-diff" }, /* @__PURE__ */ React.createElement("span", { className: "del" }, "\u2212 ", d.old.trim()), /* @__PURE__ */ React.createElement("span", { className: "add" }, "\uFF0B ", d.new.trim()))))), /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uC801\uC6A9\xB7\uC7AC\uBC31\uD14C\uB294 \uB77C\uC6B4\uB4DC \uB7EC\uB108(P3)\uAC00 \uC218\uD589\uD569\uB2C8\uB2E4 \u2014 \uC774 \uD654\uBA74\uC740 \uADFC\uAC70 \uAC80\uD1A0 \uC804\uC6A9.")), feats.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-feats" }, /* @__PURE__ */ React.createElement("b", { className: "mono" }, "\uBCC0\uBCC4 \uC0C1\uC704 \uBCC0\uC218 (\uC2B9\xB7\uD328 Cohen's d)"), /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-feat-bars" }, feats.slice(0, 8).map((f) => /* @__PURE__ */ React.createElement("div", { key: f.feature, className: "bt-leaf-feat mono", title: `\uC2B9 \uD3C9\uADE0 ${f.win_mean.toFixed(4)} / \uD328 \uD3C9\uADE0 ${f.loss_mean.toFixed(4)} \xB7 n=${f.n}` }, /* @__PURE__ */ React.createElement("span", { className: "k" }, f.feature), /* @__PURE__ */ React.createElement("span", { className: "bar" }, /* @__PURE__ */ React.createElement(
-      "i",
-      {
-        className: f.d >= 0 ? "pos" : "neg",
-        style: { width: Math.min(100, Math.abs(f.d) * 220) + "%" }
-      }
-    )), /* @__PURE__ */ React.createElement("span", { className: "v" }, f.d >= 0 ? "+" : "", f.d.toFixed(3))))), /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "|d| \uAC00 \uD070 \uBCC0\uC218\uAC00 \uC2B9\xB7\uD328\uB97C \uAC00\uB978\uB2E4 \u2014 \uB9AC\uD504 \uACBD\uACC4 \uC218\uC815(P2 \uC81C\uC548 \uC0DD\uC131)\uC758 \uC7AC\uB8CC.")))));
-  }
-  Object.assign(window, { BtLeafExplorer });
-
-  // ai_strategy_loop/dashboard/frontend/bt-feature-map.jsx
-  var _FM_METRICS = [
-    ["pnl", "\uC190\uC775 \uD569"],
-    ["mean_ret", "\uD3C9\uADE0\uC218\uC775\uB960"],
-    ["win_rate", "\uC2B9\uB960"],
-    ["n", "\uAC70\uB798\uC218"]
-  ];
-  function _fmCellColor(metric, v, vmax) {
-    if (v == null || !Number.isFinite(v)) return "var(--bg-2)";
-    let t;
-    if (metric === "pnl") t = vmax ? Math.max(-1, Math.min(1, v / vmax)) : 0;
-    else if (metric === "mean_ret") t = Math.max(-1, Math.min(1, v / 0.8));
-    else if (metric === "win_rate") t = Math.max(-1, Math.min(1, (v - 0.5) / 0.3));
-    else return "var(--bg-2)";
-    return t >= 0 ? `rgba(76,214,179,${0.1 + 0.55 * t})` : `rgba(255,107,107,${0.1 + 0.55 * -t})`;
-  }
-  function _fmFmt(metric, v) {
-    if (v == null || !Number.isFinite(v)) return "\u2014";
-    if (metric === "pnl") return `${(v / 1e6).toFixed(1)}M`;
-    if (metric === "mean_ret") return `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
-    if (metric === "win_rate") return `${(v * 100).toFixed(0)}%`;
-    return String(v);
-  }
-  function BtFeatureMap({ baseUrl, jobId, evoSource, isDemo }) {
-    const [vars_, setVars_] = useState_btc([]);
-    const [x, setX] = useState_btc("");
-    const [y, setY] = useState_btc("");
-    const [metric, setMetric] = useState_btc("pnl");
-    const [bins, setBins] = useState_btc(5);
-    const [view, setView] = useState_btc("map");
-    const [data, setData] = useState_btc(null);
-    const [regions, setRegions] = useState_btc(null);
-    const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
-    const srcQs = jobId ? `job_id=${encodeURIComponent(jobId)}` : isEvo ? `run_id=${encodeURIComponent(evoSource.run_id)}&gen_no=${evoSource.gen_no}` : "";
-    useEffect_btc(() => {
-      if (isDemo || !srcQs) {
-        setData(null);
-        setRegions(null);
-        return;
-      }
-      let alive = true;
-      if (view === "regions") {
-        _btFetchJson(`${baseUrl}/bt/analysis/feature_map?${srcQs}&mode=regions&bins=${bins}&top=20`).then((j) => {
-          if (alive) {
-            setRegions(j);
-            setVars_(j && j.variables || []);
-          }
-        }).catch(() => {
-          if (alive) setRegions(null);
-        });
-      } else {
-        const qx = x || "B_\uB4F1\uB77D\uC728";
-        _btFetchJson(`${baseUrl}/bt/analysis/feature_map?${srcQs}&x=${encodeURIComponent(qx)}` + (y ? `&y=${encodeURIComponent(y)}` : "") + `&bins=${bins}`).then((j) => {
-          if (!alive) return;
-          setData(j);
-          const vs = j && j.variables || [];
-          setVars_(vs);
-          if (!x && vs.length) setX(vs.includes("B_\uB4F1\uB77D\uC728") ? "B_\uB4F1\uB77D\uC728" : vs[0]);
-        }).catch(() => {
-          if (alive) setData(null);
-        });
-      }
-      return () => {
-        alive = false;
-      };
-    }, [srcQs, x, y, bins, view, isDemo]);
-    const grid = data && data.grid;
-    const cells = grid && grid.cells || [];
-    const xBins = [...new Set(cells.map((c) => c.x_bin))];
-    const yBins = y ? [...new Set(cells.map((c) => c.y_bin))] : [null];
-    const byKey = {};
-    cells.forEach((c) => {
-      byKey[`${c.x_bin}|${c.y_bin}`] = c;
-    });
-    const vmax = Math.max(1, ...cells.map((c) => Math.abs(c.pnl || 0)));
-    const sel = (val, set3, opts, label) => /* @__PURE__ */ React.createElement("label", { className: "bt-fm-sel" }, label, /* @__PURE__ */ React.createElement("select", { value: val, onChange: (e) => set3(e.target.value) }, opts));
-    const varOpts = (allowEmpty) => [
-      ...allowEmpty ? [/* @__PURE__ */ React.createElement("option", { key: "", value: "" }, "(\uC5C6\uC74C)")] : [],
-      ...vars_.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))
-    ];
-    return /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card", role: "figure", "aria-label": "\uB2E4\uCC28\uC6D0 \uC218\uC775\uB960 \uB9F5" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uB2E4\uCC28\uC6D0 \uC218\uC775\uB960 \uB9F5 (QSP3)"), /* @__PURE__ */ React.createElement("div", { className: "panel-hd-meta" }, /* @__PURE__ */ React.createElement("button", { className: `bt-fm-toggle ${view === "map" ? "on" : ""}`, onClick: () => setView("map") }, "\uB9F5"), /* @__PURE__ */ React.createElement("button", { className: `bt-fm-toggle ${view === "regions" ? "on" : ""}`, onClick: () => setView("regions") }, "\uC190\uC2E4 \uC601\uC5ED \uB7AD\uD0B9"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, view === "map" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bt-fm-controls" }, sel(x, setX, varOpts(false), "X\uCD95"), sel(y, setY, varOpts(true), "Y\uCD95"), sel(metric, setMetric, _FM_METRICS.map(([k, l]) => /* @__PURE__ */ React.createElement("option", { key: k, value: k }, l)), "\uD45C\uC2DC"), sel(String(bins), (v) => setBins(parseInt(v, 10)), [3, 4, 5, 8, 10].map((b) => /* @__PURE__ */ React.createElement("option", { key: b, value: b }, b, "\uAD6C\uAC04")), "\uAD6C\uAC04")), !cells.length ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, isDemo ? "\uB370\uBAA8\uC5D0\uC120 \uBBF8\uC9C0\uC6D0" : "\uB370\uC774\uD130 \uC5C6\uC74C \u2014 \uACB0\uACFC \uB85C\uB4DC \uD6C4 \uBCC0\uC218\uB97C \uC120\uD0DD\uD558\uC138\uC694") : /* @__PURE__ */ React.createElement("div", { className: "bt-fm-scroll" }, /* @__PURE__ */ React.createElement("table", { className: "bt-fm-grid" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, y ? `${y} \u2193 / ${x} \u2192` : x), xBins.map((b) => /* @__PURE__ */ React.createElement("th", { key: b, title: b }, b)))), /* @__PURE__ */ React.createElement("tbody", null, yBins.map((yb) => /* @__PURE__ */ React.createElement("tr", { key: String(yb) }, /* @__PURE__ */ React.createElement("th", { title: String(yb || "") }, yb == null ? "\uC804\uCCB4" : yb), xBins.map((xb) => {
-      const c = byKey[`${xb}|${yb}`];
-      const v = c ? c[metric] : null;
-      return /* @__PURE__ */ React.createElement(
-        "td",
-        {
-          key: xb,
-          style: { background: _fmCellColor(metric, v, vmax) },
-          title: c ? `${x}=${xb}${y ? ` \xB7 ${y}=${yb}` : ""} \xB7 ${c.n}\uAC74 \xB7 \uC190\uC775 ${Math.round(c.pnl).toLocaleString()}\uC6D0 \xB7 \uD3C9\uADE0 ${c.mean_ret.toFixed(2)}% \xB7 \uC2B9\uB960 ${(c.win_rate * 100).toFixed(0)}%` : ""
-        },
-        /* @__PURE__ */ React.createElement("b", null, _fmFmt(metric, v)),
-        /* @__PURE__ */ React.createElement("span", null, c ? `${c.n}\uAC74` : "")
-      );
-    }))))))), view === "regions" && /* @__PURE__ */ React.createElement("div", null, !(regions && regions.regions && regions.regions.length) ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uC190\uC2E4 \uC601\uC5ED \uC5C6\uC74C \uB610\uB294 \uB370\uC774\uD130 \uBBF8\uB85C\uB4DC") : /* @__PURE__ */ React.createElement("table", { className: "bt-fm-rank" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "#"), /* @__PURE__ */ React.createElement("th", null, "\uBCC0\uC218"), /* @__PURE__ */ React.createElement("th", null, "\uAD6C\uAC04"), /* @__PURE__ */ React.createElement("th", null, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("th", null, "\uC190\uC775 \uD569"))), /* @__PURE__ */ React.createElement("tbody", null, regions.regions.map((r, i) => /* @__PURE__ */ React.createElement("tr", { key: `${r.feature}|${r.bin}` }, /* @__PURE__ */ React.createElement("td", null, i + 1), /* @__PURE__ */ React.createElement("td", null, r.feature), /* @__PURE__ */ React.createElement("td", { className: "num" }, r.bin), /* @__PURE__ */ React.createElement("td", { className: "num" }, r.n.toLocaleString()), /* @__PURE__ */ React.createElement("td", { className: "num neg" }, Math.round(r.pnl).toLocaleString()))))), /* @__PURE__ */ React.createElement("div", { className: "bt-fm-help" }, '"\uC774 \uB9E4\uC218 \uD2B9\uC9D5 = \uC190\uC2E4" \uC790\uB3D9 \uD6C4\uBCF4 \u2014 QSP3 \uC81C\uAC70/\uD544\uD130 \uC81C\uC548\uC758 \uC785\uB825\uACFC \uAC19\uC740 \uACC4\uC0B0\uC774\uB2E4. \uCC44\uD0DD\uC740 \uD56D\uC0C1 \uC7AC\uBC31\uD14C \uC2E4\uCE21(\uC7AC\uC720\uC785 \uD6A8\uACFC 21~38% \uC2E4\uC99D) + \uD640\uB4DC\uC544\uC6C3 \uB3D9\uBC29\uD5A5.'))));
-  }
-
   // ai_strategy_loop/dashboard/frontend/bt-csv-quality.jsx
   var CSV_QUALITY_LABELS = {
     VALID: ["\uC815\uC0C1", "CSV \uD589 \uAC80\uC0AC\uB97C \uD1B5\uACFC\uD588\uC2B5\uB2C8\uB2E4. \uC5F0\uAD6C\xB7\uC218\uC775\uC131 \uC2B9\uC778\uC744 \uB73B\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."],
@@ -27111,6 +26883,286 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
   }
   Object.assign(window, { BtCsvQuality });
 
+  // ai_strategy_loop/dashboard/frontend/bt-feature-evidence.jsx
+  function useFeatureEvidence({ baseUrl, paths, enabled, expectedHash = "", automatic = true, timeoutMs = 15e3 }) {
+    const key = JSON.stringify([baseUrl, paths, !!enabled, expectedHash]);
+    const current = useRef_btc({ key, enabled });
+    current.current = { key, enabled };
+    const request = useRef_btc({ seq: 0, controller: null });
+    const [state, setState] = useState_btc({ key: "", payloads: null, error: "", loading: false });
+    const load = useCallback_btc(() => {
+      var _a;
+      (_a = request.current.controller) == null ? void 0 : _a.abort();
+      const seq = request.current.seq + 1;
+      if (!enabled || !baseUrl || !paths.length) {
+        request.current = { seq, controller: null };
+        setState({ key, payloads: null, error: "", loading: false });
+        return;
+      }
+      const controller = new AbortController();
+      request.current = { seq, controller };
+      const active = () => !controller.signal.aborted && request.current.seq === seq && current.current.key === key && current.current.enabled;
+      setState({ key, payloads: null, error: "", loading: true });
+      Promise.all(paths.map((path) => _btFetchJson(baseUrl + path, timeoutMs, controller.signal))).then((payloads2) => {
+        if (!active()) return;
+        const valid = payloads2.every((p) => p && typeof p === "object" && !Array.isArray(p) && typeof p.available === "boolean" && (p.analysis_ready === void 0 || typeof p.analysis_ready === "boolean"));
+        setState({ key, payloads: valid ? payloads2 : null, error: valid ? "" : "\uBD84\uC11D \uC751\uB2F5 \uD615\uC2DD\uC744 \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.", loading: false });
+      }).catch((error) => {
+        if (active()) setState({ key, payloads: null, error: String((error == null ? void 0 : error.message) || error), loading: false });
+      });
+    }, [key, enabled, timeoutMs]);
+    useEffect_btc(() => {
+      var _a;
+      if (automatic) load();
+      else {
+        (_a = request.current.controller) == null ? void 0 : _a.abort();
+        setState({ key, payloads: null, error: "", loading: false });
+      }
+      return () => {
+        var _a2;
+        return (_a2 = request.current.controller) == null ? void 0 : _a2.abort();
+      };
+    }, [load, automatic]);
+    const same = enabled && state.key === key;
+    const payloads = same ? state.payloads : null;
+    const hashes = (payloads || []).map((p) => {
+      var _a;
+      return (_a = p == null ? void 0 : p.data_quality) == null ? void 0 : _a.source_sha256;
+    }).filter(Boolean);
+    const mismatch = !!(expectedHash && (payloads || []).some((p) => {
+      var _a;
+      return (p == null ? void 0 : p.analysis_ready) !== false && ((_a = p == null ? void 0 : p.data_quality) == null ? void 0 : _a.source_sha256) !== expectedHash;
+    }) || new Set(hashes).size > 1);
+    return {
+      payloads,
+      error: same ? state.error : "",
+      mismatch,
+      loading: !!enabled && (same ? state.loading : automatic),
+      load,
+      key
+    };
+  }
+  function FeatureQualityNotice({ payload, title = "\uD53C\uCC98 \uBD84\uC11D \uBCF4\uB958", reason }) {
+    return /* @__PURE__ */ React.createElement("section", { className: "panel", "aria-label": title }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("b", null, title)), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(BtCsvQuality, { envelope: payload || { analysis_ready: false } }), /* @__PURE__ */ React.createElement("p", null, reason || (payload == null ? void 0 : payload.reason) || "\uBD84\uC11D \uC790\uB8CC\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.")));
+  }
+
+  // ai_strategy_loop/dashboard/frontend/bt-leaf-explorer.jsx
+  var _LF_TIME_ORDER = [
+    "B1_900_902",
+    "B2_902_905",
+    "B3_905_910",
+    "B4_910_920",
+    "B5_920_930",
+    "B1_\uC7A5\uCD08\uBC18",
+    "B2_\uC624\uC804",
+    "B3_\uD55C\uC0B0",
+    "B4_\uC624\uD6C4",
+    "B5_\uB9C8\uAC10",
+    "out_of_window",
+    "unknown"
+  ];
+  var _LF_CAP_ORDER = ["S_3000\uBBF8\uB9CC", "M1_3000_5000", "M2_5000_10000", "L_10000\uC774\uC0C1", "unknown"];
+  var _LF_CAP_LABEL = {
+    S_3000\uBBF8\uB9CC: "\uC18C\uD615 <3\uCC9C\uC5B5",
+    M1_3000_5000: "\uC911\uC18C 3~5\uCC9C\uC5B5",
+    M2_5000_10000: "\uC911\uD615 5\uCC9C~1\uC870",
+    L_10000\uC774\uC0C1: "\uB300\uD615 \u22651\uC870",
+    unknown: "\uBBF8\uC0C1"
+  };
+  function _lfCellColor(v) {
+    if (v == null || !Number.isFinite(v)) return "var(--bg-2)";
+    const t = Math.max(-1, Math.min(1, v / 0.8));
+    return t >= 0 ? `rgba(76,214,179,${0.12 + 0.5 * t})` : `rgba(255,107,107,${0.12 + 0.5 * -t})`;
+  }
+  var _lfNumber = (value, digits = 2) => Number.isFinite(value) ? value.toFixed(digits) : "\u2014";
+  var _lfWhole = (value) => Number.isFinite(value) ? Math.round(value).toLocaleString("ko-KR") : "\u2014";
+  function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo, sourceHash }) {
+    var _a, _b, _c;
+    const [metric, setMetric] = useState_btc("mean_pct");
+    const [picked, setPicked] = useState_btc(null);
+    const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
+    const q = jobId ? "job_id=" + encodeURIComponent(jobId) : isEvo ? "run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no) : "";
+    const query = useFeatureEvidence({ baseUrl, paths: ["/bt/analysis/leaf_matrix?" + q], enabled: !isDemo && !!q, expectedHash: sourceHash });
+    const data = ((_a = query.payloads) == null ? void 0 : _a[0]) || null;
+    const proposals = useFeatureEvidence({
+      baseUrl,
+      paths: ["/bt/analysis/revision_proposals?" + q],
+      enabled: !isDemo && isEvo && !query.mismatch && (data == null ? void 0 : data.analysis_ready) !== false,
+      automatic: false,
+      timeoutMs: 2e4,
+      expectedHash: ((_b = data == null ? void 0 : data.data_quality) == null ? void 0 : _b.source_sha256) || sourceHash
+    });
+    const props_ = ((_c = proposals.payloads) == null ? void 0 : _c[0]) || null;
+    const propsBusy = proposals.loading;
+    const loadProposals = () => {
+      if (!propsBusy && (data == null ? void 0 : data.analysis_ready) !== false) proposals.load();
+    };
+    useEffect_btc(() => {
+      setPicked(null);
+    }, [query.key]);
+    if (isDemo || !jobId && !isEvo) return null;
+    if (query.error || query.mismatch || (data == null ? void 0 : data.analysis_ready) === false) return /* @__PURE__ */ React.createElement(FeatureQualityNotice, { payload: data, title: "\uB9AC\uD504 \uBD84\uC11D \uBCF4\uB958", reason: query.error || (query.mismatch ? "\uC120\uD0DD\uD55C \uACB0\uACFC\uC640 \uBD84\uC11D \uC6D0\uBCF8\uC758 \uC77C\uCE58\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uACB0\uACFC\uB97C \uB2E4\uC2DC \uC870\uD68C\uD558\uC138\uC694." : "") });
+    const proposalMismatch = proposals.mismatch;
+    const rows = data && data.leaf_matrix || [];
+    const times = _LF_TIME_ORDER.filter((t) => rows.some((r) => r.leaf_time === t));
+    const caps = _LF_CAP_ORDER.filter((c) => rows.some((r) => r.leaf_cap === c));
+    const byKey = {};
+    rows.forEach((r) => {
+      byKey[r.leaf_time + "\xD7" + r.leaf_cap] = r;
+    });
+    const pickedRow = picked ? byKey[picked] : null;
+    const samples = picked && data && data.leaf_samples && data.leaf_samples[picked] || [];
+    const feats = data && data.features || [];
+    return /* @__PURE__ */ React.createElement("section", { className: "panel bt-equal-card", "aria-label": "\uB9AC\uD504 \uC794\uCC28 \uD788\uD2B8\uB9F5 \u2014 \uC2DC\uAC04\uBC34\uB4DC\xD7\uC2DC\uCD1D\uB2E8\uACC4" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "\uB9AC\uD504 \uC794\uCC28 \uD788\uD2B8\uB9F5 \xB7 \uC2DC\uAC04 \xD7 \uC2DC\uCD1D"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { className: "bt-quant-meta mono" }, data && data.available ? `${data.n.toLocaleString("ko-KR")}\uAC70\uB798 \xB7 ${data.timeframe} \xB7 \uD30C\uC0DD ${(data.derived || []).length}\uC885` : "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "bt-mc-method", role: "group", "aria-label": "\uC140 \uAC12 \uAE30\uC900" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "btn ghost sm" + (metric === "mean_pct" ? " active" : ""),
+        onClick: () => setMetric("mean_pct"),
+        title: "\uC140 \uAC12 = \uB9AC\uD504 \uD3C9\uADE0 \uC218\uC775\uB960"
+      },
+      "\uD3C9\uADE0"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "btn ghost sm" + (metric === "median_pct" ? " active" : ""),
+        onClick: () => setMetric("median_pct"),
+        title: "\uC140 \uAC12 = \uB9AC\uD504 \uC911\uC559\uAC12 \uC218\uC775\uB960 \u2014 \uBCF5\uAD8C\uD615(\uAC00\uB054 \uD070 \uC2B9) \uBD84\uD3EC\uC5D0\uC11C \uD3C9\uADE0 \uC65C\uACE1\uC744 \uAC77\uC5B4\uB0C5\uB2C8\uB2E4"
+      },
+      "\uC911\uC559\uAC12"
+    )))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement(MetricHelpStrip, { items: [
+      "\uC804\uCCB4 \uACB0\uACFC CSV \uAE30\uC900 \xB7 \uC120\uD0DD \uAD6C\uAC04 \uD544\uD130 \uBBF8\uC801\uC6A9",
+      "\uD589 = \uC2DC\uCD1D\uB2E8\uACC4 \xB7 \uC5F4 = \uC2DC\uAC04\uBC34\uB4DC \xB7 \uC140 = \uC218\uC775\uB960(\uC0C9) + \uD45C\uBCF8\xB7\uC2B9\uB960",
+      "\uBE68\uAC15\uC774 \uC9D9\uC744\uC218\uB85D \uC190\uC2E4 \uC9D1\uC911 \u2014 \uC870\uAC74\uC2DD \uC870\uC784(\uACBD\uACC4 \uC218\uC815)\uC758 1\uC21C\uC704 \uD6C4\uBCF4",
+      "\uC140 \uD074\uB9AD = \uADF8 \uB9AC\uD504\uC758 \uB300\uD45C \uAC70\uB798(\uCD5C\uC545 4\xB7\uCD5C\uACE0 4)\uC640 \uC88C\uD45C \uD655\uC778"
+    ] }), !data && /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uB9AC\uD504 \uB9E4\uD2B8\uB9AD\uC2A4 \uB85C\uB529\u2026"), data && !data.available && /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uC774 \uACB0\uACFC\uC5D0\uB294 \uB9AC\uD504 \uBD84\uC11D\uC6A9 CSV \uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."), data && data.available && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-grid", style: { gridTemplateColumns: `120px repeat(${times.length}, minmax(84px, 1fr))` } }, /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-corner mono" }, "\uC2DC\uCD1D \\ \uC2DC\uAC04"), times.map((t) => /* @__PURE__ */ React.createElement("div", { key: t, className: "bt-leaf-colhead mono" }, t.replace(/^B\d_/, ""))), caps.map((c) => /* @__PURE__ */ React.createElement(React.Fragment, { key: c }, /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-rowhead mono" }, _LF_CAP_LABEL[c] || c), times.map((t) => {
+      const r = byKey[t + "\xD7" + c];
+      const v = r ? r[metric] : null;
+      const key = t + "\xD7" + c;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key,
+          type: "button",
+          className: "bt-leaf-cell mono" + (picked === key ? " picked" : "") + (r && !r.reliable ? " thin" : ""),
+          style: { background: _lfCellColor(v) },
+          title: r ? `${key}
+\uD3C9\uADE0 ${_lfNumber(r.mean_pct, 3)}% \xB7 \uC911\uC559\uAC12 ${_lfNumber(r.median_pct)}% \xB7 \uC2B9\uB960 ${_lfNumber(r.win_rate, 1)}%
+n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC5C6\uC74C",
+          onClick: () => setPicked(picked === key ? null : key)
+        },
+        r ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("b", null, _lfNumber(v), "%"), /* @__PURE__ */ React.createElement("small", null, "n=", r.n, " \xB7 \uC2B9 ", _lfWhole(r.win_rate), "%")) : /* @__PURE__ */ React.createElement("small", null, "\u2014")
+      );
+    })))), pickedRow && /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-detail", role: "region", "aria-label": "\uB9AC\uD504 \uC0C1\uC138 " + picked }, /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-detail-hd mono" }, /* @__PURE__ */ React.createElement("b", null, picked), /* @__PURE__ */ React.createElement("span", null, "n=", pickedRow.n, " \xB7 \uD3C9\uADE0 ", _lfNumber(pickedRow.mean_pct, 3), "% \xB7 \uC911\uC559\uAC12 ", _lfNumber(pickedRow.median_pct), "% \xB7 \uC2B9\uB960 ", _lfNumber(pickedRow.win_rate, 1), "% \xB7 \uD569\uACC4 ", _lfWhole(pickedRow.total_krw), "\uC6D0", pickedRow.reliable ? "" : " \xB7 \u26A0 \uD45C\uBCF8 \uBD80\uC871(\uC218\uC815 \uADFC\uAC70\uB85C \uC4F0\uC9C0 \uB9D0 \uAC83)")), samples.length > 0 && /* @__PURE__ */ React.createElement("table", { className: "mono bt-leaf-sample" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "\uC885\uBAA9"), /* @__PURE__ */ React.createElement("th", null, "\uB9E4\uC218\uC2DC\uAC04"), /* @__PURE__ */ React.createElement("th", null, "\uC218\uC775\uB960"), /* @__PURE__ */ React.createElement("th", null, "\uC218\uC775\uAE08"))), /* @__PURE__ */ React.createElement("tbody", null, samples.map((s, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: s.pct >= 0 ? "pos" : "neg" }, /* @__PURE__ */ React.createElement("td", null, s.name), /* @__PURE__ */ React.createElement("td", null, s.buy_time), /* @__PURE__ */ React.createElement("td", null, _lfNumber(s.pct), "%"), /* @__PURE__ */ React.createElement("td", null, _lfWhole(s.krw))))))), isEvo && /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-proposals" }, /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-prop-hd" }, /* @__PURE__ */ React.createElement("b", { className: "mono" }, "\uC218\uC815 \uC81C\uC548 (\uBD84\uC11D\u2192\uC870\uAC74\uC2DD \uBC88\uC5ED \xB7 \uC77D\uAE30 \uC804\uC6A9 \uBBF8\uB9AC\uBCF4\uAE30)"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: "btn ghost sm",
+        onClick: loadProposals,
+        disabled: propsBusy,
+        title: "\uC190\uC2E4 \uB9AC\uD504\uC758 \uBCC0\uBCC4 \uBCC0\uC218\uC640 \uC2B9\uC790 \uBD84\uC704\uC218 \uACBD\uACC4\uB85C \uB9AC\uD504 \uB2E8\uC704 \uC218\uC815\uC548\uC744 \uB9CC\uB4ED\uB2C8\uB2E4. \uB4F1\uB85D\xB7\uC801\uC6A9\uC740 \uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."
+      },
+      propsBusy ? "\uC0DD\uC131 \uC911\u2026" : props_ ? "\u21BB \uB2E4\uC2DC \uC0DD\uC131" : "\uC81C\uC548 \uC0DD\uC131"
+    )), (proposals.error || (props_ == null ? void 0 : props_.analysis_ready) === false || proposalMismatch) && /* @__PURE__ */ React.createElement(FeatureQualityNotice, { payload: props_, title: "\uC218\uC815 \uC81C\uC548 \uBCF4\uB958", reason: proposals.error || (proposalMismatch ? "\uB9AC\uD504 \uD45C\uC640 \uC81C\uC548\uC758 \uC6D0\uBCF8 \uC77C\uCE58\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uACB0\uACFC\uB97C \uB2E4\uC2DC \uC870\uD68C\uD558\uC138\uC694." : "") }), props_ && props_.analysis_ready !== false && !props_.available && /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, props_.reason), props_ && props_.available && (props_.proposals || []).length === 0 && /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, props_.reason), props_ && props_.analysis_ready !== false && !proposalMismatch && (props_.proposals || []).map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bt-leaf-prop mono" }, /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-prop-title" }, /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "badge " + (p.gate && p.gate.ok ? "done" : "warn"),
+        title: "\uC758\uB3C4-\uC77C\uCE58 \uAC8C\uC774\uD2B8: \uACE8\uACA9 \uBD88\uBCC0 \xB7 \uBA85\uC138 \uC678 \uBCC0\uACBD 0 \xB7 preflight"
+      },
+      p.gate && p.gate.ok ? "\uC758\uB3C4 \uC77C\uCE58 PASS" : "\uC758\uB3C4 \uC77C\uCE58 FAIL"
+    ), /* @__PURE__ */ React.createElement("b", null, p.spec.change)), /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-prop-ev" }, "\uADFC\uAC70: n=", p.spec.evidence.n, " \xB7 \uC911\uC559\uAC12 ", _lfNumber(p.spec.evidence.median_pct), "% (\uC804\uCCB4 \uB300\uBE44 ", _lfNumber(p.spec.evidence.vs_overall_median), "%p) \xB7 d=", _lfNumber(p.spec.evidence.cohen_d), " \xB7 \uC2B9\uC790\uBD84\uC704 \uACBD\uACC4 ", Number.isFinite(p.spec.evidence.win_quantile_bound) ? p.spec.evidence.win_quantile_bound.toPrecision(3) : "\u2014"), (p.diff_preview || []).map((d, k) => /* @__PURE__ */ React.createElement("div", { key: k, className: "bt-leaf-prop-diff" }, /* @__PURE__ */ React.createElement("span", { className: "del" }, "\u2212 ", d.old.trim()), /* @__PURE__ */ React.createElement("span", { className: "add" }, "\uFF0B ", d.new.trim()))))), /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "\uC774 \uD654\uBA74\uC740 \uBA54\uBAA8\uB9AC \uBBF8\uB9AC\uBCF4\uAE30\uB9CC \uC81C\uACF5\uD569\uB2C8\uB2E4. \uC758\uB3C4 \uC77C\uCE58 \uAC80\uC0AC\uB294 \uACBD\uC81C\uC801 \uAC80\uC99D\xB7\uCC44\uD0DD \uC2B9\uC778\uC774 \uC544\uB2D9\uB2C8\uB2E4.")), feats.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-feats" }, /* @__PURE__ */ React.createElement("b", { className: "mono" }, "\uBCC0\uBCC4 \uC0C1\uC704 \uBCC0\uC218 (\uC2B9\xB7\uD328 Cohen's d)"), /* @__PURE__ */ React.createElement("div", { className: "bt-leaf-feat-bars" }, feats.slice(0, 8).map((f) => /* @__PURE__ */ React.createElement("div", { key: f.feature, className: "bt-leaf-feat mono", title: `\uC2B9 \uD3C9\uADE0 ${_lfNumber(f.win_mean, 4)} / \uD328 \uD3C9\uADE0 ${_lfNumber(f.loss_mean, 4)} \xB7 n=${f.n}` }, /* @__PURE__ */ React.createElement("span", { className: "k" }, f.feature), /* @__PURE__ */ React.createElement("span", { className: "bar" }, /* @__PURE__ */ React.createElement(
+      "i",
+      {
+        className: f.d >= 0 ? "pos" : "neg",
+        style: { width: Math.min(100, Math.abs(f.d) * 220) + "%" }
+      }
+    )), /* @__PURE__ */ React.createElement("span", { className: "v" }, Number.isFinite(f.d) && f.d >= 0 ? "+" : "", _lfNumber(f.d, 3))))), /* @__PURE__ */ React.createElement("p", { className: "v54-quant-note" }, "|d| \uAC00 \uD070 \uBCC0\uC218\uAC00 \uC2B9\xB7\uD328\uB97C \uAC00\uB978\uB2E4 \u2014 \uB9AC\uD504 \uACBD\uACC4 \uC218\uC815(P2 \uC81C\uC548 \uC0DD\uC131)\uC758 \uC7AC\uB8CC.")))));
+  }
+  Object.assign(window, { BtLeafExplorer });
+
+  // ai_strategy_loop/dashboard/frontend/bt-feature-map.jsx
+  var _FM_METRICS = [
+    ["pnl", "\uC190\uC775 \uD569"],
+    ["mean_ret", "\uD3C9\uADE0\uC218\uC775\uB960"],
+    ["win_rate", "\uC2B9\uB960"],
+    ["n", "\uAC70\uB798\uC218"]
+  ];
+  function _fmCellColor(metric, v, vmax) {
+    if (v == null || !Number.isFinite(v)) return "var(--bg-2)";
+    let t;
+    if (metric === "pnl") t = vmax ? Math.max(-1, Math.min(1, v / vmax)) : 0;
+    else if (metric === "mean_ret") t = Math.max(-1, Math.min(1, v / 0.8));
+    else if (metric === "win_rate") t = Math.max(-1, Math.min(1, (v - 0.5) / 0.3));
+    else return "var(--bg-2)";
+    return t >= 0 ? `rgba(76,214,179,${0.1 + 0.55 * t})` : `rgba(255,107,107,${0.1 + 0.55 * -t})`;
+  }
+  function _fmFmt(metric, v) {
+    if (v == null || !Number.isFinite(v)) return "\u2014";
+    if (metric === "pnl") return `${(v / 1e6).toFixed(1)}M`;
+    if (metric === "mean_ret") return `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
+    if (metric === "win_rate") return `${(v * 100).toFixed(0)}%`;
+    return String(v);
+  }
+  function BtFeatureMap({ baseUrl, jobId, evoSource, isDemo, sourceHash }) {
+    var _a;
+    const [catalog, setCatalog] = useState_btc({ key: "", variables: [] });
+    const [x, setX] = useState_btc("");
+    const [y, setY] = useState_btc("");
+    const [metric, setMetric] = useState_btc("pnl");
+    const [bins, setBins] = useState_btc(5);
+    const [view, setView] = useState_btc("map");
+    const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
+    const srcQs = jobId ? `job_id=${encodeURIComponent(jobId)}` : isEvo ? `run_id=${encodeURIComponent(evoSource.run_id)}&gen_no=${evoSource.gen_no}` : "";
+    const sourceKey = JSON.stringify([baseUrl, srcQs, !!isDemo, sourceHash]);
+    const path = view === "regions" ? `/bt/analysis/feature_map?${srcQs}&mode=regions&bins=${bins}&top=20` : `/bt/analysis/feature_map?${srcQs}&x=${encodeURIComponent(x)}` + (y ? `&y=${encodeURIComponent(y)}` : "") + `&bins=${bins}`;
+    const query = useFeatureEvidence({ baseUrl, paths: [path], enabled: !isDemo && !!srcQs && !!baseUrl, expectedHash: sourceHash });
+    const payload = ((_a = query.payloads) == null ? void 0 : _a[0]) || null;
+    const vars_ = catalog.key === sourceKey ? catalog.variables : [];
+    useEffect_btc(() => {
+      setX("");
+      setY("");
+      setCatalog({ key: sourceKey, variables: [] });
+    }, [sourceKey]);
+    useEffect_btc(() => {
+      if (!payload || !Array.isArray(payload.variables)) return;
+      const vs = payload.variables;
+      setCatalog({ key: sourceKey, variables: vs });
+      if (vs.length && (!x || !vs.includes(x))) setX(vs.includes("B_\uB4F1\uB77D\uC728") ? "B_\uB4F1\uB77D\uC728" : vs[0]);
+      if (y && !vs.includes(y)) setY("");
+    }, [payload, sourceKey, x, y]);
+    const blocked = query.error || query.mismatch || (payload == null ? void 0 : payload.analysis_ready) === false;
+    const data = !blocked && view === "map" ? payload : null;
+    const regions = !blocked && view === "regions" ? payload : null;
+    const grid = data && data.grid;
+    const cells = grid && grid.cells || [];
+    const xBins = [...new Set(cells.map((c) => c.x_bin))];
+    const yBins = y ? [...new Set(cells.map((c) => c.y_bin))] : [null];
+    const byKey = {};
+    cells.forEach((c) => {
+      byKey[`${c.x_bin}|${c.y_bin}`] = c;
+    });
+    const vmax = Math.max(1, ...cells.map((c) => Math.abs(c.pnl || 0)));
+    const sel = (val, set3, opts, label) => /* @__PURE__ */ React.createElement("label", { className: "bt-fm-sel" }, label, /* @__PURE__ */ React.createElement("select", { value: val, onChange: (e) => set3(e.target.value) }, opts));
+    const varOpts = (allowEmpty) => [
+      ...allowEmpty ? [/* @__PURE__ */ React.createElement("option", { key: "", value: "" }, "(\uC5C6\uC74C)")] : [],
+      ...vars_.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))
+    ];
+    return /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card", role: "figure", "aria-label": "\uB2E4\uCC28\uC6D0 \uC218\uC775\uB960 \uB9F5" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uB2E4\uCC28\uC6D0 \uC218\uC775\uB960 \uB9F5 (QSP3)"), /* @__PURE__ */ React.createElement("div", { className: "panel-hd-meta" }, /* @__PURE__ */ React.createElement("button", { className: `bt-fm-toggle ${view === "map" ? "on" : ""}`, onClick: () => setView("map") }, "\uB9F5"), /* @__PURE__ */ React.createElement("button", { className: `bt-fm-toggle ${view === "regions" ? "on" : ""}`, onClick: () => setView("regions") }, "\uC190\uC2E4 \uC601\uC5ED \uB7AD\uD0B9"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("p", { className: "bt-fm-help" }, "\uC804\uCCB4 \uACB0\uACFC CSV \uAE30\uC900 \xB7 \uC120\uD0DD \uAD6C\uAC04 \uD544\uD130 \uBBF8\uC801\uC6A9"), blocked && /* @__PURE__ */ React.createElement(FeatureQualityNotice, { payload, title: "\uD53C\uCC98 \uB9F5 \uBCF4\uB958", reason: query.error || (query.mismatch ? "\uC120\uD0DD\uD55C \uACB0\uACFC\uC640 \uBD84\uC11D \uC6D0\uBCF8\uC758 \uC77C\uCE58\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uACB0\uACFC\uB97C \uB2E4\uC2DC \uC870\uD68C\uD558\uC138\uC694." : "") }), query.loading && /* @__PURE__ */ React.createElement("p", { role: "status" }, "\uD53C\uCC98 \uC790\uB8CC\uB97C \uD655\uC778\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4\u2026"), !blocked && view === "map" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bt-fm-controls" }, sel(x, setX, varOpts(false), "X\uCD95"), sel(y, setY, varOpts(true), "Y\uCD95"), sel(metric, setMetric, _FM_METRICS.map(([k, l]) => /* @__PURE__ */ React.createElement("option", { key: k, value: k }, l)), "\uD45C\uC2DC"), sel(String(bins), (v) => setBins(parseInt(v, 10)), [3, 4, 5, 8, 10].map((b) => /* @__PURE__ */ React.createElement("option", { key: b, value: b }, b, "\uAD6C\uAC04")), "\uAD6C\uAC04")), !cells.length ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, isDemo ? "\uB370\uBAA8\uC5D0\uC120 \uBBF8\uC9C0\uC6D0" : query.loading ? "\uD53C\uCC98 \uC790\uB8CC\uB97C \uD655\uC778\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4\u2026" : (data == null ? void 0 : data.analysis_ready) === true ? vars_.length ? "\uC120\uD0DD\uD55C \uBCC0\uC218\uC758 \uC9D1\uACC4 \uAC00\uB2A5\uD55C \uAD6C\uAC04\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." : "\uD45C\uBCF8\xB7\uBD84\uC0B0 \uC694\uAC74\uC744 \uCDA9\uC871\uD558\uB294 \uC9C4\uC785 \uBCC0\uC218\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4." : "\uBD84\uC11D \uC790\uB8CC\uB97C \uC120\uD0DD\uD558\uACE0 \uBCC0\uC218\uB97C \uD655\uC778\uD558\uC138\uC694.") : /* @__PURE__ */ React.createElement("div", { className: "bt-fm-scroll" }, /* @__PURE__ */ React.createElement("table", { className: "bt-fm-grid" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, y ? `${y} \u2193 / ${x} \u2192` : x), xBins.map((b) => /* @__PURE__ */ React.createElement("th", { key: b, title: b }, b)))), /* @__PURE__ */ React.createElement("tbody", null, yBins.map((yb) => /* @__PURE__ */ React.createElement("tr", { key: String(yb) }, /* @__PURE__ */ React.createElement("th", { title: String(yb || "") }, yb == null ? "\uC804\uCCB4" : yb), xBins.map((xb) => {
+      const c = byKey[`${xb}|${yb}`];
+      const v = c ? c[metric] : null;
+      return /* @__PURE__ */ React.createElement(
+        "td",
+        {
+          key: xb,
+          style: { background: _fmCellColor(metric, v, vmax) },
+          title: c ? `${x}=${xb}${y ? ` \xB7 ${y}=${yb}` : ""} \xB7 ${c.n}\uAC74 \xB7 \uC190\uC775 ${Math.round(c.pnl).toLocaleString()}\uC6D0 \xB7 \uD3C9\uADE0 ${c.mean_ret.toFixed(2)}% \xB7 \uC2B9\uB960 ${(c.win_rate * 100).toFixed(0)}%` : ""
+        },
+        /* @__PURE__ */ React.createElement("b", null, _fmFmt(metric, v)),
+        /* @__PURE__ */ React.createElement("span", null, c ? `${c.n}\uAC74` : "")
+      );
+    }))))))), !blocked && view === "regions" && /* @__PURE__ */ React.createElement("div", null, !(regions && regions.regions && regions.regions.length) ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, query.loading ? "\uC190\uC2E4 \uAD6C\uAC04\uC744 \uD655\uC778\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4\u2026" : (regions == null ? void 0 : regions.analysis_ready) === true ? "\uD604\uC7AC \uC790\uB8CC\uC640 \uC870\uAC74\uC5D0\uC11C \uC0B0\uCD9C\uB41C \uC190\uC2E4 \uAD6C\uAC04\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." : "\uBD84\uC11D \uC790\uB8CC\uB97C \uD655\uC778\uD558\uC138\uC694.") : /* @__PURE__ */ React.createElement("table", { className: "bt-fm-rank" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "#"), /* @__PURE__ */ React.createElement("th", null, "\uBCC0\uC218"), /* @__PURE__ */ React.createElement("th", null, "\uAD6C\uAC04"), /* @__PURE__ */ React.createElement("th", null, "\uAC70\uB798"), /* @__PURE__ */ React.createElement("th", null, "\uC190\uC775 \uD569"))), /* @__PURE__ */ React.createElement("tbody", null, regions.regions.map((r, i) => /* @__PURE__ */ React.createElement("tr", { key: `${r.feature}|${r.bin}` }, /* @__PURE__ */ React.createElement("td", null, i + 1), /* @__PURE__ */ React.createElement("td", null, r.feature), /* @__PURE__ */ React.createElement("td", { className: "num" }, r.bin), /* @__PURE__ */ React.createElement("td", { className: "num" }, r.n.toLocaleString()), /* @__PURE__ */ React.createElement("td", { className: "num neg" }, Math.round(r.pnl).toLocaleString()))))), /* @__PURE__ */ React.createElement("div", { className: "bt-fm-help" }, '"\uC774 \uB9E4\uC218 \uD2B9\uC9D5 = \uC190\uC2E4" \uC790\uB3D9 \uD6C4\uBCF4 \u2014 QSP3 \uC81C\uAC70/\uD544\uD130 \uC81C\uC548\uC758 \uC785\uB825\uACFC \uAC19\uC740 \uACC4\uC0B0\uC774\uB2E4. \uCC44\uD0DD\uC740 \uD56D\uC0C1 \uC7AC\uBC31\uD14C \uC2E4\uCE21(\uC7AC\uC720\uC785 \uD6A8\uACFC 21~38% \uC2E4\uC99D) + \uD640\uB4DC\uC544\uC6C3 \uB3D9\uBC29\uD5A5.'))));
+  }
+
   // ai_strategy_loop/dashboard/frontend/bt-montecarlo-source.jsx
   function useMonteCarloSource({ baseUrl, jobId, evoSource, range, result, enabled }) {
     var _a;
@@ -27143,11 +27195,11 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
         var _a3;
         if (!active()) return;
         const actualHash = (_a3 = envelope2 == null ? void 0 : envelope2.data_quality) == null ? void 0 : _a3.source_sha256;
-        const mismatch = expectedHash && actualHash && expectedHash !== actualHash;
+        const mismatch = expectedHash && (envelope2 == null ? void 0 : envelope2.analysis_ready) !== false && expectedHash !== actualHash;
         setState({ key, loading: false, envelope: mismatch ? {
           ...envelope2,
           display_ready: false,
-          display_reason: "\uACB0\uACFC \uD654\uBA74\uACFC \uBAAC\uD14C\uCE74\uB97C\uB85C\uC758 \uC6D0\uBCF8 CSV\uAC00 \uB2E4\uB985\uB2C8\uB2E4. \uACB0\uACFC\uB97C \uB2E4\uC2DC \uC870\uD68C\uD558\uC138\uC694."
+          display_reason: "\uACB0\uACFC \uD654\uBA74\uACFC \uBAAC\uD14C\uCE74\uB97C\uB85C\uC758 \uC6D0\uBCF8 CSV \uC77C\uCE58\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uACB0\uACFC\uB97C \uB2E4\uC2DC \uC870\uD68C\uD558\uC138\uC694."
         } : envelope2 });
       }).catch(() => {
         if (active()) setState({ key, loading: false, envelope: {
@@ -27441,6 +27493,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     onCloseFullscreen,
     fullscreen
   }) {
+    var _a, _b;
     const { isEvo, evoSource, jobId, baseUrl, capabilities } = sourceContext || {};
     const [layout, setLayout] = useState_btc(() => {
       const stored = _btStoredPreference(_BT_RESULT_LAYOUT_KEY, "3");
@@ -27646,7 +27699,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
           onBrushClear,
           moneyCtx
         }
-      ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), capabilities.monteCarlo ? /* @__PURE__ */ React.createElement(BtAdmittedMonteCarlo, { envelope: mcEnvelope, mc, loading: mcLoading, onRun: onRunMc, moneyCtx }) : /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card bt-analysis-unavailable", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBAAC\uD14C\uCE74\uB97C\uB85C")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uBBF8\uC9C0\uC6D0 \xB7 ", capabilities.notes.monteCarlo))), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtLeafExplorer, { baseUrl, jobId, evoSource, isDemo: false }), /* @__PURE__ */ React.createElement(BtFeatureMap, { baseUrl, jobId, evoSource, isDemo: false }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades, moneyCtx }))),
+      ), /* @__PURE__ */ React.createElement(BtDistributionChart, { distribution }), /* @__PURE__ */ React.createElement(BtUnderwaterChart, { underwater: analysis.underwater }), capabilities.monteCarlo ? /* @__PURE__ */ React.createElement(BtAdmittedMonteCarlo, { envelope: mcEnvelope, mc, loading: mcLoading, onRun: onRunMc, moneyCtx }) : /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card bt-analysis-unavailable", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), "\uBAAC\uD14C\uCE74\uB97C\uB85C")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uBBF8\uC9C0\uC6D0 \xB7 ", capabilities.notes.monteCarlo))), /* @__PURE__ */ React.createElement(BtHeatmap, { heatmap: analysis.heatmap }), /* @__PURE__ */ React.createElement(BtLeafExplorer, { baseUrl, jobId, evoSource, isDemo: false, sourceHash: (_a = result.data_quality) == null ? void 0 : _a.source_sha256 }), /* @__PURE__ */ React.createElement(BtFeatureMap, { baseUrl, jobId, evoSource, isDemo: false, sourceHash: (_b = result.data_quality) == null ? void 0 : _b.source_sha256 }), /* @__PURE__ */ React.createElement(BtMaeMfeScatter, { points: analysis.mae_mfe }), /* @__PURE__ */ React.createElement(BtQuantPanel, { analysis }), /* @__PURE__ */ React.createElement(BtExitReasonPanel, { rows: analysis.exit_reasons }), /* @__PURE__ */ React.createElement(BtOrderflowPanel, { orderflow }), /* @__PURE__ */ React.createElement(BtStatTestPanel, { stats }), /* @__PURE__ */ React.createElement(BtRollingChart, { rolling: analysis.rolling }), /* @__PURE__ */ React.createElement(BtMonthlyCalendar, { monthly: analysis.monthly }), /* @__PURE__ */ React.createElement(BtGuiParitySection, { guiParity: analysis.gui_parity }), /* @__PURE__ */ React.createElement(BtCumulativeTradesChart, { data: analysis.cumulative_trades, moneyCtx }))),
       (topC.length > 0 || botC.length > 0) && /* @__PURE__ */ React.createElement("section", { className: "bt-result-section bt-result-evidence bt-contributor-evidence", "aria-label": "\uC885\uBAA9 \uAE30\uC5EC \uC99D\uAC70" }, /* @__PURE__ */ React.createElement("div", { className: "panel bt-equal-card" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uC885\uBAA9 \uAE30\uC5EC")), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, /* @__PURE__ */ React.createElement("div", { className: "row-2" }, /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uC0C1\uC704 \uAE30\uC5EC", rows: topC }), /* @__PURE__ */ React.createElement(BtContribTable, { title: "\uD558\uC704 \uAE30\uC5EC", rows: botC }))))),
       /* @__PURE__ */ React.createElement("section", { className: "bt-result-section bt-result-evidence", "aria-label": "\uBD84\uC11D \uC778\uC0AC\uC774\uD2B8" }, /* @__PURE__ */ React.createElement(BtInsightsPanel, { insights })),
       fullscreen && /* @__PURE__ */ React.createElement(
@@ -39658,39 +39711,28 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
   Object.assign(window, { BtDataContract });
 
   // ai_strategy_loop/dashboard/frontend/bt-entry-autopsy.jsx
-  var { useState: useState_tpea, useEffect: useEffect_tpea } = React;
   function _tpeaNum(value, digits = 2) {
+    if (value == null || value === "") return "\u2014";
     const number = Number(value);
     return Number.isFinite(number) ? number.toLocaleString(void 0, { maximumFractionDigits: digits }) : "\u2014";
   }
-  function BtEntryAutopsy({ baseUrl, jobId, contract }) {
-    const [leaf, setLeaf] = useState_tpea(null);
-    const [regions, setRegions] = useState_tpea(null);
-    const [error, setError] = useState_tpea("");
-    useEffect_tpea(() => {
-      if (!baseUrl || !jobId) return void 0;
-      let alive = true;
-      setError("");
-      Promise.all([
-        _btFetchJson(`${baseUrl}/bt/analysis/leaf_matrix?job_id=${encodeURIComponent(jobId)}`, 3e4),
-        _btFetchJson(`${baseUrl}/bt/analysis/feature_map?job_id=${encodeURIComponent(jobId)}&mode=regions&bins=5&top=50`, 3e4)
-      ]).then(([leafPayload, regionPayload]) => {
-        if (!alive) return;
-        setLeaf(leafPayload);
-        setRegions(regionPayload);
-      }).catch((reason) => {
-        if (alive) setError(String(reason.message || reason));
-      });
-      return () => {
-        alive = false;
-      };
-    }, [baseUrl, jobId]);
+  function BtEntryAutopsy({ baseUrl, jobId, contract, sourceHash }) {
+    var _a, _b;
+    const query = useFeatureEvidence({ baseUrl, paths: [
+      `/bt/analysis/leaf_matrix?job_id=${encodeURIComponent(jobId || "")}`,
+      `/bt/analysis/feature_map?job_id=${encodeURIComponent(jobId || "")}&mode=regions&bins=5&top=50`
+    ], enabled: !!baseUrl && !!jobId, timeoutMs: 3e4, expectedHash: sourceHash });
+    const leaf = ((_a = query.payloads) == null ? void 0 : _a[0]) || null;
+    const regions = ((_b = query.payloads) == null ? void 0 : _b[1]) || null;
+    const denied = (query.payloads || []).filter((p) => (p == null ? void 0 : p.analysis_ready) === false);
+    const blocked = !!(query.error || query.mismatch || denied.length);
+    if (!baseUrl || !jobId) return /* @__PURE__ */ React.createElement("section", { className: "tp-entry-autopsy" }, /* @__PURE__ */ React.createElement("p", null, "\uC644\uB8CC \uACB0\uACFC\uB97C \uC120\uD0DD\uD558\uC138\uC694."));
     const allB = (contract && contract.columns || []).filter((row) => row.group === "B");
     const availableB = allB.filter((row) => row.status === "available");
-    const modelVars = regions && regions.variables || [];
+    const modelVars = !blocked && regions && regions.variables || [];
     const effects = leaf && leaf.features || [];
     const lossRegions = regions && regions.regions || [];
-    return /* @__PURE__ */ React.createElement("section", { className: "tp-entry-autopsy", "aria-labelledby": "tp-entry-title" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", { id: "tp-entry-title" }, "\uB9E4\uC218 \uD574\uBD80 \xB7 \uC2E4\uD589\uC2DC\uC810 \uBCC0\uC218"), /* @__PURE__ */ React.createElement("small", null, "\uBAA8\uB4E0 B_*\uB97C \uD655\uC778\uD558\uACE0, \uBD84\uC0B0\uC774 \uC788\uB294 \uBCC0\uC218\uB9CC \uC2B9/\uD328\xB7\uC190\uC2E4\uAD6C\uAC04 \uACC4\uC0B0\uC5D0 \uC0AC\uC6A9")), /* @__PURE__ */ React.createElement("span", { className: "tp-authority diagnostic" }, "\uC9C4\uB2E8")), /* @__PURE__ */ React.createElement("div", { className: "tp-entry-guard" }, "R_*\xB7S_*\uB294 \uB9E4\uC218 \uC785\uB825\uC73C\uB85C \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4 \xB7 \uB9E4\uB3C4 \uD6C4 \uD68C\uBCF5/MFE/MAE\uB294 label\uB85C\uB9CC \uBD84\uB9AC\uD569\uB2C8\uB2E4"), /* @__PURE__ */ React.createElement("div", { className: "tp-entry-kpis" }, /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "CSV B_* \uC804\uCCB4"), /* @__PURE__ */ React.createElement("b", null, allB.length), /* @__PURE__ */ React.createElement("span", null, "\uB204\uB77D\xB70-only \uD3EC\uD568")), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uC2E4\uC81C \uBE440 B_*"), /* @__PURE__ */ React.createElement("b", null, availableB.length), /* @__PURE__ */ React.createElement("span", null, "timeframe \uAC00\uC6A9")), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uBD84\uC11D \uD22C\uC785 B/D"), /* @__PURE__ */ React.createElement("b", null, modelVars.length), /* @__PURE__ */ React.createElement("span", null, "\uD45C\uBCF8\u226530\xB7\uBD84\uC0B0>0")), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uB77C\uBCA8 \uAC70\uB798"), /* @__PURE__ */ React.createElement("b", null, leaf && leaf.n || 0), /* @__PURE__ */ React.createElement("span", null, leaf && leaf.timeframe || (contract == null ? void 0 : contract.timeframe) || "\u2014"))), error && /* @__PURE__ */ React.createElement("p", { className: "tp-error" }, "\uB9E4\uC218 \uD574\uBD80 \uC870\uD68C \uC2E4\uD328: ", error), /* @__PURE__ */ React.createElement("div", { className: "tp-entry-layout" }, /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "\uBCC0\uC218 \uC804\uC218 \uAC00\uC6A9\uC131"), /* @__PURE__ */ React.createElement("div", { className: "tp-entry-variable-list" }, allB.map((row) => /* @__PURE__ */ React.createElement("span", { key: row.name, className: row.status }, /* @__PURE__ */ React.createElement("code", null, row.name), /* @__PURE__ */ React.createElement("b", null, row.status))))), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "\uC2B9/\uD328 \uBCC0\uBCC4 \uC0C1\uC704 \xB7 Cohen d"), /* @__PURE__ */ React.createElement("div", { className: "tp-entry-effect-list" }, effects.length ? effects.map((row) => /* @__PURE__ */ React.createElement("article", { key: row.feature }, /* @__PURE__ */ React.createElement("code", null, row.feature), /* @__PURE__ */ React.createElement("b", null, _tpeaNum(row.d, 3)), /* @__PURE__ */ React.createElement("span", null, "\uC2B9 ", _tpeaNum(row.win_mean), " \xB7 \uD328 ", _tpeaNum(row.loss_mean), " \xB7 n=", row.n))) : /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uD45C\uBCF8 \uB610\uB294 \uBCC0\uBCC4 \uBCC0\uC218\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.")))), /* @__PURE__ */ React.createElement("section", { className: "tp-loss-regions" }, /* @__PURE__ */ React.createElement("h4", null, "\uC190\uC2E4 \uC9D1\uC911 \uAD6C\uAC04 \xB7 \uC790\uB3D9 \uC81C\uAC70\uAC00 \uC544\uB2CC \uAC00\uC124 \uD6C4\uBCF4"), /* @__PURE__ */ React.createElement("div", null, lossRegions.length ? lossRegions.map((row, index2) => /* @__PURE__ */ React.createElement("article", { key: `${row.feature}-${row.bin}` }, /* @__PURE__ */ React.createElement("strong", null, "#", index2 + 1), /* @__PURE__ */ React.createElement("code", null, row.feature), /* @__PURE__ */ React.createElement("span", null, row.bin), /* @__PURE__ */ React.createElement("b", { className: "neg" }, _tpeaNum(row.pnl, 0), "\uC6D0"), /* @__PURE__ */ React.createElement("small", null, "n=", row.n))) : /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC190\uC2E4 \uAD6C\uAC04 \uACC4\uC0B0 \uACB0\uACFC\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."))));
+    return /* @__PURE__ */ React.createElement("section", { className: "tp-entry-autopsy", "aria-labelledby": "tp-entry-title" }, /* @__PURE__ */ React.createElement("header", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", { id: "tp-entry-title" }, "\uB9E4\uC218 \uD574\uBD80 \xB7 \uC2E4\uD589\uC2DC\uC810 \uBCC0\uC218"), /* @__PURE__ */ React.createElement("small", null, "\uBAA8\uB4E0 B_*\uB97C \uD655\uC778\uD558\uACE0, \uBD84\uC0B0\uC774 \uC788\uB294 \uBCC0\uC218\uB9CC \uC2B9/\uD328\xB7\uC190\uC2E4\uAD6C\uAC04 \uACC4\uC0B0\uC5D0 \uC0AC\uC6A9")), /* @__PURE__ */ React.createElement("span", { className: "tp-authority diagnostic" }, "\uC9C4\uB2E8")), /* @__PURE__ */ React.createElement("div", { className: "tp-entry-guard" }, "\uC804\uCCB4 \uACB0\uACFC CSV \uAE30\uC900 \xB7 R_*\xB7S_*\uB294 \uB9E4\uC218 \uC785\uB825\uC73C\uB85C \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4 \xB7 \uB9E4\uB3C4 \uD6C4 \uD68C\uBCF5/MFE/MAE\uB294 label\uB85C\uB9CC \uBD84\uB9AC\uD569\uB2C8\uB2E4"), /* @__PURE__ */ React.createElement("div", { className: "tp-entry-kpis" }, /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "CSV B_* \uC804\uCCB4"), /* @__PURE__ */ React.createElement("b", null, (contract == null ? void 0 : contract.columns) ? allB.length : "\u2014"), /* @__PURE__ */ React.createElement("span", null, "\uB204\uB77D\xB70-only \uD3EC\uD568")), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uC2E4\uC81C \uBE440 B_*"), /* @__PURE__ */ React.createElement("b", null, (contract == null ? void 0 : contract.columns) ? availableB.length : "\u2014"), /* @__PURE__ */ React.createElement("span", null, "timeframe \uAC00\uC6A9")), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uBD84\uC11D \uD22C\uC785 B/D"), /* @__PURE__ */ React.createElement("b", null, !blocked && (regions == null ? void 0 : regions.available) ? modelVars.length : "\u2014"), /* @__PURE__ */ React.createElement("span", null, "\uD45C\uBCF8\u226530\xB7\uBD84\uC0B0>0")), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uB77C\uBCA8 \uAC70\uB798"), /* @__PURE__ */ React.createElement("b", null, !blocked && (leaf == null ? void 0 : leaf.available) ? _tpeaNum(leaf.n, 0) : "\u2014"), /* @__PURE__ */ React.createElement("span", null, leaf && leaf.timeframe || (contract == null ? void 0 : contract.timeframe) || "\u2014"))), query.loading && /* @__PURE__ */ React.createElement("p", { role: "status" }, "\uB9E4\uC218 \uD574\uBD80 \uC790\uB8CC\uB97C \uD655\uC778\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4\u2026"), (query.error || query.mismatch) && /* @__PURE__ */ React.createElement(FeatureQualityNotice, { payload: leaf, title: "\uB9E4\uC218 \uD574\uBD80 \uBCF4\uB958", reason: query.error ? "\uB9E4\uC218 \uD574\uBD80 \uC870\uD68C \uC2E4\uD328: " + query.error : "\uC120\uD0DD \uACB0\uACFC\uC640 \uBD84\uC11D \uC790\uB8CC\uC758 \uC6D0\uBCF8 \uC77C\uCE58\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC \uC870\uD68C\uD558\uC138\uC694." }), denied.map((payload, index2) => /* @__PURE__ */ React.createElement(FeatureQualityNotice, { key: index2, payload, title: "\uB9E4\uC218 \uD574\uBD80 \uBCF4\uB958" })), !blocked && !query.loading && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "tp-entry-layout" }, /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "\uBCC0\uC218 \uC804\uC218 \uAC00\uC6A9\uC131"), /* @__PURE__ */ React.createElement("div", { className: "tp-entry-variable-list" }, allB.map((row) => /* @__PURE__ */ React.createElement("span", { key: row.name, className: row.status }, /* @__PURE__ */ React.createElement("code", null, row.name), /* @__PURE__ */ React.createElement("b", null, row.status))))), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement("h4", null, "\uC2B9/\uD328 \uBCC0\uBCC4 \uC0C1\uC704 \xB7 Cohen d"), /* @__PURE__ */ React.createElement("div", { className: "tp-entry-effect-list" }, effects.length ? effects.map((row) => /* @__PURE__ */ React.createElement("article", { key: row.feature }, /* @__PURE__ */ React.createElement("code", null, row.feature), /* @__PURE__ */ React.createElement("b", null, _tpeaNum(row.d, 3)), /* @__PURE__ */ React.createElement("span", null, "\uC2B9 ", _tpeaNum(row.win_mean), " \xB7 \uD328 ", _tpeaNum(row.loss_mean), " \xB7 n=", row.n))) : /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uD45C\uBCF8 \uB610\uB294 \uBCC0\uBCC4 \uBCC0\uC218\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.")))), /* @__PURE__ */ React.createElement("section", { className: "tp-loss-regions" }, /* @__PURE__ */ React.createElement("h4", null, "\uC190\uC2E4 \uC9D1\uC911 \uAD6C\uAC04 \xB7 \uC790\uB3D9 \uC81C\uAC70\uAC00 \uC544\uB2CC \uAC00\uC124 \uD6C4\uBCF4"), /* @__PURE__ */ React.createElement("div", null, lossRegions.length ? lossRegions.map((row, index2) => /* @__PURE__ */ React.createElement("article", { key: `${row.feature}-${row.bin}` }, /* @__PURE__ */ React.createElement("strong", null, "#", index2 + 1), /* @__PURE__ */ React.createElement("code", null, row.feature), /* @__PURE__ */ React.createElement("span", null, row.bin), /* @__PURE__ */ React.createElement("b", { className: "neg" }, _tpeaNum(row.pnl, 0), "\uC6D0"), /* @__PURE__ */ React.createElement("small", null, "n=", row.n))) : /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC190\uC2E4 \uAD6C\uAC04 \uACC4\uC0B0 \uACB0\uACFC\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.")))));
   }
   Object.assign(window, { BtEntryAutopsy });
 
@@ -40990,7 +41032,7 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
     return Number(value || 0).toLocaleString() + "\uC6D0";
   }
   function BtTradePathTab({ baseUrl, onNavigate }) {
-    var _a, _b;
+    var _a, _b, _c;
     const [jobs, setJobs] = useState_tpt([]), [jobId, setJobId] = useState_tpt("");
     const [preflight, setPreflight] = useState_tpt(null), [analysis, setAnalysis] = useState_tpt(null);
     const [cohorts, setCohorts] = useState_tpt([]), [trades, setTrades] = useState_tpt([]);
@@ -41200,10 +41242,10 @@ ${autopsy.exit_summary || "(\uCCAD\uC0B0 \uBD80\uAC80 \uC5C6\uC74C)"}`), cf && c
       setInspecting(false);
       setBoundaryTime(event.target.value.replace(/\D/g, "").slice(0, 6));
       setPreflight(null);
-    } })), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: inspect, disabled: !jobId || inspecting }, "\uC0AC\uC804 \uC810\uAC80"), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: start2, disabled: !jobId || !(preflight == null ? void 0 : preflight.available) || !(contractEnvelope == null ? void 0 : contractEnvelope.analysis_ready) || inspecting || running }, "\uACBD\uB85C \uBD84\uC11D \uC2DC\uC791"), running && /* @__PURE__ */ React.createElement("button", { className: "btn danger sm", onClick: () => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" }).catch((reason) => setError(_tpKo(String(reason.message || reason)))) }, "\uCDE8\uC18C")), /* @__PURE__ */ React.createElement(BtCsvQuality, { envelope: contractEnvelope, pending: inspecting }), preflight && /* @__PURE__ */ React.createElement("div", { className: `tp-preflight ${preflight.available ? "ready" : "blocked"}` }, /* @__PURE__ */ React.createElement("b", null, preflight.available ? "\uACBD\uB85C \uC790\uB8CC \uC810\uAC80 \uD1B5\uACFC" : "\uACBD\uB85C \uC790\uB8CC \uC810\uAC80 \uBBF8\uCDA9\uC871"), /* @__PURE__ */ React.createElement("span", null, preflight.available ? `\uAC70\uB798 ${preflight.trade_count} \xB7 \uB0A0\uC9DC ${preflight.covered_date_count}/${preflight.date_count} \xB7 ${preflight.source.timeframe}` : `${_tpKo(preflight.reason)}${preflight.exit_after_boundary_count ? ` \xB7 \uACBD\uACC4 \uB4A4 \uC2E4\uC81C \uB9E4\uB3C4 ${preflight.exit_after_boundary_count}\uAC74` : ""}`), (preflight.uncovered_dates || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "tp-uncovered" }, "\u26A0 \uB370\uC774\uD130 \uC5C6\uB294 \uB0A0\uC9DC ", preflight.date_count - preflight.covered_date_count, "\uC77C: ", preflight.uncovered_dates.slice(0, 6).join(", "), preflight.uncovered_dates.length > 6 ? " \u2026" : ""), /* @__PURE__ */ React.createElement("small", null, "\uC804\uCCB4\uCCAD\uC0B0 ", String(preflight.forced_liquidation_time || "").padStart(6, "0"), " \xB7 ", preflight.boundary_source || "\uBBF8\uD655\uC778", " \xB7 \uC804\uCCB4\uCCAD\uC0B0 \uC774\uD6C4 \uB370\uC774\uD130\uB294 \uC874\uC7AC\uD574\uB3C4 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC74C")), dataContract && /* @__PURE__ */ React.createElement("nav", { className: "tp-view-tabs", "aria-label": "\uD1B5\uD569 \uBC31\uD14C\uC2A4\uD2B8 \uC5F0\uAD6C \uB2E8\uACC4" }, pageTabs.map(([key, label]) => /* @__PURE__ */ React.createElement("button", { key, className: activeView === key ? "active" : "", onClick: () => setActiveView(key) }, label))), dataContract && _tpNextHint(activeView) && /* @__PURE__ */ React.createElement("div", { className: "tp-next-hint" }, _tpNextHint(activeView)), dataContract && activeView === "data" && /* @__PURE__ */ React.createElement("div", { "aria-label": "\uB370\uC774\uD130 \uACC4\uC57D" }, /* @__PURE__ */ React.createElement(BtDataContract, { contract: dataContract })), dataContract && activeView === "entry" && /* @__PURE__ */ React.createElement(BtEntryAutopsy, { baseUrl, jobId, contract: dataContract }), dataContract && activeView === "split" && /* @__PURE__ */ React.createElement(BtSplitDiagnostics, { baseUrl, jobId, lane }), dataContract && activeView === "loss" && /* @__PURE__ */ React.createElement(BtLossProfile, { baseUrl, jobId, lane }), dataContract && activeView === "pockets" && /* @__PURE__ */ React.createElement(BtLossPockets, { baseUrl, jobId, lane }), dataContract && activeView === "removal" && /* @__PURE__ */ React.createElement(BtRemovalSim, { baseUrl, jobId, lane }), running && /* @__PURE__ */ React.createElement("div", { className: "tp-progress", role: "progressbar", "aria-valuenow": Math.round((analysis.progress || 0) * 100) }, /* @__PURE__ */ React.createElement("i", { style: { width: `${Math.round((analysis.progress || 0) * 100)}%` } }), /* @__PURE__ */ React.createElement("span", null, analysis.processed || 0, "/", analysis.total || "?", " \xB7 ", Math.round((analysis.progress || 0) * 100), "%")), error && /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, error), totals && /* @__PURE__ */ React.createElement(React.Fragment, null, activeView === "summary" && /* @__PURE__ */ React.createElement("div", { className: "tp-summary" }, /* @__PURE__ */ React.createElement("div", { className: "tp-summary-actions" }, /* @__PURE__ */ React.createElement("span", { className: "tp-authority diagnostic" }, "\uC9C4\uB2E8"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => window.open(baseUrl + "/bt/trade-path/report?analysis_id=" + encodeURIComponent(analysisId), "_blank", "noopener") }, "\uC9C4\uB2E8 \uBCF4\uACE0\uC11C \uC5F4\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "tp-auto-summary" }, cohorts.slice(0, 4).map((row) => /* @__PURE__ */ React.createElement("small", { key: row.key }, "\u2022 ", row.key, " ", row.count, "\uAC74\uC5D0\uC11C ", _tpMoney(row.actual_profit_krw), " \uC2E4\uD604 \xB7 \uACBD\uACC4 \uC804 \uD68C\uBCF5 \uAD00\uCE21 ", row.recovered_count, "\uAC74 \u2014 \uAD00\uCC30 \uACB0\uACFC\uC774\uBA70 \uC774 \uC870\uAC74\uC744 \uC81C\uAC70\uD55C \uD6A8\uACFC\uAC00 \uC544\uB2D9\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "tp-kpis" }, /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uBD84\uC11D \uAC70\uB798"), /* @__PURE__ */ React.createElement("b", null, totals.analyzed_count)), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uC81C\uC678"), /* @__PURE__ */ React.createElement("b", null, totals.excluded_count)), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uACBD\uACC4 \uC804 \uD68C\uBCF5"), /* @__PURE__ */ React.createElement("b", null, totals.recovered_count)), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uC2E4\uC81C \uC21C\uC190\uC775"), /* @__PURE__ */ React.createElement("b", null, _tpMoney(totals.actual_profit_krw)))), /* @__PURE__ */ React.createElement("div", { className: "tp-cohorts" }, cohorts.map((row) => /* @__PURE__ */ React.createElement("button", { key: row.key, onClick: () => {
+    } })), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: inspect, disabled: !jobId || inspecting }, "\uC0AC\uC804 \uC810\uAC80"), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: start2, disabled: !jobId || !(preflight == null ? void 0 : preflight.available) || !(contractEnvelope == null ? void 0 : contractEnvelope.analysis_ready) || inspecting || running }, "\uACBD\uB85C \uBD84\uC11D \uC2DC\uC791"), running && /* @__PURE__ */ React.createElement("button", { className: "btn danger sm", onClick: () => _tpFetch(baseUrl + `/bt/trade-path/jobs/${analysisId}/cancel`, { method: "POST" }).catch((reason) => setError(_tpKo(String(reason.message || reason)))) }, "\uCDE8\uC18C")), /* @__PURE__ */ React.createElement(BtCsvQuality, { envelope: contractEnvelope, pending: inspecting }), preflight && /* @__PURE__ */ React.createElement("div", { className: `tp-preflight ${preflight.available ? "ready" : "blocked"}` }, /* @__PURE__ */ React.createElement("b", null, preflight.available ? "\uACBD\uB85C \uC790\uB8CC \uC810\uAC80 \uD1B5\uACFC" : "\uACBD\uB85C \uC790\uB8CC \uC810\uAC80 \uBBF8\uCDA9\uC871"), /* @__PURE__ */ React.createElement("span", null, preflight.available ? `\uAC70\uB798 ${preflight.trade_count} \xB7 \uB0A0\uC9DC ${preflight.covered_date_count}/${preflight.date_count} \xB7 ${preflight.source.timeframe}` : `${_tpKo(preflight.reason)}${preflight.exit_after_boundary_count ? ` \xB7 \uACBD\uACC4 \uB4A4 \uC2E4\uC81C \uB9E4\uB3C4 ${preflight.exit_after_boundary_count}\uAC74` : ""}`), (preflight.uncovered_dates || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "tp-uncovered" }, "\u26A0 \uB370\uC774\uD130 \uC5C6\uB294 \uB0A0\uC9DC ", preflight.date_count - preflight.covered_date_count, "\uC77C: ", preflight.uncovered_dates.slice(0, 6).join(", "), preflight.uncovered_dates.length > 6 ? " \u2026" : ""), /* @__PURE__ */ React.createElement("small", null, "\uC804\uCCB4\uCCAD\uC0B0 ", String(preflight.forced_liquidation_time || "").padStart(6, "0"), " \xB7 ", preflight.boundary_source || "\uBBF8\uD655\uC778", " \xB7 \uC804\uCCB4\uCCAD\uC0B0 \uC774\uD6C4 \uB370\uC774\uD130\uB294 \uC874\uC7AC\uD574\uB3C4 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC74C")), dataContract && /* @__PURE__ */ React.createElement("nav", { className: "tp-view-tabs", "aria-label": "\uD1B5\uD569 \uBC31\uD14C\uC2A4\uD2B8 \uC5F0\uAD6C \uB2E8\uACC4" }, pageTabs.map(([key, label]) => /* @__PURE__ */ React.createElement("button", { key, className: activeView === key ? "active" : "", onClick: () => setActiveView(key) }, label))), dataContract && _tpNextHint(activeView) && /* @__PURE__ */ React.createElement("div", { className: "tp-next-hint" }, _tpNextHint(activeView)), dataContract && activeView === "data" && /* @__PURE__ */ React.createElement("div", { "aria-label": "\uB370\uC774\uD130 \uACC4\uC57D" }, /* @__PURE__ */ React.createElement(BtDataContract, { contract: dataContract })), dataContract && activeView === "entry" && /* @__PURE__ */ React.createElement(BtEntryAutopsy, { baseUrl, jobId, contract: dataContract, sourceHash: (_a = contractEnvelope == null ? void 0 : contractEnvelope.data_quality) == null ? void 0 : _a.source_sha256 }), dataContract && activeView === "split" && /* @__PURE__ */ React.createElement(BtSplitDiagnostics, { baseUrl, jobId, lane }), dataContract && activeView === "loss" && /* @__PURE__ */ React.createElement(BtLossProfile, { baseUrl, jobId, lane }), dataContract && activeView === "pockets" && /* @__PURE__ */ React.createElement(BtLossPockets, { baseUrl, jobId, lane }), dataContract && activeView === "removal" && /* @__PURE__ */ React.createElement(BtRemovalSim, { baseUrl, jobId, lane }), running && /* @__PURE__ */ React.createElement("div", { className: "tp-progress", role: "progressbar", "aria-valuenow": Math.round((analysis.progress || 0) * 100) }, /* @__PURE__ */ React.createElement("i", { style: { width: `${Math.round((analysis.progress || 0) * 100)}%` } }), /* @__PURE__ */ React.createElement("span", null, analysis.processed || 0, "/", analysis.total || "?", " \xB7 ", Math.round((analysis.progress || 0) * 100), "%")), error && /* @__PURE__ */ React.createElement("p", { className: "tp-error", role: "alert" }, error), totals && /* @__PURE__ */ React.createElement(React.Fragment, null, activeView === "summary" && /* @__PURE__ */ React.createElement("div", { className: "tp-summary" }, /* @__PURE__ */ React.createElement("div", { className: "tp-summary-actions" }, /* @__PURE__ */ React.createElement("span", { className: "tp-authority diagnostic" }, "\uC9C4\uB2E8"), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => window.open(baseUrl + "/bt/trade-path/report?analysis_id=" + encodeURIComponent(analysisId), "_blank", "noopener") }, "\uC9C4\uB2E8 \uBCF4\uACE0\uC11C \uC5F4\uAE30")), /* @__PURE__ */ React.createElement("div", { className: "tp-auto-summary" }, cohorts.slice(0, 4).map((row) => /* @__PURE__ */ React.createElement("small", { key: row.key }, "\u2022 ", row.key, " ", row.count, "\uAC74\uC5D0\uC11C ", _tpMoney(row.actual_profit_krw), " \uC2E4\uD604 \xB7 \uACBD\uACC4 \uC804 \uD68C\uBCF5 \uAD00\uCE21 ", row.recovered_count, "\uAC74 \u2014 \uAD00\uCC30 \uACB0\uACFC\uC774\uBA70 \uC774 \uC870\uAC74\uC744 \uC81C\uAC70\uD55C \uD6A8\uACFC\uAC00 \uC544\uB2D9\uB2C8\uB2E4."))), /* @__PURE__ */ React.createElement("div", { className: "tp-kpis" }, /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uBD84\uC11D \uAC70\uB798"), /* @__PURE__ */ React.createElement("b", null, totals.analyzed_count)), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uC81C\uC678"), /* @__PURE__ */ React.createElement("b", null, totals.excluded_count)), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uACBD\uACC4 \uC804 \uD68C\uBCF5"), /* @__PURE__ */ React.createElement("b", null, totals.recovered_count)), /* @__PURE__ */ React.createElement("article", null, /* @__PURE__ */ React.createElement("small", null, "\uC2E4\uC81C \uC21C\uC190\uC775"), /* @__PURE__ */ React.createElement("b", null, _tpMoney(totals.actual_profit_krw)))), /* @__PURE__ */ React.createElement("div", { className: "tp-cohorts" }, cohorts.map((row) => /* @__PURE__ */ React.createElement("button", { key: row.key, onClick: () => {
       const hit = trades.find((trade) => trade.exit_reason === row.key);
       if (hit) openTrade(hit);
-    } }, /* @__PURE__ */ React.createElement("b", null, row.key), /* @__PURE__ */ React.createElement("span", null, row.count, "\uAC74 \xB7 \uD68C\uBCF5 ", row.recovered_count, " \xB7 ", _tpMoney(row.actual_profit_krw))))), /* @__PURE__ */ React.createElement("div", { className: "tp-trade-list" }, trades.slice(0, 30).map((row) => /* @__PURE__ */ React.createElement("button", { key: row.trade_key, onClick: () => openTrade(row) }, /* @__PURE__ */ React.createElement("span", null, row.name), /* @__PURE__ */ React.createElement("code", null, String(row.buy_time).slice(8), " \u2192 ", String(row.sell_time).slice(8)), /* @__PURE__ */ React.createElement("b", { className: row.actual_profit_krw >= 0 ? "pos" : "neg" }, _tpMoney(row.actual_profit_krw)))))), activeView === "path" && (detail ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(BtTradePathChart, { episode: detail }), /* @__PURE__ */ React.createElement("div", { className: "tp-path-actions" }, /* @__PURE__ */ React.createElement("span", { className: "tp-authority diagnostic" }, "\uC9C4\uB2E8"), /* @__PURE__ */ React.createElement("span", null, "\uAC00\uC0C1 horizon\uC740 \uC2E4\uC81C \uD2F1 \uC9C0\uC5F0\uACFC \uAC80\uC5F4 \uC0AC\uC720\uB97C \uD568\uAED8 \uBCF4\uC874\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: replay }, "\uC774 \uAC70\uB798\uB97C Replay\uC5D0\uC11C \uC5F4\uAE30"))) : /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC694\uC57D\uC5D0\uC11C \uAC70\uB798\uB97C \uC120\uD0DD\uD558\uC138\uC694.")), activeView === "sell-trace" && /* @__PURE__ */ React.createElement(BtSellDslTrace, { baseUrl, analysisId, episode: detail }), activeView === "counterfactual" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(BtExitCounterfactual, { baseUrl, analysisId, onResult: setCf }), cf && /* @__PURE__ */ React.createElement("div", { className: "tp-cf-result" }, /* @__PURE__ */ React.createElement("b", null, "\uAC00\uC0C1 \uC21C\uC190\uC775 \uBCC0\uD654 ", _tpMoney(cf.total_delta_profit_krw)), /* @__PURE__ */ React.createElement("span", null, "\uD3C9\uAC00 ", ((_a = cf.outcomes) == null ? void 0 : _a.length) || 0, " \xB7 \uC81C\uC678 ", ((_b = cf.failures) == null ? void 0 : _b.length) || 0), (cf.transitions || []).map((row) => /* @__PURE__ */ React.createElement("small", { key: `${row.actual_reason}-${row.candidate_reason}` }, row.actual_reason, " \u2192 ", row.candidate_reason, ": ", row.count)))), activeView === "insight" && /* @__PURE__ */ React.createElement(BtRecoveryInsight, { baseUrl, analysisId }), activeView === "calibration" && /* @__PURE__ */ React.createElement(BtCalibration, { baseUrl, lane }), activeView === "proposals" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: generateProposals }, "\uADFC\uAC70 \uAE30\uBC18 \uD6C4\uBCF4 \uC0DD\uC131"), /* @__PURE__ */ React.createElement(BtConditionProposals, { proposals })), activeView === "buy-filters" && /* @__PURE__ */ React.createElement(BtBuyFilters, { baseUrl, analysisId, payload: buyFilters, onPayload: setBuyFilters, selectedId: selectedFilter && selectedFilter.proposal_id, onSelect: (row) => {
+    } }, /* @__PURE__ */ React.createElement("b", null, row.key), /* @__PURE__ */ React.createElement("span", null, row.count, "\uAC74 \xB7 \uD68C\uBCF5 ", row.recovered_count, " \xB7 ", _tpMoney(row.actual_profit_krw))))), /* @__PURE__ */ React.createElement("div", { className: "tp-trade-list" }, trades.slice(0, 30).map((row) => /* @__PURE__ */ React.createElement("button", { key: row.trade_key, onClick: () => openTrade(row) }, /* @__PURE__ */ React.createElement("span", null, row.name), /* @__PURE__ */ React.createElement("code", null, String(row.buy_time).slice(8), " \u2192 ", String(row.sell_time).slice(8)), /* @__PURE__ */ React.createElement("b", { className: row.actual_profit_krw >= 0 ? "pos" : "neg" }, _tpMoney(row.actual_profit_krw)))))), activeView === "path" && (detail ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(BtTradePathChart, { episode: detail }), /* @__PURE__ */ React.createElement("div", { className: "tp-path-actions" }, /* @__PURE__ */ React.createElement("span", { className: "tp-authority diagnostic" }, "\uC9C4\uB2E8"), /* @__PURE__ */ React.createElement("span", null, "\uAC00\uC0C1 horizon\uC740 \uC2E4\uC81C \uD2F1 \uC9C0\uC5F0\uACFC \uAC80\uC5F4 \uC0AC\uC720\uB97C \uD568\uAED8 \uBCF4\uC874\uD569\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: replay }, "\uC774 \uAC70\uB798\uB97C Replay\uC5D0\uC11C \uC5F4\uAE30"))) : /* @__PURE__ */ React.createElement("div", { className: "tp-empty" }, "\uC694\uC57D\uC5D0\uC11C \uAC70\uB798\uB97C \uC120\uD0DD\uD558\uC138\uC694.")), activeView === "sell-trace" && /* @__PURE__ */ React.createElement(BtSellDslTrace, { baseUrl, analysisId, episode: detail }), activeView === "counterfactual" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(BtExitCounterfactual, { baseUrl, analysisId, onResult: setCf }), cf && /* @__PURE__ */ React.createElement("div", { className: "tp-cf-result" }, /* @__PURE__ */ React.createElement("b", null, "\uAC00\uC0C1 \uC21C\uC190\uC775 \uBCC0\uD654 ", _tpMoney(cf.total_delta_profit_krw)), /* @__PURE__ */ React.createElement("span", null, "\uD3C9\uAC00 ", ((_b = cf.outcomes) == null ? void 0 : _b.length) || 0, " \xB7 \uC81C\uC678 ", ((_c = cf.failures) == null ? void 0 : _c.length) || 0), (cf.transitions || []).map((row) => /* @__PURE__ */ React.createElement("small", { key: `${row.actual_reason}-${row.candidate_reason}` }, row.actual_reason, " \u2192 ", row.candidate_reason, ": ", row.count)))), activeView === "insight" && /* @__PURE__ */ React.createElement(BtRecoveryInsight, { baseUrl, analysisId }), activeView === "calibration" && /* @__PURE__ */ React.createElement(BtCalibration, { baseUrl, lane }), activeView === "proposals" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("button", { className: "btn primary sm", onClick: generateProposals }, "\uADFC\uAC70 \uAE30\uBC18 \uD6C4\uBCF4 \uC0DD\uC131"), /* @__PURE__ */ React.createElement(BtConditionProposals, { proposals })), activeView === "buy-filters" && /* @__PURE__ */ React.createElement(BtBuyFilters, { baseUrl, analysisId, payload: buyFilters, onPayload: setBuyFilters, selectedId: selectedFilter && selectedFilter.proposal_id, onSelect: (row) => {
       setSelectedFilter(row);
       setActiveView("console");
     } }), activeView === "console" && /* @__PURE__ */ React.createElement("div", null, axis2 === "sell" && proposalRows.length > 0 && /* @__PURE__ */ React.createElement("label", { className: "tp-cc-picker" }, "\uC2E4\uD589\uD560 \uD6C4\uBCF4", /* @__PURE__ */ React.createElement("select", { value: selectedProposalId, onChange: (event) => setSelectedProposalId(event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\uD6C4\uBCF4 \uC120\uD0DD"), proposalRows.map((row) => /* @__PURE__ */ React.createElement("option", { key: row.proposal_id, value: row.proposal_id }, row.family, " \xB7 ", row.title)))), axis2 === "buy" && /* @__PURE__ */ React.createElement("div", { className: "tp-cc-picker mono" }, selectedFilter ? `\uC120\uD0DD\uB41C \uB9E4\uC218 \uD544\uD130: ${selectedFilter.title} \xB7 \uAE30\uB300 \uC9C4\uC785 \uC720\uC9C0\uC728 ${(Number(selectedFilter.expected_retention) * 100).toFixed(1)}%` : "\uB9E4\uC218 \uD544\uD130 \uD6C4\uBCF4 \uD654\uBA74\uC5D0\uC11C [\uC774 \uD544\uD130\uB85C \uC2E4\uD589 \uC900\uBE44]\uB97C \uB204\uB974\uC138\uC694."), /* @__PURE__ */ React.createElement(BtCandidateConsole, { baseUrl, lane, manifest: laneManifest, axis: axis2, proposal: axis2 === "buy" ? selectedFilter : selectedProposal })), activeView === "official" && /* @__PURE__ */ React.createElement(BtExitTransition, { baseUrl, jobs, baselineJobId: jobId }), activeView === "oos" && /* @__PURE__ */ React.createElement(BtOosGate, { baseUrl, jobs, baselineJobId: jobId, lane, axis: axis2, manifest: laneManifest })), activeView === "generations" && /* @__PURE__ */ React.createElement(BtGenerationCurve, { baseUrl, lane }), activeView === "ledger" && /* @__PURE__ */ React.createElement(BtLedgerBrowser, { baseUrl, lane })));

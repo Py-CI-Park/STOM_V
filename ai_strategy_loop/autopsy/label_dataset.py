@@ -33,6 +33,8 @@
 
 from __future__ import annotations
 
+from io import StringIO
+
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -112,6 +114,11 @@ def _safe_div(a: pd.Series, b: pd.Series) -> pd.Series:
     return a / b.where(b != 0)
 
 
+def numeric_series(df: pd.DataFrame, column: str) -> pd.Series:
+    """Public adapter seam preserving the existing numerical interpretation."""
+    return _num(df, column)
+
+
 @dataclass
 class LabelDataset:
     """enrich() 출력 — 라벨 행렬 + 변수 카탈로그."""
@@ -144,7 +151,7 @@ def enrich(df: pd.DataFrame) -> LabelDataset:
         derived.append(name)
 
     # ---- 파생(구 14컬럼만으로 가능한 것) ----
-    현재가, 등락율 = _num(out, "B_현재가"), _num(out, "B_등락율")
+    현재가, 등락율 = numeric_series(out, "B_현재가"), numeric_series(out, "B_등락율")
     매수잔, 매도잔 = _num(out, "B_매수총잔량"), _num(out, "B_매도총잔량")
     전일종가 = _safe_div(현재가, 1 + 등락율 / 100.0)
     put("D_전일종가", 전일종가)
@@ -249,7 +256,7 @@ def feature_discrimination(ds: LabelDataset) -> List[Dict[str, Any]]:
     return out
 
 
-def load_csv(csv_path: str) -> pd.DataFrame:
+def load_csv(csv_path: str | StringIO) -> pd.DataFrame:
     """거래 CSV 로드(utf-8-sig). 실패는 빈 DF(무예외)."""
     try:
         return pd.read_csv(csv_path, encoding="utf-8-sig")
