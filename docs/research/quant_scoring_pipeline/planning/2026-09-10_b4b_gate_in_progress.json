@@ -1,0 +1,28 @@
+{
+  "schema": "stom.integrated_gate_checkpoint.v1",
+  "scope": "SYS05.B4b",
+  "status": "RUNNING_NOT_PASS",
+  "tested_commit": "ff20815a17b0a569d47a10908eb11b2821cbc120",
+  "feature_commit": "6cb6e4e6aa3baad5dfbdeb56dc9c257a277968d2",
+  "worktree": "C:/System_Trading/STOM/STOM_V.wt-pipeline-integration",
+  "fast": {
+    "session_id": 2283,
+    "exit_code": null,
+    "log": "C:/Users/parkc/STOM_Verification/v1.5_20260910/b4b-integrated-fast.log"
+  },
+  "slow": {
+    "session_id": 22523,
+    "exit_code": null,
+    "log": "C:/Users/parkc/STOM_Verification/v1.5_20260910/b4b-integrated-slow.log"
+  },
+  "invocation": "python -m pytest tests/unit/ -m <not slow_suite|slow_suite> -q -p no:cacheprovider",
+  "environment": "PYTHONDONTWRITEBYTECODE=1; QT_QPA_PLATFORM=offscreen; default temp; no basetemp override",
+  "resume": "Collect both final outputs and exit codes before changing integration HEAD. Then record separate final receipt; this checkpoint is not a PASS receipt.",
+  "b5_branch": "codex/process-research-sys-05-multi-quality",
+  "b5_implementation_started": false,
+  "b5_plan_commit": "f1508c77cd0c051503940d46564c32ba63040944",
+  "retained_user_wip": "wt-dev 584 entries and tmap feedback preserved",
+  "research_executed": false,
+  "economic_success_verified": false,
+  "push_performed": false
+}
