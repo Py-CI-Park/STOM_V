@@ -197,7 +197,7 @@ function BtTradePathTab({ baseUrl, onNavigate }) {
       {dataContract && <nav className="tp-view-tabs" aria-label="통합 백테스트 연구 단계">{pageTabs.map(([key,label]) => <button key={key} className={activeView === key ? "active" : ""} onClick={() => setActiveView(key)}>{label}</button>)}</nav>}
       {dataContract && _tpNextHint(activeView) && <div className="tp-next-hint">{_tpNextHint(activeView)}</div>}
       {dataContract && activeView === "data" && <div aria-label="데이터 계약"><BtDataContract contract={dataContract}/></div>}
-      {dataContract && activeView === "entry" && <BtEntryAutopsy baseUrl={baseUrl} jobId={jobId} contract={dataContract}/>}
+      {dataContract && activeView === "entry" && <BtEntryAutopsy baseUrl={baseUrl} jobId={jobId} contract={dataContract} sourceHash={contractEnvelope?.data_quality?.source_sha256}/>}
       {dataContract && activeView === "split" && <BtSplitDiagnostics baseUrl={baseUrl} jobId={jobId} lane={lane}/>}
       {dataContract && activeView === "loss" && <BtLossProfile baseUrl={baseUrl} jobId={jobId} lane={lane}/>}
       {dataContract && activeView === "pockets" && <BtLossPockets baseUrl={baseUrl} jobId={jobId} lane={lane}/>}

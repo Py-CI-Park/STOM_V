@@ -35,6 +35,11 @@ def _numeric_features(df: pd.DataFrame) -> List[str]:
     return out
 
 
+def available_variables(df: pd.DataFrame) -> List[str]:
+    """Public adapter seam for the existing numeric B/D catalog."""
+    return _numeric_features(df)
+
+
 def _bin_series(s: pd.Series, bins: int) -> pd.Series:
     """분위 구간(범주형 유지 — NaN 은 NaN 키로 남아 groupby 에서 자동 제외.
 
@@ -85,7 +90,7 @@ def loss_regions(csv_path: str, *, bins: int = 5, top: int = 20,
         df = _load(csv_path)
     pnl = pd.to_numeric(df["수익금"], errors="coerce").fillna(0)
     rows: List[Dict[str, Any]] = []
-    for f in _numeric_features(df):
+    for f in available_variables(df):
         b = _bin_series(pd.to_numeric(df[f], errors="coerce"), bins)
         agg = pd.DataFrame({"pnl": pnl}).groupby(b, observed=True)["pnl"].agg(["sum", "size"])
         for interval, r in agg.iterrows():

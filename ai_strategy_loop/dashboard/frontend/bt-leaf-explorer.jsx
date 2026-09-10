@@ -9,7 +9,7 @@
  *   R0 반영: 평균과 중앙값·승률 병기(복권형 분포가 평균을 왜곡) — 셀은 중앙값 토글 지원.
  */
 import { useState_btc, useEffect_btc } from "./bt-chart-utils.jsx";
-import { _btFetchJson } from "./bt-tab-utils.jsx";
+import { useFeatureEvidence, FeatureQualityNotice } from "./bt-feature-evidence.jsx";
 import { MetricHelpStrip } from "./chart-primitives.jsx";
 
 const _LF_TIME_ORDER = [
@@ -30,39 +30,30 @@ function _lfCellColor(v) {
   return t >= 0 ? `rgba(76,214,179,${0.12 + 0.5 * t})` : `rgba(255,107,107,${0.12 + 0.5 * -t})`;
 }
 
-function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo }) {
-  const [data, setData] = useState_btc(null);
+const _lfNumber=(value,digits=2)=>Number.isFinite(value)?value.toFixed(digits):"—";
+const _lfWhole=value=>Number.isFinite(value)?Math.round(value).toLocaleString("ko-KR"):"—";
+
+function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo, sourceHash }) {
   const [metric, setMetric] = useState_btc("mean_pct");   // mean_pct | median_pct
   const [picked, setPicked] = useState_btc(null);          // "time×cap" | null
   // v5.13.4(P2) — 수정 제안(읽기 전용 미리보기): 버튼 클릭 시에만 계산(지연 로드).
-  const [props_, setProps_] = useState_btc(null);          // null=미요청 | {..응답..}
-  const [propsBusy, setPropsBusy] = useState_btc(false);
   const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
-
-  const loadProposals = () => {
-    if (!isEvo || propsBusy) return;
-    setPropsBusy(true);
-    _btFetchJson(baseUrl + "/bt/analysis/revision_proposals?run_id="
-                 + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no), 20000)
-      .then(j => setProps_(j || { available: false, reason: "응답 없음" }))
-      .catch(e => setProps_({ available: false, reason: String(e) }))
-      .finally(() => setPropsBusy(false));
-  };
-
-  useEffect_btc(() => {
-    setData(null); setPicked(null);
-    if (isDemo || !baseUrl || (!jobId && !isEvo)) return undefined;
-    const q = jobId
+  const q = jobId
       ? "job_id=" + encodeURIComponent(jobId)
-      : "run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no);
-    let cancelled = false;
-    _btFetchJson(baseUrl + "/bt/analysis/leaf_matrix?" + q, 15000)
-      .then(j => { if (!cancelled) setData(j && j.available ? j : { available: false }); })
-      .catch(() => { if (!cancelled) setData({ available: false }); });
-    return () => { cancelled = true; };
-  }, [baseUrl, isDemo, jobId, isEvo, isEvo ? evoSource.run_id : "", isEvo ? evoSource.gen_no : -1]);
+      : (isEvo ? "run_id=" + encodeURIComponent(evoSource.run_id) + "&gen_no=" + encodeURIComponent(evoSource.gen_no) : "");
+  const query=useFeatureEvidence({baseUrl,paths:["/bt/analysis/leaf_matrix?"+q],enabled:!isDemo&&!!q,expectedHash:sourceHash});
+  const data=query.payloads?.[0] || null;
+  const proposals=useFeatureEvidence({baseUrl,paths:["/bt/analysis/revision_proposals?"+q],
+    enabled:!isDemo&&isEvo&&!query.mismatch&&data?.analysis_ready!==false,automatic:false,timeoutMs:20000,
+    expectedHash:data?.data_quality?.source_sha256||sourceHash});
+  const props_=proposals.payloads?.[0] || null;
+  const propsBusy=proposals.loading;
+  const loadProposals=()=>{if(!propsBusy && data?.analysis_ready!==false) proposals.load();};
+  useEffect_btc(()=>{setPicked(null);},[query.key]);
 
   if (isDemo || (!jobId && !isEvo)) return null;
+  if(query.error || query.mismatch || data?.analysis_ready===false) return <FeatureQualityNotice payload={data} title="리프 분석 보류" reason={query.error||(query.mismatch?"선택한 결과와 분석 원본의 일치를 확인할 수 없습니다. 결과를 다시 조회하세요.":"")}/>;
+  const proposalMismatch=proposals.mismatch;
   const rows = (data && data.leaf_matrix) || [];
   const times = _LF_TIME_ORDER.filter(t => rows.some(r => r.leaf_time === t));
   const caps = _LF_CAP_ORDER.filter(c => rows.some(r => r.leaf_cap === c));
@@ -94,6 +85,7 @@ function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo }) {
       </div>
       <div className="panel-bd">
         <MetricHelpStrip items={[
+          "전체 결과 CSV 기준 · 선택 구간 필터 미적용",
           "행 = 시총단계 · 열 = 시간밴드 · 셀 = 수익률(색) + 표본·승률",
           "빨강이 짙을수록 손실 집중 — 조건식 조임(경계 수정)의 1순위 후보",
           "셀 클릭 = 그 리프의 대표 거래(최악 4·최고 4)와 좌표 확인",
@@ -116,11 +108,11 @@ function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo }) {
                       <button key={key} type="button"
                               className={"bt-leaf-cell mono" + (picked === key ? " picked" : "") + (r && !r.reliable ? " thin" : "")}
                               style={{ background: _lfCellColor(v) }}
-                              title={r ? `${key}\n평균 ${r.mean_pct.toFixed(3)}% · 중앙값 ${r.median_pct.toFixed(2)}% · 승률 ${r.win_rate.toFixed(1)}%\nn=${r.n}${r.reliable ? "" : " (표본 부족)"}` : "거래 없음"}
+                              title={r ? `${key}\n평균 ${_lfNumber(r.mean_pct,3)}% · 중앙값 ${_lfNumber(r.median_pct)}% · 승률 ${_lfNumber(r.win_rate,1)}%\nn=${r.n}${r.reliable ? "" : " (표본 부족)"}` : "거래 없음"}
                               onClick={() => setPicked(picked === key ? null : key)}>
                         {r ? <>
-                          <b>{v.toFixed(2)}%</b>
-                          <small>n={r.n} · 승 {Math.round(r.win_rate)}%</small>
+                          <b>{_lfNumber(v)}%</b>
+                          <small>n={r.n} · 승 {_lfWhole(r.win_rate)}%</small>
                         </> : <small>—</small>}
                       </button>
                     );
@@ -132,8 +124,8 @@ function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo }) {
               <div className="bt-leaf-detail" role="region" aria-label={"리프 상세 " + picked}>
                 <div className="bt-leaf-detail-hd mono">
                   <b>{picked}</b>
-                  <span>n={pickedRow.n} · 평균 {pickedRow.mean_pct.toFixed(3)}% · 중앙값 {pickedRow.median_pct.toFixed(2)}% ·
-                    승률 {pickedRow.win_rate.toFixed(1)}% · 합계 {Math.round(pickedRow.total_krw).toLocaleString("ko-KR")}원
+                  <span>n={pickedRow.n} · 평균 {_lfNumber(pickedRow.mean_pct,3)}% · 중앙값 {_lfNumber(pickedRow.median_pct)}% ·
+                    승률 {_lfNumber(pickedRow.win_rate,1)}% · 합계 {_lfWhole(pickedRow.total_krw)}원
                     {pickedRow.reliable ? "" : " · ⚠ 표본 부족(수정 근거로 쓰지 말 것)"}</span>
                 </div>
                 {samples.length > 0 && (
@@ -143,7 +135,7 @@ function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo }) {
                       {samples.map((s, i) => (
                         <tr key={i} className={s.pct >= 0 ? "pos" : "neg"}>
                           <td>{s.name}</td><td>{s.buy_time}</td>
-                          <td>{s.pct.toFixed(2)}%</td><td>{Math.round(s.krw).toLocaleString("ko-KR")}</td>
+                          <td>{_lfNumber(s.pct)}%</td><td>{_lfWhole(s.krw)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -160,23 +152,24 @@ function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo }) {
                     {propsBusy ? "생성 중…" : (props_ ? "↻ 다시 생성" : "제안 생성")}
                   </button>
                 </div>
-                {props_ && !props_.available && <p className="v54-quant-note">{props_.reason}</p>}
+                {(proposals.error || props_?.analysis_ready===false || proposalMismatch) && <FeatureQualityNotice payload={props_} title="수정 제안 보류" reason={proposals.error || (proposalMismatch?"리프 표와 제안의 원본 일치를 확인할 수 없습니다. 결과를 다시 조회하세요.":"")}/>}
+                {props_ && props_.analysis_ready!==false && !props_.available && <p className="v54-quant-note">{props_.reason}</p>}
                 {props_ && props_.available && (props_.proposals || []).length === 0 && (
                   <p className="v54-quant-note">{props_.reason}</p>
                 )}
-                {props_ && (props_.proposals || []).map((p, i) => (
+                {props_ && props_.analysis_ready!==false && !proposalMismatch && (props_.proposals || []).map((p, i) => (
                   <div key={i} className="bt-leaf-prop mono">
                     <div className="bt-leaf-prop-title">
                       <span className={"badge " + ((p.gate && p.gate.ok) ? "done" : "warn")}
                             title="의도-일치 게이트: 골격 불변 · 명세 외 변경 0 · preflight">
-                        {(p.gate && p.gate.ok) ? "게이트 PASS" : "게이트 FAIL"}
+                        {(p.gate && p.gate.ok) ? "의도 일치 PASS" : "의도 일치 FAIL"}
                       </span>
                       <b>{p.spec.change}</b>
                     </div>
                     <div className="bt-leaf-prop-ev">
-                      근거: n={p.spec.evidence.n} · 중앙값 {p.spec.evidence.median_pct.toFixed(2)}%
-                      (전체 대비 {p.spec.evidence.vs_overall_median.toFixed(2)}%p) ·
-                      d={p.spec.evidence.cohen_d.toFixed(2)} · 승자분위 경계 {Number(p.spec.evidence.win_quantile_bound).toPrecision(3)}
+                      근거: n={p.spec.evidence.n} · 중앙값 {_lfNumber(p.spec.evidence.median_pct)}%
+                      (전체 대비 {_lfNumber(p.spec.evidence.vs_overall_median)}%p) ·
+                      d={_lfNumber(p.spec.evidence.cohen_d)} · 승자분위 경계 {Number.isFinite(p.spec.evidence.win_quantile_bound)?p.spec.evidence.win_quantile_bound.toPrecision(3):"—"}
                     </div>
                     {(p.diff_preview || []).map((d, k) => (
                       <div key={k} className="bt-leaf-prop-diff">
@@ -186,7 +179,7 @@ function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo }) {
                     ))}
                   </div>
                 ))}
-                <p className="v54-quant-note">적용·재백테는 라운드 러너(P3)가 수행합니다 — 이 화면은 근거 검토 전용.</p>
+                <p className="v54-quant-note">이 화면은 메모리 미리보기만 제공합니다. 의도 일치 검사는 경제적 검증·채택 승인이 아닙니다.</p>
               </div>
             )}
             {feats.length > 0 && (
@@ -194,11 +187,11 @@ function BtLeafExplorer({ baseUrl, jobId, evoSource, isDemo }) {
                 <b className="mono">변별 상위 변수 (승·패 Cohen&apos;s d)</b>
                 <div className="bt-leaf-feat-bars">
                   {feats.slice(0, 8).map(f => (
-                    <div key={f.feature} className="bt-leaf-feat mono" title={`승 평균 ${f.win_mean.toFixed(4)} / 패 평균 ${f.loss_mean.toFixed(4)} · n=${f.n}`}>
+                    <div key={f.feature} className="bt-leaf-feat mono" title={`승 평균 ${_lfNumber(f.win_mean,4)} / 패 평균 ${_lfNumber(f.loss_mean,4)} · n=${f.n}`}>
                       <span className="k">{f.feature}</span>
                       <span className="bar"><i className={f.d >= 0 ? "pos" : "neg"}
                         style={{ width: Math.min(100, Math.abs(f.d) * 220) + "%" }}></i></span>
-                      <span className="v">{f.d >= 0 ? "+" : ""}{f.d.toFixed(3)}</span>
+                      <span className="v">{Number.isFinite(f.d)&&f.d >= 0 ? "+" : ""}{_lfNumber(f.d,3)}</span>
                     </div>
                   ))}
                 </div>

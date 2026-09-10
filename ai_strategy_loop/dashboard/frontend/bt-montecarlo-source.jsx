@@ -34,9 +34,9 @@ function useMonteCarloSource({baseUrl, jobId, evoSource, range, result, enabled}
     _btFetchJson(url, 12000, controller.signal).then(envelope => {
       if (!active()) return;
       const actualHash = envelope?.data_quality?.source_sha256;
-      const mismatch = expectedHash && actualHash && expectedHash !== actualHash;
+      const mismatch = expectedHash && envelope?.analysis_ready !== false && expectedHash !== actualHash;
       setState({key, loading:false, envelope: mismatch ? {...envelope, display_ready:false,
-        display_reason:"결과 화면과 몬테카를로의 원본 CSV가 다릅니다. 결과를 다시 조회하세요."} : envelope});
+        display_reason:"결과 화면과 몬테카를로의 원본 CSV 일치를 확인할 수 없습니다. 결과를 다시 조회하세요."} : envelope});
     }).catch(() => {
       if (active()) setState({key, loading:false, envelope:{analysis_ready:false,
         display_reason:"몬테카를로 응답을 확인할 수 없습니다. 다시 시도하세요."}});

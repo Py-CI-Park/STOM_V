@@ -9,7 +9,7 @@
  *   색: 손익 다이버징(손실 red ↔ 이익 teal, 0 중점) — 셀에 수치 병기(색 단독 금지).
  */
 import { useState_btc, useEffect_btc } from "./bt-chart-utils.jsx";
-import { _btFetchJson } from "./bt-tab-utils.jsx";
+import { useFeatureEvidence, FeatureQualityNotice } from "./bt-feature-evidence.jsx";
 
 const _FM_METRICS = [
   ["pnl", "손익 합"], ["mean_ret", "평균수익률"], ["win_rate", "승률"], ["n", "거래수"],
@@ -33,42 +33,35 @@ function _fmFmt(metric, v) {
   return String(v);
 }
 
-function BtFeatureMap({ baseUrl, jobId, evoSource, isDemo }) {
-  const [vars_, setVars_] = useState_btc([]);
+function BtFeatureMap({ baseUrl, jobId, evoSource, isDemo, sourceHash }) {
+  const [catalog, setCatalog] = useState_btc({key:"",variables:[]});
   const [x, setX] = useState_btc("");
   const [y, setY] = useState_btc("");
   const [metric, setMetric] = useState_btc("pnl");
   const [bins, setBins] = useState_btc(5);
   const [view, setView] = useState_btc("map");        // map | regions
-  const [data, setData] = useState_btc(null);
-  const [regions, setRegions] = useState_btc(null);
   const isEvo = !jobId && !!(evoSource && evoSource.run_id && evoSource.gen_no != null);
   const srcQs = jobId
     ? `job_id=${encodeURIComponent(jobId)}`
     : (isEvo ? `run_id=${encodeURIComponent(evoSource.run_id)}&gen_no=${evoSource.gen_no}` : "");
 
-  useEffect_btc(() => {
-    if (isDemo || !srcQs) { setData(null); setRegions(null); return; }
-    let alive = true;
-    if (view === "regions") {
-      _btFetchJson(`${baseUrl}/bt/analysis/feature_map?${srcQs}&mode=regions&bins=${bins}&top=20`)
-        .then((j) => { if (alive) { setRegions(j); setVars_((j && j.variables) || []); } })
-        .catch(() => { if (alive) setRegions(null); });
-    } else {
-      const qx = x || "B_등락율";
-      _btFetchJson(`${baseUrl}/bt/analysis/feature_map?${srcQs}&x=${encodeURIComponent(qx)}`
-        + (y ? `&y=${encodeURIComponent(y)}` : "") + `&bins=${bins}`)
-        .then((j) => {
-          if (!alive) return;
-          setData(j);
-          const vs = (j && j.variables) || [];
-          setVars_(vs);
-          if (!x && vs.length) setX(vs.includes("B_등락율") ? "B_등락율" : vs[0]);
-        })
-        .catch(() => { if (alive) setData(null); });
-    }
-    return () => { alive = false; };
-  }, [srcQs, x, y, bins, view, isDemo]);
+  const sourceKey=JSON.stringify([baseUrl,srcQs,!!isDemo,sourceHash]);
+  const path=view==="regions" ? `/bt/analysis/feature_map?${srcQs}&mode=regions&bins=${bins}&top=20`
+    : `/bt/analysis/feature_map?${srcQs}&x=${encodeURIComponent(x)}`+(y?`&y=${encodeURIComponent(y)}`:"")+`&bins=${bins}`;
+  const query=useFeatureEvidence({baseUrl,paths:[path],enabled:!isDemo&&!!srcQs&&!!baseUrl,expectedHash:sourceHash});
+  const payload=query.payloads?.[0]||null;
+  const vars_=catalog.key===sourceKey?catalog.variables:[];
+  useEffect_btc(()=>{setX("");setY("");setCatalog({key:sourceKey,variables:[]});},[sourceKey]);
+  useEffect_btc(()=>{
+    if(!payload || !Array.isArray(payload.variables)) return;
+    const vs=payload.variables;
+    setCatalog({key:sourceKey,variables:vs});
+    if(vs.length && (!x || !vs.includes(x))) setX(vs.includes("B_등락율")?"B_등락율":vs[0]);
+    if(y && !vs.includes(y)) setY("");
+  },[payload,sourceKey,x,y]);
+  const blocked=query.error || query.mismatch || payload?.analysis_ready===false;
+  const data=!blocked && view==="map"?payload:null;
+  const regions=!blocked && view==="regions"?payload:null;
 
   const grid = data && data.grid;
   const cells = (grid && grid.cells) || [];
@@ -97,7 +90,10 @@ function BtFeatureMap({ baseUrl, jobId, evoSource, isDemo }) {
         </div>
       </div>
       <div className="panel-bd">
-        {view === "map" && (
+        <p className="bt-fm-help">전체 결과 CSV 기준 · 선택 구간 필터 미적용</p>
+        {blocked && <FeatureQualityNotice payload={payload} title="피처 맵 보류" reason={query.error||(query.mismatch?"선택한 결과와 분석 원본의 일치를 확인할 수 없습니다. 결과를 다시 조회하세요.":"")}/>}
+        {query.loading && <p role="status">피처 자료를 확인하고 있습니다…</p>}
+        {!blocked && view === "map" && (
           <div>
             <div className="bt-fm-controls">
               {sel(x, setX, varOpts(false), "X축")}
@@ -106,7 +102,7 @@ function BtFeatureMap({ baseUrl, jobId, evoSource, isDemo }) {
               {sel(String(bins), (v) => setBins(parseInt(v, 10)), [3, 4, 5, 8, 10].map((b) => <option key={b} value={b}>{b}구간</option>), "구간")}
             </div>
             {!cells.length ? (
-              <div className="research-empty">{isDemo ? "데모에선 미지원" : "데이터 없음 — 결과 로드 후 변수를 선택하세요"}</div>
+              <div className="research-empty">{isDemo ? "데모에선 미지원" : query.loading ? "피처 자료를 확인하고 있습니다…" : data?.analysis_ready===true ? (vars_.length?"선택한 변수의 집계 가능한 구간이 없습니다.":"표본·분산 요건을 충족하는 진입 변수가 없습니다."):"분석 자료를 선택하고 변수를 확인하세요."}</div>
             ) : (
               <div className="bt-fm-scroll">
                 <table className="bt-fm-grid">
@@ -137,10 +133,10 @@ function BtFeatureMap({ baseUrl, jobId, evoSource, isDemo }) {
             )}
           </div>
         )}
-        {view === "regions" && (
+        {!blocked && view === "regions" && (
           <div>
             {!(regions && regions.regions && regions.regions.length) ? (
-              <div className="research-empty">손실 영역 없음 또는 데이터 미로드</div>
+              <div className="research-empty">{query.loading?"손실 구간을 확인하고 있습니다…":regions?.analysis_ready===true?"현재 자료와 조건에서 산출된 손실 구간이 없습니다.":"분석 자료를 확인하세요."}</div>
             ) : (
               <table className="bt-fm-rank">
                 <thead><tr><th>#</th><th>변수</th><th>구간</th><th>거래</th><th>손익 합</th></tr></thead>

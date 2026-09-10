@@ -32,6 +32,7 @@ from ai_strategy_loop.dashboard import backtest_report as report
 from ai_strategy_loop.dashboard.backtest_jobs import BacktestJobSpec, get_job_manager
 from ai_strategy_loop.dashboard.individual_analysis import DEFAULT_MC, IndividualResult, MonteCarloOptions, Operation, individual_result
 from ai_strategy_loop.dashboard.individual_source import AnalysisOwners, SourceRecord, inspect_individual_source
+from ai_strategy_loop.dashboard.feature_context import FeatureContext
 from ai_strategy_loop.dashboard.security import Capability, close_websocket_failure
 
 # 라이브 잡 WS push 간격(초)·로그 테일 줄 수.
@@ -1496,24 +1497,31 @@ def get_result(
     }, record)
 
 
-def _individual_result(
-    operation: Operation, job_id: str, t_start: int | None, t_end: int | None,
-    run_id: str = "", gen_no: int | None = None,
-    mc: MonteCarloOptions = DEFAULT_MC,
-) -> IndividualResult:
+def _analysis_owners() -> AnalysisOwners:
     """Late-bound legacy owners keep path guards and test seams intact."""
     def generation(run: str, gen: int) -> SourceRecord | None:
         row = _gen_row_readonly(run, gen)
         return SourceRecord.model_validate(row) if row is not None else None
 
-    owners = AnalysisOwners(
+    return AnalysisOwners(
         lambda job: SourceRecord.model_validate(get_job_manager().get(job, log_tail=0)),
         generation,
         lambda record: _resolved_record_csv_path(record.root),
         lambda record: _resolve_gen_csv(record.root),
     )
-    source = inspect_individual_source(owners, job_id, run_id, gen_no)
+
+
+def _individual_result(
+    operation: Operation, job_id: str, t_start: int | None, t_end: int | None,
+    run_id: str = "", gen_no: int | None = None,
+    mc: MonteCarloOptions = DEFAULT_MC,
+) -> IndividualResult:
+    source = inspect_individual_source(_analysis_owners(), job_id, run_id, gen_no)
     return individual_result(source, operation, job_id, run_id, gen_no, t_start, t_end, mc)
+
+
+def _feature_context(job_id: str, run_id: str, gen_no: int | None) -> FeatureContext:
+    return FeatureContext(inspect_individual_source(_analysis_owners(), job_id, run_id, gen_no), job_id, run_id, gen_no)
 
 
 # --------------------------------------------------------------- evo (run/gen)
@@ -1898,59 +1906,11 @@ def analysis_montecarlo(
 
 
 @backtest_router.get("/analysis/leaf_matrix")
-def analysis_leaf_matrix(
-    job_id: str = "", run_id: str = "", gen_no: Optional[int] = None,
-) -> Dict[str, Any]:
-    """리프(시간밴드×시총단계) 잔차 매트릭스 — QSP1 라벨셋 탐색기(P1) 데이터.
+def analysis_leaf_matrix(job_id: str = "", run_id: str = "", gen_no: Optional[int] = None) -> Dict[str, Any]:
+    """Checked full-column leaf diagnostics; denied source never becomes zero data."""
+    from ai_strategy_loop.dashboard.feature_leaf import leaf_result
 
-    거래 CSV 를 라벨 데이터셋으로 enrich(파생 D_* 포함, 컬럼 자동 편입)한 뒤
-    리프별 n/평균/중앙값/승률/합계와 변별 상위 변수를 돌려준다. 셀 상세용으로
-    리프별 대표 거래(승/패 각 4건)도 싣는다. CSV 없음/실패는 빈 구조(무예외).
-    """
-    from ai_strategy_loop.autopsy import label_dataset as _lds  # noqa: PLC0415
-
-    csv_path: Optional[str] = None
-    if job_id:
-        csv_path = _resolved_job_csv_path(job_id)
-    elif run_id and gen_no is not None:
-        row = _gen_row_readonly(run_id, int(gen_no))
-        csv_path = _resolve_gen_csv(row) if row else None
-    empty = {"job_id": job_id, "run_id": run_id, "gen_no": gen_no, "available": False,
-             "timeframe": "unknown", "n": 0, "leaf_matrix": [], "features": [],
-             "leaf_samples": {}, "derived": [], "excluded": {}}
-    if not csv_path:
-        return empty
-    try:
-        ds = _lds.build(csv_path)
-    except Exception:  # noqa: BLE001 - 분석 실패는 빈 구조로 흡수(무예외 계약).
-        return empty
-    if ds.df.empty:
-        return empty
-    # 리프별 대표 거래(패 4 + 승 4) — 셀 클릭 상세.
-    samples: Dict[str, List[Dict[str, Any]]] = {}
-    try:
-        import pandas as _pd  # noqa: PLC0415
-
-        pct = _pd.to_numeric(ds.df.get("수익률"), errors="coerce")
-        for leaf, idx in ds.df.groupby("leaf").groups.items():
-            sub = ds.df.loc[idx].assign(_pct=pct.loc[idx]).dropna(subset=["_pct"])
-            picked = _pd.concat([sub.nsmallest(4, "_pct"), sub.nlargest(4, "_pct")])
-            samples[str(leaf)] = [
-                {"name": str(r.get("종목명", "")), "buy_time": str(r.get("매수시간", "")),
-                 "pct": float(r["_pct"]), "krw": float(r.get("수익금", 0) or 0)}
-                for _, r in picked.iterrows()
-            ]
-    except Exception:  # noqa: BLE001 - 샘플 실패는 매트릭스만 제공.
-        samples = {}
-    return {
-        "job_id": job_id, "run_id": run_id, "gen_no": gen_no, "available": True,
-        "timeframe": ds.timeframe, "n": int(len(ds.df)),
-        "leaf_matrix": _lds.leaf_matrix(ds),
-        "features": _lds.feature_discrimination(ds)[:12],
-        "leaf_samples": samples,
-        "derived": ds.derived,
-        "excluded": ds.excluded,
-    }
+    return leaf_result(_feature_context(job_id, run_id, gen_no)).root
 
 
 @backtest_router.get("/analysis/feature_map")
@@ -1958,93 +1918,18 @@ def analysis_feature_map(
     job_id: str = "", run_id: str = "", gen_no: Optional[int] = None,
     x: str = "", y: str = "", bins: int = 5, mode: str = "grid", top: int = 20,
 ) -> Dict[str, Any]:
-    """다차원 수익률 맵(QSP3 P4) — 변수 선택형 구간 손익 grid / 손실 영역 랭킹.
+    """Use the existing B/D catalog and operators on one checked raw snapshot."""
+    from ai_strategy_loop.dashboard.feature_map_result import map_result
 
-    mode="grid": x(+y) 분위 구간별 {n, pnl, mean_ret, win_rate}.
-    mode="regions": 전 변수 1D 스캔 손실 집중 구간 top 랭킹("이 매수 특징 = 손실").
-    variables: 선택 가능한 변수 목록(수치·분산>0). CSV 없음/실패는 빈 구조(무예외).
-    """
-    from ai_strategy_loop.autopsy import feature_map as _fm  # noqa: PLC0415
-
-    csv_path: Optional[str] = None
-    if job_id:
-        csv_path = _resolved_job_csv_path(job_id)
-    elif run_id and gen_no is not None:
-        row = _gen_row_readonly(run_id, int(gen_no))
-        csv_path = _resolve_gen_csv(row) if row else None
-    empty = {"job_id": job_id, "run_id": run_id, "gen_no": gen_no, "available": False,
-             "variables": [], "grid": None, "regions": []}
-    if not csv_path:
-        return empty
-    try:
-        import pandas as _pd  # noqa: PLC0415
-
-        df = _fm._load(csv_path)  # enrich 1회 — df 를 grid/loss_regions 에 전달해 재사용.
-        variables = _fm._numeric_features(df)
-        bins = max(2, min(10, int(bins)))
-        out = {"job_id": job_id, "run_id": run_id, "gen_no": gen_no, "available": True,
-               "variables": variables, "grid": None, "regions": []}
-        if mode == "regions":
-            out["regions"] = _fm.loss_regions(csv_path, bins=bins,
-                                              top=max(1, min(50, int(top))), df=df)
-        elif x:
-            out["grid"] = _fm.grid(csv_path, x, y or None, bins=bins, df=df)
-        return out
-    except Exception:  # noqa: BLE001 - 분석 실패는 빈 구조로 흡수(무예외 계약).
-        return empty
+    return map_result(_feature_context(job_id, run_id, gen_no), x, y, bins, mode, top).root
 
 
 @backtest_router.get("/analysis/revision_proposals")
-def analysis_revision_proposals(run_id: str = "", gen_no: Optional[int] = None,
-                                top_k: int = 3) -> Dict[str, Any]:
-    """리프 잔차표 → 조건식 수정 제안(읽기 전용 미리보기) — QSP1 P2.
+def analysis_revision_proposals(run_id: str = "", gen_no: Optional[int] = None, top_k: int = 3) -> Dict[str, Any]:
+    """Read-only preview; source admission always precedes strategy lookup."""
+    from ai_strategy_loop.dashboard.revision_analysis import revision_result
 
-    세대의 매수식(HIER 계열)과 거래 CSV 로 revision spec 을 만들고, 각 제안을
-    실제로 적용해 본 diff 와 의도-일치 게이트 판정을 함께 돌려준다.
-    **등록/적용은 하지 않는다**(라운드 러너의 책임) — 화면 열람·검토 전용.
-    비 HIER 조건식/CSV 없음/실패는 available=False(무예외).
-    """
-    from ai_strategy_loop.autopsy import label_dataset as _lds  # noqa: PLC0415
-    from ai_strategy_loop.revision import intent_gate as _gate  # noqa: PLC0415
-    from ai_strategy_loop.revision import proposer as _prop  # noqa: PLC0415
-    from ai_strategy_loop.controller.strategy_preflight import load_loop_strategy_code  # noqa: PLC0415
-
-    empty = {"run_id": run_id, "gen_no": gen_no, "available": False,
-             "reason": "", "proposals": []}
-    if not run_id or gen_no is None:
-        return {**empty, "reason": "run_id/gen_no 필요"}
-    row = _gen_row_readonly(run_id, int(gen_no))
-    csv_path = _resolve_gen_csv(row) if row else None
-    if not row or not csv_path:
-        return {**empty, "reason": "세대/CSV 없음"}
-    buy_name = str(row.get("buy_name") or "")
-    buy_code = load_loop_strategy_code("buy", buy_name)
-    if not buy_code:
-        return {**empty, "reason": f"매수식 없음: {buy_name}"}
-    try:
-        ds = _lds.build(csv_path)
-        specs = _prop.propose(ds, buy_code, buy_name, top_k=max(1, min(int(top_k), 5)))
-    except Exception as exc:  # noqa: BLE001 - 제안 실패는 빈 목록(무예외).
-        return {**empty, "reason": f"제안 생성 실패: {exc}"}
-    if not specs:
-        return {**empty, "available": True,
-                "reason": "실효 제안 없음(HIER 아님·표본 부족·변별 부족 중 하나)"}
-    out: List[Dict[str, Any]] = []
-    for spec in specs:
-        new_code, apply_reason = _prop.apply(spec, buy_code)
-        item: Dict[str, Any] = {"spec": spec, "apply": apply_reason}
-        if new_code:
-            gres = _gate.verify(buy_code, new_code, [spec])
-            item["gate"] = {"ok": gres.ok, "reason": gres.reason, "diffs": gres.diffs}
-            # diff 미리보기 — 바뀐 줄만(원/신).
-            old_lines, new_lines = buy_code.splitlines(), new_code.splitlines()
-            item["diff_preview"] = [
-                {"line": i + 1, "old": o, "new": n}
-                for i, (o, n) in enumerate(zip(old_lines, new_lines)) if o != n
-            ][:6]
-        out.append(item)
-    return {"run_id": run_id, "gen_no": gen_no, "available": True,
-            "buy_name": buy_name, "reason": "ok", "proposals": out}
+    return revision_result(_feature_context("", run_id, gen_no), top_k).root
 
 
 @backtest_router.get("/analysis/orderflow")

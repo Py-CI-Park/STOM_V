@@ -22,6 +22,9 @@ class SourceRecord(RootModel[dict[str, JsonValue]]):
 
     model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
 
+    def text(self, key: str) -> str | None:
+        return _text_value(self.root.get(key))
+
 
 @dataclass(frozen=True, slots=True)
 class AnalysisOwners:
@@ -39,9 +42,10 @@ class AnalysisSource:
     execution_status: str | None
     execution_basis: str
     analysis_authority: str
+    record: SourceRecord | None = None
 
 
-def _status(value: JsonValue) -> str | None:
+def _text_value(value: JsonValue) -> str | None:
     match value:
         case str():
             return value
@@ -58,13 +62,16 @@ def inspect_individual_source(
     gen_no: int | None,
 ) -> AnalysisSource:
     """One lookup and one CSV snapshot; result existence grants no calculation."""
+    if not job_id and (not run_id or gen_no is None):
+        return AnalysisSource(inspect_job_result_source(None, {}), False, False, None,
+                              "source_not_selected", "diagnostic_unselected")
     is_generation = not job_id and bool(run_id) and gen_no is not None
     metadata: dict[str, JsonValue]
     if is_generation and gen_no is not None:
         record = owners.generation(run_id, gen_no)
         available = record is not None
         row = record.root if record is not None else {}
-        policy = generation_policy(_status(row.get("status")))
+        policy = generation_policy(_text_value(row.get("status")))
         status = policy.execution.value.lower()
         allowed = policy.diagnostic_allowed
         basis = policy.basis
@@ -74,7 +81,7 @@ def inspect_individual_source(
     else:
         record = owners.job(job_id)
         available = record.root.get("available") is True
-        status = _status(record.root.get("status"))
+        status = _text_value(record.root.get("status"))
         allowed = status == "success"
         basis = "job_status_without_terminal_truth_revalidation"
         authority = "diagnostic_job_status"
@@ -88,4 +95,5 @@ def inspect_individual_source(
         status,
         basis,
         authority,
+        record if available else None,
     )

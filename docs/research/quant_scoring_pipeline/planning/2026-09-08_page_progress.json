@@ -2,14 +2,14 @@
   "schema": "stom.maturity_page_progress.v1",
   "date": "2026-09-10",
   "basis": "NEW_V15_ACCEPTANCE_SCOPE_NOT_EXISTING_STOM_FEATURE_COUNT",
-  "branch": "codex/process-research-sys-05-individual-quality",
-  "source_base_commit": "d6bef0b30c2789bbf198068ae022f18833c1ca97",
-  "integrated_code_commit": "bf5d02a1118f3eb533c9b122f7688b6f7dfa0fae",
-  "integration_gate": "B4A_SCOPED_PASS_FULL_GATE_PENDING",
+  "branch": "codex/process-research-sys-05-feature-quality",
+  "source_base_commit": "5f1e7ca901845a0dc396fec56e6d7c057f5b6f20",
+  "integrated_code_commit": "5f1e7ca901845a0dc396fec56e6d7c057f5b6f20",
+  "integration_gate": "B4A_FULL_PASS_B4B_SCOPED_PASS_FULL_GATE_PENDING",
   "canonical_branch": "loop/process-research-pipeline",
-  "integration_receipt": "2026-09-08_integrated_unit_receipt.json",
-  "verification_completed_date_kst": "2026-09-09",
-  "receipt": "2026-09-10_SYS05_B4a_TASK_RECEIPT.md",
+  "integration_receipt": "2026-09-10_b4a_integrated_receipt.json",
+  "verification_completed_date_kst": "2026-09-10",
+  "receipt": "2026-09-10_SYS05_B4b_TASK_RECEIPT.md",
   "canonical_order": [
     "RES-04P",
     "SYS-05",
@@ -29,9 +29,10 @@
     "SQ01B1.job_result_quality",
     "SQ01B2.generation_result_quality",
     "SQ01B3.report_export_quality",
-    "SQ01B4a.individual_analysis_admission"
+    "SQ01B4a.individual_analysis_admission",
+    "SQ01B4b.raw_feature_admission"
   ],
-  "next_atomic_scope": "SQ01B4b.raw_feature_admission",
+  "next_atomic_scope": "SQ01B5.multi_source_admission",
   "full_page_acceptance_closed": 0,
   "page_count": 14,
   "full_program_percent": null,
@@ -75,7 +76,7 @@
         "SQ01B3.report_export_quality"
       ],
       "remaining": [
-        "개별/복수 분석 소비자 품질 전파",
+        "복수 분석 소비자 품질 전파",
         "정본 Bundle 계보 통합",
         "전체 페이지 수용"
       ],
@@ -112,10 +113,11 @@
     {
       "id": "P06",
       "name": "집단·피처",
-      "status": "BACKEND_FOUNDATION",
+      "status": "SCOPED_WORKFLOW_VERIFIED",
       "achieved": [
         "RES04P.source_events",
-        "RES04P.controls"
+        "RES04P.controls",
+        "SQ01B4b.raw_feature_admission"
       ],
       "remaining": [
         "집단별 품질·표본·불확실성 화면"
@@ -248,9 +250,9 @@
     },
     {
       "id": "SQ01B4",
-      "status": "PARTIAL",
+      "status": "COMPLETE",
       "scope": "individual analysis, Monte Carlo and raw feature admission",
-      "children": {"B4a": "SCOPED_COMPLETE", "B4b": "NEXT"}
+      "children": {"B4a": "FULL_UNIT_GATE_PASS", "B4b": "SCOPED_COMPLETE_FULL_GATE_PENDING"}
     },
     {
       "id": "SQ01B5",
@@ -263,5 +265,5 @@
       "scope": "versioned metrics and invalid values"
     }
   ],
-  "work_group_ratio_note": "5/8 complete groups plus B4a scoped complete; B4 parent remains partial until B4b. New full Gate pending. Prior disjoint unit Gate at10b67ed3 is historical, not current B4a full verification."
+  "work_group_ratio_note": "6/8 scoped complete groups; B4b full integration Gate pending. B4a disjoint full unit at5f1e7ca9 passed8178 skipped27. Scope counts are not full page/program maturity."
 }
