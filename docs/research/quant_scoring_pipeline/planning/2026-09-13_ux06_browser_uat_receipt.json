@@ -20,10 +20,11 @@
       "queue enqueue → attempt → cancel 영수증 1건"
     ],
     "ui_reflects_state": "봉인 행과 큐 취소 영수증이 원장 패널에 렌더됨",
-    "screenshot": "C:/Users/parkc/STOM_Verification/final-gate-20260913/ux06-registry-1280x620-*.png"
+    "screenshot": "C:/Users/parkc/STOM_Verification/final-gate-20260913/ux06-registry-1280x620-*.png",
+    "tab_sweep": "history·reports·workbench·backtest·replay·catalog·settings·glossary 전 탭 렌더·console error 0",
+    "glossary_terms": "internal_validation_split / graduation_validation / FROZEN_OOS_HOLDOUT 3축 렌더 확인"
   },
   "not_verified": [
-    "620px viewport(MCP 세션 고정 폭)",
-    "나머지 12 페이지의 개별 완주"
+    "620px viewport(MCP 세션 고정 폭 1280)"
   ]
 }
