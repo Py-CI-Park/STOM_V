@@ -371,6 +371,31 @@ function BtCompareView({ cmp, onClose }) {
           <div className="research-empty">비교할 잡을 선택하세요.</div>
         ) : (
           <>
+            {/* B5 — admission 차단 측은 지표 대신 사유·품질 상태를 표시한다. */}
+            {[
+              { tag: "A", side: a },
+              { tag: "B", side: b },
+            ].map(({ tag, side }) => (
+              !side ? (
+                <div key={`cmpnone${tag}`} className="research-empty"
+                     style={{ marginBottom: 10, textAlign: "left" }}>
+                  {tag} — 결과를 찾을 수 없습니다.
+                </div>
+              ) : side.admitted === false ? (
+                <div key={`cmpblk${tag}`} className="research-empty"
+                     style={{ marginBottom: 10, textAlign: "left" }}>
+                  {tag} 비교 입력 불가 — {side.reason || "품질 검사 미통과"}
+                  {side.data_quality && side.data_quality.status
+                    ? " [" + side.data_quality.status + "]" : ""}
+                  {side.empty ? " · 검증된 무거래" : ""}
+                </div>
+              ) : side.empty ? (
+                <div key={`cmpempty${tag}`} className="research-empty"
+                     style={{ marginBottom: 10, textAlign: "left" }}>
+                  {tag} — 검증된 무거래 입력(지표는 0 기준).
+                </div>
+              ) : null
+            ))}
             {/* 수익곡선 오버레이 */}
             <div className="chart-wrap" style={{ marginBottom: 14 }}>
               <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
@@ -434,6 +459,28 @@ function BtCompareView({ cmp, onClose }) {
                 })}
               </tbody>
             </table>
+            {/* B5 — 지표 권한 구분: 저장 metrics(미검증)·재계산 summary·차단 사유. */}
+            <div style={{ marginTop: 8, fontSize: 10, color: "var(--ink-3)", fontFamily: "var(--mono)" }}>
+              {[
+                { tag: "A", side: a },
+                { tag: "B", side: b },
+              ].map(({ tag, side }) => {
+                if (!side || side.admitted === false) return null;
+                const authority = side.metrics_authority === "stored_unverified"
+                  ? "저장지표(미검증)+재계산요약"
+                  : "재계산 지표";
+                const q = side.data_quality && side.data_quality.status;
+                return (
+                  <div key={`cmpauth${tag}`}>
+                    {tag}: {authority}{q ? " · " + q : ""}
+                  </div>
+                );
+              })}
+              {a && b && a.admitted !== false && b.admitted !== false
+                && Object.keys(delta).length === 0 && (
+                <div>Δ 산출 불가 — 양측 모두 비교 가능 지표가 없습니다.</div>
+              )}
+            </div>
           </>
         )}
       </div>

@@ -23,12 +23,16 @@ function _btFetchJson(url, timeoutMs, externalSignal) {
   return fetch(url, { signal })
     .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
-function _btPostJson(url, body, timeoutMs) {
+function _btPostJson(url, body, timeoutMs, externalSignal) {
+  const timeoutSignal = AbortSignal.timeout(timeoutMs || 8000);
+  const signal = externalSignal && typeof AbortSignal.any === "function"
+    ? AbortSignal.any([timeoutSignal, externalSignal])
+    : (externalSignal || timeoutSignal);
   return fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body || {}),
-    signal: AbortSignal.timeout(timeoutMs || 8000),
+    signal,
   }).then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))));
 }
 

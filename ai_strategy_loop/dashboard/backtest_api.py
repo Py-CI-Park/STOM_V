@@ -32,6 +32,7 @@ from ai_strategy_loop.dashboard import backtest_report as report
 from ai_strategy_loop.dashboard.backtest_jobs import BacktestJobSpec, get_job_manager
 from ai_strategy_loop.dashboard.individual_analysis import DEFAULT_MC, IndividualResult, MonteCarloOptions, Operation, individual_result
 from ai_strategy_loop.dashboard.individual_source import AnalysisOwners, SourceRecord, inspect_individual_source
+from ai_strategy_loop.dashboard.multi_source import MemberAdmission, MemberState, inspect_member
 from ai_strategy_loop.dashboard.feature_context import FeatureContext
 from ai_strategy_loop.dashboard.security import Capability, close_websocket_failure
 
@@ -1948,30 +1949,69 @@ def analysis_gui_parity(job_id: str = "", t_start: Optional[int] = None, t_end: 
 
 
 # --------------------------------------------------------------------- compare
-def _compare_side(job_id: str) -> Optional[Dict[str, Any]]:
-    """단일 잡의 비교 페이로드 {job_id, status, metrics, equity}. 없으면 None(무예외).
+def _compare_member(job_id: str = "", run_id: str = "",
+                    gen_no: Optional[int] = None) -> Optional[MemberAdmission]:
+    """비교 입력 1개를 B4 admission으로 검사한다. 선택자/기록 미해소면 None."""
+    return inspect_member(
+        _analysis_owners(), job_id=job_id, run_id=run_id, gen_no=gen_no
+    )
 
-    metrics 는 CLI 저장 메트릭이 있으면 그것을, 없으면 analysis.summary 를 쓴다.
-    equity 는 결과 CSV 로부터 누적수익곡선을 재계산한다(없으면 빈 구조).
-    """
-    if not job_id:
-        return None
-    manager = get_job_manager()
-    record = manager.get(job_id, log_tail=0)
-    if not record.get("available"):
-        return None
-    csv_path = _resolved_record_csv_path(record)
-    trades = analysis.load_trades_csv(csv_path)
+
+def _side_envelope(member: MemberAdmission, *, job_id: str,
+                   run_id: str, gen_no: Optional[int]) -> Dict[str, Any]:
+    """admission 결과를 기존 응답 키 + 품질/출처 envelope로 펼친다."""
+    source = member.source
+    record = source.record
+    gen_int = int(gen_no) if gen_no is not None else None
+    side: Dict[str, Any] = {
+        "job_id": job_id or f"gen:{run_id}:{gen_int}",
+        "run_id": run_id or None,
+        "gen_no": gen_int,
+        "source_type": "job" if job_id else "generation",
+        "status": record.root.get("status"),
+        "admitted": member.admitted,
+        "analysis_ready": member.state is MemberState.READY,
+        "empty": member.state is MemberState.EMPTY_VERIFIED,
+        "blocked_reason": member.blocked_reason or None,
+        "reason": member.detail or "",
+        "execution_status": source.execution_status,
+        "execution_basis": source.execution_basis,
+        "analysis_authority": source.analysis_authority,
+        "data_quality": source.checked.quality.model_dump(mode="json"),
+    }
+    if not member.admitted:
+        # 차단 측은 지표·요약·곡선을 만들지 않는다 — 근거만 남긴다.
+        side.update({
+            "metrics": None, "metrics_authority": None,
+            "summary": None, "equity": None, "trade_count": None,
+        })
+        return side
+    trades = member.trade_dicts()
     summary = analysis.summary_metrics(trades)
-    cli_metrics = record.get("metrics")
-    return {
-        "job_id": job_id,
-        "status": record.get("status"),
-        "metrics": cli_metrics if cli_metrics else summary,
+    stored = record.root.get("metrics") if job_id else None
+    side.update({
+        "label": (
+            f"{run_id} / g{gen_int}" if not job_id
+            else f"{(record.root.get('spec') or {}).get('buy', 'job')[:18]}·{job_id[:8]}"
+        ),
+        # 저장 metrics와 재계산 summary는 섞지 않는다 — 권한 라벨로 구분.
+        "metrics": stored if isinstance(stored, dict) else summary,
+        "metrics_authority": "stored_unverified" if isinstance(stored, dict) else "recomputed",
         "summary": summary,
         "equity": analysis.equity_series(trades),
         "trade_count": summary["trade_count"],
-    }
+    })
+    return side
+
+
+def _compare_side(job_id: str) -> Optional[Dict[str, Any]]:
+    """단일 잡의 비교 페이로드. 미해소 잡이면 None, 차단 입력이면 지표 null envelope."""
+    if not job_id:
+        return None
+    member = _compare_member(job_id=job_id)
+    if member is None:
+        return None
+    return _side_envelope(member, job_id=job_id, run_id="", gen_no=None)
 
 
 # 비교 delta 산출 대상 메트릭(둘 다 숫자일 때만 차이 계산).
@@ -1982,8 +2022,8 @@ _COMPARE_KEYS = (
 
 
 def _compare_delta(a: Optional[Dict[str, Any]], b: Optional[Dict[str, Any]]) -> Dict[str, Any]:
-    """두 잡 summary 의 주요 메트릭 차이(b - a). 한쪽이라도 없으면 빈 dict."""
-    if not a or not b:
+    """두 측 summary 차이(b - a). 양측 모두 admission 통과일 때만 산출한다."""
+    if not a or not b or not a.get("admitted") or not b.get("admitted"):
         return {}
     sa = a.get("summary") or {}
     sb = b.get("summary") or {}
@@ -1996,34 +2036,13 @@ def _compare_delta(a: Optional[Dict[str, Any]], b: Optional[Dict[str, Any]]) -> 
 
 
 def _compare_side_for_run(run_id: str, gen_no: Optional[int]) -> Optional[Dict[str, Any]]:
-    """진화 세대의 비교 페이로드 — 잡과 동일 스키마. 세대/CSV 없음이면 None(무예외).
-
-    세대 결과도 잡과 같은 거래 CSV 를 남기므로 같은 방식으로 요약·수익곡선을 만든다.
-    이것이 없어 A/B 비교가 '완료 잡 전용'으로 묶여 있었고, 정작 완주한 잡이 없어
-    비교 기능 자체를 쓸 수 없었다(2026-07-26).
-    """
+    """진화 세대의 비교 페이로드 — 잡과 동일 스키마 + 품질 envelope."""
     if not run_id or gen_no is None:
         return None
-    row = _gen_row_readonly(run_id, int(gen_no))
-    if row is None:
+    member = _compare_member(run_id=run_id, gen_no=gen_no)
+    if member is None:
         return None
-    csv_path = _resolve_gen_csv(row)
-    if not csv_path:
-        return None
-    trades = analysis.load_trades_csv(csv_path)
-    summary = analysis.summary_metrics(trades)
-    return {
-        "job_id": f"gen:{run_id}:{int(gen_no)}",
-        "run_id": run_id,
-        "gen_no": int(gen_no),
-        "source_type": "generation",
-        "label": f"{run_id} / g{int(gen_no)}",
-        "status": row.get("status"),
-        "metrics": summary,
-        "summary": summary,
-        "equity": analysis.equity_series(trades),
-        "trade_count": summary["trade_count"],
-    }
+    return _side_envelope(member, job_id="", run_id=run_id, gen_no=gen_no)
 
 
 @backtest_router.get("/compare")
@@ -2055,39 +2074,60 @@ _OVERLAY_MIN = 2
 _OVERLAY_MAX = 4
 
 
-def _overlay_series(job_id: str) -> Optional[Dict[str, Any]]:
-    """단일 잡 → 오버레이 시계열 {job_id, label, summary, cumulative}. 없으면 None(무예외).
+def _overlay_member(job_id: str) -> Optional[MemberAdmission]:
+    return _compare_member(job_id=job_id)
 
-    cumulative 는 결과 CSV 의 거래일축 누적수익곡선(equity_series.cumulative). 프론트가
-    정규화 토글로 첫 포인트 기준 상대화하거나 원시 누적손익으로 그린다.
-    """
-    if not job_id:
+
+def _overlay_series(job_id: str) -> Optional[Dict[str, Any]]:
+    """단일 잡 → 오버레이 시계열. admission 실패/미해소면 None(무예외)."""
+    member = _overlay_member(job_id)
+    if member is None or not member.admitted:
         return None
-    manager = get_job_manager()
-    record = manager.get(job_id, log_tail=0)
-    if not record.get("available"):
-        return None
-    csv_path = _resolved_record_csv_path(record)
-    trades = analysis.load_trades_csv(csv_path)
-    summary = analysis.summary_metrics(trades)
+    return _overlay_payload(job_id, member)
+
+
+def _overlay_payload(job_id: str, member: MemberAdmission) -> Dict[str, Any]:
+    """admission 통과 입력 → 시계열 페이로드(체크된 스냅샷만 사용, 재읽기 없음)."""
+    record = member.source.record.root
     spec = record.get("spec") or {}
     label = f"{spec.get('buy', '')}·{job_id[:8]}" if spec.get("buy") else job_id[:12]
+    trades = member.trade_dicts()
+    summary = analysis.summary_metrics(trades)
+    quality = member.source.checked.quality
     return {
         "job_id": job_id,
         "label": label,
         "status": record.get("status"),
+        "empty": member.state is MemberState.EMPTY_VERIFIED,
+        "trade_count": summary["trade_count"],
         "summary": summary,
         "cumulative": analysis.equity_series(trades).get("cumulative", []),
+        "source_sha256": quality.source_sha256,
+        "data_quality": quality.model_dump(mode="json"),
+    }
+
+
+def _overlay_failure(job_id: str, member: Optional[MemberAdmission]) -> Dict[str, Any]:
+    if member is None:
+        return {"job_id": job_id, "reason": "job_not_found",
+                "detail": "잡을 찾을 수 없습니다.",
+                "quality_status": None, "execution_status": None}
+    return {
+        "job_id": job_id,
+        "reason": member.blocked_reason or "not_admitted",
+        "detail": member.detail,
+        "quality_status": member.source.checked.quality.status,
+        "execution_status": member.source.execution_status,
     }
 
 
 @backtest_router.get("/overlay")
 def overlay_jobs(job_ids: str = "") -> Dict[str, Any]:
-    """다중 잡(2~4) 수익곡선 오버레이 — 각 잡 누적수익곡선 + summary(범례/정규화는 프론트).
+    """다중 잡(2~4) 수익곡선 오버레이 — 각 입력은 B4 admission 통과분만 표시.
 
-    job_ids: 쉼표구분 job_id 목록(2~4). 각 잡을 거래일축 누적수익곡선으로 해석해 한 화면에
-    겹쳐 그릴 시리즈를 반환한다. 개수 경계 위반/해석 실패는 무예외 error 페이로드(HTTP 200,
-    대시보드 컨벤션). 정규화(첫 포인트 0 기준)는 프론트 토글이 처리한다(원시 곡선 그대로 전달).
+    requested 는 요청(중복제거) 집합, resolved 는 실제 표시 집합, failures 는
+    실패 입력별 사유·품질·실행 상태다. 일부만 표시되면 status=partial 로 전체
+    성공과 구분한다.
     """
     ids = [s.strip() for s in str(job_ids or "").split(",") if s.strip()]
     # 중복 제거(입력 순서 유지).
@@ -2098,23 +2138,43 @@ def overlay_jobs(job_ids: str = "") -> Dict[str, Any]:
             "status": "error",
             "message": f"오버레이는 {_OVERLAY_MIN}~{_OVERLAY_MAX}개 잡이 필요합니다(받음: {len(unique_ids)}).",
             "series": [],
+            "requested": unique_ids,
+            "resolved": [],
+            "failed": unique_ids,
+            "failures": [],
         }
     series: List[Dict[str, Any]] = []
     failed: List[str] = []
+    failures: List[Dict[str, Any]] = []
+    resolved: List[str] = []
     for jid in unique_ids:
-        got = _overlay_series(jid)
-        if got is None:
+        member = _overlay_member(jid)
+        if member is None or not member.admitted:
             failed.append(jid)
-        else:
-            series.append(got)
+            failures.append(_overlay_failure(jid, member))
+            continue
+        series.append(_overlay_payload(jid, member))
+        resolved.append(jid)
     if len(series) < _OVERLAY_MIN:
         return {
             "status": "error",
             "message": f"유효한 잡이 {_OVERLAY_MIN}개 미만입니다(해석 실패: {failed}).",
             "series": series,
+            "requested": unique_ids,
+            "resolved": resolved,
             "failed": failed,
+            "failures": failures,
         }
-    return {"status": "ok", "series": series, "count": len(series), "failed": failed}
+    return {
+        # 부분 성공은 ok 와 구분 — 요청 집합 전체가 표시된 것이 아니다.
+        "status": "partial" if failed else "ok",
+        "series": series,
+        "count": len(series),
+        "requested": unique_ids,
+        "resolved": resolved,
+        "failed": failed,
+        "failures": failures,
+    }
 
 
 # ------------------------------------------------------------------- portfolio
@@ -2123,53 +2183,82 @@ _PORTFOLIO_MIN = 2
 _PORTFOLIO_MAX = 6
 
 
+# 차단 사유 → 포트폴리오 reason 코드(기존 *_csv_missing/*_csv_empty 계약 유지).
+_PORTFOLIO_BLOCK_REASONS = {
+    "source_missing": "csv_missing",
+    "source_empty": "csv_empty",
+    "no_trades_contradiction": "no_trades_contradiction",
+    "execution_blocked": "execution_blocked",
+    "source_quality_blocked": "source_blocked",
+}
+
+
 def _portfolio_item_trades(item: Dict[str, Any]) -> Dict[str, Any]:
     """포트폴리오 입력 1개({job_id} | {run_id,gen_no}) → ok/data 또는 reason.
 
-    잡/세대 CSV 는 artifact resolver 를 통과한 실제 파일만 읽는다. CSV 부재를 빈
-    손익으로 합성하지 않는다. 단, job status 가 no_trades 인 완료 잡은 명시적 빈
-    입력으로 허용한다.
+    모든 입력은 B4 admission 을 통과해야 한다. CSV 부재를 빈 손익으로 합성하지
+    않으며, 무거래는 검증된 빈 입력(공식 헤더·예상 행·실행 상태 근거)만 허용한다.
+    반환 ok 에는 member(검사 근거)가 함께 실린다.
     """
     if not isinstance(item, dict):
         return {"ok": False, "reason": "invalid_item"}
     job_id = str(item.get("job_id", "") or "").strip()
+    run_id = str(item.get("run_id", "") or "").strip()
+    gen_no = item.get("gen_no")
+    prefix = "job" if job_id else "generation"
+    if not job_id:
+        if not (run_id and gen_no is not None):
+            return {"ok": False, "reason": "missing_selector"}
+        try:
+            gen_no = int(gen_no)
+        except (TypeError, ValueError):
+            return {"ok": False, "reason": "generation_gen_no_invalid"}
+    member = _compare_member(job_id=job_id, run_id=run_id, gen_no=gen_no)
+    if member is None:
+        return {"ok": False, "reason": f"{prefix}_not_found"}
+    record = member.source.record.root
     if job_id:
-        manager = get_job_manager()
-        record = manager.get(job_id, log_tail=0)
-        if not record.get("available"):
-            return {"ok": False, "reason": "job_not_found"}
         spec = record.get("spec") or {}
         label = str(item.get("label", "") or "").strip() or (
             f"{spec.get('buy', '')}·{job_id[:8]}" if spec.get("buy") else job_id[:12]
         )
-        if record.get("status") == "no_trades":
-            return {"ok": True, "label": label, "trades": [], "empty_reason": "no_trades"}
-        csv_path = _resolved_record_csv_path(record)
-        if not csv_path:
-            return {"ok": False, "reason": "job_csv_missing"}
-        trades = analysis.load_trades_csv(csv_path)
-        if not trades:
-            return {"ok": False, "reason": "job_csv_empty"}
-        return {"ok": True, "label": label, "trades": trades}
-    run_id = str(item.get("run_id", "") or "").strip()
-    gen_no = item.get("gen_no")
-    if run_id and gen_no is not None:
-        try:
-            gen_int = int(gen_no)
-        except (TypeError, ValueError):
-            return {"ok": False, "reason": "generation_gen_no_invalid"}
-        row = _gen_row_readonly(run_id, gen_int)
-        if row is None:
-            return {"ok": False, "reason": "generation_not_found"}
-        csv_path = _resolve_gen_csv(row)
-        if not csv_path:
-            return {"ok": False, "reason": "generation_csv_missing"}
-        label = str(item.get("label", "") or "").strip() or f"{run_id}/g{gen_int}"
-        trades = analysis.load_trades_csv(csv_path)
-        if not trades:
-            return {"ok": False, "reason": "generation_csv_empty"}
-        return {"ok": True, "label": label, "trades": trades}
-    return {"ok": False, "reason": "missing_selector"}
+    else:
+        label = str(item.get("label", "") or "").strip() or f"{run_id}/g{gen_no}"
+    if not member.admitted:
+        suffix = _PORTFOLIO_BLOCK_REASONS.get(member.blocked_reason, "source_blocked")
+        return {
+            "ok": False,
+            "reason": f"{prefix}_{suffix}",
+            "detail": member.detail,
+            "member": member,
+        }
+    return {
+        "ok": True,
+        "label": label,
+        "trades": member.trade_dicts(),
+        "empty_reason": (
+            "no_trades" if member.state is MemberState.EMPTY_VERIFIED else None
+        ),
+        "member": member,
+    }
+
+
+def _portfolio_source_entry(idx: int, item: Dict[str, Any],
+                            got: Dict[str, Any]) -> Dict[str, Any]:
+    """합성 입력의 출처·품질 envelope — 라벨 충돌 시에도 입력을 구분한다."""
+    member: MemberAdmission = got["member"]
+    quality = member.source.checked.quality
+    return {
+        "index": idx,
+        "job_id": item.get("job_id"),
+        "run_id": item.get("run_id"),
+        "gen_no": item.get("gen_no"),
+        "source_type": "job" if item.get("job_id") else "generation",
+        "label": got["label"],
+        "empty": member.state is MemberState.EMPTY_VERIFIED,
+        "source_sha256": quality.source_sha256,
+        "data_quality": quality.model_dump(mode="json"),
+    }
 
 
 @backtest_router.post("/portfolio")
@@ -2187,15 +2276,33 @@ def portfolio_combine(payload: PortfolioPayload) -> Dict[str, Any]:
     """
     raw_items = [item.model_dump(exclude_none=True) for item in payload.items]
     resolved: List[Dict[str, Any]] = []
+    sources: List[Dict[str, Any]] = []
     failed: List[int] = []
     failed_reasons: List[Dict[str, Any]] = []
+    failed_sources: List[Dict[str, Any]] = []
     for idx, item in enumerate(raw_items):
         got = _portfolio_item_trades(item)
         if not got.get("ok"):
             failed.append(idx)
             failed_reasons.append({"index": idx, "reason": str(got.get("reason") or "unresolved")})
+            member = got.get("member")
+            failed_sources.append({
+                "index": idx,
+                "job_id": item.get("job_id"),
+                "run_id": item.get("run_id"),
+                "gen_no": item.get("gen_no"),
+                "reason": str(got.get("reason") or "unresolved"),
+                "detail": got.get("detail") or "",
+                "quality_status": (
+                    member.source.checked.quality.status if member else None
+                ),
+                "execution_status": (
+                    member.source.execution_status if member else None
+                ),
+            })
         else:
             resolved.append({"label": got["label"], "trades": got["trades"]})
+            sources.append(_portfolio_source_entry(idx, item, got))
     if failed or len(resolved) < _PORTFOLIO_MIN:
         if failed:
             message = f"포트폴리오 입력을 해석할 수 없습니다(실패 인덱스: {failed})."
@@ -2206,10 +2313,11 @@ def portfolio_combine(payload: PortfolioPayload) -> Dict[str, Any]:
             "message": message,
             "failed": failed,
             "failed_reasons": failed_reasons,
+            "failed_sources": failed_sources,
             "resolved_count": len(resolved),
         }
     result = analysis.portfolio_analysis(resolved)
-    return {"status": "ok", "portfolio": result, "failed": failed}
+    return {"status": "ok", "portfolio": result, "failed": failed, "sources": sources}
 
 
 # --------------------------------------------------------------------- report

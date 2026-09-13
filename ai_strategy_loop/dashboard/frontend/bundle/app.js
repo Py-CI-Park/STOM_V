@@ -25992,7 +25992,40 @@ ${sellCode}` : code);
     const x = (i) => nMax > 1 ? padL + i / (nMax - 1) * innerW : padL + innerW / 2;
     const y = (v) => padT + innerH - (v - yMin) / yRange * innerH;
     const pathOf = (s) => s.length < 2 ? "" : s.map((v, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
-    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "A / B \uBE44\uAD50"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "A " + (a ? a.job_id : "\u2014") }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--violet)", label: "B " + (b ? b.job_id : "\u2014") }), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setNorm((v) => !v) }, norm ? "\uC815\uADDC\uD654 ON" : "\uC815\uADDC\uD654 OFF"), onClose && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\u2715 \uB2EB\uAE30"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !a && !b ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uBE44\uAD50\uD560 \uC7A1\uC744 \uC120\uD0DD\uD558\uC138\uC694.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "chart-wrap", style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none" }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--chart-grid)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--chart-grid)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(yMax) + 3, textAnchor: "end" }, norm ? yMax.toFixed(0) : _btMoneyTick(yMax)), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(yMin) + 3, textAnchor: "end" }, norm ? yMin.toFixed(0) : _btMoneyTick(yMin)), _btAxisTicks(yMin, yMax, 5).map((tv, i) => Math.abs(tv - yMax) < 1e-9 || Math.abs(tv - yMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `cmpy${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: y(tv), y2: y(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(tv) + 3, textAnchor: "end", fill: "var(--chart-axis)" }, norm ? tv.toFixed(0) : _btMoneyTick(tv)))), sA.length > 1 && /* @__PURE__ */ React.createElement("path", { d: pathOf(sA), fill: "none", stroke: "var(--chart-profit)", strokeWidth: "2" }), sB.length > 1 && /* @__PURE__ */ React.createElement("path", { d: pathOf(sB), fill: "none", stroke: "var(--chart-accent)", strokeWidth: "2", strokeDasharray: "5 4" }), allV.length === 0 && null), allV.length === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uBE44\uAD50\uD560 \uC218\uC775\uACE1\uC120\uC774 \uC5C6\uC2B5\uB2C8\uB2E4" })), /* @__PURE__ */ React.createElement("table", { style: { width: "100%", borderCollapse: "collapse", fontFamily: "var(--mono)", fontSize: 11.5 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)", fontSize: 10, textTransform: "uppercase", letterSpacing: ".08em" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "4px 8px" } }, "\uBA54\uD2B8\uB9AD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "4px 8px", color: "var(--teal)" } }, "A"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "4px 8px", color: "var(--violet)" } }, "B"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "4px 8px" } }, "\u0394 (B\u2212A)"))), /* @__PURE__ */ React.createElement("tbody", null, _BT_CMP_METRICS.map((m) => {
+    return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--amber)" } }), "A / B \uBE44\uAD50"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, alignItems: "center" } }, /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--teal)", label: "A " + (a ? a.job_id : "\u2014") }), /* @__PURE__ */ React.createElement(LegendDot, { color: "var(--violet)", label: "B " + (b ? b.job_id : "\u2014") }), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setNorm((v) => !v) }, norm ? "\uC815\uADDC\uD654 ON" : "\uC815\uADDC\uD654 OFF"), onClose && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onClose }, "\u2715 \uB2EB\uAE30"))), /* @__PURE__ */ React.createElement("div", { className: "panel-bd" }, !a && !b ? /* @__PURE__ */ React.createElement("div", { className: "research-empty" }, "\uBE44\uAD50\uD560 \uC7A1\uC744 \uC120\uD0DD\uD558\uC138\uC694.") : /* @__PURE__ */ React.createElement(React.Fragment, null, [
+      { tag: "A", side: a },
+      { tag: "B", side: b }
+    ].map(({ tag, side }) => !side ? /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        key: `cmpnone${tag}`,
+        className: "research-empty",
+        style: { marginBottom: 10, textAlign: "left" }
+      },
+      tag,
+      " \u2014 \uACB0\uACFC\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4."
+    ) : side.admitted === false ? /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        key: `cmpblk${tag}`,
+        className: "research-empty",
+        style: { marginBottom: 10, textAlign: "left" }
+      },
+      tag,
+      " \uBE44\uAD50 \uC785\uB825 \uBD88\uAC00 \u2014 ",
+      side.reason || "\uD488\uC9C8 \uAC80\uC0AC \uBBF8\uD1B5\uACFC",
+      side.data_quality && side.data_quality.status ? " [" + side.data_quality.status + "]" : "",
+      side.empty ? " \xB7 \uAC80\uC99D\uB41C \uBB34\uAC70\uB798" : ""
+    ) : side.empty ? /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        key: `cmpempty${tag}`,
+        className: "research-empty",
+        style: { marginBottom: 10, textAlign: "left" }
+      },
+      tag,
+      " \u2014 \uAC80\uC99D\uB41C \uBB34\uAC70\uB798 \uC785\uB825(\uC9C0\uD45C\uB294 0 \uAE30\uC900)."
+    ) : null), /* @__PURE__ */ React.createElement("div", { className: "chart-wrap", style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none" }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: padL, y1: padT, y2: padT + innerH, stroke: "var(--chart-grid)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: padT + innerH, y2: padT + innerH, stroke: "var(--chart-grid)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(yMax) + 3, textAnchor: "end" }, norm ? yMax.toFixed(0) : _btMoneyTick(yMax)), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(yMin) + 3, textAnchor: "end" }, norm ? yMin.toFixed(0) : _btMoneyTick(yMin)), _btAxisTicks(yMin, yMax, 5).map((tv, i) => Math.abs(tv - yMax) < 1e-9 || Math.abs(tv - yMin) < 1e-9 ? null : /* @__PURE__ */ React.createElement("g", { key: `cmpy${i}` }, /* @__PURE__ */ React.createElement("line", { x1: padL, x2: W - padR, y1: y(tv), y2: y(tv), stroke: "rgba(255,255,255,0.06)", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { className: "chart-axis-text", x: padL - 8, y: y(tv) + 3, textAnchor: "end", fill: "var(--chart-axis)" }, norm ? tv.toFixed(0) : _btMoneyTick(tv)))), sA.length > 1 && /* @__PURE__ */ React.createElement("path", { d: pathOf(sA), fill: "none", stroke: "var(--chart-profit)", strokeWidth: "2" }), sB.length > 1 && /* @__PURE__ */ React.createElement("path", { d: pathOf(sB), fill: "none", stroke: "var(--chart-accent)", strokeWidth: "2", strokeDasharray: "5 4" }), allV.length === 0 && null), allV.length === 0 && /* @__PURE__ */ React.createElement(_BtChartEmpty, { message: "\uBE44\uAD50\uD560 \uC218\uC775\uACE1\uC120\uC774 \uC5C6\uC2B5\uB2C8\uB2E4" })), /* @__PURE__ */ React.createElement("table", { style: { width: "100%", borderCollapse: "collapse", fontFamily: "var(--mono)", fontSize: 11.5 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: "var(--ink-3)", fontSize: 10, textTransform: "uppercase", letterSpacing: ".08em" } }, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "4px 8px" } }, "\uBA54\uD2B8\uB9AD"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "4px 8px", color: "var(--teal)" } }, "A"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "4px 8px", color: "var(--violet)" } }, "B"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "4px 8px" } }, "\u0394 (B\u2212A)"))), /* @__PURE__ */ React.createElement("tbody", null, _BT_CMP_METRICS.map((m) => {
       const sa = a && a.summary || {};
       const sb = b && b.summary || {};
       const va = sa[m.key], vb = sb[m.key];
@@ -26005,7 +26038,15 @@ ${sellCode}` : code);
       }
       const dColor = d == null ? "var(--ink-3)" : (m.higher ? d > 0 : d < 0) ? "var(--teal)" : d === 0 ? "var(--ink-3)" : "var(--red)";
       return /* @__PURE__ */ React.createElement("tr", { key: m.key, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "left", padding: "5px 8px", color: "var(--ink-2)" } }, m.label), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: aWin ? "var(--teal)" : "var(--ink-1)", fontWeight: aWin ? 700 : 400 } }, typeof va === "number" ? m.fmt(va) : "\u2014"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: bWin ? "var(--violet)" : "var(--ink-1)", fontWeight: bWin ? 700 : 400 } }, typeof vb === "number" ? m.fmt(vb) : "\u2014"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: dColor } }, d == null ? "\u2014" : (d > 0 ? "+" : "") + m.fmt(d)));
-    }))))));
+    }))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, fontSize: 10, color: "var(--ink-3)", fontFamily: "var(--mono)" } }, [
+      { tag: "A", side: a },
+      { tag: "B", side: b }
+    ].map(({ tag, side }) => {
+      if (!side || side.admitted === false) return null;
+      const authority = side.metrics_authority === "stored_unverified" ? "\uC800\uC7A5\uC9C0\uD45C(\uBBF8\uAC80\uC99D)+\uC7AC\uACC4\uC0B0\uC694\uC57D" : "\uC7AC\uACC4\uC0B0 \uC9C0\uD45C";
+      const q = side.data_quality && side.data_quality.status;
+      return /* @__PURE__ */ React.createElement("div", { key: `cmpauth${tag}` }, tag, ": ", authority, q ? " \xB7 " + q : "");
+    }), a && b && a.admitted !== false && b.admitted !== false && Object.keys(delta).length === 0 && /* @__PURE__ */ React.createElement("div", null, "\u0394 \uC0B0\uCD9C \uBD88\uAC00 \u2014 \uC591\uCE21 \uBAA8\uB450 \uBE44\uAD50 \uAC00\uB2A5 \uC9C0\uD45C\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.")))));
   }
 
   // ai_strategy_loop/dashboard/frontend/bt-gui-parity.jsx
@@ -26493,12 +26534,14 @@ ${sellCode}` : code);
     const signal = externalSignal && typeof AbortSignal.any === "function" ? AbortSignal.any([timeoutSignal, externalSignal]) : externalSignal || timeoutSignal;
     return fetch(url, { signal }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
   }
-  function _btPostJson(url, body, timeoutMs) {
+  function _btPostJson(url, body, timeoutMs, externalSignal) {
+    const timeoutSignal = AbortSignal.timeout(timeoutMs || 8e3);
+    const signal = externalSignal && typeof AbortSignal.any === "function" ? AbortSignal.any([timeoutSignal, externalSignal]) : externalSignal || timeoutSignal;
     return fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body || {}),
-      signal: AbortSignal.timeout(timeoutMs || 8e3)
+      signal
     }).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)));
   }
   function _btWsUrl(baseUrl, path) {
@@ -29415,22 +29458,46 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     const [busy, setBusy] = useState_bt(false);
     const [err, setErr] = useState_bt("");
     const doneJobs = (jobs || []).filter((j) => j.status === "success" || j.status === "no_trades");
+    const ovReqRef = useRef_bt({ seq: 0, controller: null });
+    const ovKeyRef = useRef_bt("");
+    const ovInvalidate = () => {
+      if (ovReqRef.current.controller) ovReqRef.current.controller.abort();
+      ovReqRef.current = { seq: ovReqRef.current.seq + 1, controller: null };
+      ovKeyRef.current = "";
+    };
     const toggle = (jobId) => {
+      ovInvalidate();
+      setResult(null);
+      setErr("");
       setPicked((prev) => prev.includes(jobId) ? prev.filter((p) => p !== jobId) : prev.length >= 4 ? prev : prev.concat([jobId]));
     };
     const run = () => {
       if (isDemo || !baseUrl || picked.length < 2) return;
+      ovInvalidate();
+      const controller = new AbortController();
+      const seq = ovReqRef.current.seq + 1;
+      const reqKey = picked.join(",");
+      ovReqRef.current = { seq, controller };
+      ovKeyRef.current = reqKey;
       setBusy(true);
       setErr("");
       setResult(null);
-      _btFetchJson(baseUrl + "/bt/overlay?job_ids=" + encodeURIComponent(picked.join(",")), 15e3).then((j) => {
-        if (j && j.status === "ok") setResult(j);
+      _btFetchJson(baseUrl + "/bt/overlay?job_ids=" + encodeURIComponent(picked.join(",")), 15e3, controller.signal).then((j) => {
+        if (!btRequestIsCurrent(ovReqRef.current, seq, ovKeyRef.current, reqKey, controller.signal)) return;
+        if (j && (j.status === "ok" || j.status === "partial")) setResult(j);
         else {
+          setResult(j || null);
           setErr(j && j.message || "\uC624\uBC84\uB808\uC774 \uC2E4\uD328");
         }
-      }).catch((e) => setErr("\uC2E4\uD328: " + e)).finally(() => setBusy(false));
+      }).catch((e) => {
+        if (!btRequestIsCurrent(ovReqRef.current, seq, ovKeyRef.current, reqKey, controller.signal)) return;
+        setErr("\uC2E4\uD328: " + e);
+      }).finally(() => {
+        if (btRequestIsCurrent(ovReqRef.current, seq, ovKeyRef.current, reqKey, controller.signal)) setBusy(false);
+      });
     };
     const clearAll = () => {
+      ovInvalidate();
       setPicked([]);
       setResult(null);
       setErr("");
@@ -29476,7 +29543,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
         on ? "\u2713 " : "",
         j.job_id.slice(0, 14)
       );
-    })), picked.length < 2 && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC624\uBC84\uB808\uC774\uC5D0\uB294 2~4\uAC1C \uC7A1\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."), err && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, err), result && result.series && result.series.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10, borderTop: "1px solid var(--line-1)", paddingTop: 10 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+    })), picked.length < 2 && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uC624\uBC84\uB808\uC774\uC5D0\uB294 2~4\uAC1C \uC7A1\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."), err && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, err), result && result.status === "partial" && /* @__PURE__ */ React.createElement("div", { className: "research-empty", style: { textAlign: "left" } }, "\uBD80\uBD84 \uC624\uBC84\uB808\uC774 \u2014 \uC694\uCCAD ", (result.requested || []).length, "\uAC1C \uC911 ", (result.resolved || []).length, "\uAC1C\uB9CC \uD45C\uC2DC\uB429\uB2C8\uB2E4."), result && result.failures && result.failures.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, result.failures.map((f, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "mono", style: { fontSize: 10.5, color: "var(--red)" } }, "\u2715 ", f.job_id, " \u2014 ", f.detail || f.reason, f.quality_status ? " [" + f.quality_status + "]" : ""))), result && result.series && result.series.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10, borderTop: "1px solid var(--line-1)", paddingTop: 10 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
       "button",
       {
         className: "mono",
@@ -29493,7 +29560,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
       },
       normalize ? "\u2713 " : "",
       "\uC815\uADDC\uD654(\uCCAB \uD3EC\uC778\uD2B8 0)"
-    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, flexWrap: "wrap" } }, result.series.map((s, i) => /* @__PURE__ */ React.createElement("span", { key: s.job_id, className: "mono", style: { fontSize: 10, display: "inline-flex", alignItems: "center", gap: 5 } }, /* @__PURE__ */ React.createElement("span", { style: { width: 12, height: 3, background: _BT_OVERLAY_COLORS[i % _BT_OVERLAY_COLORS.length], display: "inline-block" } }), s.label)))), viewMode === "split" ? /* @__PURE__ */ React.createElement(BtSplitGrid, { series: result.series, normalize }) : /* @__PURE__ */ React.createElement(BtOverlayCurves, { series: result.series, normalize }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, result.series.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: s.job_id, style: { display: "flex", alignItems: "center", gap: 8, padding: "3px 6px", borderBottom: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("span", { style: { width: 10, height: 10, borderRadius: 2, background: _BT_OVERLAY_COLORS[i % _BT_OVERLAY_COLORS.length], flexShrink: 0 } }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, s.label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: Number(s.summary.total_profit_pct) >= 0 ? "var(--teal)" : "var(--red)" } }, _btNum(s.summary.total_profit_pct), "%"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", width: 70, textAlign: "right" } }, s.summary.trade_count, "\uAC70\uB798"))))))));
+    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, flexWrap: "wrap" } }, result.series.map((s, i) => /* @__PURE__ */ React.createElement("span", { key: s.job_id, className: "mono", style: { fontSize: 10, display: "inline-flex", alignItems: "center", gap: 5 } }, /* @__PURE__ */ React.createElement("span", { style: { width: 12, height: 3, background: _BT_OVERLAY_COLORS[i % _BT_OVERLAY_COLORS.length], display: "inline-block" } }), s.label, s.empty ? " (\uBB34\uAC70\uB798)" : "")))), viewMode === "split" ? /* @__PURE__ */ React.createElement(BtSplitGrid, { series: result.series, normalize }) : /* @__PURE__ */ React.createElement(BtOverlayCurves, { series: result.series, normalize }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, result.series.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: s.job_id, style: { display: "flex", alignItems: "center", gap: 8, padding: "3px 6px", borderBottom: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("span", { style: { width: 10, height: 10, borderRadius: 2, background: _BT_OVERLAY_COLORS[i % _BT_OVERLAY_COLORS.length], flexShrink: 0 } }), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, s.label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: Number(s.summary.total_profit_pct) >= 0 ? "var(--teal)" : "var(--red)" } }, _btNum(s.summary.total_profit_pct), "%"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", width: 70, textAlign: "right" } }, s.summary.trade_count, "\uAC70\uB798"))))))));
   }
   function BtCollapsible({ title, accent, defaultOpen, children: children2 }) {
     const [open, setOpen] = useState_bt(!!defaultOpen);
@@ -29687,16 +29754,28 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     const [result, setResult] = useState_bt(null);
     const [busy, setBusy] = useState_bt(false);
     const [err, setErr] = useState_bt("");
+    const pfReqRef = useRef_bt({ seq: 0, controller: null });
+    const pfKeyRef = useRef_bt("");
+    const pfInvalidate = () => {
+      if (pfReqRef.current.controller) pfReqRef.current.controller.abort();
+      pfReqRef.current = { seq: pfReqRef.current.seq + 1, controller: null };
+      pfKeyRef.current = "";
+      setResult(null);
+    };
     const addJob = (j) => {
       if (picked.length >= 6) return;
       const key = "job:" + j.job_id;
       if (picked.some((p) => p.key === key)) return;
+      pfInvalidate();
+      setErr("");
       setPicked((prev) => prev.concat([{ key, kind: "job", job_id: j.job_id, label: j.job_id.slice(0, 14) }]));
     };
     const addEvo = () => {
       if (!activeEvo || picked.length >= 6) return;
       const key = "gen:" + activeEvo.run_id + "/" + activeEvo.gen_no;
       if (picked.some((p) => p.key === key)) return;
+      pfInvalidate();
+      setErr("");
       setPicked((prev) => prev.concat([{
         key,
         kind: "gen",
@@ -29705,25 +29784,42 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
         label: activeEvo.run_id.slice(0, 8) + "/g" + activeEvo.gen_no
       }]));
     };
-    const removeAt = (key) => setPicked((prev) => prev.filter((p) => p.key !== key));
+    const removeAt = (key) => {
+      pfInvalidate();
+      setErr("");
+      setPicked((prev) => prev.filter((p) => p.key !== key));
+    };
     const clearAll = () => {
+      pfInvalidate();
       setPicked([]);
-      setResult(null);
       setErr("");
     };
     const run = () => {
       if (isDemo || !baseUrl) return;
+      pfInvalidate();
+      const controller = new AbortController();
+      const seq = pfReqRef.current.seq + 1;
+      const reqKey = picked.map((p) => p.key).join(",");
+      pfReqRef.current = { seq, controller };
+      pfKeyRef.current = reqKey;
       setBusy(true);
       setErr("");
       setResult(null);
       const items = picked.map((p) => p.kind === "job" ? { job_id: p.job_id, label: p.label } : { run_id: p.run_id, gen_no: p.gen_no, label: p.label });
-      _btPostJson(baseUrl + "/bt/portfolio", { items }, 2e4).then((j) => {
+      _btPostJson(baseUrl + "/bt/portfolio", { items }, 2e4, controller.signal).then((j) => {
+        if (!btRequestIsCurrent(pfReqRef.current, seq, pfKeyRef.current, reqKey, controller.signal)) return;
         if (j && j.status === "ok") {
-          setResult(j.portfolio);
+          setResult(j);
         } else {
+          setResult(j || null);
           setErr(j && j.message || "\uD3EC\uD2B8\uD3F4\uB9AC\uC624 \uBD84\uC11D \uC2E4\uD328");
         }
-      }).catch((e) => setErr("\uC2E4\uD328: " + e)).finally(() => setBusy(false));
+      }).catch((e) => {
+        if (!btRequestIsCurrent(pfReqRef.current, seq, pfKeyRef.current, reqKey, controller.signal)) return;
+        setErr("\uC2E4\uD328: " + e);
+      }).finally(() => {
+        if (btRequestIsCurrent(pfReqRef.current, seq, pfKeyRef.current, reqKey, controller.signal)) setBusy(false);
+      });
     };
     const doneJobs = (jobs || []).filter((j) => j.status === "success" || j.status === "no_trades");
     return /* @__PURE__ */ React.createElement("div", { className: "panel" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd" }, /* @__PURE__ */ React.createElement("div", { className: "panel-hd-title" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: "var(--blue)" } }), "\uD3EC\uD2B8\uD3F4\uB9AC\uC624 \uACB0\uD569 \uBD84\uC11D", /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginLeft: 6 } }, picked.length, "/6")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement(
@@ -29767,7 +29863,18 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
       display: "inline-flex",
       alignItems: "center",
       gap: 5
-    } }, p.label, /* @__PURE__ */ React.createElement("button", { onClick: () => removeAt(p.key), style: { background: "transparent", border: 0, color: "var(--ink-3)", cursor: "pointer", padding: 0 } }, "\u2715")))), picked.length < 2 && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uACB0\uD569 \uBD84\uC11D\uC5D0\uB294 2~6\uAC1C \uC804\uB7B5(\uC7A1/\uC138\uB300)\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."), err && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, err), result && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12, borderTop: "1px solid var(--line-1)", paddingTop: 10 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 16, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 \uCD1D\uC190\uC775 ", /* @__PURE__ */ React.createElement("b", { style: { color: result.combined.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)" } }, _pfFmtMoney(result.combined.total_profit_krw))), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 MDD ", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--red)" } }, Math.round(result.combined.max_drawdown_krw).toLocaleString(), "\uC6D0")), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-3)" } }, result.combined.trading_days, "\uAC70\uB798\uC77C \xB7 ", result.count, "\uC804\uB7B5")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uACB0\uD569 \uB204\uC801\uC218\uC775\uACE1\uC120"), /* @__PURE__ */ React.createElement(BtPortfolioCurve, { equity: result.combined.equity })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uC804\uB7B5 \uAC04 \uC77C\uBCC4\uC190\uC775 \uC0C1\uAD00"), /* @__PURE__ */ React.createElement(BtPortfolioHeatmap, { correlation: result.correlation })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uAC1C\uBCC4 \uAE30\uC5EC"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, result.strategies.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", borderBottom: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, s.label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: s.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)" } }, _pfFmtMoney(s.total_profit_krw)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", width: 64, textAlign: "right" } }, "\uAE30\uC5EC ", s.contribution_pct.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--red)", width: 90, textAlign: "right" } }, "MDD ", Math.round(s.max_drawdown_krw).toLocaleString())))))))));
+    } }, p.label, /* @__PURE__ */ React.createElement("button", { onClick: () => removeAt(p.key), style: { background: "transparent", border: 0, color: "var(--ink-3)", cursor: "pointer", padding: 0 } }, "\u2715")))), picked.length < 2 && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)" } }, "\uACB0\uD569 \uBD84\uC11D\uC5D0\uB294 2~6\uAC1C \uC804\uB7B5(\uC7A1/\uC138\uB300)\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."), err && /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 11, color: "var(--red)" } }, err), result && result.failed_reasons && result.failed_reasons.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, (result.failed_sources || []).map((f, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "mono", style: { fontSize: 10.5, color: "var(--red)" } }, "\u2715 ", f.job_id || (f.run_id || "?") + "/g" + f.gen_no, " \u2014 ", f.detail || f.reason, f.quality_status ? " [" + f.quality_status + "]" : ""))), result && result.portfolio && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12, borderTop: "1px solid var(--line-1)", paddingTop: 10 } }, result.sources && result.sources.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } }, result.sources.map((s, i) => /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        key: i,
+        className: "mono",
+        style: { fontSize: 9.5, color: "var(--ink-3)" },
+        title: s.source_sha256 || ""
+      },
+      s.label,
+      s.empty ? "\xB7\uBB34\uAC70\uB798" : "",
+      s.source_sha256 ? "\xB7" + s.source_sha256.slice(0, 8) : ""
+    ))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 16, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 \uCD1D\uC190\uC775 ", /* @__PURE__ */ React.createElement("b", { style: { color: result.portfolio.combined.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)" } }, _pfFmtMoney(result.portfolio.combined.total_profit_krw))), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11 } }, "\uACB0\uD569 MDD ", /* @__PURE__ */ React.createElement("b", { style: { color: "var(--red)" } }, Math.round(result.portfolio.combined.max_drawdown_krw).toLocaleString(), "\uC6D0")), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, color: "var(--ink-3)" } }, result.portfolio.combined.trading_days, "\uAC70\uB798\uC77C \xB7 ", result.portfolio.count, "\uC804\uB7B5")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uACB0\uD569 \uB204\uC801\uC218\uC775\uACE1\uC120"), /* @__PURE__ */ React.createElement(BtPortfolioCurve, { equity: result.portfolio.combined.equity })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uC804\uB7B5 \uAC04 \uC77C\uBCC4\uC190\uC775 \uC0C1\uAD00"), /* @__PURE__ */ React.createElement(BtPortfolioHeatmap, { correlation: result.portfolio.correlation })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "mono", style: { fontSize: 10, color: "var(--ink-3)", marginBottom: 4 } }, "\uAC1C\uBCC4 \uAE30\uC5EC"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, result.portfolio.strategies.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", borderBottom: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 11, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, s.label), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: s.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)" } }, _pfFmtMoney(s.total_profit_krw)), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--ink-3)", width: 64, textAlign: "right" } }, "\uAE30\uC5EC ", s.contribution_pct.toFixed(0), "%"), /* @__PURE__ */ React.createElement("span", { className: "mono", style: { fontSize: 10.5, color: "var(--red)", width: 90, textAlign: "right" } }, "MDD ", Math.round(s.max_drawdown_krw).toLocaleString())))))))));
   }
   function BtBackFinderPreflightPanel({ baseUrl, isDemo, buyName }) {
     const [data, setData] = useState_bt(null);
@@ -30143,6 +30250,8 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     const [jobsReloadKey, setJobsReloadKey] = useState_bt(0);
     const [compareA, setCompareA] = useState_bt("");
     const [compareView, setCompareView] = useState_bt(null);
+    const compareReqRef = useRef_bt({ seq: 0, controller: null });
+    const compareKeyRef = useRef_bt("");
     const [sourceView, setSourceView] = useState_bt("all");
     const [subTab, setSubTab] = useState_bt(() => {
       try {
@@ -30207,14 +30316,32 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     }, [onPickGen]);
     const runCompare = useCallback_bt((keyB) => {
       if (isDemo || !baseUrl || !compareA || !keyB) return;
+      if (compareReqRef.current.controller) compareReqRef.current.controller.abort();
+      const controller = new AbortController();
+      const seq = compareReqRef.current.seq + 1;
+      const reqKey = compareA + " vs " + keyB;
+      compareReqRef.current = { seq, controller };
+      compareKeyRef.current = reqKey;
       const url = baseUrl + "/bt/compare?" + _btCompareParams(compareA, "a") + "&" + _btCompareParams(keyB, "b");
-      _btFetchJson(url, 12e3).then((j) => setCompareView(j || null)).catch(() => setCompareView(null));
+      _btFetchJson(url, 12e3, controller.signal).then((j) => {
+        if (!btRequestIsCurrent(compareReqRef.current, seq, compareKeyRef.current, reqKey, controller.signal)) return;
+        setCompareView(j || null);
+      }).catch(() => {
+        if (!btRequestIsCurrent(compareReqRef.current, seq, compareKeyRef.current, reqKey, controller.signal)) return;
+        setCompareView(null);
+      });
     }, [baseUrl, isDemo, compareA]);
     const onSetCompareA = useCallback_bt((jobId) => {
+      if (compareReqRef.current.controller) compareReqRef.current.controller.abort();
+      compareReqRef.current = { seq: compareReqRef.current.seq + 1, controller: null };
+      compareKeyRef.current = "";
       setCompareA(jobId);
       setCompareView(null);
     }, []);
     const onCloseCompare = useCallback_bt(() => {
+      if (compareReqRef.current.controller) compareReqRef.current.controller.abort();
+      compareReqRef.current = { seq: compareReqRef.current.seq + 1, controller: null };
+      compareKeyRef.current = "";
       setCompareView(null);
     }, []);
     useEffect_bt(() => {

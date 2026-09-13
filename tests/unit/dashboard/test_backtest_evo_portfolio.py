@@ -226,8 +226,8 @@ def test_result_unknown_run_gen_unavailable(client: TestClient):
 
 # ----------------------------------------------------------------- portfolio
 def test_portfolio_two_jobs_combines(client: TestClient, tmp_path: Path):
-    csv_a = _make_trades_csv(tmp_path / "a.csv", n=60, sign=1)
-    csv_b = _make_trades_csv(tmp_path / "b.csv", n=60, sign=-1)
+    csv_a = _make_trades_csv(tmp_path / "a.csv", n=60, sign=1, official=True)
+    csv_b = _make_trades_csv(tmp_path / "b.csv", n=60, sign=-1, official=True)
     _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001")
     _seed_job(tmp_path, csv_b, "20260101_000000_JOBB_00002")
 
@@ -252,9 +252,9 @@ def test_portfolio_two_jobs_combines(client: TestClient, tmp_path: Path):
 
 
 def test_portfolio_run_gen_items(client: TestClient, tmp_path: Path):
-    csv0 = _make_trades_csv(tmp_path / "g0.csv", n=40, sign=1)
-    csv1 = _make_trades_csv(tmp_path / "g1.csv", n=40, sign=1)
-    _seed_gen(tmp_path, "runP", 0, csv_path=csv0)
+    csv0 = _make_trades_csv(tmp_path / "g0.csv", n=40, sign=1, official=True)
+    csv1 = _make_trades_csv(tmp_path / "g1.csv", n=40, sign=1, official=True)
+    _seed_gen(tmp_path, "runP", 0, csv_path=csv0, trades=40)
     # 같은 run 의 두 세대를 self-포트폴리오로 결합(완전 동일 → 상관 ~1).
     db = tmp_path / "loop_runs.db"
     st = LoopState(db_path=str(db), snapshot_dir=str(tmp_path / "snaps"))
@@ -277,8 +277,8 @@ def test_portfolio_run_gen_items(client: TestClient, tmp_path: Path):
 def test_portfolio_rejects_too_few(client: TestClient, tmp_path: Path):
     # 스키마 레벨(_MutationPayload) 이 2~6 개수 경계를 강제 — 위반 시 핸들러 진입 전
     # 422 로 즉시 거부한다(구버전 200+status:error 바디는 폐지된 계약).
-    csv_a = _make_trades_csv(tmp_path / "a.csv", n=10)
-    _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001")
+    csv_a = _make_trades_csv(tmp_path / "a.csv", n=10, official=True)
+    _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001", trade_count=10)
     r = client.post("/bt/portfolio", json={"items": [
         {"job_id": "20260101_000000_JOBA_00001"},
     ]})
@@ -293,10 +293,10 @@ def test_portfolio_rejects_too_many(client: TestClient):
 
 
 def test_portfolio_unresolved_items_reported(client: TestClient, tmp_path: Path):
-    csv_a = _make_trades_csv(tmp_path / "a.csv", n=20, sign=1)
-    csv_b = _make_trades_csv(tmp_path / "b.csv", n=20, sign=-1)
-    _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001")
-    _seed_job(tmp_path, csv_b, "20260101_000000_JOBB_00002")
+    csv_a = _make_trades_csv(tmp_path / "a.csv", n=20, sign=1, official=True)
+    csv_b = _make_trades_csv(tmp_path / "b.csv", n=20, sign=-1, official=True)
+    _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001", trade_count=20)
+    _seed_job(tmp_path, csv_b, "20260101_000000_JOBB_00002", trade_count=20)
     # 3개 요청 중 1개는 존재하지 않는 잡 → 부분 합성하지 않고 실패 인덱스/사유를 반환.
     r = client.post("/bt/portfolio", json={"items": [
         {"job_id": "20260101_000000_JOBA_00001"},
@@ -312,8 +312,8 @@ def test_portfolio_unresolved_items_reported(client: TestClient, tmp_path: Path)
 
 
 def test_portfolio_missing_csv_artifact_fails_with_reason(client: TestClient, tmp_path: Path):
-    csv_a = _make_trades_csv(tmp_path / "a.csv", n=20, sign=1)
-    _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001")
+    csv_a = _make_trades_csv(tmp_path / "a.csv", n=20, sign=1, official=True)
+    _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001", trade_count=20)
     _seed_job(tmp_path, str(tmp_path / "missing.csv"), "20260101_000000_JOBM_00002")
 
     r = client.post("/bt/portfolio", json={"items": [
@@ -329,8 +329,8 @@ def test_portfolio_missing_csv_artifact_fails_with_reason(client: TestClient, tm
 
 
 def test_portfolio_missing_generation_csv_fails_with_reason(client: TestClient, tmp_path: Path):
-    csv_a = _make_trades_csv(tmp_path / "g0.csv", n=20, sign=1)
-    _seed_gen(tmp_path, "runMissingCsv", 0, csv_path=csv_a)
+    csv_a = _make_trades_csv(tmp_path / "g0.csv", n=20, sign=1, official=True)
+    _seed_gen(tmp_path, "runMissingCsv", 0, csv_path=csv_a, trades=20)
     db = tmp_path / "loop_runs.db"
     st = LoopState(db_path=str(db), snapshot_dir=str(tmp_path / "snaps"))
     try:
@@ -352,9 +352,9 @@ def test_portfolio_missing_generation_csv_fails_with_reason(client: TestClient, 
 
 
 def test_portfolio_no_trades_job_is_explicit_empty_input(client: TestClient, tmp_path: Path):
-    csv_a = _make_trades_csv(tmp_path / "a.csv", n=20, sign=1)
-    _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001")
-    _seed_job(tmp_path, None, "20260101_000000_JOBN_00002", status="no_trades")
+    csv_a = _make_trades_csv(tmp_path / "a.csv", n=20, sign=1, official=True)
+    _seed_job(tmp_path, csv_a, "20260101_000000_JOBA_00001", trade_count=20)
+    _seed_job(tmp_path, None, "20260101_000000_JOBN_00002", status="no_trades", trade_count=0)
 
     r = client.post("/bt/portfolio", json={"items": [
         {"job_id": "20260101_000000_JOBA_00001"},

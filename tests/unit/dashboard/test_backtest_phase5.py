@@ -259,10 +259,12 @@ def test_overlay_dedup_ids(client: TestClient):
 
 
 def _write_trades_csv(path: Path, rows) -> None:
+    # B5 admission 이후 오버레이/포트폴리오 입력은 공식 54열 스키마여야 한다.
     import csv
-    cols = ["종목명", "매수시간", "매도시간", "보유시간", "수익률", "수익금"]
+    from tests.unit.dashboard.trade_quality_fixtures import official_pair
+    cols = official_pair()[0].strip().split(",")
     with open(path, "w", encoding="utf-8-sig", newline="") as fh:
-        writer = csv.DictWriter(fh, fieldnames=cols)
+        writer = csv.DictWriter(fh, fieldnames=cols, restval="")
         writer.writeheader()
         for name, buy, sell, hold, pct, krw in rows:
             writer.writerow({"종목명": name, "매수시간": buy, "매도시간": sell,
@@ -299,6 +301,8 @@ def test_overlay_two_valid_jobs(monkeypatch, tmp_path: Path):
     manager = BacktestJobManager(jobs_dir=tmp_path / "jobs", command_builder=_csv_success_command(str(csv_a)))
     # 매니저 싱글톤을 테스트 매니저로 치환(API 가 get_job_manager 로 공유).
     monkeypatch.setattr(api, "get_job_manager", lambda: manager)
+    # admission 은 REPO_ROOT 하위 artifact 만 허용 — fixture 루트를 레포 루트로 맞춘다.
+    monkeypatch.setattr(api, "REPO_ROOT", tmp_path)
 
     id_a = manager.submit(_spec(buy="잡A"))["job_id"]
     _wait(manager, id_a, {"success", "error", "timeout"})

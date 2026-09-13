@@ -279,6 +279,8 @@ class TestCompare:
             def result_csv_path(self, job_id):
                 return csv_a if job_id == "A" else (csv_b if job_id == "B" else None)
 
+        # B5 admission 은 REPO_ROOT 하위 artifact 만 허용 — fixture 루트를 맞춘다.
+        monkeypatch.setattr(BA, "REPO_ROOT", Path(csv_a).resolve().parent)
         monkeypatch.setattr(BA, "get_job_manager", lambda: _TwoJobManager())
 
     def test_compare_two_jobs(self, monkeypatch, client, tmp_path):
