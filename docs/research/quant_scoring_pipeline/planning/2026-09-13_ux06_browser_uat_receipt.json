@@ -1,0 +1,29 @@
+{
+  "stage": "UX06-UAT",
+  "title": "브라우저 실측 수용 — 가설 원장·6질문 내비·생명주기",
+  "date": "2026-09-13",
+  "environment": {
+    "server": "python -m ai_strategy_loop --port 8799 (dev worktree)",
+    "browser": "playwright chromium headless, viewport 1280x620",
+    "note": "MCP 브라우저 세션은 최초 viewport 를 유지해 620px 폭은 미검증"
+  },
+  "evidence": {
+    "research_page": "rr4-questions 6질문 내비 렌더 확인 · console error 0",
+    "catalog_registry": "?tab=catalog&view=registry 딥링크로 패널 직접 진입 · 상태 카운트 6축 렌더",
+    "lifecycle": [
+      "POST /hypotheses → hyp-c8a1072aa25cdd0d8dc1 (200)",
+      "review reviewer='' → 409 reviewer_required",
+      "review reviewer='park' → ACCEPTED_FOR_PREREG",
+      "prereg-draft → PREREG_DRAFT",
+      "seal 승인 없음 → 409 seal_requires_human_approval",
+      "seal 승인 증거+승인자 → PREREG_SEALED (seal 3334dbab7a22)",
+      "queue enqueue → attempt → cancel 영수증 1건"
+    ],
+    "ui_reflects_state": "봉인 행과 큐 취소 영수증이 원장 패널에 렌더됨",
+    "screenshot": "C:/Users/parkc/STOM_Verification/final-gate-20260913/ux06-registry-1280x620-*.png"
+  },
+  "not_verified": [
+    "620px viewport(MCP 세션 고정 폭)",
+    "나머지 12 페이지의 개별 완주"
+  ]
+}
