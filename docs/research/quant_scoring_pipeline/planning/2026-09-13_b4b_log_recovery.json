@@ -1,0 +1,36 @@
+{
+  "schema": "stom.handoff_log_recovery.v1",
+  "observed_date_kst": "2026-09-13",
+  "status": "LOGS_COMPLETED_EXIT_CODES_UNRECOVERED",
+  "formal_gate_closed": false,
+  "tested_commit_from_checkpoint": "ff20815a17b0a569d47a10908eb11b2821cbc120",
+  "canonical_head_observed": "ff20815a17b0a569d47a10908eb11b2821cbc120",
+  "scope": "SYS05.B4b",
+  "fast": {
+    "path": "C:/Users/parkc/STOM_Verification/v1.5_20260910/b4b-integrated-fast.log",
+    "sha256": "2ec890d4d670382faa828f0e20910547b1bb606ffb782d2293f1633328855ad0",
+    "bytes": 11894,
+    "last_write_kst": "2026-09-10T10:46:09+09:00",
+    "summary": "8175 passed, 27 skipped, 24 deselected, 54 warnings in 1292.01s (0:21:32)",
+    "session_id_historical": 2283,
+    "session_recovery": "Unknown process id 2283",
+    "exit_code": null
+  },
+  "slow": {
+    "path": "C:/Users/parkc/STOM_Verification/v1.5_20260910/b4b-integrated-slow.log",
+    "sha256": "fbceac1665e21e27922c88704e3e8559f7a2bcf7a1d866fca150147e84ed0e74",
+    "bytes": 1248,
+    "last_write_kst": "2026-09-10T10:41:08+09:00",
+    "summary": "24 passed, 8202 deselected, 1 warning in 981.51s (0:16:21)",
+    "session_id_historical": 22523,
+    "session_recovery": "Unknown process id 22523",
+    "exit_code": null
+  },
+  "disjoint_log_counts": {"passed": 8199, "skipped": 27},
+  "historical_checkpoint": "2026-09-10_b4b_gate_in_progress.json",
+  "checkpoint_interpretation": "RUNNING was true when recorded, not current status; preserve historical file",
+  "current_action": "documentation only; no tests rerun, no implementation, no merge or push",
+  "next_action_after_resume_request": "Recover actual exit receipt or rerun fixed source with fresh logs and explicitly captured exit codes before closing Gate",
+  "b5_implemented": false,
+  "economic_success_verified": false
+}
