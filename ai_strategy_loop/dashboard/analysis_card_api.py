@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from typing import Annotated, Any, Final
 
@@ -20,7 +21,15 @@ import pandas as pd
 from fastapi import APIRouter
 from pydantic import StringConstraints
 
-from ai_strategy_loop.autopsy.analysis_card import build_analysis_card
+from ai_strategy_loop.autopsy.analysis_card import (
+    build_analysis_card,
+    build_analysis_card_v3,
+    card_v3_to_json,
+)
+from ai_strategy_loop.dashboard.analysis_bundle_store import (
+    latest_bundle_sha_for_job,
+    store_card,
+)
 from ai_strategy_loop.dashboard.trade_path_source import resolve_job_source
 
 analysis_card_router = APIRouter()
@@ -68,10 +77,13 @@ def _result_meta(source: Any, trades: pd.DataFrame | None) -> dict[str, Any]:
 
 
 @analysis_card_router.get("/bt/analysis-card")
-def analysis_card(job_id: JobId, fine_time: bool = False) -> dict[str, Any]:
-    """완료된 백테스트 job 의 분석 카드(v2)를 반환한다.
+def analysis_card(job_id: JobId, fine_time: bool = False, v3: bool = False) -> dict[str, Any]:
+    """완료된 백테스트 job 의 분석 카드를 반환한다.
 
     실패·미완료 job 은 카드를 만들지 않는다(불완전 산출물을 근거로 삼지 않는다).
+    ``v3=1`` 이면 영속 Analysis Card v3(자체 content_hash)를 만들어 artifact
+    저장소에 보존하고, 카탈로그의 최신 canonical bundle 해시와 함께 돌려준다 —
+    화면·프롬프트·보고서가 같은 bundle/card hash 를 가리키게 하는 ANA-05 연결.
     """
     try:
         resolved = resolve_job_source(job_id)
@@ -81,13 +93,16 @@ def analysis_card(job_id: JobId, fine_time: bool = False) -> dict[str, Any]:
 
     source = resolved.source
     cache_key = (job_id, getattr(source, "csv_sha256", ""))
-    if not fine_time and cache_key in _card_cache:
+    if not fine_time and not v3 and cache_key in _card_cache:
         return {"available": True, "cached": True, **_card_cache[cache_key]}
 
     trades = _read_trades(getattr(source, "csv_path", ""))
     if trades is None:
         return {"available": False, "reason": "trade_csv_unreadable",
                 "authority": "research_analysis_card_only"}
+
+    if v3:
+        return _analysis_card_v3(job_id, source, trades)
 
     card = build_analysis_card(_result_meta(source, trades), trades, fine_time=fine_time)
     payload = {
@@ -102,6 +117,32 @@ def analysis_card(job_id: JobId, fine_time: bool = False) -> dict[str, Any]:
             _card_cache.pop(next(iter(_card_cache)))
         _card_cache[cache_key] = payload
     return {"available": True, "cached": False, **payload}
+
+
+def _analysis_card_v3(job_id: str, source: Any, trades: pd.DataFrame) -> dict[str, Any]:
+    """영속 v3 카드를 빌드·보존하고 bundle 해시 링크를 붙인다."""
+    card = build_analysis_card_v3(
+        trades,
+        source={
+            "job_id": job_id,
+            "csv_sha256": getattr(source, "csv_sha256", ""),
+            "run_id": getattr(source, "run_id", ""),
+        },
+        role="train",
+    )
+    store_card(job_id, card.content_hash, card_v3_to_json(card))
+    bundle_sha = latest_bundle_sha_for_job(job_id)
+    return {
+        "authority": "research_analysis_card_only",
+        "job_id": job_id,
+        "csv_sha256": getattr(source, "csv_sha256", ""),
+        "trade_count": int(len(trades)),
+        "card": json.loads(card_v3_to_json(card)),
+        "card_schema": card.schema,
+        "card_content_sha256": card.content_hash,
+        "bundle_content_sha256": bundle_sha,
+        "persistence": "immutable_artifact",
+    }
 
 
 @analysis_card_router.get("/bt/analysis-card/losers")

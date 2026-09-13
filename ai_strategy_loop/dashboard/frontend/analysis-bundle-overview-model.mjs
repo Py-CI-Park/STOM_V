@@ -49,6 +49,7 @@ function capability(section) {
     code,
     label: CAPABILITY[code] || "상태 미확인",
     reason: String(safe.reason || ""),
+    prerequisites: Array.isArray(safe.prerequisites) ? safe.prerequisites.map(String) : [],
   };
 }
 
@@ -77,6 +78,9 @@ function bundleOverview(payload) {
     csvSize: Number.isFinite(Number(source.csv_size_bytes)) ? Number(source.csv_size_bytes) : null,
     preregistration: String(preregistration.status || "NOT_OBSERVED"),
     persistence: String(evidence.persistence || payload?.persistence || "unknown"),
+    artifactHit: payload && payload.artifact_hit === true,
+    schemaVersion: String(bundle.schema || ""),
+    cardHash: shortHash(evidence.bundle_card_sha256),
     generatedAtSource: String(evidence.generated_at_source || "not_observed"),
     execution: axis(EXECUTION, execution.status, "실행 상태 미확인"),
     economic: axis(ECONOMIC, decision.economic, "경제 상태 미확인"),
@@ -92,6 +96,9 @@ function bundleOverview(payload) {
     metrics: capability(bundle.metrics),
     series: capability(bundle.series),
     distribution: capability(bundle.distribution),
+    dataQuality: capability(bundle.data_quality),
+    statistics: capability(bundle.statistics),
+    findings: capability(bundle.findings),
     episodes: capability(bundle.episodes),
     attribution: capability(bundle.attribution),
     counterfactual: capability(bundle.counterfactual),
