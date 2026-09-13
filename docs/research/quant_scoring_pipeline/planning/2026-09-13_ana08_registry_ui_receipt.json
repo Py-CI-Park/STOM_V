@@ -1,0 +1,37 @@
+{
+  "stage": "ANA08-UI",
+  "title": "가설 레지스트리 API + V4 원장 패널 + finding→가설 딥링크",
+  "date": "2026-09-13",
+  "branch": "codex/process-research-ana08-registry-ui",
+  "scope": {
+    "in": [
+      "hypothesis_registry_api.py — append-only JSONL 이벤트 저장소(state/hypothesis_registry/) + 이벤트 재생 상태 재구성",
+      "GET /hypothesis-registry/state + POST findings/hypotheses/review/prereg-draft/seal/queue/attempt/cancel",
+      "security_capabilities: 9개 POST 를 RESEARCH_DIAGNOSTIC 로 분류(미분류=403 계약)",
+      "v4-hypothesis-registry.jsx — 상태 뱃지·bundle/finding 계보·검토/봉인 폼(사람 승인 필수)·큐 영수증",
+      "v4-catalog registry 뷰 + ?view= 딥링크 · failure-autopsy → 원장 1클릭 링크",
+      "rr4-questions 6질문 내비 스트립(결과 워크스페이스)"
+    ],
+    "out": [
+      "실제 연구 실행·G2·FROZEN_OOS 개봉 — 별도 승인 게이트(영구)"
+    ]
+  },
+  "verification": {
+    "api": "test_hypothesis_registry_api.py 8 passed (상태머신 게이트가 HTTP 경계에서도 유지)",
+    "unit": "test_hypothesis_registry.py 9 passed",
+    "ux_contract": "test_ux06_workspace_acceptance.py 14 passed",
+    "shell_parity_security": "54 passed"
+  },
+  "files": [
+    "ai_strategy_loop/dashboard/hypothesis_registry_api.py",
+    "ai_strategy_loop/dashboard/security_capabilities.py",
+    "ai_strategy_loop/dashboard/app.py",
+    "ai_strategy_loop/dashboard/frontend/v4-hypothesis-registry.jsx",
+    "ai_strategy_loop/dashboard/frontend/v4-catalog.jsx",
+    "ai_strategy_loop/dashboard/frontend/v4-research-result.jsx",
+    "ai_strategy_loop/dashboard/frontend/v4-research-failure-autopsy.jsx",
+    "ai_strategy_loop/dashboard/frontend/v4.css",
+    "tests/unit/dashboard/test_hypothesis_registry_api.py",
+    "tests/unit/dashboard/test_ux06_workspace_acceptance.py"
+  ]
+}

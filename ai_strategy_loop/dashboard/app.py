@@ -95,6 +95,7 @@ from ai_strategy_loop.dashboard.research_program_api import research_program_rou
 from ai_strategy_loop.dashboard.research_truth_api import research_truth_router  # noqa: E402
 from ai_strategy_loop.dashboard.analysis_bundle_api import analysis_bundle_router  # noqa: E402
 from ai_strategy_loop.dashboard.research_result_api import research_result_router  # noqa: E402
+from ai_strategy_loop.dashboard.hypothesis_registry_api import hypothesis_registry_router  # noqa: E402
 from ai_strategy_loop.fitness.research_criteria import normalize_research_oos_mode, research_mode_payload  # noqa: E402
 from ai_strategy_loop.launch_config import config_field_specs, config_from_dict  # noqa: E402
 
@@ -3572,6 +3573,7 @@ def create_app(
     app.include_router(research_truth_router)
     app.include_router(analysis_bundle_router)
     app.include_router(research_result_router)
+    app.include_router(hypothesis_registry_router)
 
     @app.get("/", response_class=HTMLResponse)
     def root(request: Request) -> HTMLResponse:

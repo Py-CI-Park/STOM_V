@@ -148,6 +148,15 @@ function V516ResearchResultGateboard({ baseUrl }) {
   const selected = candidates.find(row => row.candidate_id === selectedId) || candidates[0];
   return (
     <div className="rr3-gateboard rr4-shell">
+      {/* UX-06 — "기능 모음"이 아니라 "질문 순서" 내비: 6개 질문이 각 구역을 가리킨다. */}
+      <nav className="rr4-questions" aria-label="판독 질문 순서">
+        <a href="#rr4-title">Q1 이 결과를 믿어도 되는가</a>
+        <a href="#rr4-evidence-detail">Q2 무엇이 일어났는가</a>
+        <a href="#ra4-autopsy">Q3 어디서 왜 실패했는가</a>
+        <a href="#rr4-evidence-detail">Q4 우연이 아닌가</a>
+        <a href="#ra4-autopsy">Q5 무엇을 배웠는가</a>
+        <a href="/?tab=catalog&view=registry">Q6 다음에 무엇을 시험할 것인가</a>
+      </nav>
       <_Rr4MissionControl platform={platform} decision={decision} detailOpen={detailOpen} onToggleDetail={() => setDetailOpen(open => !open)} />
       <V516ResearchFailureAutopsy analysis={data.analysis} onInspectCandidate={candidateId => { setSelectedId(candidateId); setDetailOpen(true); }} />
       <details className="rr4-evidence" id="rr4-evidence-detail" open={detailOpen} onToggle={event => setDetailOpen(event.currentTarget.open)}>

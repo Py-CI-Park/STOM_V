@@ -16,7 +16,7 @@ function V516ResearchFailureAutopsy({ analysis, onInspectCandidate }) {
   const stopLoss = autopsy.exits.find(row => row.exitKind === "STOP_LOSS");
   const takeProfit = autopsy.exits.find(row => row.exitKind === "TAKE_PROFIT");
   return (
-    <section className="ra4-autopsy" aria-label="G0 G1 공통 실패 부검">
+    <section className="ra4-autopsy" id="ra4-autopsy" aria-label="G0 G1 공통 실패 부검">
       <header className="ra4-heading"><div><span>ANA-04 · READ ONLY FAILURE AUTOPSY</span><h2>7개 후보가 공통으로 실패한 곳</h2></div><strong>DEV {autopsy.developmentPassCount}/{autopsy.candidateCount} · STOP</strong></header>
       <p className="ra4-lede">상대 개선 Fold가 있어도 절대 양수 Fold와 결합 손익이 부족했습니다. 아래 수치는 봉인 결과의 집계이며 새 기준이나 재실행 지시가 아닙니다.</p>
       <div className="ra4-kpis" role="list" aria-label="실패 부검 핵심 관측">
@@ -42,7 +42,8 @@ function V516ResearchFailureAutopsy({ analysis, onInspectCandidate }) {
           <section><h3>후보별 근거 열기</h3><div className="ra4-candidates">{autopsy.candidates.map(row => <button type="button" key={row.candidateId} onClick={() => onInspectCandidate(row.candidateId)}><span>{row.familyId.replaceAll("_", " ")}</span><b>{row.metricsObserved ? `${row.positiveFolds}/4 양수 · ${_ra4Num(row.sumProfitPct)}%` : "미관측 · NO_TRADES"}</b><em>{row.pairedPass ? "PAIR SIGNAL" : "PAIR STOP"} · DEV STOP</em></button>)}</div></section>
         </div>
       </details>
-      <footer>persistence none · threshold 변경 없음 · G2/FROZEN_OOS_HOLDOUT/자동채택 권한 없음</footer>
+      <footer>persistence none · threshold 변경 없음 · G2/FROZEN_OOS_HOLDOUT/자동채택 권한 없음
+        {" · "}<a href="/?tab=catalog&view=registry">가설 원장으로 이동 →</a></footer>
     </section>
   );
 }

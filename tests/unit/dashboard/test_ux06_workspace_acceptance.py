@@ -57,6 +57,25 @@ def test_hypothesis_registry_exposes_machine_readable_states():
     assert "seal_requires_human_approval" in src
 
 
+def test_hypothesis_registry_surface_wired_into_catalog():
+    catalog = _read("v4-catalog.jsx")
+    assert "V4HypothesisRegistry" in catalog
+    assert '"registry"' in catalog or "key: \"registry\"" in catalog
+    # finding→가설 딥링크: failure autopsy → catalog registry 뷰 1클릭.
+    assert "view=registry" in _read("v4-research-failure-autopsy.jsx")
+
+
+def test_registry_api_router_registered():
+    app_src = (BE / "app.py").read_text(encoding="utf-8")
+    assert "hypothesis_registry_router" in app_src
+
+
+def test_six_question_nav_on_result_workspace():
+    src = _read("v4-research-result.jsx")
+    assert "rr4-questions" in src
+    assert "믿어도 되는가" in src and "시험할 것인가" in src
+
+
 # ---------------------------------------------------------------- terminology
 
 def test_holdout_terminology_canonical_split():

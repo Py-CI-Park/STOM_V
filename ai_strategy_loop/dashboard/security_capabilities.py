@@ -76,4 +76,15 @@ HTTP_CAPABILITIES: Final = {
     ("POST", "/loop/research-tools/qmc"): Capability.RESEARCH_DIAGNOSTIC,
     ("POST", "/loop/research-tools/denoise"): Capability.RESEARCH_DIAGNOSTIC,
     ("POST", "/research-program/preregistration/preview"): Capability.RESEARCH_DIAGNOSTIC,
+    # ANA-08 가설/사전등록 원장 — 연구 계획 문서 쓰기만 한다. 실행·봉인·채택 권한 없음
+    #   (PREREG_SEALED 는 상태머신이 사람 승인 증거를 별도 요구한다).
+    ("POST", "/hypothesis-registry/findings"): Capability.RESEARCH_DIAGNOSTIC,
+    ("POST", "/hypothesis-registry/findings/{finding_id}/falsify"): Capability.RESEARCH_DIAGNOSTIC,
+    ("POST", "/hypothesis-registry/hypotheses"): Capability.RESEARCH_DIAGNOSTIC,
+    ("POST", "/hypothesis-registry/hypotheses/{hypothesis_id}/review"): Capability.RESEARCH_DIAGNOSTIC,
+    ("POST", "/hypothesis-registry/hypotheses/{hypothesis_id}/prereg-draft"): Capability.RESEARCH_DIAGNOSTIC,
+    ("POST", "/hypothesis-registry/preregs/{hypothesis_id}/seal"): Capability.RESEARCH_DIAGNOSTIC,
+    ("POST", "/hypothesis-registry/queue"): Capability.RESEARCH_DIAGNOSTIC,
+    ("POST", "/hypothesis-registry/queue/{item_id}/attempt"): Capability.RESEARCH_DIAGNOSTIC,
+    ("POST", "/hypothesis-registry/queue/{item_id}/cancel"): Capability.RESEARCH_DIAGNOSTIC,
 }
