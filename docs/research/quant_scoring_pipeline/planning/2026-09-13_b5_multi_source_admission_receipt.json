@@ -12,10 +12,17 @@
   ],
   "design": {
     "shared_admission": "ai_strategy_loop/dashboard/multi_source.py — inspect_member() 가 B4 typed admission 재사용",
-    "states": ["ready", "empty_verified", "blocked"],
+    "states": [
+      "ready",
+      "empty_verified",
+      "blocked"
+    ],
     "blocked_reasons": [
-      "execution_blocked", "source_missing", "source_empty",
-      "no_trades_contradiction", "source_quality_blocked"
+      "execution_blocked",
+      "source_missing",
+      "source_empty",
+      "no_trades_contradiction",
+      "source_quality_blocked"
     ],
     "snapshot_rule": "admission 시 1회만 읽고 체크된 스냅샷을 계산기에 전달 — load_trades_csv 재호출 없음",
     "empty_rule": "no_trades 문자열만으로 빈 승인 안 함 — 공식 헤더·예상 행 0·실행 상태 근거 필요",
@@ -46,6 +53,45 @@
     "push 없음"
   ],
   "protected_untouched": [
-    "wt-dev", "tmap/evidence", "sealed evidence", "운영 DB", "_database/", "*.db", "backtest/graph/"
-  ]
+    "wt-dev",
+    "tmap/evidence",
+    "sealed evidence",
+    "운영 DB",
+    "_database/",
+    "*.db",
+    "backtest/graph/"
+  ],
+  "integration": {
+    "merge_commit": "222f2c67",
+    "index_sync_commit": "71ceffba",
+    "canonical_branch": "loop/process-research-pipeline"
+  },
+  "gate": {
+    "worktree": "C:/System_Trading/STOM/STOM_V.wt-pipeline-integration",
+    "fast": {
+      "passed": 8206,
+      "skipped": 27,
+      "deselected": 24,
+      "warnings": 54,
+      "failed": 1,
+      "seconds": 1646.83,
+      "log": "C:/Users/parkc/STOM_Verification/b5-gate-20260913/fast.log",
+      "log_sha256": "f1df8a7be34e34969895a0ea866ba015a74bbf13c8a2e1549c27d670dfd6c667",
+      "failure": "test_tracked_research_docs_sidecar_matches_allowlisted_sources — B5 영수증 추가 후 생성형 색인 미갱신; 색인 동기화(71ceffba)로 해소, 해당 시험 재실행 PASS"
+    },
+    "slow": {
+      "passed": 24,
+      "deselected": 8234,
+      "warnings": 1,
+      "seconds": 1492.8,
+      "exit_code": 0,
+      "log": "C:/Users/parkc/STOM_Verification/b5-gate-20260913/slow.log",
+      "log_sha256": "22adc061ac59c1bb03bbd97fe551b29a47d91340981282510e6ffe44516995bc"
+    },
+    "nonrelease_sync": "PASS exit=0",
+    "diff_check": "PASS exit=0",
+    "protected_paths": "clean (_database/_log/backup/*.db/backtest/graph/.omx/reports/v3k_settings*)",
+    "v3k_audit": "N/A in this worktree — _v3k_sidecar/v3k_gui_settings.json 은 wt-dev 보호 경로에만 존재(환경 제약, B5 변경과 무관)",
+    "pyd_gui_contract_smoke": "CLI 인자 필수 스크립트 — 단위 Gate 외부(기존 B4b Gate 와 동일 범위)"
+  }
 }
