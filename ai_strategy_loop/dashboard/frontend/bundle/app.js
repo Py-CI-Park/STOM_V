@@ -25971,6 +25971,19 @@ ${sellCode}` : code);
     const [norm, setNorm] = useState_btc(true);
     const a = cmp && cmp.a, b = cmp && cmp.b;
     const delta = cmp && cmp.delta || {};
+    const projOf = (side, key) => side && side.metric_projection && side.metric_projection.metrics && side.metric_projection.metrics[key] || null;
+    const renderCell = (side, key, fmt, win2, color2) => {
+      const p = projOf(side, key);
+      const v = p ? p.value : (side && side.summary || {})[key];
+      if (p && p.state === "missing")
+        return /* @__PURE__ */ React.createElement("span", { title: "\uACB0\uCE21 \u2014 " + (p.reason || "\uC815\uC758 \uBD88\uAC00"), style: { color: "var(--ink-3)" } }, "\uACB0\uCE21");
+      if (typeof v !== "number")
+        return /* @__PURE__ */ React.createElement("span", { style: { color: "var(--ink-3)" } }, "\u2014");
+      const cell = fmt(v);
+      if (p && p.state === "degraded")
+        return /* @__PURE__ */ React.createElement("span", { title: "\uC8FC\uC758 \u2014 " + (p.reason || ""), style: { color: color2 } }, cell, /* @__PURE__ */ React.createElement("sup", { style: { color: "var(--amber)" } }, "*"));
+      return /* @__PURE__ */ React.createElement("span", { style: { color: color2, fontWeight: win2 ? 700 : 400 } }, cell);
+    };
     const cumA = a && a.equity && a.equity.cumulative || [];
     const cumB = b && b.equity && b.equity.cumulative || [];
     const W = 880, H = 280;
@@ -26037,7 +26050,7 @@ ${sellCode}` : code);
         bWin = !aBetter;
       }
       const dColor = d == null ? "var(--ink-3)" : (m.higher ? d > 0 : d < 0) ? "var(--teal)" : d === 0 ? "var(--ink-3)" : "var(--red)";
-      return /* @__PURE__ */ React.createElement("tr", { key: m.key, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "left", padding: "5px 8px", color: "var(--ink-2)" } }, m.label), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: aWin ? "var(--teal)" : "var(--ink-1)", fontWeight: aWin ? 700 : 400 } }, typeof va === "number" ? m.fmt(va) : "\u2014"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: bWin ? "var(--violet)" : "var(--ink-1)", fontWeight: bWin ? 700 : 400 } }, typeof vb === "number" ? m.fmt(vb) : "\u2014"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: dColor } }, d == null ? "\u2014" : (d > 0 ? "+" : "") + m.fmt(d)));
+      return /* @__PURE__ */ React.createElement("tr", { key: m.key, style: { borderTop: "1px solid var(--line-1)" } }, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "left", padding: "5px 8px", color: "var(--ink-2)" } }, m.label), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px" } }, renderCell(a, m.key, m.fmt, aWin, aWin ? "var(--teal)" : "var(--ink-1)")), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px" } }, renderCell(b, m.key, m.fmt, bWin, bWin ? "var(--violet)" : "var(--ink-1)")), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right", padding: "5px 8px", color: dColor } }, d == null ? "\u2014" : (d > 0 ? "+" : "") + m.fmt(d)));
     }))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, fontSize: 10, color: "var(--ink-3)", fontFamily: "var(--mono)" } }, [
       { tag: "A", side: a },
       { tag: "B", side: b }
@@ -26046,7 +26059,7 @@ ${sellCode}` : code);
       const authority = side.metrics_authority === "stored_unverified" ? "\uC800\uC7A5\uC9C0\uD45C(\uBBF8\uAC80\uC99D)+\uC7AC\uACC4\uC0B0\uC694\uC57D" : "\uC7AC\uACC4\uC0B0 \uC9C0\uD45C";
       const q = side.data_quality && side.data_quality.status;
       return /* @__PURE__ */ React.createElement("div", { key: `cmpauth${tag}` }, tag, ": ", authority, q ? " \xB7 " + q : "");
-    }), a && b && a.admitted !== false && b.admitted !== false && Object.keys(delta).length === 0 && /* @__PURE__ */ React.createElement("div", null, "\u0394 \uC0B0\uCD9C \uBD88\uAC00 \u2014 \uC591\uCE21 \uBAA8\uB450 \uBE44\uAD50 \uAC00\uB2A5 \uC9C0\uD45C\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.")))));
+    }), a && b && a.admitted !== false && b.admitted !== false && Object.keys(delta).length === 0 && /* @__PURE__ */ React.createElement("div", null, "\u0394 \uC0B0\uCD9C \uBD88\uAC00 \u2014 \uC591\uCE21 \uBAA8\uB450 \uBE44\uAD50 \uAC00\uB2A5 \uC9C0\uD45C\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ React.createElement("div", null, "\uC9C0\uD45C\uC815\uC758 ", (a && a.metric_projection || b && b.metric_projection || {}).definitions_version || "\u2014", " \xB7 \uC815\uADDC\uD654 ON \uC2DC \uC2DC\uC791 100 + \uC6D0\uD654 \uC99D\uBD84(\uC218\uC775\uB960 \uC544\uB2D8) \xB7 * \uD45C\uC2DC\uB294 \uC815\uC758\uC0C1 \uC8FC\uC758(degraded)")))));
   }
 
   // ai_strategy_loop/dashboard/frontend/bt-gui-parity.jsx
