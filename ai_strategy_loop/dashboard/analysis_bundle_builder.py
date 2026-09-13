@@ -35,6 +35,13 @@ from ai_strategy_loop.dashboard.analysis_bundle_models import (
     seal_analysis_bundle,
 )
 from ai_strategy_loop.dashboard.backtest_terminal_classification import JsonValue
+from ai_strategy_loop.dashboard.episode_mining import (
+    EpisodeMiningError,
+    STAGE_F_FIELDS,
+    TradeFact,
+    build_episodes,
+    cohort_census,
+)
 
 _JSON_OBJECT = TypeAdapter(
     dict[str, JsonValue],
@@ -284,6 +291,69 @@ def _data_quality_section_v3(
     )
 
 
+def _episodes_section_v3(
+    truth: ResearchTruth,
+    csv_path: Path | None,
+) -> BundleAnalysisSectionV3:
+    """CSV 거래행에서 deterministic episode 를 채굴한다(실패는 reason 만 싣는다)."""
+    if truth.execution is not ExecutionStatus.SUCCESS:
+        return BundleAnalysisSectionV3(
+            status=AnalysisSectionStatus.NOT_EVALUABLE,
+            reason=f"execution_{truth.execution.value.lower()}",
+            prerequisites=("successful_terminal_execution",),
+        )
+    if csv_path is None:
+        return BundleAnalysisSectionV3(
+            status=AnalysisSectionStatus.NOT_RUN,
+            reason="trade_csv_missing",
+            prerequisites=("official_trade_csv_artifact",),
+        )
+    try:
+        rows = backtest_analysis.load_trades_csv(csv_path.as_posix())
+        facts = [
+            TradeFact(
+                trade_key=f"{truth.identity.job_id}:{idx}",
+                source_sha256=truth.identity.source_sha256,
+                symbol=str(t.get("name") or ""),
+                entry_ts=int(str(t.get("buy_time") or "0") or "0"),
+                exit_ts=int(str(t.get("sell_time") or "0") or "0"),
+                pnl_krw=float(t.get("profit_krw") or 0.0),
+                candidate=truth.identity.candidate_id,
+            )
+            for idx, t in enumerate(rows)
+        ]
+        episodes = build_episodes(facts)
+    except (EpisodeMiningError, ValueError, TypeError, OSError) as exc:
+        code = exc.code if isinstance(exc, EpisodeMiningError) else "episode_mining_failed"
+        return BundleAnalysisSectionV3(
+            status=AnalysisSectionStatus.NOT_EVALUABLE,
+            reason=code,
+            prerequisites=("wellformed_trade_facts",),
+        )
+    return BundleAnalysisSectionV3(
+        status=AnalysisSectionStatus.OBSERVED,
+        values={
+            "reset_gap_seconds": 86_400,
+            "n_episodes": len(episodes),
+            "n_trades": len(facts),
+            "episodes": [
+                {
+                    "episode_id": ep.episode_id,
+                    "symbol": ep.symbol,
+                    "onset_ts": ep.onset_ts,
+                    "reset_ts": ep.reset_ts,
+                    "trigger_count": ep.trigger_count,
+                    "selected_trade_key": ep.selected_trade_key,
+                }
+                for ep in episodes[:500]
+            ],
+            "truncated": len(episodes) > 500,
+            "cohort_census": cohort_census(episodes),
+            "stage_f_fields": list(STAGE_F_FIELDS),
+        },
+    )
+
+
 def build_legacy_job_analysis_bundle_v3(
     record: dict[str, JsonValue],
     truth: ResearchTruth,
@@ -302,6 +372,7 @@ def build_legacy_job_analysis_bundle_v3(
             bundle_v2.source.csv_size_bytes,
             bundle_v2.execution.row_count,
         ),
+        episodes=_episodes_section_v3(truth, csv_path),
     )
     if card_sha256 is None:
         return v3

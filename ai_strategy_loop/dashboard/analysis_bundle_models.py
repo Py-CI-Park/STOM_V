@@ -401,6 +401,7 @@ def project_bundle_v2_to_v3(
     data_quality: BundleAnalysisSectionV3 | None = None,
     statistics: BundleAnalysisSectionV3 | None = None,
     findings: BundleAnalysisSectionV3 | None = None,
+    episodes: BundleAnalysisSectionV3 | None = None,
 ) -> AnalysisBundleV3:
     """v2 → v3 lossless projection — 기존 섹션 값은 모두 보존한다.
 
@@ -440,7 +441,7 @@ def project_bundle_v2_to_v3(
                 prerequisites=("ana06_independent_confirmation",),
             )
         ).model_dump(mode="json"),
-        "episodes": _section_v3(bundle.episodes).model_dump(mode="json"),
+        "episodes": (episodes or _section_v3(bundle.episodes)).model_dump(mode="json"),
         "attribution": _section_v3(bundle.attribution).model_dump(mode="json"),
         "counterfactual": _section_v3(bundle.counterfactual).model_dump(mode="json"),
         "robustness": _section_v3(bundle.robustness).model_dump(mode="json"),
