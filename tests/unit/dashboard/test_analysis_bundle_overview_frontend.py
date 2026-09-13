@@ -33,7 +33,8 @@ def test_overview_uses_bundle_api_and_accessible_capability_contract() -> None:
     model = _read("analysis-bundle-overview-model.mjs")
     css = _read("v4.css")
 
-    assert 'baseUrl + "/analysis-bundle/job?job_id="' in source
+    # ANA-05 — 대시보드는 canonical v3 번들을 읽는다(v2 는 compatibility 전용).
+    assert 'baseUrl + "/analysis-bundle/job/v3?job_id="' in source
     assert 'aria-label="분석 번들 개요"' in source
     assert 'aria-label="분석 기능 가용성"' in source
     assert 'aria-live="polite"' in source

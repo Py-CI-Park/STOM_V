@@ -30115,7 +30115,8 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     return {
       code,
       label: CAPABILITY[code] || "\uC0C1\uD0DC \uBBF8\uD655\uC778",
-      reason: String(safe.reason || "")
+      reason: String(safe.reason || ""),
+      prerequisites: Array.isArray(safe.prerequisites) ? safe.prerequisites.map(String) : []
     };
   }
   function shortHash2(value) {
@@ -30141,6 +30142,9 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
       csvSize: Number.isFinite(Number(source.csv_size_bytes)) ? Number(source.csv_size_bytes) : null,
       preregistration: String(preregistration.status || "NOT_OBSERVED"),
       persistence: String(evidence.persistence || (payload == null ? void 0 : payload.persistence) || "unknown"),
+      artifactHit: payload && payload.artifact_hit === true,
+      schemaVersion: String(bundle.schema || ""),
+      cardHash: shortHash2(evidence.bundle_card_sha256),
       generatedAtSource: String(evidence.generated_at_source || "not_observed"),
       execution: axis(EXECUTION2, execution.status, "\uC2E4\uD589 \uC0C1\uD0DC \uBBF8\uD655\uC778"),
       economic: axis(ECONOMIC2, decision.economic, "\uACBD\uC81C \uC0C1\uD0DC \uBBF8\uD655\uC778"),
@@ -30156,6 +30160,9 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
       metrics: capability(bundle.metrics),
       series: capability(bundle.series),
       distribution: capability(bundle.distribution),
+      dataQuality: capability(bundle.data_quality),
+      statistics: capability(bundle.statistics),
+      findings: capability(bundle.findings),
       episodes: capability(bundle.episodes),
       attribution: capability(bundle.attribution),
       counterfactual: capability(bundle.counterfactual),
@@ -30168,6 +30175,9 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     metrics: "\uD575\uC2EC \uC9C0\uD45C",
     series: "\uC2DC\uACC4\uC5F4",
     distribution: "\uBD84\uD3EC",
+    dataQuality: "\uC790\uB8CC \uD488\uC9C8",
+    statistics: "\uD1B5\uACC4 \uAC80\uC815",
+    findings: "\uBC1C\uACAC",
     episodes: "\uC5D0\uD53C\uC18C\uB4DC",
     attribution: "\uAE30\uC5EC \uBD84\uC11D",
     counterfactual: "\uBC18\uC0AC\uC2E4",
@@ -30195,10 +30205,10 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     return /* @__PURE__ */ React.createElement("div", { className: "analysis-overview-axis" }, /* @__PURE__ */ React.createElement("dt", null, label), /* @__PURE__ */ React.createElement("dd", null, /* @__PURE__ */ React.createElement("strong", null, item.label), /* @__PURE__ */ React.createElement("code", null, item.code)));
   }
   function _Capability({ label, item }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "analysis-capability status-" + item.code.toLowerCase() }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, label), /* @__PURE__ */ React.createElement("code", null, item.code)), /* @__PURE__ */ React.createElement("strong", null, item.label), item.reason && /* @__PURE__ */ React.createElement("small", null, _reason(item.reason)));
+    return /* @__PURE__ */ React.createElement("div", { className: "analysis-capability status-" + item.code.toLowerCase() }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, label), /* @__PURE__ */ React.createElement("code", null, item.code)), /* @__PURE__ */ React.createElement("strong", null, item.label), item.reason && /* @__PURE__ */ React.createElement("small", null, _reason(item.reason)), item.prerequisites && item.prerequisites.length > 0 && /* @__PURE__ */ React.createElement("small", null, "\uC804\uC81C: ", item.prerequisites.join(", ")));
   }
   function _Unavailable({ loading, reason, onReload }) {
-    return /* @__PURE__ */ React.createElement("section", { className: "analysis-bundle-overview unavailable", "aria-label": "\uBD84\uC11D \uBC88\uB4E4 \uAC1C\uC694", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "analysis-overview-kicker" }, "ANALYSIS BUNDLE V2 \xB7 READ ONLY"), /* @__PURE__ */ React.createElement("h3", null, loading ? "\uBD84\uC11D \uBC88\uB4E4 \uC870\uD68C \uC911" : "\uBD84\uC11D \uBC88\uB4E4 \uC0AC\uC6A9 \uBD88\uAC00"), /* @__PURE__ */ React.createElement("p", null, _reason(reason))), onReload && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onReload, disabled: loading }, loading ? "\uC870\uD68C \uC911\u2026" : "\uB2E4\uC2DC \uC870\uD68C"));
+    return /* @__PURE__ */ React.createElement("section", { className: "analysis-bundle-overview unavailable", "aria-label": "\uBD84\uC11D \uBC88\uB4E4 \uAC1C\uC694", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "analysis-overview-kicker" }, "ANALYSIS BUNDLE V3 \xB7 READ ONLY"), /* @__PURE__ */ React.createElement("h3", null, loading ? "\uBD84\uC11D \uBC88\uB4E4 \uC870\uD68C \uC911" : "\uBD84\uC11D \uBC88\uB4E4 \uC0AC\uC6A9 \uBD88\uAC00"), /* @__PURE__ */ React.createElement("p", null, _reason(reason))), onReload && /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: onReload, disabled: loading }, loading ? "\uC870\uD68C \uC911\u2026" : "\uB2E4\uC2DC \uC870\uD68C"));
   }
   function AnalysisBundleOverview({ baseUrl, isDemo, jobId }) {
     const [payload, setPayload] = useState_bt(null);
@@ -30210,7 +30220,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
       setLoading(true);
       setError("");
       _btFetchJson(
-        baseUrl + "/analysis-bundle/job?job_id=" + encodeURIComponent(jobId),
+        baseUrl + "/analysis-bundle/job/v3?job_id=" + encodeURIComponent(jobId),
         12e3,
         controller.signal
       ).then((next) => setPayload(next || null)).catch((nextError) => {
@@ -30235,7 +30245,7 @@ n=${r.n}${r.reliable ? "" : " (\uD45C\uBCF8 \uBD80\uC871)"}` : "\uAC70\uB798 \uC
     const bundle = payload.bundle;
     const view = bundleOverview(payload);
     const capabilities = Object.keys(SECTION_LABELS);
-    return /* @__PURE__ */ React.createElement("section", { className: "analysis-bundle-overview", "aria-label": "\uBD84\uC11D \uBC88\uB4E4 \uAC1C\uC694", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("header", { className: "analysis-overview-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "analysis-overview-kicker" }, "ANALYSIS BUNDLE V2 \xB7 READ ONLY"), /* @__PURE__ */ React.createElement("h3", null, view.candidate), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "bundle ", view.bundleHash, " \xB7 identity ", view.identityStatus, " \xB7 persistence ", view.persistence)), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: load, disabled: loading }, loading ? "\uC870\uD68C \uC911\u2026" : "Bundle \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("dl", { className: "analysis-overview-axes" }, /* @__PURE__ */ React.createElement(_BundleAxis, { label: "\uC2E4\uD589", item: view.execution }), /* @__PURE__ */ React.createElement(_BundleAxis, { label: "\uACBD\uC81C", item: view.economic }), /* @__PURE__ */ React.createElement(_BundleAxis, { label: "\uAD8C\uC704", item: view.authority }), /* @__PURE__ */ React.createElement(_BundleAxis, { label: "\uB2E4\uC74C \uD589\uB3D9", item: view.action })), /* @__PURE__ */ React.createElement("div", { className: "analysis-completeness mono", role: "status" }, /* @__PURE__ */ React.createElement("b", null, "\uC2E4\uD589 \uC644\uC804\uC131"), /* @__PURE__ */ React.createElement("span", null, "raw ", view.rawStatus), /* @__PURE__ */ React.createElement("span", null, "rc ", view.returnCode), /* @__PURE__ */ React.createElement("span", null, "events ", view.eventCount), /* @__PURE__ */ React.createElement("span", null, "rows/trades ", view.rowCount, "/", view.tradeCount), /* @__PURE__ */ React.createElement("span", null, "checkpoint ", view.checkpoint), /* @__PURE__ */ React.createElement("span", null, "cause ", view.failureCause)), /* @__PURE__ */ React.createElement("div", { className: "analysis-capability-wrap", "aria-label": "\uBD84\uC11D \uAE30\uB2A5 \uAC00\uC6A9\uC131" }, /* @__PURE__ */ React.createElement("div", { className: "analysis-capability-title" }, /* @__PURE__ */ React.createElement("b", null, "\uBD84\uC11D \uAE30\uB2A5 \uAC00\uC6A9\uC131"), /* @__PURE__ */ React.createElement("span", null, "\uAD00\uCE21\uB418\uC9C0 \uC54A\uC740 \uAE30\uB2A5\uC740 0\uC774 \uC544\uB2C8\uB77C \uBBF8\uC2E4\uD589\xB7\uD3C9\uAC00 \uBD88\uAC00\uB85C \uD45C\uC2DC\uD569\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "analysis-capability-grid" }, capabilities.map((key) => /* @__PURE__ */ React.createElement(_Capability, { key, label: SECTION_LABELS[key], item: view[key] })))), /* @__PURE__ */ React.createElement("footer", { className: "analysis-overview-evidence mono" }, /* @__PURE__ */ React.createElement("span", null, "evidence ", view.evidenceId), /* @__PURE__ */ React.createElement("span", null, "CSV ", view.csvHash, view.csvSize == null ? "" : " \xB7 " + view.csvSize + " bytes"), /* @__PURE__ */ React.createElement("span", null, "spec ", view.specHash), /* @__PURE__ */ React.createElement("span", null, "prereg ", view.preregistration), /* @__PURE__ */ React.createElement("span", null, "generated ", view.generatedAtSource), /* @__PURE__ */ React.createElement("span", null, "content ", bundle.content_sha256)));
+    return /* @__PURE__ */ React.createElement("section", { className: "analysis-bundle-overview", "aria-label": "\uBD84\uC11D \uBC88\uB4E4 \uAC1C\uC694", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("header", { className: "analysis-overview-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "analysis-overview-kicker" }, "ANALYSIS BUNDLE V3 \xB7 READ ONLY"), /* @__PURE__ */ React.createElement("h3", null, view.candidate), /* @__PURE__ */ React.createElement("p", { className: "mono" }, "bundle ", view.bundleHash, " \xB7 identity ", view.identityStatus, " \xB7 persistence ", view.persistence, view.artifactHit ? " \xB7 artifact" : "")), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: load, disabled: loading }, loading ? "\uC870\uD68C \uC911\u2026" : "Bundle \uC0C8\uB85C\uACE0\uCE68")), /* @__PURE__ */ React.createElement("dl", { className: "analysis-overview-axes" }, /* @__PURE__ */ React.createElement(_BundleAxis, { label: "\uC2E4\uD589", item: view.execution }), /* @__PURE__ */ React.createElement(_BundleAxis, { label: "\uACBD\uC81C", item: view.economic }), /* @__PURE__ */ React.createElement(_BundleAxis, { label: "\uAD8C\uC704", item: view.authority }), /* @__PURE__ */ React.createElement(_BundleAxis, { label: "\uB2E4\uC74C \uD589\uB3D9", item: view.action })), /* @__PURE__ */ React.createElement("div", { className: "analysis-completeness mono", role: "status" }, /* @__PURE__ */ React.createElement("b", null, "\uC2E4\uD589 \uC644\uC804\uC131"), /* @__PURE__ */ React.createElement("span", null, "raw ", view.rawStatus), /* @__PURE__ */ React.createElement("span", null, "rc ", view.returnCode), /* @__PURE__ */ React.createElement("span", null, "events ", view.eventCount), /* @__PURE__ */ React.createElement("span", null, "rows/trades ", view.rowCount, "/", view.tradeCount), /* @__PURE__ */ React.createElement("span", null, "checkpoint ", view.checkpoint), /* @__PURE__ */ React.createElement("span", null, "cause ", view.failureCause)), /* @__PURE__ */ React.createElement("div", { className: "analysis-capability-wrap", "aria-label": "\uBD84\uC11D \uAE30\uB2A5 \uAC00\uC6A9\uC131" }, /* @__PURE__ */ React.createElement("div", { className: "analysis-capability-title" }, /* @__PURE__ */ React.createElement("b", null, "\uBD84\uC11D \uAE30\uB2A5 \uAC00\uC6A9\uC131"), /* @__PURE__ */ React.createElement("span", null, "\uAD00\uCE21\uB418\uC9C0 \uC54A\uC740 \uAE30\uB2A5\uC740 0\uC774 \uC544\uB2C8\uB77C \uBBF8\uC2E4\uD589\xB7\uD3C9\uAC00 \uBD88\uAC00\uB85C \uD45C\uC2DC\uD569\uB2C8\uB2E4.")), /* @__PURE__ */ React.createElement("div", { className: "analysis-capability-grid" }, capabilities.map((key) => /* @__PURE__ */ React.createElement(_Capability, { key, label: SECTION_LABELS[key], item: view[key] })))), /* @__PURE__ */ React.createElement("footer", { className: "analysis-overview-evidence mono" }, /* @__PURE__ */ React.createElement("span", null, "evidence ", view.evidenceId), /* @__PURE__ */ React.createElement("span", null, "CSV ", view.csvHash, view.csvSize == null ? "" : " \xB7 " + view.csvSize + " bytes"), /* @__PURE__ */ React.createElement("span", null, "spec ", view.specHash), /* @__PURE__ */ React.createElement("span", null, "prereg ", view.preregistration), /* @__PURE__ */ React.createElement("span", null, "generated ", view.generatedAtSource), /* @__PURE__ */ React.createElement("span", null, "content ", bundle.content_sha256), /* @__PURE__ */ React.createElement("span", null, "card ", view.cardHash)));
   }
   Object.assign(window, { AnalysisBundleOverview });
 

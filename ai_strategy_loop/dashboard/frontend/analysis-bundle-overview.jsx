@@ -5,6 +5,9 @@ const SECTION_LABELS = {
   metrics: "핵심 지표",
   series: "시계열",
   distribution: "분포",
+  dataQuality: "자료 품질",
+  statistics: "통계 검정",
+  findings: "발견",
   episodes: "에피소드",
   attribution: "기여 분석",
   counterfactual: "반사실",
@@ -46,6 +49,9 @@ function _Capability({ label, item }) {
       <div><b>{label}</b><code>{item.code}</code></div>
       <strong>{item.label}</strong>
       {item.reason && <small>{_reason(item.reason)}</small>}
+      {item.prerequisites && item.prerequisites.length > 0 && (
+        <small>전제: {item.prerequisites.join(", ")}</small>
+      )}
     </div>
   );
 }
@@ -54,7 +60,7 @@ function _Unavailable({ loading, reason, onReload }) {
   return (
     <section className="analysis-bundle-overview unavailable" aria-label="분석 번들 개요" aria-live="polite">
       <div>
-        <span className="analysis-overview-kicker">ANALYSIS BUNDLE V2 · READ ONLY</span>
+        <span className="analysis-overview-kicker">ANALYSIS BUNDLE V3 · READ ONLY</span>
         <h3>{loading ? "분석 번들 조회 중" : "분석 번들 사용 불가"}</h3>
         <p>{_reason(reason)}</p>
       </div>
@@ -78,7 +84,7 @@ function AnalysisBundleOverview({ baseUrl, isDemo, jobId }) {
     setLoading(true);
     setError("");
     _btFetchJson(
-      baseUrl + "/analysis-bundle/job?job_id=" + encodeURIComponent(jobId),
+      baseUrl + "/analysis-bundle/job/v3?job_id=" + encodeURIComponent(jobId),
       12000,
       controller.signal,
     )
@@ -112,10 +118,10 @@ function AnalysisBundleOverview({ baseUrl, isDemo, jobId }) {
     <section className="analysis-bundle-overview" aria-label="분석 번들 개요" aria-live="polite">
       <header className="analysis-overview-head">
         <div>
-          <span className="analysis-overview-kicker">ANALYSIS BUNDLE V2 · READ ONLY</span>
+          <span className="analysis-overview-kicker">ANALYSIS BUNDLE V3 · READ ONLY</span>
           <h3>{view.candidate}</h3>
           <p className="mono">
-            bundle {view.bundleHash} · identity {view.identityStatus} · persistence {view.persistence}
+            bundle {view.bundleHash} · identity {view.identityStatus} · persistence {view.persistence}{view.artifactHit ? " · artifact" : ""}
           </p>
         </div>
         <button className="btn ghost sm" onClick={load} disabled={loading}>
@@ -157,6 +163,7 @@ function AnalysisBundleOverview({ baseUrl, isDemo, jobId }) {
         <span>prereg {view.preregistration}</span>
         <span>generated {view.generatedAtSource}</span>
         <span>content {bundle.content_sha256}</span>
+        <span>card {view.cardHash}</span>
       </footer>
     </section>
   );

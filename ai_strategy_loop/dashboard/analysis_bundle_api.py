@@ -14,6 +14,15 @@ from ai_strategy_loop.controller.research_truth_models import ResearchTruth
 from ai_strategy_loop.dashboard.analysis_bundle_builder import (
     AnalysisBundleBuildError,
     build_legacy_job_analysis_bundle,
+    build_legacy_job_analysis_bundle_v3,
+)
+from ai_strategy_loop.dashboard.analysis_bundle_models import (
+    AnalysisBundleV3,
+    seal_analysis_bundle_v3,
+)
+from ai_strategy_loop.dashboard.analysis_bundle_store import (
+    lookup_bundle,
+    store_bundle,
 )
 from ai_strategy_loop.dashboard.backtest_jobs import get_job_manager
 from ai_strategy_loop.dashboard.backtest_terminal_classification import JsonValue
@@ -122,3 +131,84 @@ def current_analysis_bundle_payload(job_id: str) -> dict[str, JsonValue]:
 @analysis_bundle_router.get("/job")
 def analysis_bundle_job(job_id: str) -> dict[str, JsonValue]:
     return current_analysis_bundle_payload(job_id)
+
+
+# ---------------------------------------------------------------------------
+# ANA-05 — Canonical v3 읽기 경로: 카탈로그/artifact 우선, 미스 시 빌드+보존.
+# ---------------------------------------------------------------------------
+def _v3_base(job_id: str) -> dict[str, JsonValue]:
+    return {
+        "schema": "stom.analysis_bundle.api.v3",
+        "job_id": job_id,
+        "bundle_available": False,
+        "bundle": None,
+        "content_sha256": None,
+        "persistence": "none",
+        "artifact_hit": False,
+    }
+
+
+def _v3_payload(bundle: AnalysisBundleV3, *, artifact_hit: bool) -> dict[str, JsonValue]:
+    payload = _v3_base(bundle.identity.job_id)
+    payload["bundle_available"] = True
+    payload["bundle"] = _JSON_OBJECT.validate_python(
+        bundle.model_dump(mode="json", by_alias=True)
+    )
+    payload["content_sha256"] = bundle.content_sha256
+    payload["persistence"] = bundle.evidence.persistence
+    payload["artifact_hit"] = artifact_hit
+    return payload
+
+
+def _seal_persisted(bundle: AnalysisBundleV3) -> AnalysisBundleV3:
+    """저장소에 둘 번들의 evidence.persistence 를 immutable_artifact 로 봉인한다."""
+    if bundle.evidence.persistence == "immutable_artifact":
+        return bundle
+    payload = bundle.model_dump(mode="json", by_alias=True, exclude={"content_sha256"})
+    payload["evidence"] = {**payload["evidence"], "persistence": "immutable_artifact"}
+    return seal_analysis_bundle_v3(payload)
+
+
+def current_analysis_bundle_v3_payload(job_id: str) -> dict[str, JsonValue]:
+    if _JOB_ID_RE.fullmatch(job_id) is None:
+        out = _v3_base(job_id)
+        out["reason"] = "invalid_job_id"
+        return out
+    record = _record(job_id)
+    truth_payload = build_truth_payload(job_id, record, configured_jobs_dir())
+    if truth_payload.get("truth_available") is not True:
+        out = _v3_base(job_id)
+        out["reason"] = (
+            truth_payload.get("reason")
+            if isinstance(truth_payload.get("reason"), str)
+            else "truth_unavailable"
+        )
+        return out
+    truth_value = truth_payload.get("truth")
+    truth = ResearchTruth.model_validate_json(
+        json.dumps(truth_value, ensure_ascii=False)
+    )
+    # 1) immutable artifact 우선 읽기 — 같은 source identity 면 재계산하지 않는다.
+    cached = lookup_bundle(job_id, truth.identity.source_sha256)
+    if cached is not None:
+        return _v3_payload(cached, artifact_hit=True)
+    # 2) 미스 → v3 빌드 → immutable 보존.
+    try:
+        bundle = _seal_persisted(
+            build_legacy_job_analysis_bundle_v3(
+                record,
+                truth,
+                _resolved_csv(record),
+            )
+        )
+    except (ValidationError, AnalysisBundleBuildError) as exc:
+        out = _v3_base(job_id)
+        out["reason"] = str(exc)
+        return out
+    store_bundle(bundle)
+    return _v3_payload(bundle, artifact_hit=False)
+
+
+@analysis_bundle_router.get("/job/v3")
+def analysis_bundle_job_v3(job_id: str) -> dict[str, JsonValue]:
+    return current_analysis_bundle_v3_payload(job_id)

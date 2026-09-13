@@ -18,6 +18,10 @@ from ai_strategy_loop.dashboard.analysis_bundle_artifacts import (
 )
 from ai_strategy_loop.dashboard.analysis_bundle_models import (
     ANALYSIS_BUNDLE_SCHEMA,
+    AnalysisBundleV3,
+    BundleAnalysisSectionV3,
+    project_bundle_v2_to_v3,
+    seal_analysis_bundle_v3,
     AnalysisBundleV2,
     AnalysisSectionStatus,
     BundleAnalysisSection,
@@ -243,3 +247,64 @@ def build_legacy_job_analysis_bundle(
         ).model_dump(mode="json"),
     }
     return seal_analysis_bundle(payload)
+
+
+# ---------------------------------------------------------------------------
+# ANA-05 — v3 빌더: v2 계약을 재사용하고 data_quality 를 실측으로 채운다.
+# ---------------------------------------------------------------------------
+def _data_quality_section_v3(
+    truth: ResearchTruth,
+    csv_path: Path | None,
+    csv_sha256: str | None,
+    csv_size: int | None,
+    row_count: int | None,
+) -> BundleAnalysisSectionV3:
+    if truth.execution is not ExecutionStatus.SUCCESS:
+        return BundleAnalysisSectionV3(
+            status=AnalysisSectionStatus.NOT_EVALUABLE,
+            reason=f"execution_{truth.execution.value.lower()}",
+            prerequisites=("successful_terminal_execution",),
+        )
+    if csv_path is None:
+        return BundleAnalysisSectionV3(
+            status=AnalysisSectionStatus.NOT_RUN,
+            reason="trade_csv_missing",
+            prerequisites=("official_trade_csv_artifact",),
+        )
+    return BundleAnalysisSectionV3(
+        status=AnalysisSectionStatus.OBSERVED,
+        values={
+            "csv_sha256": csv_sha256,
+            "csv_size_bytes": csv_size,
+            "row_count": row_count,
+            "trade_count": truth.trade_count,
+            "row_count_matches_execution": row_count == truth.trade_count,
+            "schema": "official_trade_csv",
+        },
+    )
+
+
+def build_legacy_job_analysis_bundle_v3(
+    record: dict[str, JsonValue],
+    truth: ResearchTruth,
+    csv_path: Path | None,
+    *,
+    card_sha256: str | None = None,
+) -> AnalysisBundleV3:
+    """v2 번들을 빌드·검증한 뒤 v3로 projection 한다(섹션 값 보존)."""
+    bundle_v2 = build_legacy_job_analysis_bundle(record, truth, csv_path)
+    v3 = project_bundle_v2_to_v3(
+        bundle_v2,
+        data_quality=_data_quality_section_v3(
+            truth,
+            csv_path,
+            bundle_v2.source.csv_sha256,
+            bundle_v2.source.csv_size_bytes,
+            bundle_v2.execution.row_count,
+        ),
+    )
+    if card_sha256 is None:
+        return v3
+    payload = v3.model_dump(mode="json", by_alias=True, exclude={"content_sha256"})
+    payload["evidence"] = {**payload["evidence"], "bundle_card_sha256": card_sha256}
+    return seal_analysis_bundle_v3(payload)

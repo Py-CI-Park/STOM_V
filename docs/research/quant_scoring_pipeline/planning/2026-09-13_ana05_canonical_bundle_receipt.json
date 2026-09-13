@@ -1,0 +1,40 @@
+{
+  "stage": "ANA05",
+  "title": "Canonical AnalysisBundle v3 + immutable artifact + CardV3 identity 연결",
+  "date": "2026-09-13",
+  "branch": "codex/process-research-ana05-canonical-bundle",
+  "scope": {
+    "in": [
+      "AnalysisBundleV3(schema stom.analysis_bundle.v3): v2에 없던 data_quality/statistics/findings 섹션 추가",
+      "미실행 섹션 reason+prerequisites 의무화 — v2 reason→v3 prerequisite 매핑 포함",
+      "project_bundle_v2_to_v3 lossless projection(기존 섹션 값 전부 보존, schema/버전 변경으로 새 content hash)",
+      "불변 artifact 저장소: ai_strategy_loop/state/analysis_artifacts/<content_sha256>/bundle.json, 덮어쓰기 없음",
+      "analysis_catalog.sqlite 읽기 카탈로그 — (job_id, source_sha256)→content_sha256",
+      "/analysis-bundle/job/v3 — 카탈로그/artifact 우선 읽기, 미스 시 빌드+보존(artifact_hit 표시)",
+      "CardV3: /bt/analysis-card?v3=1 — build_analysis_card_v3 + store_card + latest bundle hash 링크",
+      "대시보드 개요 패널 v3 전환 — dataQuality/statistics/findings 섹션, prerequisites, artifact·card hash 표시"
+    ],
+    "out": [
+      "v2 API(/analysis-bundle/job) 계약 유지 — compatibility 전용",
+      "6-table 규칙·truth 계약 변경 없음",
+      "운영 DB write·실행 권한 없음"
+    ]
+  },
+  "verification": {
+    "focused": "test_analysis_bundle_v3.py 8 passed + bundle/card/overview 회귀 58 passed",
+    "dashboard_suite": "tests/unit/dashboard/ 1443 passed",
+    "bundle": "app.js v=7929a668"
+  },
+  "files": [
+    "ai_strategy_loop/dashboard/analysis_bundle_models.py",
+    "ai_strategy_loop/dashboard/analysis_bundle_builder.py",
+    "ai_strategy_loop/dashboard/analysis_bundle_store.py",
+    "ai_strategy_loop/dashboard/analysis_bundle_api.py",
+    "ai_strategy_loop/dashboard/analysis_card_api.py",
+    "ai_strategy_loop/dashboard/frontend/analysis-bundle-overview.jsx",
+    "ai_strategy_loop/dashboard/frontend/analysis-bundle-overview-model.mjs",
+    "tests/unit/dashboard/test_analysis_bundle_v3.py",
+    "tests/unit/dashboard/test_analysis_bundle_overview_frontend.py"
+  ],
+  "notes": "source 변경→새 content hash, 과거 bundle 유지(시험 고정). UI/prompt/report 동일 해시 계약의 API 측 근거 마련."
+}
