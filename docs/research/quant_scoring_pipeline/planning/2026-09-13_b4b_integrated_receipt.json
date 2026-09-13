@@ -1,0 +1,44 @@
+{
+  "schema": "stom.integrated_unit_receipt.v1",
+  "scope": "SYS05.B4b",
+  "status": "PASS",
+  "feature_commit": "6cb6e4e6",
+  "tested_commit": "ff20815a17b0a569d47a10908eb11b2821cbc120",
+  "worktree": "C:/System_Trading/STOM/STOM_V.wt-pipeline-integration",
+  "recheck_reason": "2026-09-10 run reached final pass summaries but process exit codes were unrecovered (sessions 2283/22523 unknown). This receipt is a fresh rerun at the same fixed HEAD with explicitly captured exit codes; original logs and the in-progress checkpoint are preserved unchanged.",
+  "fast": {
+    "passed": 8175,
+    "skipped": 27,
+    "deselected": 24,
+    "warnings": 54,
+    "seconds": 1528.89,
+    "exit_code": 0,
+    "log": "C:/Users/parkc/STOM_Verification/b4b-recheck-20260913-gate/fast.log",
+    "exit_receipt": "C:/Users/parkc/STOM_Verification/b4b-recheck-20260913-gate/fast.exit.txt",
+    "log_sha256": "c4b0a72fbabdc148b0243f8085aed8e73e23aa4b7a4338f93c02077121a958b4"
+  },
+  "slow": {
+    "passed": 24,
+    "deselected": 8202,
+    "warnings": 1,
+    "seconds": 1349.32,
+    "exit_code": 0,
+    "log": "C:/Users/parkc/STOM_Verification/b4b-recheck-20260913-gate/slow.log",
+    "exit_receipt": "C:/Users/parkc/STOM_Verification/b4b-recheck-20260913-gate/slow.exit.txt",
+    "log_sha256": "bd32bf3c7323722f4ab5debdf8356367b60c35458c3e99e821de4df0591181ac"
+  },
+  "combined_disjoint": {"passed": 8199, "skipped": 27},
+  "prior_log_evidence": {
+    "fast_log_sha256": "2ec890d4d670382faa828f0e20910547b1bb606ffb782d2293f1633328855ad0",
+    "slow_log_sha256": "fbceac1665e21e27922c88704e3e8559f7a2bcf7a1d866fca150147e84ed0e74",
+    "recovery_record": "planning/2026-09-13_b4b_log_recovery.json",
+    "prior_summaries_matched": true
+  },
+  "invocation": "python -m pytest tests/unit/ -m <not slow_suite|slow_suite> -q -p no:cacheprovider",
+  "environment": "Python 3.13.13; pytest 8.3.4; PYTHONDONTWRITEBYTECODE=1; QT_QPA_PLATFORM=offscreen; no basetemp override; HEAD unchanged during run",
+  "scope_boundary": "B4b integrated Gate only. B5 implementation, SQ02 and later stages not closed by this receipt.",
+  "no_operating_db_write": true,
+  "real_research_executed": false,
+  "economic_success_verified": false,
+  "push_performed": false
+}
