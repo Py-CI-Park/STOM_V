@@ -29,6 +29,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StringConstraints
 
 from ai_strategy_loop.dashboard import backtest_analysis as analysis
 from ai_strategy_loop.dashboard import backtest_report as report
+from ai_strategy_loop.dashboard import metric_definitions as metric_defs
 from ai_strategy_loop.dashboard.backtest_jobs import BacktestJobSpec, get_job_manager
 from ai_strategy_loop.dashboard.individual_analysis import DEFAULT_MC, IndividualResult, MonteCarloOptions, Operation, individual_result
 from ai_strategy_loop.dashboard.individual_source import AnalysisOwners, SourceRecord, inspect_individual_source
@@ -1639,6 +1640,15 @@ def _result_context(row: Dict[str, Any], run_id: str, gen_no: int,
     }
 
 
+def _result_context_with_projection(row: Dict[str, Any], run_id: str, gen_no: int,
+                                    summary: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """``_result_context`` + SQ02 versioned 지표 projection."""
+    ctx = _result_context(row, run_id, gen_no, summary)
+    ctx["definitions_version"] = metric_defs.DEFINITIONS_VERSION
+    ctx["metric_projection"] = metric_defs.project_result_context(ctx)
+    return ctx
+
+
 def _resolve_gen_csv(row: Dict[str, Any]) -> Optional[str]:
     """세대 행의 csv_path 를 안전 해석한다(상대경로는 REPO_ROOT 기준). 없으면 None."""
     return _resolved_record_csv_path(row)
@@ -1699,7 +1709,8 @@ def _result_for_run(
     """Preserved facade; generation quality projection uses readonly owners."""
     from ai_strategy_loop.dashboard.generation_result_view import GenerationOwners, generation_result
 
-    owners = GenerationOwners(_gen_row_readonly, _resolve_gen_csv, _run_condition_identity, _result_context)
+    owners = GenerationOwners(_gen_row_readonly, _resolve_gen_csv, _run_condition_identity,
+                              _result_context_with_projection)
     return generation_result(run_id, gen_no, t_start, t_end, owners=owners).root
 
 
@@ -1984,6 +1995,7 @@ def _side_envelope(member: MemberAdmission, *, job_id: str,
         side.update({
             "metrics": None, "metrics_authority": None,
             "summary": None, "equity": None, "trade_count": None,
+            "metric_projection": None,
         })
         return side
     trades = member.trade_dicts()
@@ -1998,6 +2010,7 @@ def _side_envelope(member: MemberAdmission, *, job_id: str,
         "metrics": stored if isinstance(stored, dict) else summary,
         "metrics_authority": "stored_unverified" if isinstance(stored, dict) else "recomputed",
         "summary": summary,
+        "metric_projection": metric_defs.project_summary(summary),
         "equity": analysis.equity_series(trades),
         "trade_count": summary["trade_count"],
     })
@@ -2101,6 +2114,7 @@ def _overlay_payload(job_id: str, member: MemberAdmission) -> Dict[str, Any]:
         "empty": member.state is MemberState.EMPTY_VERIFIED,
         "trade_count": summary["trade_count"],
         "summary": summary,
+        "metric_projection": metric_defs.project_summary(summary),
         "cumulative": analysis.equity_series(trades).get("cumulative", []),
         "source_sha256": quality.source_sha256,
         "data_quality": quality.model_dump(mode="json"),
@@ -2375,7 +2389,7 @@ def _report_payload_for_run(run_id: str, gen_no: int) -> Optional[Dict[str, Any]
     checked = inspect_job_result_source(Path(csv_path) if csv_path else None,
                                         {"metrics": {"trade_count": row.get("trade_count")}})
     owners = GenerationOwners(lambda _run, _gen: row, lambda _row: csv_path,
-                              _run_condition_identity, _result_context)
+                              _run_condition_identity, _result_context_with_projection)
     result = generation_result(run_id, gen_no, owners=owners, prepared_source=checked).root
     metrics = result.get("metrics")
     result["meta"] = {

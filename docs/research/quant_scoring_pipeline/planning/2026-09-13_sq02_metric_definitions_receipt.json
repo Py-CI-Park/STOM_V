@@ -1,0 +1,40 @@
+{
+  "stage": "SQ02",
+  "title": "versioned 지표 정의 레지스트리 + projection 계층",
+  "date": "2026-09-13",
+  "branch": "codex/process-research-sq02-metric-defs",
+  "scope": {
+    "in": [
+      "수익률/MDD/자본/비용/기간/결측 도메인의 versioned 정의 레지스트리(metric_definitions.py, definitions_version=sq02.v1)",
+      "summary/context 출력을 {value,state,reason,unit,def}로 감싸는 project_summary/project_result_context",
+      "결측 의미론: 무거래/값부재를 0이 아니라 state=missing 으로 구분, 정의상 퇴보(sharpe 표본<2, calmar MDD=0, payoff/profit_factor 분모 0)는 state=degraded",
+      "비용 의미론: cost_model='none' 명시 — 수수료/슬리피지 미반영을 숨기지 않음",
+      "API 배선: compare side/overlay member/individual SUMMARY 응답에 metric_projection, result_context에 definitions_version+metric_projection",
+      "UI: 비교 표에 결측/주의(*) 표기, 지표정의 버전과 정규화 의미(시작100+원화증분, 수익률 아님) 명시"
+    ],
+    "out": [
+      "정의 변경 자체(값 계산식 변경) — 새 version 발행 대상이며 이번 범위 아님",
+      "실제 연구 실행/경제 G0-G2/Holdout/자동채택/실주문/운영 DB write — 별도 권한 경계",
+      "sealed 결과 소급 수정 — 금지 유지"
+    ]
+  },
+  "immutability": {
+    "sealed_results": "봉인/저장 행의 기록값은 그대로 유지 — projection은 읽기 계층의 별도 블록이며 원본 summary/context 키를 변경하지 않는다",
+    "registry": "레지스트리 지문 SHA-256 d7ab1d7510fc6a177fcded2bcf8404b7e5e631996476f201888f212049ba45d9 가 시험에 고정됨 — in-place 정의 수정 시 회귀 실패로 탐지",
+    "input_mutation": "project_summary/project_result_context 는 입력을 복사해 변형하지 않음(시험 고정)"
+  },
+  "verification": {
+    "focused": "tests/unit/dashboard/test_metric_definitions.py 23 passed",
+    "dashboard_suite": "tests/unit/dashboard/ 1435 passed",
+    "bundle": "app.js v=229ee27e (webui-build npm run build)"
+  },
+  "files": [
+    "ai_strategy_loop/dashboard/metric_definitions.py",
+    "ai_strategy_loop/dashboard/backtest_api.py",
+    "ai_strategy_loop/dashboard/individual_analysis.py",
+    "ai_strategy_loop/dashboard/frontend/bt-stat-panels.jsx",
+    "ai_strategy_loop/dashboard/frontend/bundle/app.js",
+    "tests/unit/dashboard/test_metric_definitions.py"
+  ],
+  "notes": "B5 admission 과 병행 — 차단 측 metric_projection=null. 두 수익률/두 MDD 정의의 이름 분리(v5.13.2 계약)를 레지스트리로 형식화."
+}

@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, ClassVar, Final, assert_never
 from pydantic import ConfigDict, JsonValue, RootModel
 
 from ai_strategy_loop.dashboard import backtest_analysis as analysis
+from ai_strategy_loop.dashboard import metric_definitions as metric_defs
 from ai_strategy_loop.dashboard.generation_json import finite_json
 
 if TYPE_CHECKING:
@@ -110,5 +111,8 @@ def individual_result(
             )
         case unreachable:
             assert_never(unreachable)
+    if operation is Operation.SUMMARY and isinstance(value, dict):
+        payload["metric_projection"] = metric_defs.project_summary(value)
+        payload["definitions_version"] = metric_defs.DEFINITIONS_VERSION
     projected = IndividualResult.model_validate({**payload, operation.value: value})
     return IndividualResult.model_validate(finite_json(projected.root))

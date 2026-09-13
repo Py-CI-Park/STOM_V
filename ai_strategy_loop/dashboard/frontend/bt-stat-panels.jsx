@@ -324,6 +324,23 @@ function BtCompareView({ cmp, onClose }) {
   const a = cmp && cmp.a, b = cmp && cmp.b;
   const delta = (cmp && cmp.delta) || {};
 
+  // SQ02 — versioned projection 상태 조회. missing=정의 불가(0 아님), degraded=주의.
+  const projOf = (side, key) =>
+    (side && side.metric_projection && side.metric_projection.metrics
+      && side.metric_projection.metrics[key]) || null;
+  const renderCell = (side, key, fmt, win, color) => {
+    const p = projOf(side, key);
+    const v = p ? p.value : ((side && side.summary) || {})[key];
+    if (p && p.state === "missing")
+      return <span title={"결측 — " + (p.reason || "정의 불가")} style={{ color: "var(--ink-3)" }}>결측</span>;
+    if (typeof v !== "number")
+      return <span style={{ color: "var(--ink-3)" }}>—</span>;
+    const cell = fmt(v);
+    if (p && p.state === "degraded")
+      return <span title={"주의 — " + (p.reason || "")} style={{ color }}>{cell}<sup style={{ color: "var(--amber)" }}>*</sup></span>;
+    return <span style={{ color, fontWeight: win ? 700 : 400 }}>{cell}</span>;
+  };
+
   const cumA = (a && a.equity && a.equity.cumulative) || [];
   const cumB = (b && b.equity && b.equity.cumulative) || [];
 
@@ -445,11 +462,11 @@ function BtCompareView({ cmp, onClose }) {
                   return (
                     <tr key={m.key} style={{ borderTop: "1px solid var(--line-1)" }}>
                       <td style={{ textAlign: "left", padding: "5px 8px", color: "var(--ink-2)" }}>{m.label}</td>
-                      <td style={{ textAlign: "right", padding: "5px 8px", color: aWin ? "var(--teal)" : "var(--ink-1)", fontWeight: aWin ? 700 : 400 }}>
-                        {typeof va === "number" ? m.fmt(va) : "—"}
+                      <td style={{ textAlign: "right", padding: "5px 8px" }}>
+                        {renderCell(a, m.key, m.fmt, aWin, aWin ? "var(--teal)" : "var(--ink-1)")}
                       </td>
-                      <td style={{ textAlign: "right", padding: "5px 8px", color: bWin ? "var(--violet)" : "var(--ink-1)", fontWeight: bWin ? 700 : 400 }}>
-                        {typeof vb === "number" ? m.fmt(vb) : "—"}
+                      <td style={{ textAlign: "right", padding: "5px 8px" }}>
+                        {renderCell(b, m.key, m.fmt, bWin, bWin ? "var(--violet)" : "var(--ink-1)")}
                       </td>
                       <td style={{ textAlign: "right", padding: "5px 8px", color: dColor }}>
                         {d == null ? "—" : (d > 0 ? "+" : "") + m.fmt(d)}
@@ -480,6 +497,11 @@ function BtCompareView({ cmp, onClose }) {
                 && Object.keys(delta).length === 0 && (
                 <div>Δ 산출 불가 — 양측 모두 비교 가능 지표가 없습니다.</div>
               )}
+              {/* SQ02 — 지표 정의 버전과 정규화 의미를 명시한다(시작 100 + 원화 증분은 수익률 %가 아님). */}
+              <div>
+                지표정의 {((a && a.metric_projection) || (b && b.metric_projection) || {}).definitions_version || "—"}
+                {" · 정규화 ON 시 시작 100 + 원화 증분(수익률 아님) · * 표시는 정의상 주의(degraded)"}
+              </div>
             </div>
           </>
         )}
