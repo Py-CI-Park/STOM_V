@@ -1,0 +1,26 @@
+{
+  "stage": "ANA08",
+  "title": "Finding→Hypothesis→Prereg 브리지 + 지식/반증 원장 + 연구 큐",
+  "date": "2026-09-13",
+  "branch": "codex/process-research-ana08-hypothesis-bridge",
+  "scope": {
+    "in": [
+      "상태 머신: DESCRIPTIVE→ACTIONABLE→HYPOTHESIS_DRAFT→(사람검토)→PREREG_DRAFT→PREREG_SEALED",
+      "FindingRecord: role 게이트(validation/oos는 directive 불가), 표본/CI/q 필수",
+      "HypothesisDraft 필수 필드(실패설명/반증예측/entry-time/금지변수/데이터/누수/negative control/예산/STOP/bundle hash)",
+      "결정론 hypothesis_id(bundle+finding+예측 SHA)",
+      "PREREG_SEALED는 명시적 승인 증거·승인자 없이 불가",
+      "KnowledgeLedger: falsification·open findings 추적",
+      "ResearchQueue: ACCEPTED 가설만 enqueue, attempt/deadline/cancel 영수증"
+    ],
+    "out": [
+      "실제 연구 실행·봉인·채택 — 별도 승인 게이트",
+      "가설 소비 prompt/manifest 역추적 UI — UX06 영역"
+    ]
+  },
+  "verification": {"focused": "test_hypothesis_registry.py 9 passed"},
+  "files": [
+    "ai_strategy_loop/dashboard/hypothesis_registry.py",
+    "tests/unit/dashboard/test_hypothesis_registry.py"
+  ]
+}
