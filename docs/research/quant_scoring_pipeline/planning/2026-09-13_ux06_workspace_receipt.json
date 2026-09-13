@@ -1,0 +1,33 @@
+{
+  "stage": "UX06",
+  "title": "Decision workspace 용어 정본 + 14페이지 수용 감사 계약",
+  "date": "2026-09-13",
+  "branch": "codex/process-research-ux06-workspace",
+  "scope": {
+    "in": [
+      "Holdout 용어 정본 분리: internal_validation_split / graduation_validation / FROZEN_OOS_HOLDOUT",
+      "v4-glossary 3용어 분리, research-result에 FROZEN_OOS 권위 표기(미개봉·사람 승인·사용 금지)",
+      "bt-oos-gate split-mode → 내부검증 분할 명기(독립 OOS 아님 유지)",
+      "panels-analysis HoldoutPanel → graduation_validation 명기",
+      "test_ux06_workspace_acceptance.py: 14 표면 배선·권위·차단·다음행동 계약 시험(10건)"
+    ],
+    "out": [
+      "브라우저 실측 UAT(1280/620·키보드·console 0) — 별도 실행 환경 필요",
+      "6질문 흐름 전면 재배치 — 후속 UX 단계"
+    ]
+  },
+  "verification": {
+    "focused": "test_ux06_workspace_acceptance.py + gateboard 17 passed",
+    "dashboard_suite": "1482 passed, 2 failed(1=계약 갱신, 1=Windows 타이밍 flake 재실행 통과)"
+  },
+  "files": [
+    "ai_strategy_loop/dashboard/frontend/v4-glossary.jsx",
+    "ai_strategy_loop/dashboard/frontend/v4-research-result.jsx",
+    "ai_strategy_loop/dashboard/frontend/v4-research-failure-autopsy.jsx",
+    "ai_strategy_loop/dashboard/frontend/bt-oos-gate.jsx",
+    "ai_strategy_loop/dashboard/frontend/panels-analysis.jsx",
+    "ai_strategy_loop/dashboard/frontend/bundle/app.js (재생성)",
+    "tests/unit/dashboard/test_ux06_workspace_acceptance.py",
+    "tests/unit/dashboard/test_research_result_gateboard.py (계약 갱신)"
+  ]
+}
