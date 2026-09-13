@@ -710,7 +710,7 @@ function HoldoutPanel({ state, wsStatus }) {
     <div className="panel">
       <div className="panel-hd">
         <div className="panel-hd-title">
-          <span className="dot"></span>과적합 방어 · holdout 졸업검사
+          <span className="dot"></span>과적합 방어 · graduation_validation 졸업검사
           {isDemo && typeof window.DemoBadge === "function" && <window.DemoBadge />}
         </div>
         {hasData && (
@@ -739,6 +739,9 @@ function HoldoutPanel({ state, wsStatus }) {
             </div>
             <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-2)", marginTop: 4 }}>
               {`판정: ${holdout.reason || holdout.status}`}
+            </div>
+            <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginTop: 2 }}>
+              graduation_validation — 연구 졸업 신호이며 FROZEN_OOS_HOLDOUT 이 아닙니다. 승격 권한 없음.
             </div>
           </div>
         )}

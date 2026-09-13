@@ -103,7 +103,7 @@ def test_gateboard_separates_platform_economics_pairing_and_authority() -> None:
         "ECONOMIC GATE",
         "PAIRED SIGNAL",
         "실행은 성공했지만 절대 개발 기준",
-        "G2 금지 · Holdout 미개봉 · 자동채택 불가 · DEVELOPMENT ONLY",
+        "G2 금지 · FROZEN_OOS_HOLDOUT 미개봉 · 자동채택 불가 · DEVELOPMENT ONLY",
         "PAIR SIGNAL",
         "DEV STOP",
         "같은 부모와 같은 Fold",

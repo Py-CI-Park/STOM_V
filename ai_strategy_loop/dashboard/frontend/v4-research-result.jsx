@@ -152,13 +152,13 @@ function V516ResearchResultGateboard({ baseUrl }) {
       <V516ResearchFailureAutopsy analysis={data.analysis} onInspectCandidate={candidateId => { setSelectedId(candidateId); setDetailOpen(true); }} />
       <details className="rr4-evidence" id="rr4-evidence-detail" open={detailOpen} onToggle={event => setDetailOpen(event.currentTarget.open)}>
         <summary><span>UX-03 봉인 판정 근거</span><strong>{detailOpen ? "판정 근거 접기" : "판정 근거 펼치기"}</strong></summary>
-        <header className="rr3-heading"><div><span>UX-03 · SEALED DECISION / READ ONLY</span><h2 id="rr3-title">G0 → G1 연구 게이트보드</h2></div><strong>{decision.holdout_status || "UNKNOWN"}</strong></header>
+        <header className="rr3-heading"><div><span>UX-03 · SEALED DECISION / READ ONLY</span><h2 id="rr3-title">G0 → G1 연구 게이트보드</h2></div><strong title="FROZEN_OOS_HOLDOUT — 봉인 OOS · 사람 승인 없이 개봉 불가 · 현재 프로그램 사용 금지">FROZEN_OOS · {decision.holdout_status || "UNKNOWN"}</strong></header>
         <div className="rr3-rails">
           <_Rr3Rail label="PLATFORM GATE" value={`${platform.valid_jobs || 0}/${platform.total_jobs || 0} VALID`} detail={`SUCCESS ${platform.success_jobs || 0} · NO_TRADES ${platform.no_trades_jobs || 0} · source/bundle ${platform.source_match_jobs || 0}/${platform.analysis_bundle_jobs || 0}`} tone="valid" />
           <_Rr3Rail label="ECONOMIC GATE" value={`${decision.development_pass_count || 0}/${decision.candidate_count || 0} · STOP`} detail="실행은 성공했지만 절대 개발 기준을 통과한 전략은 없습니다." tone="stop" />
           <_Rr3Rail label="PAIRED SIGNAL" value={`${decision.paired_pass_count || 0}/${decision.candidate_count || 0}`} detail="부모 대비 구조 신호일 뿐 승격·수익성 증거가 아닙니다." tone="signal" />
         </div>
-        <div className="rr3-lock" role="status"><b>NEXT · {decision.next_gate || "STOP"}</b><span>G2 금지 · Holdout 미개봉 · 자동채택 불가 · DEVELOPMENT ONLY</span></div>
+        <div className="rr3-lock" role="status"><b>NEXT · {decision.next_gate || "STOP"}</b><span>G2 금지 · FROZEN_OOS_HOLDOUT 미개봉 · 자동채택 불가 · DEVELOPMENT ONLY</span></div>
         <div className="rr3-body">
           <nav className="rr3-candidates" aria-label="G1 후보 선택"><h3>7 candidates</h3>{candidates.map(row => <button type="button" key={row.candidate_id} aria-pressed={row.candidate_id === selectedId} onClick={() => setSelectedId(row.candidate_id)}><span>{_rr3CandidateLabel(row)}</span><b>{row.g1_total_trades} trades</b><em>{row.paired_falsification_pass ? "PAIR SIGNAL" : "PAIR STOP"} · DEV STOP</em></button>)}</nav>
           {selected && <_Rr3CandidateDetail candidate={selected} />}

@@ -42,7 +42,7 @@ function V516ResearchFailureAutopsy({ analysis, onInspectCandidate }) {
           <section><h3>후보별 근거 열기</h3><div className="ra4-candidates">{autopsy.candidates.map(row => <button type="button" key={row.candidateId} onClick={() => onInspectCandidate(row.candidateId)}><span>{row.familyId.replaceAll("_", " ")}</span><b>{row.metricsObserved ? `${row.positiveFolds}/4 양수 · ${_ra4Num(row.sumProfitPct)}%` : "미관측 · NO_TRADES"}</b><em>{row.pairedPass ? "PAIR SIGNAL" : "PAIR STOP"} · DEV STOP</em></button>)}</div></section>
         </div>
       </details>
-      <footer>persistence none · threshold 변경 없음 · G2/Holdout/자동채택 권한 없음</footer>
+      <footer>persistence none · threshold 변경 없음 · G2/FROZEN_OOS_HOLDOUT/자동채택 권한 없음</footer>
     </section>
   );
 }

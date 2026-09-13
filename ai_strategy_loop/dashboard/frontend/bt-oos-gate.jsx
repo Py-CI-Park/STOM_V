@@ -72,7 +72,7 @@ function BtOosGate({ baseUrl, jobs, baselineJobId, lane, axis = "sell", manifest
   };
 
   const second = result && (result.holdout || result.oos);
-  const secondLabel = result && result.mode === "2job_split" ? "홀드아웃" : "OOS";
+  const secondLabel = result && result.mode === "2job_split" ? "내부검증 분할" : "OOS";
   const secondEdge = result && (result.holdout_per_trade_delta ?? result.oos_per_trade_delta);
   const secondRatio = result && (result.holdout_trade_ratio ?? result.oos_trade_ratio);
 
@@ -92,8 +92,8 @@ function BtOosGate({ baseUrl, jobs, baselineJobId, lane, axis = "sell", manifest
     {mode === "split" ? <>
       <div className="tp-oos-rule">
         연속 1회 런을 <b>{designPeriod ? `${designPeriod.t_start}~${designPeriod.t_end}` : "?"}</b>(설계)과
-        <b> {holdoutPeriod ? `${holdoutPeriod.t_start}~${holdoutPeriod.t_end}` : "?"}</b>(홀드아웃)으로 나눠 판정합니다.
-        ⚠ 자본이 이어지므로 홀드아웃은 독립 OOS 가 아닙니다 — 건당 손익으로 판단하세요.
+        <b> {holdoutPeriod ? `${holdoutPeriod.t_start}~${holdoutPeriod.t_end}` : "?"}</b>(internal_validation_split)으로 나눠 판정합니다.
+        ⚠ 자본이 이어지므로 이 구간은 독립 OOS 가 아닙니다 — 건당 손익으로 판단하세요.
       </div>
       <div className="tp-oos-form">
         <fieldset><legend>기준선 런</legend>{splitField("baseline", "기준")}</fieldset>
