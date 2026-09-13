@@ -1,0 +1,27 @@
+{
+  "stage": "ANA07",
+  "title": "Program Fold/Control aggregator + A/B 거래 분해",
+  "date": "2026-09-13",
+  "branch": "codex/process-research-ana07-program-aggregator",
+  "scope": {
+    "in": [
+      "ProgramManifest(manifest_sha256) + completion_matrix — missing cell은 MISSING으로 남김(0/PASS 대체 금지)",
+      "NO_TRADES는 0% 성과가 아닌 별도 cell 상태",
+      "decompose_trades: (symbol|entry_ts) 키로 common/removed/new 결정론 분해",
+      "ab_eligible: B5 admission 상태를 소비하는 A/B 적격성",
+      "multiplicity_ledger: family 검증 + q/posterior method receipt 의무",
+      "program_decision: 불완전 프로그램 complete=False, PnL 선택은 REVIEW_APPROVED/FROZEN_OOS 권한 필요",
+      "compare 응답에 eligibility + trade_decomposition 블록(양측 admitted일 때만)"
+    ],
+    "out": [
+      "posterior/power 실제 베이지안 계산 — 후속 정의",
+      "RES-02/03 JSON 재생산 검증 — 별도 실행 권한"
+    ]
+  },
+  "verification": {"focused": "test_program_aggregator.py + compare 배선 시험 포함 44 passed"},
+  "files": [
+    "ai_strategy_loop/dashboard/program_aggregator.py",
+    "ai_strategy_loop/dashboard/backtest_api.py",
+    "tests/unit/dashboard/test_program_aggregator.py"
+  ]
+}

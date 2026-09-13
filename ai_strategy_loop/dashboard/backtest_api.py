@@ -30,6 +30,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StringConstraints
 from ai_strategy_loop.dashboard import backtest_analysis as analysis
 from ai_strategy_loop.dashboard import backtest_report as report
 from ai_strategy_loop.dashboard import metric_definitions as metric_defs
+from ai_strategy_loop.dashboard import program_aggregator as program_agg
 from ai_strategy_loop.dashboard.backtest_jobs import BacktestJobSpec, get_job_manager
 from ai_strategy_loop.dashboard.individual_analysis import DEFAULT_MC, IndividualResult, MonteCarloOptions, Operation, individual_result
 from ai_strategy_loop.dashboard.individual_source import AnalysisOwners, SourceRecord, inspect_individual_source
@@ -2072,13 +2073,30 @@ def compare_jobs(
     양쪽 모두 완료 잡(job_a/job_b) 또는 진화 세대(run_a+gen_a / run_b+gen_b)를 받는다.
     한쪽은 잡, 다른 쪽은 세대인 교차 비교도 같은 스키마로 처리된다.
     """
-    a = _compare_side(job_a) if job_a else _compare_side_for_run(run_a, gen_a)
-    b = _compare_side(job_b) if job_b else _compare_side_for_run(run_b, gen_b)
-    return {
+    member_a = _compare_member(job_id=job_a) if job_a else _compare_member(
+        run_id=run_a, gen_no=gen_a)
+    member_b = _compare_member(job_id=job_b) if job_b else _compare_member(
+        run_id=run_b, gen_no=gen_b)
+    a = (
+        _side_envelope(member_a, job_id=job_a, run_id="", gen_no=None)
+        if member_a is not None else None
+    )
+    b = (
+        _side_envelope(member_b, job_id=job_b, run_id=run_b, gen_no=gen_b)
+        if member_b is not None else None
+    )
+    response: Dict[str, Any] = {
         "a": a,
         "b": b,
         "delta": _compare_delta(a, b),
     }
+    # ANA-07 — 양측 admission 통과 시에만 적격성 + 공통/제거/신규 거래 분해를 싣는다.
+    if a and b and a.get("admitted") and b.get("admitted"):
+        response["eligibility"] = program_agg.ab_eligible(a, b)
+        response["trade_decomposition"] = program_agg.decompose_trades(
+            member_a.trade_dicts(), member_b.trade_dicts()
+        )
+    return response
 
 
 # --------------------------------------------------------------------- overlay
