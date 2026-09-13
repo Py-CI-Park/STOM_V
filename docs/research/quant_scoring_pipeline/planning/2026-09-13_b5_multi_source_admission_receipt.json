@@ -1,0 +1,51 @@
+{
+  "receipt": "b5_multi_source_admission",
+  "date": "2026-09-13",
+  "branch": "codex/process-research-sys-05-multi-quality",
+  "base_commit": "3229e992",
+  "scope": [
+    "B5-1 compare A/B 입력 admission (_compare_side/_compare_side_for_run/_compare_delta/compare_jobs)",
+    "B5-2 overlay 선택집합 보존 (_overlay_series/overlay_jobs)",
+    "B5-3 portfolio 원자 admission (_portfolio_item_trades/portfolio_combine)",
+    "B5-4 UI 비교 수명주기 (bt-tab-root runCompare/BtCompareView)",
+    "B5-5 overlay/portfolio UI 선택집합 바인딩 (bt-tab-analysis)"
+  ],
+  "design": {
+    "shared_admission": "ai_strategy_loop/dashboard/multi_source.py — inspect_member() 가 B4 typed admission 재사용",
+    "states": ["ready", "empty_verified", "blocked"],
+    "blocked_reasons": [
+      "execution_blocked", "source_missing", "source_empty",
+      "no_trades_contradiction", "source_quality_blocked"
+    ],
+    "snapshot_rule": "admission 시 1회만 읽고 체크된 스냅샷을 계산기에 전달 — load_trades_csv 재호출 없음",
+    "empty_rule": "no_trades 문자열만으로 빈 승인 안 함 — 공식 헤더·예상 행 0·실행 상태 근거 필요",
+    "delta_rule": "양측 admitted 일 때만 _compare_delta 산출",
+    "metrics_split": "저장 metrics 는 stored_unverified, summary 는 항상 재계산 — 혼합 없음",
+    "overlay_partial": "일부 실패는 status=partial + failures[] — 전체 성공처럼 표시하지 않음",
+    "portfolio_atomic": "실패 입력 하나라도 있으면 portfolio_analysis 호출 없음"
+  },
+  "frontend": {
+    "compare": "runCompare 가 AbortController+seq+선택키 가드 — A 교체/닫기/늦은 응답 무효화",
+    "overlay": "BtOverlayPanel 동일 가드 + partial 배너 + failures 목록 + 무거래 표시",
+    "portfolio": "BtPortfolioPanel 동일 가드 + failed_sources 사유 + sources 출처/sha",
+    "post_signal": "_btPostJson 이 외부 AbortSignal 선택 인자 수용",
+    "bundle": "dashboard/webui-build npm run build 재생성 — bundle/app.js v=b026dce9"
+  },
+  "test_evidence": {
+    "new_tests": "tests/unit/dashboard/test_multi_result_quality.py — 32 시험",
+    "red_confirmed": "구현 전 14/14 실패 재현(admitted 키 부재·load_trades_csv 재읽기 2회)",
+    "focused_green": "pytest tests/unit/dashboard/test_multi_result_quality.py → 32 passed exit=0",
+    "regression_green": "dashboard 관련 112 passed (compare/overlay/portfolio/phase5/ws_job/p13/parity)",
+    "dashboard_full": "tests/unit/dashboard 1409 passed, 3 failed → 후속 수정으로 전부 통과(2건은 Windows 파일잠금 flake로 재실행 통과)",
+    "fixture_updates": "비공식 6열 CSV fixture → 공식 54열 스키마로 갱신 (admission 정상 차단이던 회귀)"
+  },
+  "not_done": [
+    "경제 우위·채택 판정 없음(진단 계약 유지)",
+    "실제 백테스트/연구 실행 없음",
+    "MDD·자본·비용 정의 변경 없음(SQ02 범위)",
+    "push 없음"
+  ],
+  "protected_untouched": [
+    "wt-dev", "tmap/evidence", "sealed evidence", "운영 DB", "_database/", "*.db", "backtest/graph/"
+  ]
+}

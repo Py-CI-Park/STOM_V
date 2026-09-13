@@ -7,7 +7,8 @@
 */
 // Track Z — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { BtResultArea } from "./backtest-charts.jsx";
-import { useState_bt, useEffect_bt, useCallback_bt, useMemo_bt, _btFetchJson } from "./bt-tab-utils.jsx";
+import { useState_bt, useEffect_bt, useCallback_bt, useRef_bt, useMemo_bt, _btFetchJson } from "./bt-tab-utils.jsx";
+import { btRequestIsCurrent } from "./bt-request-guard.mjs";
 import { BtDualEditor, BtLibraryPanel } from "./bt-tab-library.jsx";
 import { BtRunPanel, BtResultLibrary } from "./bt-tab-run.jsx";
 import { BtModeResultPanel } from "./bt-tab-mode-results.jsx";
@@ -53,6 +54,9 @@ function BacktestTab({ baseUrl, wsStatus, showTruthBar = false }) {
   // A/B 비교 — compareA(기준 잡 id), compareView(/bt/compare 응답).
   const [compareA, setCompareA] = useState_bt("");
   const [compareView, setCompareView] = useState_bt(null);
+  // 비교 요청 수명주기 — 진행 중 seq/controller 와 요청 시점 선택 키.
+  const compareReqRef = useRef_bt({ seq: 0, controller: null });
+  const compareKeyRef = useRef_bt("");
   // v5.13.0(H2) — 결과 소스 보기: 모두(2열) | AI 연구(진화만) | 인간 벤치마크(직접 실행 잡만).
   const [sourceView, setSourceView] = useState_bt("all");
 
@@ -120,17 +124,39 @@ function BacktestTab({ baseUrl, wsStatus, showTruthBar = false }) {
   //   섞어서도 같은 스키마로 비교된다(v5.11.3).
   const runCompare = useCallback_bt((keyB) => {
     if (isDemo || !baseUrl || !compareA || !keyB) return;
+    // 이전 요청 취소 + 선택 키 고정 — 늦게 도착한 예전 응답은 버린다.
+    if (compareReqRef.current.controller) compareReqRef.current.controller.abort();
+    const controller = new AbortController();
+    const seq = compareReqRef.current.seq + 1;
+    const reqKey = compareA + " vs " + keyB;
+    compareReqRef.current = { seq, controller };
+    compareKeyRef.current = reqKey;
     const url = baseUrl + "/bt/compare?" + _btCompareParams(compareA, "a") + "&" + _btCompareParams(keyB, "b");
-    _btFetchJson(url, 12000)
-      .then(j => setCompareView(j || null))
-      .catch(() => setCompareView(null));
+    _btFetchJson(url, 12000, controller.signal)
+      .then(j => {
+        if (!btRequestIsCurrent(compareReqRef.current, seq, compareKeyRef.current, reqKey, controller.signal)) return;
+        setCompareView(j || null);
+      })
+      .catch(() => {
+        if (!btRequestIsCurrent(compareReqRef.current, seq, compareKeyRef.current, reqKey, controller.signal)) return;
+        setCompareView(null);
+      });
   }, [baseUrl, isDemo, compareA]);
 
   const onSetCompareA = useCallback_bt((jobId) => {
+    // A 교체 = 진행 중 비교 무효화 — 늦은 응답이 새 선택에 섞이지 않게 한다.
+    if (compareReqRef.current.controller) compareReqRef.current.controller.abort();
+    compareReqRef.current = { seq: compareReqRef.current.seq + 1, controller: null };
+    compareKeyRef.current = "";
     setCompareA(jobId);
     setCompareView(null);
   }, []);
-  const onCloseCompare = useCallback_bt(() => { setCompareView(null); }, []);
+  const onCloseCompare = useCallback_bt(() => {
+    if (compareReqRef.current.controller) compareReqRef.current.controller.abort();
+    compareReqRef.current = { seq: compareReqRef.current.seq + 1, controller: null };
+    compareKeyRef.current = "";
+    setCompareView(null);
+  }, []);
 
   // 헬스 체크.
   useEffect_bt(() => {

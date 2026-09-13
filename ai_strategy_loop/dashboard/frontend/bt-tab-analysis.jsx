@@ -9,6 +9,7 @@
 */
 // Track Z — dual-safe ESM imports from the in-bundle definers. KEEP each on ONE physical line.
 import { useState_bt, useEffect_bt, useCallback_bt, useRef_bt, _btFetchJson, _btPostJson, _BT_OVERLAY_COLORS, _btNum, _pfFmtMoney } from "./bt-tab-utils.jsx";
+import { btRequestIsCurrent } from "./bt-request-guard.mjs";
 import { fetchRunsShared } from "./runs-shared.jsx";
 // v5.13.0(H3) — 진화 세대 행에서 조건식 즉시 열람. KEEP on ONE physical line.
 import { CodeViewer } from "./code-viewer.jsx";
@@ -102,23 +103,44 @@ function BtOverlayPanel({ baseUrl, isDemo, jobs }) {
   const [err, setErr] = useState_bt("");
 
   const doneJobs = (jobs || []).filter(j => j.status === "success" || j.status === "no_trades");
+  // B5 — 요청은 발행 시점 선택 집합에 묶는다. 선택 변경/비우기/늦은 응답은 무효화.
+  const ovReqRef = useRef_bt({ seq: 0, controller: null });
+  const ovKeyRef = useRef_bt("");
+  const ovInvalidate = () => {
+    if (ovReqRef.current.controller) ovReqRef.current.controller.abort();
+    ovReqRef.current = { seq: ovReqRef.current.seq + 1, controller: null };
+    ovKeyRef.current = "";
+  };
   const toggle = (jobId) => {
+    ovInvalidate(); setResult(null); setErr("");
     setPicked(prev => prev.includes(jobId)
       ? prev.filter(p => p !== jobId)
       : (prev.length >= 4 ? prev : prev.concat([jobId])));
   };
   const run = () => {
     if (isDemo || !baseUrl || picked.length < 2) return;
+    ovInvalidate();
+    const controller = new AbortController();
+    const seq = ovReqRef.current.seq + 1;
+    const reqKey = picked.join(",");
+    ovReqRef.current = { seq, controller };
+    ovKeyRef.current = reqKey;
     setBusy(true); setErr(""); setResult(null);
-    _btFetchJson(baseUrl + "/bt/overlay?job_ids=" + encodeURIComponent(picked.join(",")), 15000)
+    _btFetchJson(baseUrl + "/bt/overlay?job_ids=" + encodeURIComponent(picked.join(",")), 15000, controller.signal)
       .then(j => {
-        if (j && j.status === "ok") setResult(j);
-        else { setErr((j && j.message) || "오버레이 실패"); }
+        if (!btRequestIsCurrent(ovReqRef.current, seq, ovKeyRef.current, reqKey, controller.signal)) return;
+        if (j && (j.status === "ok" || j.status === "partial")) setResult(j);
+        else { setResult(j || null); setErr((j && j.message) || "오버레이 실패"); }
       })
-      .catch(e => setErr("실패: " + e))
-      .finally(() => setBusy(false));
+      .catch(e => {
+        if (!btRequestIsCurrent(ovReqRef.current, seq, ovKeyRef.current, reqKey, controller.signal)) return;
+        setErr("실패: " + e);
+      })
+      .finally(() => {
+        if (btRequestIsCurrent(ovReqRef.current, seq, ovKeyRef.current, reqKey, controller.signal)) setBusy(false);
+      });
   };
-  const clearAll = () => { setPicked([]); setResult(null); setErr(""); };
+  const clearAll = () => { ovInvalidate(); setPicked([]); setResult(null); setErr(""); };
 
   return (
     <div className="panel">
@@ -181,6 +203,22 @@ function BtOverlayPanel({ baseUrl, isDemo, jobs }) {
               <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)" }}>오버레이에는 2~4개 잡이 필요합니다.</div>
             )}
             {err && <div className="mono" style={{ fontSize: 11, color: "var(--red)" }}>{err}</div>}
+            {/* B5 — 부분 표시는 전체 성공과 구분하고, 실패 입력 사유를 표시한다. */}
+            {result && result.status === "partial" && (
+              <div className="research-empty" style={{ textAlign: "left" }}>
+                부분 오버레이 — 요청 {(result.requested || []).length}개 중 {(result.resolved || []).length}개만 표시됩니다.
+              </div>
+            )}
+            {result && result.failures && result.failures.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {result.failures.map((f, i) => (
+                  <div key={i} className="mono" style={{ fontSize: 10.5, color: "var(--red)" }}>
+                    ✕ {f.job_id} — {f.detail || f.reason}
+                    {f.quality_status ? " [" + f.quality_status + "]" : ""}
+                  </div>
+                ))}
+              </div>
+            )}
             {result && result.series && result.series.length > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: 10, borderTop: "1px solid var(--line-1)", paddingTop: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -198,7 +236,7 @@ function BtOverlayPanel({ baseUrl, isDemo, jobs }) {
                     {result.series.map((s, i) => (
                       <span key={s.job_id} className="mono" style={{ fontSize: 10, display: "inline-flex", alignItems: "center", gap: 5 }}>
                         <span style={{ width: 12, height: 3, background: _BT_OVERLAY_COLORS[i % _BT_OVERLAY_COLORS.length], display: "inline-block" }}></span>
-                        {s.label}
+                        {s.label}{s.empty ? " (무거래)" : ""}
                       </span>
                     ))}
                   </div>
@@ -484,41 +522,64 @@ function BtPortfolioHeatmap({ correlation }) {
 function BtPortfolioPanel({ baseUrl, isDemo, jobs, activeEvo }) {
   // 선택 항목: [{kind:"job"|"gen", id, label}]. 최대 6개.
   const [picked, setPicked] = useState_bt([]);
-  const [result, setResult] = useState_bt(null);
+  const [result, setResult] = useState_bt(null);   // 응답 본문 전체(portfolio·sources·failed_*).
   const [busy, setBusy] = useState_bt(false);
   const [err, setErr] = useState_bt("");
+  // B5 — 요청은 발행 시점 선택 키 집합에 묶는다. 변경/삭제/늦은 응답은 무효화.
+  const pfReqRef = useRef_bt({ seq: 0, controller: null });
+  const pfKeyRef = useRef_bt("");
+  const pfInvalidate = () => {
+    if (pfReqRef.current.controller) pfReqRef.current.controller.abort();
+    pfReqRef.current = { seq: pfReqRef.current.seq + 1, controller: null };
+    pfKeyRef.current = "";
+    setResult(null);
+  };
 
   const addJob = (j) => {
     if (picked.length >= 6) return;
     const key = "job:" + j.job_id;
     if (picked.some(p => p.key === key)) return;
+    pfInvalidate(); setErr("");
     setPicked(prev => prev.concat([{ key, kind: "job", job_id: j.job_id, label: j.job_id.slice(0, 14) }]));
   };
   const addEvo = () => {
     if (!activeEvo || picked.length >= 6) return;
     const key = "gen:" + activeEvo.run_id + "/" + activeEvo.gen_no;
     if (picked.some(p => p.key === key)) return;
+    pfInvalidate(); setErr("");
     setPicked(prev => prev.concat([{
       key, kind: "gen", run_id: activeEvo.run_id, gen_no: activeEvo.gen_no,
       label: activeEvo.run_id.slice(0, 8) + "/g" + activeEvo.gen_no,
     }]));
   };
-  const removeAt = (key) => setPicked(prev => prev.filter(p => p.key !== key));
-  const clearAll = () => { setPicked([]); setResult(null); setErr(""); };
+  const removeAt = (key) => { pfInvalidate(); setErr(""); setPicked(prev => prev.filter(p => p.key !== key)); };
+  const clearAll = () => { pfInvalidate(); setPicked([]); setErr(""); };
 
   const run = () => {
     if (isDemo || !baseUrl) return;
+    pfInvalidate();
+    const controller = new AbortController();
+    const seq = pfReqRef.current.seq + 1;
+    const reqKey = picked.map(p => p.key).join(",");
+    pfReqRef.current = { seq, controller };
+    pfKeyRef.current = reqKey;
     setBusy(true); setErr(""); setResult(null);
     const items = picked.map(p => p.kind === "job"
       ? { job_id: p.job_id, label: p.label }
       : { run_id: p.run_id, gen_no: p.gen_no, label: p.label });
-    _btPostJson(baseUrl + "/bt/portfolio", { items }, 20000)
+    _btPostJson(baseUrl + "/bt/portfolio", { items }, 20000, controller.signal)
       .then(j => {
-        if (j && j.status === "ok") { setResult(j.portfolio); }
-        else { setErr((j && j.message) || "포트폴리오 분석 실패"); }
+        if (!btRequestIsCurrent(pfReqRef.current, seq, pfKeyRef.current, reqKey, controller.signal)) return;
+        if (j && j.status === "ok") { setResult(j); }
+        else { setResult(j || null); setErr((j && j.message) || "포트폴리오 분석 실패"); }
       })
-      .catch(e => setErr("실패: " + e))
-      .finally(() => setBusy(false));
+      .catch(e => {
+        if (!btRequestIsCurrent(pfReqRef.current, seq, pfKeyRef.current, reqKey, controller.signal)) return;
+        setErr("실패: " + e);
+      })
+      .finally(() => {
+        if (btRequestIsCurrent(pfReqRef.current, seq, pfKeyRef.current, reqKey, controller.signal)) setBusy(false);
+      });
   };
 
   const doneJobs = (jobs || []).filter(j => j.status === "success" || j.status === "no_trades");
@@ -591,37 +652,59 @@ function BtPortfolioPanel({ baseUrl, isDemo, jobs, activeEvo }) {
               </div>
             )}
             {err && <div className="mono" style={{ fontSize: 11, color: "var(--red)" }}>{err}</div>}
+            {/* B5 — 입력별 실패 사유(어느 소스가 왜 차단됐는지). */}
+            {result && result.failed_reasons && result.failed_reasons.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {(result.failed_sources || []).map((f, i) => (
+                  <div key={i} className="mono" style={{ fontSize: 10.5, color: "var(--red)" }}>
+                    ✕ {f.job_id || ((f.run_id || "?") + "/g" + f.gen_no)} — {f.detail || f.reason}
+                    {f.quality_status ? " [" + f.quality_status + "]" : ""}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* 결과 */}
-            {result && (
+            {result && result.portfolio && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12, borderTop: "1px solid var(--line-1)", paddingTop: 10 }}>
+                {/* B5 — 합성에 들어간 입력 출처(무거래 표시 + sha 앞 8자리). */}
+                {result.sources && result.sources.length > 0 && (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {result.sources.map((s, i) => (
+                      <span key={i} className="mono" style={{ fontSize: 9.5, color: "var(--ink-3)" }}
+                            title={s.source_sha256 || ""}>
+                        {s.label}{s.empty ? "·무거래" : ""}{s.source_sha256 ? "·" + s.source_sha256.slice(0, 8) : ""}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
                   <span className="mono" style={{ fontSize: 11 }}>
-                    결합 총손익 <b style={{ color: (result.combined.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)") }}>
-                      {_pfFmtMoney(result.combined.total_profit_krw)}</b>
+                    결합 총손익 <b style={{ color: (result.portfolio.combined.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)") }}>
+                      {_pfFmtMoney(result.portfolio.combined.total_profit_krw)}</b>
                   </span>
                   <span className="mono" style={{ fontSize: 11 }}>
-                    결합 MDD <b style={{ color: "var(--red)" }}>{Math.round(result.combined.max_drawdown_krw).toLocaleString()}원</b>
+                    결합 MDD <b style={{ color: "var(--red)" }}>{Math.round(result.portfolio.combined.max_drawdown_krw).toLocaleString()}원</b>
                   </span>
                   <span className="mono" style={{ fontSize: 11, color: "var(--ink-3)" }}>
-                    {result.combined.trading_days}거래일 · {result.count}전략
+                    {result.portfolio.combined.trading_days}거래일 · {result.portfolio.count}전략
                   </span>
                 </div>
                 {/* 결합 곡선 */}
                 <div>
                   <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginBottom: 4 }}>결합 누적수익곡선</div>
-                  <BtPortfolioCurve equity={result.combined.equity} />
+                  <BtPortfolioCurve equity={result.portfolio.combined.equity} />
                 </div>
                 {/* 상관 히트맵 */}
                 <div>
                   <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginBottom: 4 }}>전략 간 일별손익 상관</div>
-                  <BtPortfolioHeatmap correlation={result.correlation} />
+                  <BtPortfolioHeatmap correlation={result.portfolio.correlation} />
                 </div>
                 {/* 개별 기여 표 */}
                 <div>
                   <div className="mono" style={{ fontSize: 10, color: "var(--ink-3)", marginBottom: 4 }}>개별 기여</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    {result.strategies.map((s, i) => (
+                    {result.portfolio.strategies.map((s, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", borderBottom: "1px solid var(--line-1)" }}>
                         <span className="mono" style={{ fontSize: 11, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label}</span>
                         <span className="mono" style={{ fontSize: 10.5, color: (s.total_profit_krw >= 0 ? "var(--teal)" : "var(--red)") }}>
