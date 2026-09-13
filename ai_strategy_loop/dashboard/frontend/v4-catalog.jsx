@@ -5,6 +5,7 @@
 // dual-safe ESM. KEEP hooks alias on ONE physical line.
 const { useState: useState_cat, useEffect: useEffect_cat } = React;
 import { V4Alpha } from "./v4-alpha.jsx";
+import { V4HypothesisRegistry } from "./v4-hypothesis-registry.jsx";
 
 function _catVerdictCls(v) {
   const s = String(v || "");
@@ -29,6 +30,9 @@ const _CAT_VIEWS = [
     explain: "B1 후보가 표본 밖(실전에 가까운 구간)에서 어떤 성적을 냈는지 보는 성적표입니다. 운용 개시 결정에 선행하는 증거입니다." },
   { key: "qsp", label: "QSP 라운드", desc: "다후보 라운드 보드(round_runner 기록, 읽기 전용)",
     explain: "퀀트 채점 파이프라인(QSP)의 다후보 개선 라운드 기록입니다. 라운드마다 후보 N개의 성적·베스트·교훈·수렴/발산 판정을 봅니다 — 구조해석의 잔차 수렴 로그에 해당합니다." },
+  // UX-06/ANA-08 — finding·hypothesis·prereg lineage 검색 표면(P10·P11·P12).
+  { key: "registry", label: "가설 원장", desc: "finding→가설→사전등록 상태머신 원장",
+    explain: "발견(finding)이 가설 초안·사람 검토·사전등록 봉인까지 어디까지 진행됐는지 보는 원장입니다. 봉인은 사람 승인 증거가 있을 때만 가능하고, 여기 기록은 실행·채택 권한을 주지 않습니다." },
 ];
 
 function _CatSkeleton({ title, reason }) {
@@ -65,7 +69,13 @@ function V4Catalog({ baseUrl, wsStatus }) {
   const [cells, setCells] = useState_cat(null);
   const [qspRounds, setQspRounds] = useState_cat(null);   // v5.13.4(P3) — QSP 라운드 보드.
   const [err, setErr] = useState_cat("");
-  const [view, setView] = useState_cat("chronicle");
+  // UX-06 — ?view=registry 같은 딥링크로 특정 원장 뷰를 바로 연다(finding→가설 1클릭).
+  const [view, setView] = useState_cat(() => {
+    try {
+      const v = new URLSearchParams(window.location.search).get("view");
+      return _CAT_VIEWS.some(item => item.key === v) ? v : "chronicle";
+    } catch (e) { return "chronicle"; }
+  });
 
   useEffect_cat(() => {
     if (!baseUrl) return undefined;
@@ -274,6 +284,8 @@ function V4Catalog({ baseUrl, wsStatus }) {
           <_CatSkeleton title="B1 scorecard (표본 외 성적표)" reason={NO_DATA} />
         </section>
       )}
+
+      {view === "registry" && <V4HypothesisRegistry baseUrl={baseUrl} />}
     </section>
   );
 }
