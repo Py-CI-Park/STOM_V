@@ -81,8 +81,12 @@ def test_v3_schema_and_new_sections(env):
     assert b.identity.bundle_version == "3.0.0"
     assert b.data_quality.status is AnalysisSectionStatus.OBSERVED
     assert b.data_quality.values["row_count_matches_execution"] is True
+    # ANA-06 — episodes 는 deterministic mining 으로 실측된다.
+    assert b.episodes.status is AnalysisSectionStatus.OBSERVED
+    assert b.episodes.values["n_episodes"] == 2
+    assert b.episodes.values["n_trades"] == 2
     # 미실행 섹션은 reason+prerequisites 를 가진다.
-    for sec in (b.statistics, b.findings, b.episodes, b.counterfactual, b.robustness):
+    for sec in (b.statistics, b.findings, b.counterfactual, b.robustness):
         assert sec.status is not AnalysisSectionStatus.OBSERVED
         assert sec.reason
         assert sec.prerequisites

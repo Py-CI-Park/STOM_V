@@ -1,0 +1,32 @@
+{
+  "stage": "ANA06",
+  "title": "Episode/Cohort mining foundation + Stage F outcome-free projection",
+  "date": "2026-09-13",
+  "branch": "codex/process-research-ana06-episode-mining",
+  "scope": {
+    "in": [
+      "TradeFact/EpisodeFact/Finding typed 모델과 onset/reset 독립 episode 채굴(reset_gap_seconds 규칙)",
+      "결정론: (candidate,symbol,entry_ts,trade_key) 정렬 — 입력 순서·셔플 무관 동일 결과",
+      "typed failure: missing_symbol / timestamp_reversal / episode_mining_failed",
+      "Stage F outcome-free projection — allowlist 필드만, _FORBIDDEN_OUTCOME 물리 차단",
+      "missingness_profile(결측·zero-only·coverage), cohort_census(분산·집중도)",
+      "matched_random_control(seed receipt), fdr_bh(Benjamini–Hochberg)",
+      "v3 bundle episodes 섹션 실측 채굴로 OBSERVED 전환"
+    ],
+    "out": [
+      "Stage F 실제 실행·경제 성공 표현 — 별도 경계",
+      "cohort 사전등록 UI·광범위 FDR 검정 체계 — ANA08 영역"
+    ]
+  },
+  "verification": {
+    "focused": "test_episode_mining.py 10 + test_analysis_bundle_v3.py 회귀 통과(20)",
+    "gate_criteria": "outcome-free 필드 0·순서무관 결정론·중복 onset 없음·typed failure·Stage F 결과로 경제 성공 표현 불가"
+  },
+  "files": [
+    "ai_strategy_loop/dashboard/episode_mining.py",
+    "ai_strategy_loop/dashboard/analysis_bundle_builder.py",
+    "ai_strategy_loop/dashboard/analysis_bundle_models.py",
+    "tests/unit/dashboard/test_episode_mining.py",
+    "tests/unit/dashboard/test_analysis_bundle_v3.py"
+  ]
+}
