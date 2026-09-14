@@ -1,0 +1,18 @@
+{
+  "stage": "UX06-final",
+  "title": "6질문 구역 재배열 + 가설 작성 폼 + 원장 계보 딥링크",
+  "date": "2026-09-14",
+  "branch": "codex/process-research-ux06-final",
+  "scope": {
+    "in": [
+      "결과 워크스페이스 읽는 순서를 질문 순서로 재배열: Q1 판정 → Q2·Q4 증거 → Q3·Q5 부검 → Q6 원장",
+      "_HrDraftForm: 필수 11필드 가설 초안 작성 폼(미기재 시 제출 불가, role validation/oos는 서버 409)",
+      "가설 행의 source_finding_ids → 지식 원장 해당 행 앵커 딥링크(#finding-<id>)"
+    ],
+    "out": ["620px viewport 실측 — MCP 고정 폭 한계(사람 브라우저 확인 필요)"]
+  },
+  "verification": {
+    "focused": "ux06+parity+gateboard+registry-api 31 passed",
+    "browser": "구역 순서 rr4-questions→rr4-mission→rr4-evidence→ra4-autopsy 실측 · 폼 14필드 렌더 · console 0"
+  }
+}
