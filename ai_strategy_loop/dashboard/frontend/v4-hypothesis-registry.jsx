@@ -72,6 +72,79 @@ function _HrActions({ baseUrl, hyp, onChanged }) {
   return null;
 }
 
+// UX-06 — 가설 초안 작성 폼: 필수 11개 필드를 모두 요구한다(비어 있으면 서버가 409).
+function _HrDraftForm({ baseUrl, onChanged }) {
+  const [f, setF] = useState_hr({
+    finding_id: "", bundle_sha256: "", axis: "", role: "train", n: "", q: "",
+    failure_explained: "", falsifiable_prediction: "",
+    entry_time_vars: "", forbidden_vars: "", data_requirement: "",
+    leakage_risk: "", negative_controls: "", budget: "", normal_stop: "",
+  });
+  const [msg, setMsg] = useState_hr("");
+  const set = (k) => (e) => setF(c => ({ ...c, [k]: e.target.value }));
+  const required = ["finding_id", "bundle_sha256", "axis", "failure_explained",
+    "falsifiable_prediction", "entry_time_vars", "data_requirement",
+    "leakage_risk", "budget", "normal_stop"];
+  const missing = required.filter(k => !String(f[k]).trim());
+  const submit = () => {
+    setMsg("");
+    _hrPost(baseUrl, "/hypothesis-registry/hypotheses", {
+      finding: {
+        finding_id: f.finding_id, bundle_sha256: f.bundle_sha256, axis: f.axis,
+        role: f.role, n: f.n === "" ? null : Number(f.n),
+        q: f.q === "" ? null : Number(f.q), effect: null, ci: null,
+      },
+      failure_explained: f.failure_explained,
+      falsifiable_prediction: f.falsifiable_prediction,
+      entry_time_vars: f.entry_time_vars.split(",").map(s => s.trim()).filter(Boolean),
+      forbidden_vars: f.forbidden_vars.split(",").map(s => s.trim()).filter(Boolean),
+      data_requirement: f.data_requirement, leakage_risk: f.leakage_risk,
+      negative_controls: f.negative_controls.split(",").map(s => s.trim()).filter(Boolean),
+      budget: f.budget, normal_stop: f.normal_stop,
+    }).then(() => { setMsg("초안 등록 완료"); onChanged(); })
+      .catch(e => setMsg(`차단 · ${e.message}`));
+  };
+  const field = (key, label, ph) => (
+    <label key={key}>{label}
+      <input value={f[key]} onChange={set(key)} placeholder={ph || ""} />
+    </label>
+  );
+  return (
+    <details className="hr-draft-form">
+      <summary><b>새 가설 초안 작성</b><span>finding 기반 · 필수 필드 전부 필요 · validation/OOS finding은 차단됨</span></summary>
+      <div className="hr-form-grid">
+        {field("finding_id", "finding ID", "f-…")}
+        {field("bundle_sha256", "bundle sha256", "64 hex")}
+        {field("axis", "축", "exit_timing")}
+        <label>role
+          <select value={f.role} onChange={set("role")}>
+            <option value="train">train</option>
+            <option value="discovery">discovery</option>
+            <option value="validation">validation(차단됨)</option>
+            <option value="oos">oos(차단됨)</option>
+          </select>
+        </label>
+        {field("n", "표본 n", "50")}
+        {field("q", "q값", "0.03")}
+        {field("failure_explained", "설명하는 실패")}
+        {field("falsifiable_prediction", "반증 가능한 예측")}
+        {field("entry_time_vars", "진입시점 변수(,)", "entry_price")}
+        {field("forbidden_vars", "금지 변수(,)", "exit_pnl")}
+        {field("data_requirement", "필요 자료량", "n>=30")}
+        {field("leakage_risk", "누수 위험")}
+        {field("negative_controls", "negative controls(,)")}
+        {field("budget", "예산", "2 runs")}
+        {field("normal_stop", "정상 STOP 조건", "q>0.1")}
+      </div>
+      <div className="hr-actions">
+        <button type="button" className="btn sm" disabled={missing.length > 0}
+          onClick={submit}>가설 초안 등록{missing.length ? ` (미기재 ${missing.length})` : ""}</button>
+        {msg && <span className="hr-msg mono">{msg}</span>}
+      </div>
+    </details>
+  );
+}
+
 function V4HypothesisRegistry({ baseUrl }) {
   const [view, setView] = useState_hr({ status: "loading", data: null, error: "" });
   const load = useCallback_hr(() => {
@@ -106,6 +179,8 @@ function V4HypothesisRegistry({ baseUrl }) {
         ))}
       </div>
 
+      <_HrDraftForm baseUrl={baseUrl} onChanged={load} />
+
       <div className="hr-table-scroll" tabIndex={0}>
         <table className="hr-table">
           <caption>가설 원장 — bundle·finding 계보와 상태를 함께 표시</caption>
@@ -120,7 +195,9 @@ function V4HypothesisRegistry({ baseUrl }) {
                   <td><span className={"hr-badge " + meta.cls}>{meta.ko}</span></td>
                   <td>{h.falsifiable_prediction}</td>
                   <td><code>{_hrShort(h.bundle_sha256)}</code></td>
-                  <td>{(h.source_finding_ids || []).join(", ")}</td>
+                  <td>{(h.source_finding_ids || []).map(fid => (
+                    <a key={fid} href={`/?tab=catalog&view=registry#finding-${fid}`} title="finding 원장 행으로 이동">{fid}</a>
+                  )).reduce((acc, el, i) => i ? [...acc, ", ", el] : [el], [])}</td>
                   <td>{h.review_note || "—"}</td>
                   <td><_HrActions baseUrl={baseUrl} hyp={h} onChanged={load} /></td>
                 </tr>
@@ -135,7 +212,7 @@ function V4HypothesisRegistry({ baseUrl }) {
           <h4>지식 원장 · 열림 {openFindings.length} / 반증됨 {falsified.length}</h4>
           <ul className="hr-findings">
             {(data.findings || []).map(f => (
-              <li key={f.finding_id} className={f.falsified_by && f.falsified_by.length ? "falsified" : ""}>
+              <li key={f.finding_id} id={`finding-${f.finding_id}`} className={f.falsified_by && f.falsified_by.length ? "falsified" : ""}>
                 <code>{f.finding_id}</code> · {f.axis} · role={f.role} · n={f.n == null ? "미관측" : f.n} · q={f.q == null ? "미관측" : f.q}
                 {f.falsified_by && f.falsified_by.length ? <em> 반증: {f.falsified_by.join(", ")}</em> : null}
               </li>

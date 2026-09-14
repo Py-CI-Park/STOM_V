@@ -2765,3 +2765,11 @@
 .hr-findings, .hr-preregs { font-size: 11px; color: var(--ink-2); line-height: 1.7; padding-left: 14px; }
 .hr-findings li.falsified { opacity: .6; text-decoration: line-through; }
 .hr-panel footer { margin-top: 8px; font-size: 10px; color: var(--ink-3); }
+
+/* ANA-08 — 가설 초안 작성 폼 */
+.hr-draft-form { margin: 6px 0 10px; border: 1px dashed var(--line, #2a2f3a); border-radius: 6px; padding: 6px 10px; }
+.hr-draft-form summary { cursor: pointer; font-size: 11.5px; display: flex; gap: 8px; align-items: baseline; }
+.hr-draft-form summary span { font-size: 10px; color: var(--ink-3); }
+.hr-form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px 10px; margin: 8px 0; }
+.hr-form-grid label { display: flex; flex-direction: column; gap: 2px; font-size: 10.5px; color: var(--ink-2); }
+.hr-form-grid input, .hr-form-grid select { font-size: 11px; padding: 3px 6px; background: transparent; border: 1px solid var(--line, #2a2f3a); border-radius: 4px; color: var(--ink-0); }

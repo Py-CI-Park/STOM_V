@@ -158,7 +158,7 @@ function V516ResearchResultGateboard({ baseUrl }) {
         <a href="/?tab=catalog&view=registry">Q6 다음에 무엇을 시험할 것인가</a>
       </nav>
       <_Rr4MissionControl platform={platform} decision={decision} detailOpen={detailOpen} onToggleDetail={() => setDetailOpen(open => !open)} />
-      <V516ResearchFailureAutopsy analysis={data.analysis} onInspectCandidate={candidateId => { setSelectedId(candidateId); setDetailOpen(true); }} />
+      {/* UX-06 — 읽는 순서가 질문 순서: Q1(판정) → Q2·Q4(증거) → Q3·Q5(부검) → Q6(원장). */}
       <details className="rr4-evidence" id="rr4-evidence-detail" open={detailOpen} onToggle={event => setDetailOpen(event.currentTarget.open)}>
         <summary><span>UX-03 봉인 판정 근거</span><strong>{detailOpen ? "판정 근거 접기" : "판정 근거 펼치기"}</strong></summary>
         <header className="rr3-heading"><div><span>UX-03 · SEALED DECISION / READ ONLY</span><h2 id="rr3-title">G0 → G1 연구 게이트보드</h2></div><strong title="FROZEN_OOS_HOLDOUT — 봉인 OOS · 사람 승인 없이 개봉 불가 · 현재 프로그램 사용 금지">FROZEN_OOS · {decision.holdout_status || "UNKNOWN"}</strong></header>
@@ -174,6 +174,7 @@ function V516ResearchResultGateboard({ baseUrl }) {
         </div>
         <footer>Evidence {String(data.evidence && data.evidence[1] && data.evidence[1].sha256 || "unavailable").slice(0, 16)}… · persistence none · 경제 실패를 실행 실패로 바꾸지 않습니다.</footer>
       </details>
+      <V516ResearchFailureAutopsy analysis={data.analysis} onInspectCandidate={candidateId => { setSelectedId(candidateId); setDetailOpen(true); }} />
     </div>
   );
 }
